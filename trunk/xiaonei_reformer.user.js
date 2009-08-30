@@ -10,11 +10,12 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.3.20090830
+// @version        1.5.4.20090830
+// @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.3.20090830";
+var version="1.5.4.20090830";
 
 //选项列表
 var options=[
@@ -70,6 +71,7 @@ var options=[
 	{op:"bxn_checkUpdate",dv:true},
 	{op:"bxn_allowModifySpecialFriend",dv:true},
 	{op:"bxn_removeCommonPage",dv:false},
+	{op:"bxn_autoRefreshFeeds",dv:false},
 ];
 
 //选项值列表
@@ -301,6 +303,7 @@ function reform() {
 		ov["bxn_showMatualFriends"] && getMatualFriends();
 		ov["bxn_allowModifySpecialFriend"] && allowModifySpecialFriend();
 		ov["bxn_checkUpdate"] && checkUpdate();
+		ov["bxn_autoRefreshFeeds"] && autoRefreshFeeds();
 	} catch (e) {
 		printErrorLog("reform",e);
 	}
@@ -1758,6 +1761,94 @@ function allowModifySpecialFriend() {
 	}
 }
 
+//自动检查新鲜事更新
+function autoRefreshFeeds() {
+	try {
+		if($("feedHome")) {
+			var s=document.createElement("script");
+			s.innerHTML="if(window.feedEditor && window.feedEditor.getNewFeeds) setInterval(window.feedEditor.getNewFeeds,"+GM_getValue("bxn_checkFeedInterval",60)*1000+");";
+			document.body.appendChild(s);
+		}
+		setInterval(checkNewFeeds,GM_getValue("bxn_checkFeedInterval",60)*1000);
+	} catch (e) {
+		printErrorLog("autoRefreshFeeds",e);
+	}
+
+	function checkNewFeeds() {
+		try {
+			GM_xmlhttpRequest({	method: "GET", url: "http://renren.com/retrieveNews.do", onload: function (response) {
+				try {
+					var r=response.responseText.split("##@L#");
+					if(!/^\d+/.test(r[0])) {
+						return;
+					}
+					var newFeeds=parseInt(r[0]);
+					if(newFeeds<=0) {
+						return;
+					}
+					var wpibar=$("wpiroot");
+					if(wpibar) {
+						var item=$X1(".//div[@class='m-chat']//div[@class='m-chat-tabbar']//div[@class='m-chat-presence']//div[@class='m-chat-button-notifications m-chat-button-active' or @class='m-chat-button-notifications']",wpibar);
+						if(item) {
+							//提醒内容
+							var tips=$X1(".//div[@class='m-chat-window notifications hide' or @class='m-chat-window notifications']//div[@class='chat-conv']",item);
+							if(tips) {
+								//收集新鲜事ID
+								var test=document.createElement("ul");
+								test.innerHTML=r[1].replace(/\n|\r/g,"");
+								var node=tips.lastElementChild;
+
+								var newestFeed=readCookie("newestFeed");
+								if(newestFeed!="") {
+									var n=newFeeds;
+									newFeeds=0;
+									for(var i=0;i<n;i++) {
+										if(newestFeed!=test.childNodes[i].id) {
+											newFeeds++;
+										} else {
+											break;
+										}
+									}
+								}
+								newestFeed=test.childNodes[0].id;
+								if(newFeeds>0) {
+									//添加提醒
+									var node=tips.firstElementChild;
+									if(node.innerHTML.indexOf('无新提醒')!=-1) {
+										node.className="notifyitem hide";
+									}
+									node=document.createElement("div");
+									tips.insertBefore(node,tips.firstChild);
+									node.className="notifyitem";
+									node.innerHTML="有"+newFeeds+"条新的新鲜事。";
+									var a=document.createElement("a");
+									a.href="http://home.renren.com";
+									a.innerHTML="去看看";
+									a.target="_blank" 
+									a.setAttribute("onclick","this.parentNode.parentNode.removeChild(this.parentNode);")
+									node.appendChild(a);
+									//增加提醒计数
+									var count=$X1(".//div[@class='m-chat-msgcount hide' or @class='m-chat-msgcount']",item);
+									if(count) {
+										count.innerHTML=(parseInt(count.innerHTML)+1).toString();
+										count.className="m-chat-msgcount";
+									}
+									writeCookie("newestFeed",newestFeed);
+								}
+							}
+							return;
+						}
+					}
+				} catch (e) {
+					printErrorLog("checkNewFeeds_onload",e);
+				}
+			}});
+		} catch (e) {
+			printErrorLog("checkNewFeeds",e);
+		}
+	}
+}
+
 //在导航栏的设置菜单中增加设置项
 function createDropDownMenu() {
 	try {
@@ -1864,6 +1955,7 @@ function createConfigMenu() {
 									<li><input type="checkbox" id="bxn_allowModifySpecialFriend" />去除特别好友修改限制</li>\
 									<li><input type="checkbox" id="bxn_uncheckFeedComment" />默认不将评论发布到新鲜事</li>\
 									<li><input type="checkbox" id="bxn_checkWhisper" />默认使用悄悄话</li>\
+									<li><input type="checkbox" id="bxn_autoRefreshFeeds" />自动检查新鲜事更新</li>\
 								</ul>\
 								<h4 class="bxn_h">其他：</h4>\
 								<ul class="bxn_ul1">\
@@ -1872,6 +1964,7 @@ function createConfigMenu() {
 									<li><input type="checkbox" id="bxn_showMatualFriendsImage" />显示共同好友的头像</li>\
 									<li><input type="checkbox" id="bxn_fixShareLink" />修正分享功能，支持https，使用真实外部链接</li>\
 									<li>头像列表中头像最大数量，0为不限（不影响共同好友列表） <input id="bxn_headAmount" style="width:30px ;" /></li>\
+									<li>新鲜事检查间隔时间：<input id="bxn_checkFeedInterval" style="width:30px ;" />秒</li>\
 								</ul>\
 								<h4 class="bxn_h">脚本设置：</h4>\
 								<ul class="bxn_ul1">\
@@ -1919,6 +2012,7 @@ function createConfigMenu() {
 			}
 		}
 		e=$("bxn_headAmount");e.value=GM_getValue("bxn_headAmount",12).toString();
+		e=$("bxn_checkFeedInterval");e.value=GM_getValue("bxn_checkFeedInterval",60).toString();
 		e=$("bxn_pageLink");e.value=GM_getValue("bxn_pageLink","http://userscripts.org/scripts/show/45836");
 		e=$("bxn_scriptLink");e.value=GM_getValue("bxn_scriptLink","http://userscripts.org/scripts/source/45836.user.js");
 		e=$("bxn_navExtraContent");e.value=GM_getValue("bxn_navExtraContent","群组\nhttp://group.renren.com/tribenav.do\n论坛\nhttp://club.renren.com/");
@@ -1935,12 +2029,26 @@ function createConfigMenu() {
 		try {
 			var e,o;
 			e=$("bxn_headAmount");
-			if(parseInt(e.value)<0) {
-				alert("头像最大数量不能为负数！");
+			if(!/^[0-9]+$/.test(e.value) || parseInt(e.value)<0) {
+				alert("请在头像最大数量处输入一个非负整数！");
+				e.focus();
+				e.selectionStart=0;
+				e.selectionEnd=e.value.length;
 				return;
-			} else {
-				GM_setValue("bxn_headAmount",parseInt(e.value));
 			}
+			e=$("bxn_checkFeedInterval");
+			if(!/^[0-9]+$/.test(e.value) || parseInt(e.value)<=0) {
+				alert("请在更新新鲜事间隔时间处输入一个正整数！");
+				e.focus();
+				e.selectionStart=0;
+				e.selectionEnd=e.value.length;
+				return;
+			}
+
+			e=$("bxn_headAmount");
+			GM_setValue("bxn_headAmount",parseInt(e.value));
+			e=$("bxn_checkFeedInterval");
+			GM_setValue("bxn_checkFeedInterval",parseInt(e.value));
 			e=$("bxn_scriptLink");
 			GM_setValue("bxn_scriptLink",e.value);
 			e=$("bxn_pageLink");
