@@ -10,12 +10,12 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.4.20090830
+// @version        1.5.4.20090831
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.4.20090830";
+var version="1.5.4.20090831";
 
 //选项列表
 var options=[
@@ -1780,24 +1780,26 @@ function autoRefreshFeeds() {
 				try {
 					var r=response.responseText.split("##@L#");
 					if(!/^\d+/.test(r[0])) {
+						removeElement($("newFeedsNotify"));
 						return;
 					}
 					var newFeeds=parseInt(r[0]);
 					if(newFeeds<=0) {
+						removeElement($("newFeedsNotify"));
 						return;
 					}
+					
 					var wpibar=$("wpiroot");
 					if(wpibar) {
+						//有校内通栏的情况
 						var item=$X1(".//div[@class='m-chat']//div[@class='m-chat-tabbar']//div[@class='m-chat-presence']//div[@class='m-chat-button-notifications m-chat-button-active' or @class='m-chat-button-notifications']",wpibar);
 						if(item) {
 							//提醒内容
 							var tips=$X1(".//div[@class='m-chat-window notifications hide' or @class='m-chat-window notifications']//div[@class='chat-conv']",item);
 							if(tips) {
-								//收集新鲜事ID
+								//修正真正的新新鲜事数
 								var test=document.createElement("ul");
 								test.innerHTML=r[1].replace(/\n|\r/g,"");
-								var node=tips.lastElementChild;
-
 								var newestFeed=readCookie("newestFeed");
 								if(newestFeed!="") {
 									var n=newFeeds;
@@ -1811,6 +1813,8 @@ function autoRefreshFeeds() {
 									}
 								}
 								newestFeed=test.childNodes[0].id;
+								writeCookie("newestFeed",newestFeed);
+
 								if(newFeeds>0) {
 									//添加提醒
 									var node=tips.firstElementChild;
@@ -1833,12 +1837,27 @@ function autoRefreshFeeds() {
 										count.innerHTML=(parseInt(count.innerHTML)+1).toString();
 										count.className="m-chat-msgcount";
 									}
-									writeCookie("newestFeed",newestFeed);
 								}
 							}
 							return;
 						}
 					}
+					//无校内通栏，或结构有变
+					var bar=$("newFeedsNotify");
+					if(!bar) {
+						bar=document.createElement("div");
+						bar.style.position="fixed";
+						bar.style.bottom="10px";
+						bar.style.right="20px";
+						bar.style.padding="10px";
+						bar.style.backgroundColor="#78C3D8";
+						bar.style.opacity="0.75";
+						bar.style.border="#000000 double 3px";
+						bar.color="white";
+						bar.id="newFeedsNotify";
+						document.body.appendChild(bar);
+					}
+					bar.innerHTML="<font color='black'>您有"+newFeeds+"条未读新鲜事。</font><a target='_blank' href='http://home.renren.com' style='color:red' onclick='this.parentNode.parentNode.removeChild(this.parentNode);'>去看看</a>";
 				} catch (e) {
 					printErrorLog("checkNewFeeds_onload",e);
 				}
