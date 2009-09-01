@@ -10,12 +10,12 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.4.20090831
+// @version        1.5.4.20090901
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.4.20090831";
+var version="1.5.4.20090901";
 
 //选项列表
 var options=[
@@ -72,6 +72,7 @@ var options=[
 	{op:"bxn_allowModifySpecialFriend",dv:true},
 	{op:"bxn_removeCommonPage",dv:false},
 	{op:"bxn_autoRefreshFeeds",dv:false},
+	{op:"bxn_removeGameRequest",dv:false},
 ];
 
 //选项值列表
@@ -273,6 +274,8 @@ function reform() {
 		ov["bxn_removeEventRequest"] && removeElement($X1("//li[@class='l-event']"));
 		ov["bxn_removeNotificationRequest"] && removeElement($X1("//li[@class='l-request']"));
 		ov["bxn_removePollRequest"] && removeElement($X1("//li[@class='l-poll']"));
+		ov["bxn_removeGameRequest"] && removeElement($X1("//li[@class='l-game']"));
+		removeEmptyRequestArea();
 		ov["bxn_removeMusicPlayer"] && removeMusicPlayer();
 		ov["bxn_removeTemplate"] && removeTemplate();
 		ov["bxn_classicColor"] && classicColor();
@@ -433,6 +436,18 @@ function removeAD() {
 		}
 	} catch(e) {
 		printErrorLog("removeAD",e);
+	}
+}
+
+//删除空的请求提示框
+function removeEmptyRequestArea() {
+	try {
+		var o=$X1("//div[@class='side-item requests']//div[@class='side-item-body clearfix']//ul[@class='icon-list']");
+		if(o && o.childElementCount==0) {
+			removeElement(o.parentNode.parentNode);
+		}
+	} catch (e) {
+		printErrorLog("removeStarNotification",e);
 	}
 }
 
@@ -1764,12 +1779,13 @@ function allowModifySpecialFriend() {
 //自动检查新鲜事更新
 function autoRefreshFeeds() {
 	try {
-		if($("feedHome")) {
+		if($("feedHome") && !$X1("//div[@class='mini-feed']")) {
 			var s=document.createElement("script");
 			s.innerHTML="if(window.feedEditor && window.feedEditor.getNewFeeds) setInterval(window.feedEditor.getNewFeeds,"+GM_getValue("bxn_checkFeedInterval",60)*1000+");";
 			document.body.appendChild(s);
+		} else {
+			setInterval(checkNewFeeds,GM_getValue("bxn_checkFeedInterval",60)*1000);
 		}
-		setInterval(checkNewFeeds,GM_getValue("bxn_checkFeedInterval",60)*1000);
 	} catch (e) {
 		printErrorLog("autoRefreshFeeds",e);
 	}
@@ -1850,7 +1866,7 @@ function autoRefreshFeeds() {
 						bar.style.bottom="10px";
 						bar.style.right="20px";
 						bar.style.padding="10px";
-						bar.style.backgroundColor="#78C3D8";
+						bar.style.backgroundColor="#9EBEDA";
 						bar.style.opacity="0.75";
 						bar.style.border="#000000 double 3px";
 						bar.color="white";
@@ -1931,6 +1947,7 @@ function createConfigMenu() {
 									<li><input type="checkbox" id="bxn_removeBaidu" />去除百度搜索框</li>\
 									<li><input type="checkbox" id="bxn_removePollRequest" />去除投票邀请提示</li>\
 									<li><input type="checkbox" id="bxn_removeXNT" />去除校内通栏</li>\
+									<li><input type="checkbox" id="bxn_removeGameRequest" />去除游戏邀请提示</li>\
 								</ul>\
 								<div class="bxn_h">\
 								<h4 style="float:left">隐藏新鲜事：</h4><input style="clear:right" type="checkbox" id="bxn_removeFeedAsRead" />设为已读\
