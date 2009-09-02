@@ -10,12 +10,12 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.4.20090901
+// @version        1.5.4.20090902
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.4.20090901";
+var version="1.5.4.20090902";
 
 //选项列表
 var options=[
@@ -1783,6 +1783,8 @@ function autoRefreshFeeds() {
 			var s=document.createElement("script");
 			s.innerHTML="if(window.feedEditor && window.feedEditor.getNewFeeds) setInterval(window.feedEditor.getNewFeeds,"+GM_getValue("bxn_checkFeedInterval",60)*1000+");";
 			document.body.appendChild(s);
+			s=$X1(".//li",$("feedHome"));
+			writeCookie("newestFeed",s.id);
 		} else {
 			setInterval(checkNewFeeds,GM_getValue("bxn_checkFeedInterval",60)*1000);
 		}
@@ -1866,12 +1868,13 @@ function autoRefreshFeeds() {
 						bar.style.bottom="10px";
 						bar.style.right="20px";
 						bar.style.padding="10px";
-						bar.style.backgroundColor="#9EBEDA";
+						bar.style.backgroundColor="#B5B5B5";
 						bar.style.opacity="0.75";
 						bar.style.border="#000000 double 3px";
 						bar.color="white";
 						bar.id="newFeedsNotify";
 						document.body.appendChild(bar);
+						setTimeout(function(){removeElement($('newFeedsNotify'))},20000);
 					}
 					bar.innerHTML="<font color='black'>您有"+newFeeds+"条未读新鲜事。</font><a target='_blank' href='http://home.renren.com' style='color:red' onclick='this.parentNode.parentNode.removeChild(this.parentNode);'>去看看</a>";
 				} catch (e) {
