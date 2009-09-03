@@ -10,12 +10,12 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.4.20090902
+// @version        1.5.4.20090903
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.4.20090902";
+var version="1.5.4.20090903";
 
 //选项列表
 var options=[
@@ -73,6 +73,7 @@ var options=[
 	{op:"bxn_removeCommonPage",dv:false},
 	{op:"bxn_autoRefreshFeeds",dv:false},
 	{op:"bxn_removeGameRequest",dv:false},
+	{op:"bxn_noFontFamily",dv:false},
 ];
 
 //选项值列表
@@ -278,6 +279,7 @@ function reform() {
 		removeEmptyRequestArea();
 		ov["bxn_removeMusicPlayer"] && removeMusicPlayer();
 		ov["bxn_removeTemplate"] && removeTemplate();
+		ov["bxn_noFontFamily"] && noFontFamily();
 		ov["bxn_classicColor"] && classicColor();
 		ov["bxn_removeBaidu"] && removeElementById("baiduframe");
 		$("feedHome") && cleanFeeds();
@@ -1887,6 +1889,11 @@ function autoRefreshFeeds() {
 	}
 }
 
+//去除页面字体限制
+function noFontFamily() {
+	GM_addStyle("* {font-family:none !important}");
+}
+
 //在导航栏的设置菜单中增加设置项
 function createDropDownMenu() {
 	try {
@@ -1999,6 +2006,7 @@ function createConfigMenu() {
 								<h4 class="bxn_h">其他：</h4>\
 								<ul class="bxn_ul1">\
 									<li><input type="checkbox" id="bxn_classicColor" />恢复深蓝色主题（未启用"去除页面模板"时，在有模板的页面不恢复）</li>\
+									<li><input type="checkbox" id="bxn_noFontFamily" />去除页面的字体限制</li>\
 									<li><input type="checkbox" id="bxn_fixNavWidth" />修正错误的标签页宽度</li>\
 									<li><input type="checkbox" id="bxn_showMatualFriendsImage" />显示共同好友的头像</li>\
 									<li><input type="checkbox" id="bxn_fixShareLink" />修正分享功能，支持https，使用真实外部链接</li>\
