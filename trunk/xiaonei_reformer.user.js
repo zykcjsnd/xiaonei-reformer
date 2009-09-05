@@ -10,12 +10,12 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.4.20090903
+// @version        1.5.4.20090905
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.4.20090903";
+var version="1.5.4.20090905";
 
 //选项列表
 var options=[
@@ -1789,6 +1789,7 @@ function autoRefreshFeeds() {
 			writeCookie("newestFeed",s.id);
 		} else {
 			setInterval(checkNewFeeds,GM_getValue("bxn_checkFeedInterval",60)*1000);
+			checkNewFeeds();
 		}
 	} catch (e) {
 		printErrorLog("autoRefreshFeeds",e);
@@ -1808,6 +1809,29 @@ function autoRefreshFeeds() {
 						removeElement($("newFeedsNotify"));
 						return;
 					}
+
+					//修正真正的新新鲜事数
+					var test=document.createElement("ul");
+					test.innerHTML=r[1].replace(/\n|\r/g,"");
+					var newestFeed=readCookie("newestFeed");
+					if(newestFeed!="") {
+						var n=newFeeds;
+						newFeeds=0;
+						for(var i=0;i<n;i++) {
+							if(newestFeed!=test.childNodes[i].id) {
+								newFeeds++;
+							} else {
+								break;
+							}
+						}
+					}
+					newestFeed=test.childNodes[0].id;
+					writeCookie("newestFeed",newestFeed);
+					if(newFeeds<=0) {
+						removeElement($("newFeedsNotify"));
+						return;
+					}
+
 					
 					var wpibar=$("wpiroot");
 					if(wpibar) {
@@ -1817,49 +1841,29 @@ function autoRefreshFeeds() {
 							//提醒内容
 							var tips=$X1(".//div[@class='m-chat-window notifications hide' or @class='m-chat-window notifications']//div[@class='chat-conv']",item);
 							if(tips) {
-								//修正真正的新新鲜事数
-								var test=document.createElement("ul");
-								test.innerHTML=r[1].replace(/\n|\r/g,"");
-								var newestFeed=readCookie("newestFeed");
-								if(newestFeed!="") {
-									var n=newFeeds;
-									newFeeds=0;
-									for(var i=0;i<n;i++) {
-										if(newestFeed!=test.childNodes[i].id) {
-											newFeeds++;
-										} else {
-											break;
-										}
-									}
+								//添加提醒
+								var node=tips.firstElementChild;
+								if(node.innerHTML.indexOf('无新提醒')!=-1) {
+									node.className="notifyitem hide";
 								}
-								newestFeed=test.childNodes[0].id;
-								writeCookie("newestFeed",newestFeed);
-
-								if(newFeeds>0) {
-									//添加提醒
-									var node=tips.firstElementChild;
-									if(node.innerHTML.indexOf('无新提醒')!=-1) {
-										node.className="notifyitem hide";
-									}
-									node=document.createElement("div");
-									tips.insertBefore(node,tips.firstChild);
-									node.className="notifyitem";
-									node.innerHTML="有"+newFeeds+"条新的新鲜事。";
-									var a=document.createElement("a");
-									a.href="http://home.renren.com";
-									a.innerHTML="去看看";
-									a.target="_blank" 
-									a.setAttribute("onclick","this.parentNode.parentNode.removeChild(this.parentNode);")
-									node.appendChild(a);
-									//增加提醒计数
-									var count=$X1(".//div[@class='m-chat-msgcount hide' or @class='m-chat-msgcount']",item);
-									if(count) {
-										count.innerHTML=(parseInt(count.innerHTML)+1).toString();
-										count.className="m-chat-msgcount";
-									}
+								node=document.createElement("div");
+								tips.insertBefore(node,tips.firstChild);
+								node.className="notifyitem";
+								node.innerHTML="有"+newFeeds+"条新的新鲜事。";
+								var a=document.createElement("a");
+								a.href="http://home.renren.com";
+								a.innerHTML="去看看";
+								a.target="_blank" 
+								a.setAttribute("onclick","this.parentNode.parentNode.removeChild(this.parentNode);")
+								node.appendChild(a);
+								//增加提醒计数
+								var count=$X1(".//div[@class='m-chat-msgcount hide' or @class='m-chat-msgcount']",item);
+								if(count) {
+									count.innerHTML=(parseInt(count.innerHTML)+1).toString();
+									count.className="m-chat-msgcount";
 								}
+								return;
 							}
-							return;
 						}
 					}
 					//无校内通栏，或结构有变
@@ -1873,6 +1877,7 @@ function autoRefreshFeeds() {
 						bar.style.backgroundColor="#B5B5B5";
 						bar.style.opacity="0.75";
 						bar.style.border="#000000 double 3px";
+						bar.style.MozBorderRadius="5px";
 						bar.color="white";
 						bar.id="newFeedsNotify";
 						document.body.appendChild(bar);
