@@ -10,12 +10,12 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.4.20090905
+// @version        1.5.4.20090906
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.4.20090905";
+var version="1.5.4.20090906";
 
 //选项列表
 var options=[
@@ -56,7 +56,6 @@ var options=[
 	{op:"bxn_hideFeedContent",dv:false},
 	{op:"bxn_hideStatusComment",dv:true},
 	{op:"bxn_moreStatusEmotions",dv:true},
-	{op:"bxn_addXntScrollBar",dv:true},
 	{op:"bxn_removeFeedAsRead",dv:false},
 	{op:"bxn_removeNewStar",dv:false},
 	{op:"bxn_widerMessage",dv:false},
@@ -298,7 +297,6 @@ function reform() {
 		ov["bxn_hideFeedContent"] && hideFeedContent();
 		ov["bxn_hideStatusComment"] && hideStatusComment();
 		ov["bxn_moreStatusEmotions"] && moreStatusEmotions();
-		ov["bxn_addXntScrollBar"] && addXntScrollBar();
 		ov["bxn_widerMessage"] && widerMessage();
 		ov["bxn_largeImageViewer"] && largeImageViewer();
 		ov["bxn_fixShareLink"] && fixShareLink();
@@ -671,7 +669,8 @@ function classicColor() {
 					".app_content_17940 .search_list p span { color: "+FCOLOR+" !important } "+
 					".tab-menu li a { color: "+FCOLOR+" !important } "+
 					".rank_tab li { color: "+FCOLOR+" } "+
-					"td.pop_content .dialog_body a, td.pop_content .dialog_body a:visited { color: "+FCOLOR+" } ");
+					"td.pop_content .dialog_body a, td.pop_content .dialog_body a:visited { color: "+FCOLOR+" } "+
+					".m-chat-window.notifications .chat-conv .notifyitem .notifybody a { color: "+FCOLOR+" !important }");
 
 		//改变链接的背景色
 		GM_addStyle("a.action:hover{ background-color: "+BCOLOR+" } "+
@@ -1061,15 +1060,6 @@ function moreStatusEmotions() {
 		} catch (e) {
 			printErrorLog("emotionNotifier",e);
 		}
-	}
-}
-
-//给网页版校内通聊天窗口增加横向滚动条
-function addXntScrollBar() {
-	try {
-		GM_addStyle(".chat-conv p.p-self { overflow:auto; table-layout:fixed; width:200px; }");
-	} catch (e) {
-		printErrorLog("addXntScrollBar",e);
 	}
 }
 
@@ -1789,7 +1779,6 @@ function autoRefreshFeeds() {
 			writeCookie("newestFeed",s.id);
 		} else {
 			setInterval(checkNewFeeds,GM_getValue("bxn_checkFeedInterval",60)*1000);
-			checkNewFeeds();
 		}
 	} catch (e) {
 		printErrorLog("autoRefreshFeeds",e);
@@ -1804,35 +1793,36 @@ function autoRefreshFeeds() {
 						removeElement($("newFeedsNotify"));
 						return;
 					}
-					var newFeeds=parseInt(r[0]);
-					if(newFeeds<=0) {
+					var newFeedsCount=parseInt(r[0]);
+					if(newFeedsCount<=0) {
 						removeElement($("newFeedsNotify"));
 						return;
 					}
 
 					//修正真正的新新鲜事数
-					var test=document.createElement("ul");
-					test.innerHTML=r[1].replace(/\n|\r/g,"");
-					var newestFeed=readCookie("newestFeed");
-					if(newestFeed!="") {
-						var n=newFeeds;
-						newFeeds=0;
-						for(var i=0;i<n;i++) {
-							if(newestFeed!=test.childNodes[i].id) {
-								newFeeds++;
+					var newFeeds=document.createElement("ul");
+					newFeeds.innerHTML=r[1];
+					var newestFeedId=readCookie("newestFeed");
+					var i;
+					if(newestFeedId!="") {
+						var n=newFeedsCount;
+						newFeedsCount=0;
+						for(i=0;i<n;i++) {
+							if(newestFeedId!=newFeeds.children[i].id) {
+								newFeedsCount++;
 							} else {
 								break;
 							}
 						}
 					}
-					newestFeed=test.childNodes[0].id;
-					writeCookie("newestFeed",newestFeed);
-					if(newFeeds<=0) {
+					newestFeedId=newFeeds.children[0].id;
+					writeCookie("newestFeed",newestFeedId);
+					if(newFeedsCount<=0) {
 						removeElement($("newFeedsNotify"));
 						return;
 					}
 
-					
+					var node=null,nodeBody=null;
 					var wpibar=$("wpiroot");
 					if(wpibar) {
 						//有校内通栏的情况
@@ -1842,24 +1832,24 @@ function autoRefreshFeeds() {
 							var tips=$X1(".//div[@class='m-chat-window notifications hide' or @class='m-chat-window notifications']//div[@class='chat-conv']",item);
 							if(tips) {
 								//添加提醒
-								var node=tips.firstElementChild;
+								node=tips.firstElementChild;
 								if(node.innerHTML.indexOf('无新提醒')!=-1) {
 									node.className="notifyitem hide";
 								}
-								node=document.createElement("div");
-								tips.insertBefore(node,tips.firstChild);
-								node.className="notifyitem";
-								node.innerHTML="有"+newFeeds+"条新的新鲜事。";
-								var a=document.createElement("a");
-								a.href="http://home.renren.com";
-								a.innerHTML="去看看";
-								a.target="_blank" 
-								a.setAttribute("onclick","this.parentNode.parentNode.removeChild(this.parentNode);")
-								node.appendChild(a);
+		
+								for(i=0;i<newFeedsCount;i++) {
+									node=document.createElement("div");
+									node.className="notifyitem";
+									nodeBody=document.createElement("div");
+									nodeBody.className="notifybody";
+									nodeBody.innerHTML="新鲜事："+newFeeds.children[i].children[1].innerHTML;
+									node.appendChild(nodeBody);
+									tips.insertBefore(node,tips.firstChild);
+								}
 								//增加提醒计数
 								var count=$X1(".//div[@class='m-chat-msgcount hide' or @class='m-chat-msgcount']",item);
 								if(count) {
-									count.innerHTML=(parseInt(count.innerHTML)+1).toString();
+									count.innerHTML=(parseInt(count.innerHTML)+newFeedsCount).toString();
 									count.className="m-chat-msgcount";
 								}
 								return;
@@ -1873,17 +1863,30 @@ function autoRefreshFeeds() {
 						bar.style.position="fixed";
 						bar.style.bottom="10px";
 						bar.style.right="20px";
+						bar.style.maxHeight="100px";
+						bar.style.maxWidth="150px";
+						bar.style.overflow="auto";
 						bar.style.padding="10px";
-						bar.style.backgroundColor="#B5B5B5";
+						bar.style.backgroundColor="#E5E5E5";
 						bar.style.opacity="0.75";
 						bar.style.border="#000000 double 3px";
 						bar.style.MozBorderRadius="5px";
-						bar.color="white";
 						bar.id="newFeedsNotify";
+						node=document.createElement("div");
+						node.innerHTML="关闭";
+						bar.appendChild(node);
 						document.body.appendChild(bar);
-						setTimeout(function(){removeElement($('newFeedsNotify'))},20000);
 					}
-					bar.innerHTML="<font color='black'>您有"+newFeeds+"条未读新鲜事。</font><a target='_blank' href='http://home.renren.com' style='color:red' onclick='this.parentNode.parentNode.removeChild(this.parentNode);'>去看看</a>";
+					node=document.createElement("ul");
+					for(i=0;i<newFeedsCount;i++) {
+						nodeBody=document.createElement("li");
+						nodeBody.innerHTML="新鲜事："+newFeeds.children[i].children[1].innerHTML.trim();
+						nodeBody.style.paddingTop="2px";
+						nodeBody.style.borderBottom="1px solid #3B5998";
+						node.appendChild(nodeBody);
+					}
+					node.lastElementChild.style.borderBottom="";
+					bar.appendChild(node);
 				} catch (e) {
 					printErrorLog("checkNewFeeds_onload",e);
 				}
@@ -1998,7 +2001,6 @@ function createConfigMenu() {
 									<li><input type="checkbox" id="bxn_hideFeedContent" />隐藏新鲜事具体内容</li>\
 									<li><input type="checkbox" id="bxn_hideStatusComment" />收起新鲜事中的状态回复</li>\
 									<li><input type="checkbox" id="bxn_moreStatusEmotions" />增加更多的表情</li>\
-									<li><input type="checkbox" id="bxn_addXntScrollBar" />为校内通长消息增加滚动条</li>\
 									<li><input type="checkbox" id="bxn_largeImageViewer" />当鼠标经过时显示照片大图</li>\
 									<li><input type="checkbox" id="bxn_addFloorCounter" />为评论增加楼层计数</li>\
 									<li><input type="checkbox" id="bxn_showMatualFriends" />显示共同好友</li>\
