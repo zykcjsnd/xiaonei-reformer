@@ -734,7 +734,7 @@ function classicColor() {
 					".inputbutton, .inputsubmit, .subbutton, .canbutton, .button-group button { background:"+FCOLOR+" } "+
 					"#savebutton { background-color:"+FCOLOR+" }"+
 					"ul.figureslist.requests button.accept, ul.figureslist.requests button.ignore { background-color:"+FCOLOR+" } "+
-					".m-chat-window.notifications .chat-conv .notifyitem.hover .close:hoverv { background-color:"+FCOLOR+" !important } ");
+					".m-chat-window.notifications .chat-conv .notifyitem.hover .close:hover { background-color:"+FCOLOR+" !important } ");
 
 		//上传照片栏Tab颜色
 		GM_addStyle("#self-nav .selected a { background-color: "+FCOLOR+" }");
