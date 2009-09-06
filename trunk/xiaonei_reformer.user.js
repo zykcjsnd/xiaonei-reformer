@@ -9,6 +9,8 @@
 // @include        http://*.renren.com/*
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
+// @exclude        http://wpi.renren.com/*
+// @exclude        http://*.renren.com/ajaxProxy.html*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
 // @version        1.5.4.20090906
 // @author         xz
@@ -731,7 +733,8 @@ function classicColor() {
 					"#tpl_preview .subbutton { background-color: #EBE6E0 } "+
 					".inputbutton, .inputsubmit, .subbutton, .canbutton, .button-group button { background:"+FCOLOR+" } "+
 					"#savebutton { background-color:"+FCOLOR+" }"+
-					"ul.figureslist.requests button.accept, ul.figureslist.requests button.ignore { background-color:"+FCOLOR+" }");
+					"ul.figureslist.requests button.accept, ul.figureslist.requests button.ignore { background-color:"+FCOLOR+" } "+
+					".m-chat-window.notifications .chat-conv .notifyitem.hover .close:hoverv { background-color:"+FCOLOR+" !important } ");
 
 		//上传照片栏Tab颜色
 		GM_addStyle("#self-nav .selected a { background-color: "+FCOLOR+" }");
@@ -1154,7 +1157,7 @@ function largeImageViewer() {
 								return;
 							}
 
-							if(pageURL=="") {
+							if(!pageURL) {
 								return;
 							}
 
@@ -1727,7 +1730,8 @@ function checkWhisper() {
 	try {
 		var e=$('whisper');
 		if(e && e.checked==false) {
-			click(e);
+			e.checked=true;
+//			click(e);
 		}
 	} catch (e) {
 		printErrorLog("checkWhisper",e);
@@ -1795,7 +1799,6 @@ function autoRefreshFeeds() {
 					}
 					var newFeedsCount=parseInt(r[0]);
 					if(newFeedsCount<=0) {
-						removeElement($("newFeedsNotify"));
 						return;
 					}
 
@@ -1818,7 +1821,6 @@ function autoRefreshFeeds() {
 					newestFeedId=newFeeds.children[0].id;
 					writeCookie("newestFeed",newestFeedId);
 					if(newFeedsCount<=0) {
-						removeElement($("newFeedsNotify"));
 						return;
 					}
 
@@ -1837,13 +1839,26 @@ function autoRefreshFeeds() {
 									node.className="notifyitem hide";
 								}
 		
-								for(i=0;i<newFeedsCount;i++) {
+								for(i=newFeedsCount-1;i>=0;i--) {
 									node=document.createElement("div");
 									node.className="notifyitem";
+									//图标
+									nodeBody=document.createElement("div");
+									nodeBody.className="notifyico";
+									nodeBody.innerHTML="<img src='"+newFeeds.children[i].children[0].children[0].children[0].src+"' style='height:16px;width:16px;' />"
+									node.appendChild(nodeBody);
+									//关闭按钮
+									nodeBody=document.createElement("div");
+									nodeBody.className="close";
+									nodeBody.addEventListener("click",closeFeed,false);
+									node.appendChild(nodeBody);
+									//内容
 									nodeBody=document.createElement("div");
 									nodeBody.className="notifybody";
 									nodeBody.innerHTML="新鲜事："+newFeeds.children[i].children[1].innerHTML;
 									node.appendChild(nodeBody);
+									node.setAttribute("onmouseover","this.className=\"notifyitem hover\";");
+									node.setAttribute("onmouseout","this.className=\"notifyitem\";");
 									tips.insertBefore(node,tips.firstChild);
 								}
 								//增加提醒计数
@@ -1857,42 +1872,63 @@ function autoRefreshFeeds() {
 						}
 					}
 					//无校内通栏，或结构有变
-					var bar=$("newFeedsNotify");
-					if(!bar) {
+					var feedList=$("newFeedsList");
+					if(!feedList) {
 						bar=document.createElement("div");
 						bar.style.position="fixed";
 						bar.style.bottom="10px";
 						bar.style.right="20px";
-						bar.style.maxHeight="100px";
-						bar.style.maxWidth="150px";
-						bar.style.overflow="auto";
-						bar.style.padding="10px";
+						bar.style.width="200px";
+						bar.style.padding="5px";
 						bar.style.backgroundColor="#E5E5E5";
-						bar.style.opacity="0.75";
+						bar.style.opacity="0.85";
 						bar.style.border="#000000 double 3px";
 						bar.style.MozBorderRadius="5px";
 						bar.id="newFeedsNotify";
 						node=document.createElement("div");
-						node.innerHTML="关闭";
+						node.innerHTML="<span style='color:red;'>您有新的新鲜事</span><a style='float:right;' onclick='document.body.removeChild(document.getElementById(\"newFeedsNotify\"));'>关闭</a>";
+						bar.appendChild(node);
+						node=document.createElement("div");
+						node.style.maxHeight="100px";
+						node.style.width="100%";
+						node.style.overflowY="auto";
+						feedList=document.createElement("ul");
+						feedList.id="newFeedsList";
+						node.appendChild(feedList);
 						bar.appendChild(node);
 						document.body.appendChild(bar);
 					}
-					node=document.createElement("ul");
-					for(i=0;i<newFeedsCount;i++) {
-						nodeBody=document.createElement("li");
-						nodeBody.innerHTML="新鲜事："+newFeeds.children[i].children[1].innerHTML.trim();
-						nodeBody.style.paddingTop="2px";
-						nodeBody.style.borderBottom="1px solid #3B5998";
-						node.appendChild(nodeBody);
+					if(feedList.lastElementChild) {
+						feedList.lastElementChild.style.borderBottom="1px solid";
 					}
-					node.lastElementChild.style.borderBottom="";
-					bar.appendChild(node);
+					for(i=0;i<newFeedsCount;i++) {
+						node=document.createElement("li");
+						node.innerHTML=newFeeds.children[i].children[1].innerHTML.trim();
+						node.style.paddingTop="5px";
+						node.style.paddingBottom="5px";
+						node.style.borderBottom="1px solid";
+						feedList.appendChild(node);
+					}
+					feedList.lastElementChild.style.borderBottom="";
 				} catch (e) {
 					printErrorLog("checkNewFeeds_onload",e);
 				}
 			}});
 		} catch (e) {
 			printErrorLog("checkNewFeeds",e);
+		}
+	}
+
+	function closeFeed(evt) {
+		try {
+			var o=evt.target;
+			var p=o.parentNode.parentNode;
+			p.removeChild(o.parentNode);
+			if(p.children.length==1) {
+				p.children[0].className="notifyitem";
+			}
+		} catch (e) {
+			printErrorLog("closeFeed",e);
 		}
 	}
 }
