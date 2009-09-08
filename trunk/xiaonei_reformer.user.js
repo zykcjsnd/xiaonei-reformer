@@ -12,12 +12,12 @@
 // @exclude        http://wpi.renren.com/*
 // @exclude        http://*.renren.com/ajaxProxy.html*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.4.20090906
+// @version        1.5.4.20090908
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.4.20090906";
+var version="1.5.4.20090908";
 
 //选项列表
 var options=[
@@ -984,6 +984,10 @@ function hideStatusComment() {
 //增加更多状态表情
 function moreStatusEmotions() {
 	try {
+		if(window.location.hostname=="reg.renren.com" || window.location.hostname=="login.renren.com") {
+			return;
+		}
+
 		var curlist=[];
 		var list=$("status_emotions");
 		if(list) {
@@ -1103,6 +1107,9 @@ function widerMessage() {
 //在鼠标移过时显示照片大图
 function largeImageViewer() {
 	try {
+		if(window.location.hostname=="reg.renren.com" || window.location.hostname=="login.renren.com") {
+			return;
+		}
 		$('largeImageViewer') && window.addEventListener('mouseover', function(e) {
 			try {
 				if (!e.shiftKey && !e.ctrlKey && !e.altKey) {
@@ -1373,6 +1380,9 @@ function largeImageViewer() {
 //建立大图显示DIV
 function createImageViewer() {
 	try {
+		if(window.location.hostname=="reg.renren.com" || window.location.hostname=="login.renren.com") {
+			return;
+		}
 		if(!document.body || document.body.id=="tinymce"  || document.body.parentNode.baseURI.indexOf("http://club.renren.com/zEditor/")!=-1) {
 			return;
 		}
@@ -1730,8 +1740,7 @@ function checkWhisper() {
 	try {
 		var e=$('whisper');
 		if(e && e.checked==false) {
-			e.checked=true;
-//			click(e);
+			click(e);
 		}
 	} catch (e) {
 		printErrorLog("checkWhisper",e);
@@ -1775,7 +1784,11 @@ function allowModifySpecialFriend() {
 //自动检查新鲜事更新
 function autoRefreshFeeds() {
 	try {
-		if($("feedHome") && !$X1("//div[@class='mini-feed']")) {
+		if(window.location.hostname=="reg.renren.com" || window.location.hostname=="login.renren.com") {
+			return;
+		}
+
+		if(window.location.hostname=="home.renren.com") {
 			var s=document.createElement("script");
 			s.innerHTML="if(window.feedEditor && window.feedEditor.getNewFeeds) setInterval(window.feedEditor.getNewFeeds,"+GM_getValue("bxn_checkFeedInterval",60)*1000+");";
 			document.body.appendChild(s);
