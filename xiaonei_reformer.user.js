@@ -98,7 +98,7 @@ var emlist=[
 	{e:"(38)",		t:"校内女人",	s:"/imgpro/icons/statusface/10.gif"},
 	{e:"8-|",		t:"书呆子",		s:"/imgpro/icons/statusface/13.gif"},
 	{e:"|-)",		t:"困",			s:"/imgpro/icons/statusface/14.gif"},
-	{e:":$",		t:"害羞",		s:"/imgpro/icons/statusface/15.gif"},
+	{e:"(害羞)",	t:"害羞",		s:"/imgpro/icons/statusface/15.gif"},
 	{e:":d",		t:"大笑",		s:"/imgpro/icons/statusface/16.gif"},
 	{e:"(奸笑)",	t:"奸笑",		s:"/imgpro/emotions/tie/2.gif"},
 	{e:"(吃饭)",	t:"吃饭",		s:"/imgpro/emotions/tie/3.gif"},
@@ -988,6 +988,9 @@ function moreStatusEmotions() {
 			return;
 		}
 
+		//修正样式
+		GM_addStyle("div.publisher ul.emotion, div.newsfeed-reply-emotions ul.emotion { letter-spacing:-6px }");
+
 		var curlist=[];
 		var list=$("status_emotions");
 		if(list) {
@@ -998,7 +1001,7 @@ function moreStatusEmotions() {
 			for each (var el in emlist) {
 				if(!curlist[el.e]) {
 					var e=document.createElement("li");
-					e.innerHTML='<a onfocus="this.blur();" href="#"><img src="http://xnimg.cn'+el.s+'" title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>';
+					e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img src="http://xnimg.cn'+el.s+'" title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>';
 					list.appendChild(e);
 				}
 			}
@@ -1015,7 +1018,7 @@ function moreStatusEmotions() {
 			for each (var el in emlist) {
 				if(!curlist[el.e]) {
 					var e=document.createElement("li");
-					e.innerHTML='<a onfocus="this.blur();" href="#"><img src="http://xnimg.cn'+el.s+'" title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>';
+					e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img src="http://xnimg.cn'+el.s+'" title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>';
 					list.appendChild(e);
 				}
 			}
@@ -1049,7 +1052,7 @@ function moreStatusEmotions() {
 						em+=i+"]";
 						if(!curlist[em]) {
 							e=document.createElement("li");
-							e.innerHTML='<a onfocus="this.blur();" href="#"><img src="http://xnimg.cn/imgpro/emotions/tie/'+i+'.gif" title="'+emlist1[i-1]+'" alt="'+emlist1[i-1]+'" emotion="'+em+'"/></a>';
+							e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img src="http://xnimg.cn/imgpro/emotions/tie/'+i+'.gif" title="'+emlist1[i-1]+'" alt="'+emlist1[i-1]+'" emotion="'+em+'"/></a>';
 							list.appendChild(e);
 						}
 					}
@@ -1058,7 +1061,7 @@ function moreStatusEmotions() {
 					for each (el in emlist) {
 						if(!curlist[el.e]) {
 							e=document.createElement("li");
-							e.innerHTML='<a onfocus="this.blur();" href="#"><img src="http://xnimg.cn'+el.s+'" title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>';
+							e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img src="http://xnimg.cn'+el.s+'" title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>';
 							list.appendChild(e);
 						}
 					}
