@@ -131,6 +131,8 @@ var emlist=[
 	{e:"(td)",		t:"狂派",		s:"/imgpro/icons/statusface/Transformers-Decepticon.gif"},
 	{e:"(qx)",		t:"七夕",		s:"/imgpro/icons/statusface/qixi.gif"},
 	{e:"(qx2)",		t:"七夕",		s:"/imgpro/icons/statusface/qixi2.gif"},
+	{e:"(bl)",		t:"教师节",		s:"/imgpro/icons/statusface/blackboard.gif"},
+	{e:"(gs)",		t:"园丁",		s:"/imgpro/icons/statusface/growing-sapling.gif"},
 	{e:"(^)",		t:"蛋糕",		s:"/imgpro/icons/3years.gif"},
 	{e:"(h)",		t:"小草",		s:"/imgpro/icons/philips.jpg"},
 	{e:"(r)",		t:"火箭",		s:"/imgpro/icons/ico_rocket.gif"},
