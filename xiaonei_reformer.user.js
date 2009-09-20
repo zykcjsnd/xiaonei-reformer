@@ -12,12 +12,12 @@
 // @exclude        http://wpi.renren.com/*
 // @exclude        http://*.renren.com/ajaxProxy.html*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.4.20090908
+// @version        1.5.4.20090920
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.4.20090908";
+var version="1.5.4.20090920";
 
 //选项列表
 var options=[
@@ -133,6 +133,9 @@ var emlist=[
 	{e:"(qx2)",		t:"七夕",		s:"/imgpro/icons/statusface/qixi2.gif"},
 	{e:"(bl)",		t:"教师节",		s:"/imgpro/icons/statusface/blackboard.gif"},
 	{e:"(gs)",		t:"园丁",		s:"/imgpro/icons/statusface/growing-sapling.gif"},
+	{e:"(gq1)",		t:"国庆六十周年",		s:"/imgpro/icons/statusface/national-day-60-firework.gif"},
+	{e:"(gq2)",		t:"国庆快乐",	s:"/imgpro/icons/statusface/national-day-balloon.gif"},
+	{e:"(gq3)",		t:"我爱中国",	s:"/imgpro/icons/statusface/national-day-i-love-zh.gif"},
 	{e:"(^)",		t:"蛋糕",		s:"/imgpro/icons/3years.gif"},
 	{e:"(h)",		t:"小草",		s:"/imgpro/icons/philips.jpg"},
 	{e:"(r)",		t:"火箭",		s:"/imgpro/icons/ico_rocket.gif"},
