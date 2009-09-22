@@ -12,12 +12,12 @@
 // @exclude        http://wpi.renren.com/*
 // @exclude        http://*.renren.com/ajaxProxy.html*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.4.20090920
+// @version        1.5.4.20090922
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.4.20090920";
+var version="1.5.4.20090922";
 
 //选项列表
 var options=[
@@ -515,6 +515,15 @@ function hasTemplates()	{
 				}
 			}
 		}
+
+		var links=$X("//link[@type='text/css']");
+		for(var i=0;i<links.snapshotLength;i++) {
+			var link=links.snapshotItem(i);
+			if(link.href.search(/\/themes\/.*\.css$/)!=-1) {
+				return true;
+			}
+		}
+
 	} catch (e) {
 		printErrorLog("hasTemplates",e);
 	}
@@ -641,6 +650,15 @@ function removeTemplate() {
 		removeZidouTemplate();
 		removePublicHomepageTemplate();
 		removeGroupTemplate();
+
+		// 处理特殊页面主题
+		var links=$X("//link[@type='text/css']");
+		for(var i=0;i<links.snapshotLength;i++) {
+			var link=links.snapshotItem(i);
+			if(link.href.search(/\/themes\/.*\.css$/)!=-1) {
+				removeElement(link);
+			}
+		}
 	}
 }
 
@@ -706,7 +724,8 @@ function classicColor() {
 					"#utility { background-color: "+FCOLOR+" } "+
 					"#dev-site-navigator { background: "+FCOLOR+" ; height: 52px } "+
 					"#header #tagline { background: "+FCOLOR+" } "+
-					"#clubheader #navigation { background: "+FCOLOR+" } ");
+					"#clubheader #navigation { background: "+FCOLOR+" } "+
+					"td.pop_content h2 { background-color: "+ BCOLOR +" }");
 
 
 		/* 改变下拉菜单的颜色 */
@@ -1487,7 +1506,7 @@ function getMatualFriends() {
 			return;
 		}
 		var fid=/[\?&]id=([0-9]+)/i.exec(window.location.href)[1];
-		var mid=readCookie("hostid");
+		var mid=readCookie("id");
 		if(fid==mid) {	//是自己页面
 			return;
 		}
