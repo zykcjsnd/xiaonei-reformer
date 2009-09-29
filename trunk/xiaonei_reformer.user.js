@@ -2043,9 +2043,9 @@ function createConfigMenu() {
 		var configMenuContent='\
 		<style type="text/css">\
 			.bxn_ul2,.bxn_ul5,.bxn_ul1{list-style:none;clear:both;}\
-			.bxn_ul1 li input{min-height:20px;}\
-	    	.bxn_ul5 li{width:20%;float:left;} .bxn_ul5 li input{min-height:20px;}\
-		    .bxn_ul2 li{width:50%;float:left;} .bxn_ul2 li input{min-height:20px;}\
+			.bxn_ul1 li{min-height:20px;} .bxn_ul1 li input{min-height:20px;}\
+	    	.bxn_ul5 li{width:20%;float:left;min-height:20px;} .bxn_ul5 li input{min-height:20px;}\
+		    .bxn_ul2 li{width:50%;float:left;min-height:20px;} .bxn_ul2 li input{min-height:20px;}\
 			.bxn_h{clear:both;padding-top:5px;padding-bottom:2px;min-height:20px;}\
 		</style>\
 		<table class="pop_dialog_table" style="width: 100%; height: 100%;">\
