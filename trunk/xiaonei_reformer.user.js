@@ -1,23 +1,23 @@
 // ==UserScript==
 // @name           校内人人网改造器 Xiaonei Reformer
 // @namespace      Xiaonei_reformer
-// @include        http://xiaonei.com/*
-// @include        http://*.xiaonei.com/*
-// @include        https://xiaonei.com/*
-// @include        https://*.xiaonei.com/*
 // @include        http://renren.com/*
 // @include        http://*.renren.com/*
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
+// @include        http://kaixin.com/*
+// @include        http://*.kaixin.com/*
+// @include        https://kaixin.com/*
+// @include        https://*.kaixin.com/*
 // @exclude        http://wpi.renren.com/*
-// @exclude        http://*.renren.com/ajaxProxy.html*
+// @exclude        http://*.renren.com/ajax*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.4.20090922
+// @version        1.5.5.20090929
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.4.20090922";
+var version="1.5.5.20090929";
 
 //选项列表
 var options=[
@@ -141,6 +141,7 @@ var emlist=[
 	{e:"(r)",		t:"火箭",		s:"/imgpro/icons/ico_rocket.gif"},
 	{e:"(w)",		t:"宇航员",		s:"/imgpro/icons/ico_spacewalker.gif"},
 	{e:"(earth)",	t:"地球",		s:"/imgpro/icons/statusface/earth.gif"},
+	{e:"nokia",		t:"Nokia",		s:"/imgpro/activity/nokia/placeholder.gif",	w:true},
 	{e:"(i)",		t:"电灯泡",		s:"/img/ems/bulb.gif"},
 	{e:"(zg)",		t:"烛光",		s:"/img/ems/candle.gif"},
 	{e:"(gsilk)",	t:"绿丝带",		s:"/img/ems/gsilk.gif"},
@@ -1020,13 +1021,20 @@ function moreStatusEmotions() {
 		if(list) {
 			var items=$X("//ul[@id='status_emotions']//li//a//img");
 			for(var i=0;i<items.snapshotLength;i++) {
-				curlist[items.snapshotItem(i).getAttribute("emotion")]="1";
+				curlist[items.snapshotItem(i).getAttribute("emotion")]=items.snapshotItem(i);
 			}
 			for each (var el in emlist) {
 				if(!curlist[el.e]) {
 					var e=document.createElement("li");
 					e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img src="http://xnimg.cn'+el.s+'" title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>';
+					if(el.w) {
+						e.style.width="50px";
+						e.children[0].style.width="46px";
+					}
 					list.appendChild(e);
+				} else if (el.w) {
+					curlist[el.e].parentNode.style.width="46px";
+					curlist[el.e].parentNode.parentNode.style.width="50px";
 				}
 			}
 		}
@@ -1037,13 +1045,20 @@ function moreStatusEmotions() {
 			list=list.firstElementChild;
 			var items=$X("//ul[@class='emotion']//li//a//img");
 			for(var i=0;i<items.snapshotLength;i++) {
-				curlist[items.snapshotItem(i).getAttribute("emotion")]="1";
+				curlist[items.snapshotItem(i).getAttribute("emotion")]=items.snapshotItem(i);
 			}
 			for each (var el in emlist) {
 				if(!curlist[el.e]) {
 					var e=document.createElement("li");
 					e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img src="http://xnimg.cn'+el.s+'" title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>';
+					if(el.w) {
+						e.style.width="50px";
+						e.children[0].style.width="46px";
+					}
 					list.appendChild(e);
+				} else if (el.w) {
+					curlist[el.e].parentNode.style.width="46px";
+					curlist[el.e].parentNode.parentNode.style.width="50px";
 				}
 			}
 		}
@@ -1064,7 +1079,7 @@ function moreStatusEmotions() {
 				var curlist=[];
 				var e,el,em,i;
 				for(i=0;i<items.snapshotLength;i++) {
-					curlist[items.snapshotItem(i).getAttribute("emotion")]="1";
+					curlist[items.snapshotItem(i).getAttribute("emotion")]=items.snapshotItem(i);
 				}
 				if(list.innerHTML.indexOf("/icons/statusface/")==-1) {
 					// 日志/照片回复列表
@@ -1086,7 +1101,14 @@ function moreStatusEmotions() {
 						if(!curlist[el.e]) {
 							e=document.createElement("li");
 							e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img src="http://xnimg.cn'+el.s+'" title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>';
+							if(el.w) {
+								e.style.width="50px";
+								e.children[0].style.width="46px";
+							}
 							list.appendChild(e);
+						} else if (el.w) {
+							curlist[el.e].parentNode.style.width="46px";
+							curlist[el.e].parentNode.parentNode.style.width="50px";
 						}
 					}
 				}
@@ -1150,7 +1172,7 @@ function largeImageViewer() {
 						} else {
 							imgSrc=t.src;
 						}
-					} else if (t.tagName == 'SPAN') {
+					} else if (t.tagName == 'SPAN' || t.tagName == 'DIV') {
 						if(t.style.backgroundImage.indexOf("url(")!=-1) {
 							imgSrc=t.style.backgroundImage.replace(/^url\("?|"?\);?$/g,"");
 						}
@@ -1172,7 +1194,7 @@ function largeImageViewer() {
 							if(!pageURL && t.parentNode.tagName=="A") {
 								pageURL=t.parentNode.href;
 							} else if (t.className=="avatar" && t.parentNode.className=="user-avatar") {
-								pageURL="http://photo.renren.com/getalbumprofile.do?owner="+readCookie("hostid");
+								pageURL="http://photo.renren.com/getalbumprofile.do?owner="+readCookie("id");
 							}
 
 							//一种非常古老的图片（http://fm071.img.renren.com/pic001/20070523/2025/H[0-9]+[A-Z]+.jpg），改imgId
@@ -1276,12 +1298,12 @@ function largeImageViewer() {
 	function showLargeImage(pageURL,imgId) {
 		try {
 			GM_xmlhttpRequest({	method: 'GET', url: pageURL, onload: function (responseDetails) {
+				if(responseDetails.status!=200) {
+					return;
+				}
 				try {
 					var src;
 					var i,j;
-					if(responseDetails.status!=200) {
-						return;
-					}
 					if(responseDetails.responseText.search("<body id=\"errorPage\">")!=-1) {
 						setImageCache(imgId,"error");
 						$('largeImage').alt="加载图片失败";
@@ -1312,12 +1334,12 @@ function largeImageViewer() {
 	function showLargeImageInAlbum(album,pageN,imgId,imgDate) {
 		try {
 			GM_xmlhttpRequest({	method: 'GET', url: album+"&curpage="+pageN, onload: function (responseDetails) {
+				if(responseDetails.status!=200) {
+					return;
+				}
 				try {
 					var i,j;
 					var res=responseDetails.responseText;
-					if(responseDetails.status!=200) {
-						return;
-					}
 					if(res.search("<body id=\"errorPage\">")!=-1) {
 						setImageCache(imgId,"error");
 						$('largeImage').alt="加载图片失败";
@@ -1479,6 +1501,9 @@ function showImagesInOnePage() {
 		        method: 'GET',
 	    	    url: baseURL+"?id="+id+"&owner="+owner+"&curpage="+i,
 				onload: function (res) {
+					if(res.status!=200) {
+						return;
+					}
 					try {
 						var photoList=res.responseText.substring(res.responseText.indexOf("<table class=\"photoList\">"));
 						photoList=photoList.substring(0,photoList.indexOf("</table>"));
@@ -1529,6 +1554,9 @@ function getMatualFriends() {
 	        method: 'GET',
 	        url: 'http://photo.renren.com/gettagfriends.do',
 			onload: function(res) {
+				if(res.status!=200) {
+					return;
+				}
 				try {
 					eval("friends="+ res.responseText);
 					var friends=friends.friends_ajax;
@@ -1552,6 +1580,9 @@ function getMatualFriends() {
 		        method: 'GET',
 		        url: "http://friend.renren.com/GetFriendList.do?curpage="+page+"&id="+fid,
 				onload: function(res) {
+					if(res.status!=200) {
+						return;
+					}
 					try {
 						var rs=[];
 						var mm;
@@ -1595,6 +1626,9 @@ function getMatualFriends() {
 				method: 'GET',
 				url: "http://photo.renren.com/getalbumprofile.do?owner="+uid,
 				onload: function(res) {
+					if(res.status!=200) {
+						return;
+					}
 					try {
 						var img=/url\("?(http:\/\/h[ea]*d.+\/photos\/.+\/tiny_?[^)^"]+)"?\)/i.exec(res.responseText);
 						if(img==null) {
@@ -1681,13 +1715,13 @@ function checkUpdate(manually) {
 		        method: 'GET',
 	    	    url: pageLink,
 				onload: function(res) {
+					if(res.status!=200) {
+						setUpdateButtonState(true);
+						return;
+					}
 					try {
 						var nv,cv,i;
 						var udiv;
-						if(res.status!=200) {
-							setUpdateButtonState(true);
-							return;
-						}
 						if(nv=/<b>Version:<\/b>.*\n *([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/.exec(res.responseText)) {
 							cv=version.split(".");
 							for(i=0;i<4;i++) {
@@ -1831,6 +1865,9 @@ function autoRefreshFeeds() {
 	function checkNewFeeds() {
 		try {
 			GM_xmlhttpRequest({	method: "GET", url: "http://renren.com/retrieveNews.do", onload: function (response) {
+				if(response.status!=200) {
+					return;
+				}
 				try {
 					var r=response.responseText.split("##@L#");
 					if(!/^\d+/.test(r[0])) {
@@ -1919,6 +1956,7 @@ function autoRefreshFeeds() {
 						bar.style.bottom="10px";
 						bar.style.right="20px";
 						bar.style.width="200px";
+						bar.style.zIndex="10000";
 						bar.style.padding="5px";
 						bar.style.backgroundColor="#E5E5E5";
 						bar.style.opacity="0.85";
