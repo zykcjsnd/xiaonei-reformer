@@ -12,12 +12,12 @@
 // @exclude        http://wpi.renren.com/*
 // @exclude        http://*.renren.com/ajax*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.5.20090929
+// @version        1.5.5.20091008
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.5.20090929";
+var version="1.5.5.20091008";
 
 //选项列表
 var options=[
@@ -68,13 +68,13 @@ var options=[
 	{op:"bxn_showImagesInOnePage",dv:false},
 	{op:"bxn_showMatualFriends",dv:false},
 	{op:"bxn_showMatualFriendsImage",dv:false},
-	{op:"bxn_fixShareLink",dv:true},
 	{op:"bxn_checkUpdate",dv:true},
 	{op:"bxn_allowModifySpecialFriend",dv:true},
 	{op:"bxn_removeCommonPage",dv:false},
-	{op:"bxn_autoRefreshFeeds",dv:false},
+	{op:"bxn_autoRefreshFeeds",dv:true},
 	{op:"bxn_removeGameRequest",dv:false},
 	{op:"bxn_noFontFamily",dv:false},
+	{op:"bxn_addVideoOrigPageLink",dv:false},
 ];
 
 //选项值列表
@@ -307,7 +307,7 @@ function reform() {
 		ov["bxn_moreStatusEmotions"] && moreStatusEmotions();
 		ov["bxn_widerMessage"] && widerMessage();
 		ov["bxn_largeImageViewer"] && largeImageViewer();
-		ov["bxn_fixShareLink"] && fixShareLink();
+		ov["bxn_addVideoOrigPageLink"] && addVideoOrigPageLink();
 		ov["bxn_uncheckFeedComment"] && uncheckFeedComment();
 		ov["bxn_checkWhisper"] && checkWhisper();
 		ov["bxn_showImagesInOnePage"] && showImagesInOnePage();
@@ -1618,7 +1618,6 @@ function getMatualFriends() {
 		}
 	}
 
-
 	//加入头像图标
 	function loadFriendTinyImage(uid,uname,e) {
 		try {
@@ -1648,46 +1647,6 @@ function getMatualFriends() {
 		} catch (e) {
 			printErrorLog("loadFriendTinyImage",e);
 		}
-	}
-}
-
-
-//修正分享功能，支持https，使用真实外部链接
-function fixShareLink() {
-	try {
-		var items,item;
-		var i,s;
-
-		//换成真实链接
-		items=$X("//a");
-		for(i=0;i<items.snapshotLength;i++) {
-			item=items.snapshotItem(i);
-			if(item.href && item.href.indexOf("http://share.renren.com/share_redirect.do?url=")!=-1) {
-				item.href=decodeURIComponent(item.href.substring(46));
-				item.href=item.href.replace(/&ref=newsfeed$/,"");
-			}
-		}
-
-		//支持https
-		if(window.location.host=="share.renren.com") {
-			item=$X1("//input[@name='link']");
-			if(item) {
-				if(item.value.indexOf("http://https://")==0) {
-					s=item.value.substring(7);
-					item.value=s;
-					item=$X1("//p[@class='link-summary']");
-					if(item) {
-						if(s.length>40) {
-							s=s.substring(0,40)+"...";
-						}
-						item.innerHTML=s;
-					}
-
-				}
-			}
-		}
-	} catch (e) {
-		printErrorLog("fixShareLink",e);
 	}
 }
 
@@ -2016,6 +1975,39 @@ function noFontFamily() {
 	GM_addStyle("* {font-family:none !important}");
 }
 
+//在视频分享增加原始页面链接
+function addVideoOrigPageLink() {
+	try {
+		if(!$("sharevideo")) {
+			return;
+		}
+		var page="",test="";
+		var src=$X1("//div[@id='sharevideo']//div//embed").src;
+		//优酷
+		test=/http:\/\/player\.youku\.com\/player\.php\/sid\/(.*?)=/.exec(src);
+		if(test && test.length==2) {
+			page="http://v.youku.com/v_show/id_"+test[1]+".html";
+		}
+		//土豆
+		if(page=="") {
+http://www.tudou.com/v/
+			test=/http:\/\/www\.tudou\.com\/v\/(.*)/.exec(src);
+			if(test && test.length==2) {
+				page="http://www.tudou.com/programs/view/"+test[1];
+			}
+		}
+
+		if(page!="") {
+			var node=document.createElement("span");
+			node.innerHTML="<a href='"+page+"'>原始页面</a>";
+			var p=$("sharevideo");
+			p.insertBefore(node,p.children[0]);
+		}
+	} catch (e) {
+		printErrorLog("addVideoOrigPageLink",e);
+	}
+}
+
 //在导航栏的设置菜单中增加设置项
 function createDropDownMenu() {
 	try {
@@ -2122,6 +2114,7 @@ function createConfigMenu() {
 									<li><input type="checkbox" id="bxn_allowModifySpecialFriend" />去除特别好友修改限制</li>\
 									<li><input type="checkbox" id="bxn_uncheckFeedComment" />默认不将评论发布到新鲜事</li>\
 									<li><input type="checkbox" id="bxn_checkWhisper" />默认使用悄悄话</li>\
+									<li><input type="checkbox" id="bxn_addVideoOrigPageLink" />增加视频分享原始页面链接</li>\
 									<li><input type="checkbox" id="bxn_autoRefreshFeeds" />自动检查新鲜事更新</li>\
 								</ul>\
 								<h4 class="bxn_h">其他：</h4>\
@@ -2130,7 +2123,6 @@ function createConfigMenu() {
 									<li><input type="checkbox" id="bxn_noFontFamily" />去除页面的字体限制</li>\
 									<li><input type="checkbox" id="bxn_fixNavWidth" />修正错误的标签页宽度</li>\
 									<li><input type="checkbox" id="bxn_showMatualFriendsImage" />显示共同好友的头像</li>\
-									<li><input type="checkbox" id="bxn_fixShareLink" />修正分享功能，支持https，使用真实外部链接</li>\
 									<li>头像列表中头像最大数量，0为不限（不影响共同好友列表） <input id="bxn_headAmount" style="width:30px ;" /></li>\
 									<li>新鲜事检查间隔时间：<input id="bxn_checkFeedInterval" style="width:30px ;" />秒</li>\
 								</ul>\
