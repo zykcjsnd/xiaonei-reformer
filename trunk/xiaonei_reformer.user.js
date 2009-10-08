@@ -53,7 +53,6 @@ var options=[
 	{op:"bxn_classicColor",dv:true},
 	{op:"bxn_addNavExtraItem",dv:false},
 	{op:"bxn_addFloorCounter",dv:true},
-	{op:"bxn_fixNavWidth",dv:true},
 	{op:"bxn_removeFriendGuide",dv:false},
 	{op:"bxn_hideFeedContent",dv:false},
 	{op:"bxn_hideStatusComment",dv:true},
@@ -301,7 +300,6 @@ function reform() {
 		ov["bxn_widerNavBar"] && widerNavBar();
 		ov["bxn_addNavExtraItem"] && addNavMenu();
 		ov["bxn_addFloorCounter"] && addFloorCounter();
-		ov["bxn_fixNavWidth"] && fixNavWidth();
 		ov["bxn_hideFeedContent"] && hideFeedContent();
 		ov["bxn_hideStatusComment"] && hideStatusComment();
 		ov["bxn_moreStatusEmotions"] && moreStatusEmotions();
@@ -968,15 +966,6 @@ function addFloorCounter() {
 		} catch(e) {
 			printErrorLog("addFloorCounter",e);
 		}
-	}
-}
-
-//修正日志页导航栏宽度
-function fixNavWidth() {
-	try {
-		GM_addStyle("head ~ body #sub-nav ul li a { width: auto }");
-	} catch (e) {
-		printErrorLog("fixNavWidth",e);
 	}
 }
 
@@ -2121,7 +2110,6 @@ function createConfigMenu() {
 								<ul class="bxn_ul1">\
 									<li><input type="checkbox" id="bxn_classicColor" />恢复深蓝色主题（未启用"去除页面模板"时，在有模板的页面不恢复）</li>\
 									<li><input type="checkbox" id="bxn_noFontFamily" />去除页面的字体限制</li>\
-									<li><input type="checkbox" id="bxn_fixNavWidth" />修正错误的标签页宽度</li>\
 									<li><input type="checkbox" id="bxn_showMatualFriendsImage" />显示共同好友的头像</li>\
 									<li>头像列表中头像最大数量，0为不限（不影响共同好友列表） <input id="bxn_headAmount" style="width:30px ;" /></li>\
 									<li>新鲜事检查间隔时间：<input id="bxn_checkFeedInterval" style="width:30px ;" />秒</li>\
