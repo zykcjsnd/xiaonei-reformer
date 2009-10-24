@@ -12,12 +12,12 @@
 // @exclude        http://wpi.renren.com/*
 // @exclude        http://*.renren.com/ajax*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.5.20091022
+// @version        1.5.5.20091024
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.5.20091022";
+var version="1.5.5.20091024";
 
 //选项列表
 var options=[
@@ -463,6 +463,7 @@ function removeStarNotification() {
 		removeElementById("tobestar");
 		removeElementById("realheadbulletin");
 		removeElementById("noStarNotice");
+		removeElementById("nostar");
 		removeElementById("home_nostar");
 	} catch (e) {
 		printErrorLog("removeStarNotification",e);
