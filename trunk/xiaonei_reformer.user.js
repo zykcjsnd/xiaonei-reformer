@@ -12,12 +12,12 @@
 // @exclude        http://wpi.renren.com/*
 // @exclude        http://*.renren.com/ajax*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.5.20091024
+// @version        1.5.5.20091031
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.5.20091024";
+var version="1.5.5.20091031";
 
 //选项列表
 var options=[
@@ -134,6 +134,9 @@ var emlist=[
 	{e:"(gs)",		t:"园丁",		s:"/imgpro/icons/statusface/growing-sapling.gif"},
 	{e:"(gq1)",		t:"国庆六十周年",		s:"/imgpro/icons/statusface/national-day-60-firework.gif"},
 	{e:"(gq2)",		t:"国庆快乐",	s:"/imgpro/icons/statusface/national-day-balloon.gif"},
+	{e:"(gq3)",		t:"我爱中国",	s:"/imgpro/icons/statusface/national-day-i-love-zh.gif"},
+	{e:"(hp)",		t:"杰克灯",		s:"/imgpro/icons/statusface/halloween-pumpkin.gif"},
+	{e:"(hg)",		t:"小鬼",		s:"/imgpro/icons/statusface/halloween-ghost.gif"},
 	{e:"(gq3)",		t:"我爱中国",	s:"/imgpro/icons/statusface/national-day-i-love-zh.gif"},
 	{e:"(^)",		t:"蛋糕",		s:"/imgpro/icons/3years.gif"},
 	{e:"(h)",		t:"小草",		s:"/imgpro/icons/philips.jpg"},
@@ -414,6 +417,7 @@ function removeAD() {
 		removeElementById("sd_ad");
 		removeElementById("showAD");
 		removeElementById("huge-ad");
+		removeElementById("renrenAdPanel");
 		removeDivByClass("feed feed-flyer text-story expand bold-feed");
 		removeDivByClass("feed feed-flyer text-story expand media-story share-video bold-feed");
 		removeDivByClass("side-item template");
