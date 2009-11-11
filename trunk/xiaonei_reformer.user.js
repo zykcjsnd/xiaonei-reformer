@@ -12,12 +12,12 @@
 // @exclude        http://wpi.renren.com/*
 // @exclude        http://*.renren.com/ajax*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.5.20091107
+// @version        1.5.5.20091111
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.5.20091107";
+var version="1.5.5.20091111";
 
 //选项列表
 var options=[
@@ -138,12 +138,15 @@ var emlist=[
 	{e:"(hp)",		t:"杰克灯",		s:"/imgpro/icons/statusface/halloween-pumpkin.gif"},
 	{e:"(hg)",		t:"小鬼",		s:"/imgpro/icons/statusface/halloween-ghost.gif"},
 	{e:"(qxs)",		t:"悼念钱学森",	s:"/imgpro/icons/statusface/qianxuesen.gif"},
+	{e:"(yt)",		t:"光棍油条",	s:"/imgpro/icons/statusface/youtiao.gif"},
+	{e:"(bz)",		t:"光棍包子",	s:"/imgpro/icons/statusface/baozi.gif"},
+	{e:"(wr)",		t:"枯萎玫瑰",	s:"/imgpro/icons/statusface/wilt-rose.gif"},
+	{e:"(bh)",		t:"破碎的心",	s:"/imgpro/icons/statusface/broken-heart.gif"},
 	{e:"(^)",		t:"蛋糕",		s:"/imgpro/icons/3years.gif"},
 	{e:"(h)",		t:"小草",		s:"/imgpro/icons/philips.jpg"},
 	{e:"(r)",		t:"火箭",		s:"/imgpro/icons/ico_rocket.gif"},
 	{e:"(w)",		t:"宇航员",		s:"/imgpro/icons/ico_spacewalker.gif"},
 	{e:"(earth)",	t:"地球",		s:"/imgpro/icons/statusface/earth.gif"},
-	{e:"nokia",		t:"Nokia",		s:"/imgpro/activity/nokia/placeholder.gif",	w:true},
 	{e:"(i)",		t:"电灯泡",		s:"/img/ems/bulb.gif"},
 	{e:"(zg)",		t:"烛光",		s:"/img/ems/candle.gif"},
 	{e:"(gsilk)",	t:"绿丝带",		s:"/img/ems/gsilk.gif"},
