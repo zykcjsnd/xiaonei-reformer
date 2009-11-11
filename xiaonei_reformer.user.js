@@ -74,6 +74,7 @@ var options=[
 	{op:"bxn_removeGameRequest",dv:false},
 	{op:"bxn_noFontFamily",dv:false},
 	{op:"bxn_addVideoOrigPageLink",dv:false},
+	{op:"bxn_removePaintNotification",dv:true},
 ];
 
 //选项值列表
@@ -303,6 +304,7 @@ function reform() {
 		ov["bxn_removeNotice"] && removeDivByClass("notice-holder");
 		lessHead(GM_getValue("bxn_headAmount",12));
 		ov["bxn_removeXNT"] && removeElementById("wpiroot") && removeElementById("imengine");
+		ov["bxn_removePaintNotification"] && removeDivByClass("enter-paints");
 		ov["bxn_widerNavBar"] && widerNavBar();
 		ov["bxn_addNavExtraItem"] && addNavMenu();
 		ov["bxn_addFloorCounter"] && addFloorCounter();
@@ -417,6 +419,7 @@ function removeAD() {
 		removeDivByClass("banner clearfix");
 		removeDivByClass("adimgr");
 		removeDivByClass("blank-holder");
+		removeDivByClass("blank-bar");
 		removeElementById("sd_ad");
 		removeElementById("showAD");
 		removeElementById("huge-ad");
@@ -2071,6 +2074,7 @@ function createConfigMenu() {
 									<li><input type="checkbox" id="bxn_removePollRequest" />去除投票邀请提示</li>\
 									<li><input type="checkbox" id="bxn_removeXNT" />去除校内通栏</li>\
 									<li><input type="checkbox" id="bxn_removeGameRequest" />去除游戏邀请提示</li>\
+									<li><input type="checkbox" id="bxn_removePaintNotification" />去除右上角装扮主页提示</li>\
 								</ul>\
 								<div class="bxn_h">\
 								<h4 style="float:left">隐藏新鲜事：</h4><input style="clear:right" type="checkbox" id="bxn_removeFeedAsRead" />设为已读\
