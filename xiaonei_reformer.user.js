@@ -12,12 +12,12 @@
 // @exclude        http://wpi.renren.com/*
 // @exclude        http://*.renren.com/ajax*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.5.20091111
+// @version        1.5.90.20091122
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.5.20091111";
+var version="1.5.90.20091122";
 
 //选项列表
 var options=[
@@ -86,8 +86,8 @@ var imgCache=[];
 //状态表情列表
 var emlist=[
 	{e:":)",		t:"开心",		s:"/imgpro/icons/statusface/1.gif"},
-//	{e:"@_@",		t:"色咪咪",		s:"/imgpro/icons/statusface/2.gif"},
-	{e:"(k)",		t:"嘴唇",		s:"/imgpro/icons/statusface/2.gif"},
+	{e:"@_@",		t:"嘴唇",		s:"/imgpro/icons/statusface/2.gif"},
+//	{e:"(k)",		t:"嘴唇",		s:"/imgpro/icons/statusface/2.gif"},
 	{e:":'(",		t:"哭",			s:"/imgpro/icons/statusface/3.gif"},
 	{e:":-O",		t:"惊讶",		s:"/imgpro/icons/statusface/4.gif"},
 	{e:":@",		t:"生气",		s:"/imgpro/icons/statusface/5.gif"},
@@ -162,12 +162,14 @@ var emlist=[
 emlist1=["不","谄笑","吃饭","调皮","尴尬","汗","惊恐","囧-窘迫","可爱","酷","流口水","猫猫笑","色","生病","叹气","淘气","舔","偷笑","吐","吻","晕","猪猪头","住嘴","大笑","害羞","惊呆","口罩","哭","困","难过","生气","书呆子","微笑"];
 
 //一些常用函数&简写
+//XPath查询
 function $X(xpath,root) {
 	if(root && /^\./.test(xpath)) {
 		xpath="."+xpath;
 	}
 	return document.evaluate(xpath,(root?root:document),null,XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,null);
 }
+//XPath查询，返回单一对象
 function $X1(xpath,root) {
 	if(root && /^\./.test(xpath)) {
 		xpath="."+xpath;
@@ -245,7 +247,78 @@ function writeCookie(name,value) {
 //输出错误信息
 function printErrorLog(func,err) {
 	if(func && err && err.name && err.message) {
-		GM_log("在 "+func+"() 中发生了一个错误。\n错误名称："+err.name+"\n错误信息："+err.message);
+		console.log("在 "+func+"() 中发生了一个错误。\n错误名称："+err.name+"\n错误信息："+err.message);
+	}
+}
+//设置选项
+function setOption(name,value) {
+	try {
+		GM_setValue(name,value);
+		return;
+	} catch(e) {
+	}
+	try {
+		localStorage.setItem(name,value);
+	} catch(e) {
+		printErrorLog("setOption",e);
+	}
+}
+// 读取选项
+function getOption(name,defaultValue) {
+	try {
+		return GM_getValue(name,defaultValue);
+	} catch(e) {
+	}
+	try {
+		var v=localStorage.getItem(name);
+		if(!v) {
+			return defaultValue;
+		}
+		if(/^\d+$/.test(v)) {
+			return parseInt(v);
+		} else if(v=="true") {
+			return true;
+		} else if(v=="false") {
+			return false;
+		} else {
+			return v;
+		}
+	} catch(e) {
+		printErrorLog("getOption",e);
+		return defaultValue;
+	}
+}
+//增加新的样式
+function addStyles(styles) {
+	try {
+		var css=document.createElement("style");
+		css.type="text/css";
+		css.innerHTML=styles;
+		var node=document.getElementsByTagName("HEAD");
+		if(!node || node.length<1) {
+			document.body.insertBefore(css,document.body.childNodes[0]);
+		} else {
+			node[0].appendChild(css);
+		}
+	} catch(e) {
+		printErrorLog("addStyles",e);
+	}
+}
+// 发送HTTP请求
+function sendXmlHttpRequest(req) {
+	try {
+		GM_xmlhttpRequest(req);
+		return;
+	} catch(e) {
+	}
+	try {
+		var httpReq= new XMLHttpRequest();
+		httpReq.url=req.url;
+	    httpReq.open(req.method, req.url, true);
+    	httpReq.onreadystatechange = function(evt){if(httpReq.readyState==4){req.onload(httpReq);}};
+    	httpReq.send(null);
+	} catch(e) {
+		printErrorLog("sendXmlhttpRequest",e);
 	}
 }
 //常用函数完
@@ -258,11 +331,15 @@ function init() {
 	try {
 		//填充ov变量
 		for each (var e in options) {
-			ov[e.op]=GM_getValue(e.op,e.dv);
+			ov[e.op]=getOption(e.op,e.dv);
 		}
 		addFeedEventMonitor();
 		createConfigMenu();
-		GM_registerMenuCommand("校内人人网改造选项",showConfigMenu);
+		try {
+			GM_registerMenuCommand("校内人人网改造选项",showConfigMenu);
+		} catch(e) {
+			printErrorLog("GM_registerMenuCommand",e);
+		}
 		createImageViewer();
 		createDropDownMenu();
 
@@ -302,7 +379,7 @@ function reform() {
 		ov["bxn_removeNewStar"] && removeDivByClass("star-new");
 		ov["bxn_removeFriendGuide"] && removeDivByClass("side-item contact-fri") && removeDivByClass("guide-find-friend");
 		ov["bxn_removeNotice"] && removeDivByClass("notice-holder");
-		lessHead(GM_getValue("bxn_headAmount",12));
+		lessHead(getOption("bxn_headAmount",12));
 		ov["bxn_removeXNT"] && removeElementById("wpiroot") && removeElementById("imengine");
 		ov["bxn_removePaintNotification"] && removeDivByClass("enter-paints");
 		ov["bxn_widerNavBar"] && widerNavBar();
@@ -464,7 +541,7 @@ function removeEmptyRequestArea() {
 			removeElement(o.parentNode.parentNode);
 		}
 	} catch (e) {
-		printErrorLog("removeStarNotification",e);
+		printErrorLog("removeEmptyRequestArea",e);
 	}
 }
 
@@ -685,7 +762,7 @@ function classicColor() {
 		var BCOLOR="#5C75AA";	//原来的菜单背景色
 
 		//改变链接的颜色
-		GM_addStyle("a:link,a:visited { color: "+XCOLOR+" } "+
+		addStyles("a:link,a:visited { color: "+XCOLOR+" } "+
 					"a:hover { color: "+XCOLOR+" } "+
 					"a { color: "+XCOLOR+" } "+
 					".tpl_cancel { color: "+FCOLOR+" !important } "+
@@ -710,7 +787,7 @@ function classicColor() {
 					".m-chat-window.notifications .chat-conv .notifyitem .notifybody a { color: "+FCOLOR+" !important }");
 
 		//改变链接的背景色
-		GM_addStyle("a.action:hover{ background-color: "+BCOLOR+" } "+
+		addStyles("a.action:hover{ background-color: "+BCOLOR+" } "+
 					"a.share:hover{ background-color: "+FCOLOR+" } "+
 					"a.mini-share:hover{ background-color: "+FCOLOR+" ; border-color: "+FCOLOR+" } "+
 					"ul.actions a:hover { background: "+BCOLOR+" } "+
@@ -726,10 +803,10 @@ function classicColor() {
 		if(e) {
 			var bc=document.defaultView.getComputedStyle(e,null).backgroundColor;
 			if(bc=="rgb(0, 94, 172)" || bc=="transparent") {
-				GM_addStyle(".navigation { background: "+FCOLOR+"}");
+				addStyles(".navigation { background: "+FCOLOR+"}");
 			}
 		}
-		GM_addStyle("#clubheader #navigation { background-color: "+BCOLOR+" } "+
+		addStyles("#clubheader #navigation { background-color: "+BCOLOR+" } "+
 					".navigation .menu-title a:hover { background-color: "+BCOLOR+" ; color: #FFFFFF ; background: "+BCOLOR+" } "+
 					"#zidou_homepage #navigation a:hover { background-color: "+BCOLOR+" } "+
 					"#zidou_header #navigation { background-color: "+FCOLOR+" } "+
@@ -741,7 +818,7 @@ function classicColor() {
 
 
 		/* 改变下拉菜单的颜色 */
-		GM_addStyle(".menu-dropdown-border { border:1px solid "+BCOLOR+" } "+
+		addStyles(".menu-dropdown-border { border:1px solid "+BCOLOR+" } "+
 					".menu-dropdown .menu-item li a:hover { background-color: "+BCOLOR+" } "+
 					".menu-dropdown .search-menu li a:hover { background-color: "+BCOLOR+" !important } "+
 					".menu-dropdown .optionmenu a:hover { background-color: "+BCOLOR+" !important } "+
@@ -751,20 +828,20 @@ function classicColor() {
 					"#navBar .beta-bar a, #appMenu .app-actions a, .menu-dropdown .menu-item li a { color: "+BCOLOR+" } ");
 
 		//改变主页应用栏背景色
-		GM_addStyle(".home #sidebar { background-color:#EBF3F7 }");
+		addStyles(".home #sidebar { background-color:#EBF3F7 }");
 
 		//改变搜索栏边框颜色
-		GM_addStyle("#navSearch #search-submit a, #navSearch #search-input #navSearchInput { border-color:#315091 }");
+		addStyles("#navSearch #search-submit a, #navSearch #search-input #navSearchInput { border-color:#315091 }");
 
 		//改变子导航栏的边框颜色
-		GM_addStyle("#sub-nav .selected a { border-color: #5973A9 }");
-		GM_addStyle(".toggle_tabs li a.selected { border-color: "+FCOLOR+" }");
+		addStyles("#sub-nav .selected a { border-color: #5973A9 }");
+		addStyles(".toggle_tabs li a.selected { border-color: "+FCOLOR+" }");
 
 		//改变弹出式窗口边框颜色
-		GM_addStyle("td.pop_content h2 { border-color: "+FCOLOR+" }");
+		addStyles("td.pop_content h2 { border-color: "+FCOLOR+" }");
 
 		//改变按钮的背景色
-		GM_addStyle(".input-button,.input-submit { background-color: "+FCOLOR+" } "+
+		addStyles(".input-button,.input-submit { background-color: "+FCOLOR+" } "+
 					"td.pop_content .dialog_buttons input { background-color: "+FCOLOR+" !important } "+
 					"#tpl_preview .subbutton { background-color: #EBE6E0 } "+
 					".inputbutton, .inputsubmit, .subbutton, .canbutton, .button-group button { background:"+FCOLOR+" } "+
@@ -773,33 +850,33 @@ function classicColor() {
 					".m-chat-window.notifications .chat-conv .notifyitem.hover .close:hover { background-color:"+FCOLOR+" !important } ");
 
 		//上传照片栏Tab颜色
-		GM_addStyle("#self-nav .selected a { background-color: "+FCOLOR+" }");
-		GM_addStyle("#self-nav .selected a:hover { background-color: "+BCOLOR+" }");
-		GM_addStyle("#self-nav li a { color: "+FCOLOR+" }");
+		addStyles("#self-nav .selected a { background-color: "+FCOLOR+" }");
+		addStyles("#self-nav .selected a:hover { background-color: "+BCOLOR+" }");
+		addStyles("#self-nav li a { color: "+FCOLOR+" }");
 
 		//个人资料Tab的字体颜色
-		GM_addStyle(".profile .profile-tabs-circle a{ color:"+FCOLOR+" }");
+		addStyles(".profile .profile-tabs-circle a{ color:"+FCOLOR+" }");
 
 		//群组帖子分类Tab
-		GM_addStyle("#tabs .activetab a:hover,#tabs .activetab a { background-color: "+FCOLOR+" }");
-		GM_addStyle("#tabs .inactivetab a:hover { color:"+FCOLOR+" }");
-		GM_addStyle("#navigation a:hover { background-color:"+FCOLOR+" }");
+		addStyles("#tabs .activetab a:hover,#tabs .activetab a { background-color: "+FCOLOR+" }");
+		addStyles("#tabs .inactivetab a:hover { color:"+FCOLOR+" }");
+		addStyles("#navigation a:hover { background-color:"+FCOLOR+" }");
 
 		//送礼页面Tab
-		GM_addStyle(".sub_tab li a { color:"+FCOLOR+" }");
-		GM_addStyle(".sub_nav .selected a { background-color:"+BCOLOR+" }");
+		addStyles(".sub_tab li a { color:"+FCOLOR+" }");
+		addStyles(".sub_nav .selected a { background-color:"+BCOLOR+" }");
 
 		//投票页面Tab
-		GM_addStyle(".toupiao_tab li.current { background-color:"+BCOLOR+" }");
+		addStyles(".toupiao_tab li.current { background-color:"+BCOLOR+" }");
 
 		//群组菜单颜色
-		GM_addStyle("#mymenu a:hover,#mymore a.ppm:hover { background:"+FCOLOR+" }");
+		addStyles("#mymenu a:hover,#mymore a.ppm:hover { background:"+FCOLOR+" }");
 
 		//校内通栏的在线用户名
-		GM_addStyle(".m-chat-window.buddy-list .chat-conv .buddy-list-item .buddy-list-item-name { color: "+FCOLOR+" }");
+		addStyles(".m-chat-window.buddy-list .chat-conv .buddy-list-item .buddy-list-item-name { color: "+FCOLOR+" }");
 
 		//改变其他的文字颜色
-		GM_addStyle(".gbcontainer h3 { color: "+FCOLOR+" } "+
+		addStyles(".gbcontainer h3 { color: "+FCOLOR+" } "+
 					".gbcontainer div.gbbook h3 { color: "+FCOLOR+" } "+
 					"#records h4 { color: "+FCOLOR+" } "+
 					".form-privacy legend { color: "+FCOLOR+" } "+
@@ -815,13 +892,13 @@ function classicColor() {
 					".page_bar span em { color: "+FCOLOR+" } ");
 
 		//删除背景图片
-		GM_addStyle(".navigation .nav-body { background: transparent } "+
+		addStyles(".navigation .nav-body { background: transparent } "+
 					"#home.home .menu-bar { background: #FFFFFF } "+
 					".profile .menu-bar { background-color: #FFFFFF } "+
 					".profile .profile-panel { background: #FFFFFF } ");
 
 		//将logo背景置为透明
-		GM_addStyle("#header #logo { background-color: transparent }");
+		addStyles("#header #logo { background-color: transparent }");
 
 		//改变设置了内嵌style的元素的字体颜色
 		setInterval("var items=document.getElementsByTagName('a'); for (var i=0;i<items.length;i++) { if(items[i].style.color=='rgb(0, 94, 172)') items[i].style.color='"+FCOLOR+"';};",2000);	//因为是有些（校内通栏）是异步载入，所以要重复执行
@@ -888,7 +965,7 @@ function addNavMenu() {
 		if(!item) {
 			return;
 		}
-		var arr=GM_getValue("bxn_navExtraContent","群组\nhttp://group.renren.com/tribenav.do\n论坛\nhttp://club.renren.com/").split("\n");
+		var arr=getOption("bxn_navExtraContent","群组\nhttp://group.renren.com/tribenav.do\n论坛\nhttp://club.renren.com/").split("\n");
 		for(i=0;i<arr.length-1;i+=2) {
 			var c=document.createElement("div");
 			var name=arr[i];
@@ -985,7 +1062,7 @@ function addFloorCounter() {
 //显示/隐藏新鲜事内容
 function hideFeedContent() {
 	try {
-		GM_addStyle("ul.richlist.feeds li div.content { display:none;}");
+		addStyles("ul.richlist.feeds li div.content { display:none;}");
 	} catch (e) {
 		printErrorLog("hideFeedContent",e);
 	}
@@ -1016,7 +1093,7 @@ function moreStatusEmotions() {
 		}
 
 		//修正样式
-		GM_addStyle("div.publisher ul.emotion, div.newsfeed-reply-emotions ul.emotion { letter-spacing:-6px }");
+		addStyles("div.publisher ul.emotion, div.newsfeed-reply-emotions ul.emotion { letter-spacing:-6px }");
 
 		var curlist=[];
 		var list=$("status_emotions");
@@ -1028,7 +1105,7 @@ function moreStatusEmotions() {
 			for each (var el in emlist) {
 				if(!curlist[el.e]) {
 					var e=document.createElement("li");
-					e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img src="http://xnimg.cn'+el.s+'" title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>';
+					e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'" src="http://xnimg.cn'+el.s+'" rsrc="http://xnimg.cn'+el.s+'"/></a>';
 					if(el.w) {
 						e.style.width="50px";
 						e.children[0].style.width="46px";
@@ -1052,7 +1129,7 @@ function moreStatusEmotions() {
 			for each (var el in emlist) {
 				if(!curlist[el.e]) {
 					var e=document.createElement("li");
-					e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img src="http://xnimg.cn'+el.s+'" title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>';
+					e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img emotion="'+el.e+'" alt="'+el.t+'" title="'+el.t+'" src="http://xnimg.cn'+el.s+'" rsrc="http://xnimg.cn'+el.s+'"/></a>';
 					if(el.w) {
 						e.style.width="50px";
 						e.children[0].style.width="46px";
@@ -1102,12 +1179,13 @@ function moreStatusEmotions() {
 					for each (el in emlist) {
 						if(!curlist[el.e]) {
 							e=document.createElement("li");
-							e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img src="http://xnimg.cn'+el.s+'" title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>';
+							e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>';
 							if(el.w) {
 								e.style.width="50px";
 								e.children[0].style.width="46px";
 							}
 							list.appendChild(e);
+							e.children[0].children[0].src="http://xnimg.cn"+el.s;
 						} else if (el.w) {
 							curlist[el.e].parentNode.style.width="46px";
 							curlist[el.e].parentNode.parentNode.style.width="50px";
@@ -1124,7 +1202,7 @@ function moreStatusEmotions() {
 //加宽导航栏显示
 function widerNavBar() {
 	try {
-		GM_addStyle(".navigation-wrapper { width: auto } .navigation { width: auto }");
+		addStyles(".navigation-wrapper { width: auto } .navigation { width: auto }");
 		//将菜单向左移
 		var submenu=$("optiondropdownMenu");
 		if(submenu) {
@@ -1149,7 +1227,7 @@ function widerNavBar() {
 //加宽站内信显示＆回复框
 function widerMessage() {
 	try {
-		GM_addStyle("#pageMessage #oak .composer_fields textarea { width: 600px } ");
+		addStyles("#pageMessage #oak .composer_fields textarea { width: 600px } ");
 	} catch (e) {
 		printErrorLog("widerMessage",e);
 	}
@@ -1231,7 +1309,7 @@ function largeImageViewer() {
 							//小头像，包括一种非常古老的（"http://head.xiaonei.com/photos/20070409/1835/tiny[0-9]+.jpg"）
 							if((imgSrc.indexOf("tiny_")!=-1 || (imgSrc.indexOf("tiny")!=-1 && imgSrc.indexOf("_")==-1)) && pageURL.indexOf("getalbumprofile.do")==-1) {
 								if(imgSrc.indexOf("_")!=-1) {
-									imgDate=/hdn?\d+\/(.*?)\/tiny_/.exec(imgSrc)[1];
+									imgDate=/[hf][dm]n?\d+\/(.*?)\/tiny_/.exec(imgSrc)[1];
 								} else {
 									imgDate=/photos\/(.*?)\/tiny/.exec(imgSrc)[1];
 								}
@@ -1299,7 +1377,7 @@ function largeImageViewer() {
 	//获取一般图片的大图并显示出来
 	function showLargeImage(pageURL,imgId) {
 		try {
-			GM_xmlhttpRequest({	method: 'GET', url: pageURL, onload: function (responseDetails) {
+			sendXmlHttpRequest({	method: 'GET', url: pageURL, onload: function (responseDetails) {
 				if(responseDetails.status!=200) {
 					return;
 				}
@@ -1335,7 +1413,7 @@ function largeImageViewer() {
 	//获取相册中某一张图片的大图并显示出来
 	function showLargeImageInAlbum(album,pageN,imgId,imgDate) {
 		try {
-			GM_xmlhttpRequest({	method: 'GET', url: album+"&curpage="+pageN, onload: function (responseDetails) {
+			sendXmlHttpRequest({	method: 'GET', url: album+"&curpage="+pageN, onload: function (responseDetails) {
 				if(responseDetails.status!=200) {
 					return;
 				}
@@ -1462,16 +1540,16 @@ function showImagesInOnePage() {
 			return;
 		}
 		var baseURL="http://photo.renren.com"+window.location.pathname;
-		var album=$("single-column");
+		var album=$X1("//div[@class='photo-list clearfix']");
 		if(!album) {
 			return;
 		}
-		var items=$X1("//div[@class='pager-top']//span");
+		var items=$X1("//li//span[@class='number-photo']");
 		if(!items) {
 			return;
 		}
-		var allPhoto=parseInt(/共([0-9]+)张/.exec(items.textContent)[1]);
-		var maxPage=((allPhoto-1)/15);
+		var allPhoto=parseInt(/共 *([0-9]+) *张/.exec(items.textContent)[1]);
+		var maxPage=((allPhoto-1)/album.children[0].children.length);
 		for(i=0;i<items.childNodes.length;i++) {
 			if(items.childNodes[i].textContent.search(/共 *[0-9]+ *张/)!=-1) {
 				items.childNodes[i].textContent="共"+allPhoto+"张 ";
@@ -1499,7 +1577,7 @@ function showImagesInOnePage() {
 			if(i==curPage) {
 				continue;
 			}
-			GM_xmlhttpRequest({
+			sendXmlHttpRequest({
 		        method: 'GET',
 	    	    url: baseURL+"?id="+id+"&owner="+owner+"&curpage="+i,
 				onload: function (res) {
@@ -1507,8 +1585,7 @@ function showImagesInOnePage() {
 						return;
 					}
 					try {
-						var photoList=res.responseText.substring(res.responseText.indexOf("<table class=\"photoList\">"));
-						photoList=photoList.substring(0,photoList.indexOf("</table>"));
+						var photoList=/<div .*? class="photo-list clearfix".*?>([\d\D]+?)<\/div>/.exec(res.responseText)[1];
 						album.innerHTML+=photoList;
 					} catch (e) {
 						printErrorLog("showImagesInOnePage_onload",e);
@@ -1552,7 +1629,7 @@ function getMatualFriends() {
 
 		var mfcount=0;
 		//载入自己的好友列表
-		GM_xmlhttpRequest({
+		sendXmlHttpRequest({
 	        method: 'GET',
 	        url: 'http://photo.renren.com/gettagfriends.do',
 			onload: function(res) {
@@ -1578,7 +1655,7 @@ function getMatualFriends() {
 	//获取fid的好友
 	function loadFriends(page) {
 		try {
-			GM_xmlhttpRequest({
+			sendXmlHttpRequest({
 		        method: 'GET',
 		        url: "http://friend.renren.com/GetFriendList.do?curpage="+page+"&id="+fid,
 				onload: function(res) {
@@ -1623,7 +1700,7 @@ function getMatualFriends() {
 	//加入头像图标
 	function loadFriendTinyImage(uid,uname,e) {
 		try {
-			GM_xmlhttpRequest({
+			sendXmlHttpRequest({
 				method: 'GET',
 				url: "http://photo.renren.com/getalbumprofile.do?owner="+uid,
 				onload: function(res) {
@@ -1660,19 +1737,19 @@ function checkUpdate(manually) {
 		}
 
 		var today=new Date();
-		//GM_setValue("bxn_lastUpdate","1/1/2000");
-		if(GM_getValue("bxn_lastUpdate","")=="") {
-			GM_setValue("bxn_lastUpdate",today.toString());
+		//setOption("bxn_lastUpdate","1/1/2000");
+		if(getOption("bxn_lastUpdate","")=="") {
+			setOption("bxn_lastUpdate",today.toString());
 		}
-		var last=new Date(GM_getValue("bxn_lastUpdate",today.toString()));
+		var last=new Date(getOption("bxn_lastUpdate",today.toString()));
 		//一天检查一次
 		if(manually || (today-last)/3600000/24>1) {
-			var pageLink=GM_getValue("bxn_pageLink","http://userscripts.org/scripts/show/45836");
-			var scriptLink=GM_getValue("bxn_scriptLink","http://userscripts.org/scripts/source/45836.user.js");
+			var pageLink=getOption("bxn_pageLink","http://userscripts.org/scripts/show/45836");
+			var scriptLink=getOption("bxn_scriptLink","http://userscripts.org/scripts/source/45836.user.js");
 			if(manually) {
 				setUpdateButtonState(false);
 			}
-			GM_xmlhttpRequest({
+			sendXmlHttpRequest({
 		        method: 'GET',
 	    	    url: pageLink,
 				onload: function(res) {
@@ -1709,7 +1786,7 @@ function checkUpdate(manually) {
 								}
 							}
 						}
-						GM_setValue("bxn_lastUpdate",today.toString());
+						setOption("bxn_lastUpdate",today.toString());
 						if(manually==true) {
 							alert("没有找到更新版本");
 						}
@@ -1727,7 +1804,7 @@ function checkUpdate(manually) {
 	function hideUpdateNotify() {
 		try {
 			removeElement($("bxn_updateNotify"));
-			GM_setValue("bxn_lastUpdate",today.toString());
+			setOption("bxn_lastUpdate",today.toString());
 		} catch (e) {
 			printErrorLog("checkUpdate_onclick",e);
 		}
@@ -1812,12 +1889,12 @@ function autoRefreshFeeds() {
 
 		if(window.location.hostname=="home.renren.com") {
 			var s=document.createElement("script");
-			s.innerHTML="if(window.feedEditor && window.feedEditor.getNewFeeds) setInterval(window.feedEditor.getNewFeeds,"+GM_getValue("bxn_checkFeedInterval",60)*1000+");";
+			s.innerHTML="if(window.feedEditor && window.feedEditor.getNewFeeds) setInterval(window.feedEditor.getNewFeeds,"+getOption("bxn_checkFeedInterval",60)*1000+");";
 			document.body.appendChild(s);
 			s=$X1(".//li",$("feedHome"));
 			writeCookie("newestFeed",s.id);
 		} else {
-			setInterval(checkNewFeeds,GM_getValue("bxn_checkFeedInterval",60)*1000);
+			setInterval(checkNewFeeds,getOption("bxn_checkFeedInterval",60)*1000);
 		}
 	} catch (e) {
 		printErrorLog("autoRefreshFeeds",e);
@@ -1825,7 +1902,7 @@ function autoRefreshFeeds() {
 
 	function checkNewFeeds() {
 		try {
-			GM_xmlhttpRequest({	method: "GET", url: "http://renren.com/retrieveNews.do", onload: function (response) {
+			sendXmlHttpRequest({method: "GET", url: "http://renren.com/retrieveNews.do", onload: function (response) {
 				if(response.status!=200) {
 					return;
 				}
@@ -1974,7 +2051,7 @@ function autoRefreshFeeds() {
 
 //去除页面字体限制
 function noFontFamily() {
-	GM_addStyle("* {font-family:none !important}");
+	addStyles("* {font-family:none !important}");
 }
 
 //在视频分享增加原始页面链接
@@ -2173,11 +2250,11 @@ function createConfigMenu() {
 				e.checked=ov[o.op];
 			}
 		}
-		e=$("bxn_headAmount");e.value=GM_getValue("bxn_headAmount",12).toString();
-		e=$("bxn_checkFeedInterval");e.value=GM_getValue("bxn_checkFeedInterval",60).toString();
-		e=$("bxn_pageLink");e.value=GM_getValue("bxn_pageLink","http://userscripts.org/scripts/show/45836");
-		e=$("bxn_scriptLink");e.value=GM_getValue("bxn_scriptLink","http://userscripts.org/scripts/source/45836.user.js");
-		e=$("bxn_navExtraContent");e.value=GM_getValue("bxn_navExtraContent","群组\nhttp://group.renren.com/tribenav.do\n论坛\nhttp://club.renren.com/");
+		e=$("bxn_headAmount");e.value=getOption("bxn_headAmount",12).toString();
+		e=$("bxn_checkFeedInterval");e.value=getOption("bxn_checkFeedInterval",60).toString();
+		e=$("bxn_pageLink");e.value=getOption("bxn_pageLink","http://userscripts.org/scripts/show/45836");
+		e=$("bxn_scriptLink");e.value=getOption("bxn_scriptLink","http://userscripts.org/scripts/source/45836.user.js");
+		e=$("bxn_navExtraContent");e.value=getOption("bxn_navExtraContent","群组\nhttp://group.renren.com/tribenav.do\n论坛\nhttp://club.renren.com/");
 
 		$("bxn_ok").addEventListener("click",menuOK,false);
 		$("bxn_cancel").addEventListener("click",menuCancel,false);
@@ -2208,19 +2285,19 @@ function createConfigMenu() {
 			}
 
 			e=$("bxn_headAmount");
-			GM_setValue("bxn_headAmount",parseInt(e.value));
+			setOption("bxn_headAmount",parseInt(e.value));
 			e=$("bxn_checkFeedInterval");
-			GM_setValue("bxn_checkFeedInterval",parseInt(e.value));
+			setOption("bxn_checkFeedInterval",parseInt(e.value));
 			e=$("bxn_scriptLink");
-			GM_setValue("bxn_scriptLink",e.value);
+			setOption("bxn_scriptLink",e.value);
 			e=$("bxn_pageLink");
-			GM_setValue("bxn_pageLink",e.value);
+			setOption("bxn_pageLink",e.value);
 			e=$("bxn_navExtraContent");
-			GM_setValue("bxn_navExtraContent",e.value);
+			setOption("bxn_navExtraContent",e.value);
 
 			for each (o in options) {
 				e=$(o.op);
-				e && GM_setValue(o.op,e.checked);
+				e && setOption(o.op,e.checked);
 			}
 			menuCancel(evt);
 			window.location.reload();
