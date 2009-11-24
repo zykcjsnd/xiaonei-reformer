@@ -12,12 +12,17 @@
 // @exclude        http://wpi.renren.com/*
 // @exclude        http://*.renren.com/ajax*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.90.20091122
+// @version        1.5.91.20091124
 // @author         xz
 // ==/UserScript==
 
+//不在frame中运行
+if (self != window.top){
+	return;
+}
+
 //脚本版本，供自动更新用
-var version="1.5.90.20091122";
+var version="1.5.91.20091124";
 
 //选项列表
 var options=[
@@ -330,7 +335,8 @@ reform();
 function init() {
 	try {
 		//填充ov变量
-		for each (var e in options) {
+		for(var i in options) {
+			var e=options[i];
 			ov[e.op]=getOption(e.op,e.dv);
 		}
 		addFeedEventMonitor();
@@ -338,21 +344,18 @@ function init() {
 		try {
 			GM_registerMenuCommand("校内人人网改造选项",showConfigMenu);
 		} catch(e) {
-			printErrorLog("GM_registerMenuCommand",e);
 		}
 		createImageViewer();
 		createDropDownMenu();
-
 		//设置大图缓存
 		var cookie=readCookie("xn_imageCache");
 		var cookies=cookie.split('|');
 		for(var i=0;i<cookies.length;i+=2) {
 			imgCache[cookies[i]]=cookies[i+1];
 		}
-	} catch (e) {
-		printErrorLog("init",e);
+	} catch (err) {
+		printErrorLog("init",err);
 	}
-
 }
 
 //改造
@@ -462,6 +465,18 @@ function cleanFeeds() {
 
 //为新鲜事列表增加监听函数，在点击"更多新鲜事"时可以处理新增的项目
 function addFeedEventMonitor() {
+	var feedNotifier=function(evt) {
+		try {
+			if(evt.attrName!="style" || evt.newValue.indexOf("display: none")==-1) {
+				return;
+			}
+		 	cleanFeeds(evt);
+			ov["bxn_hideStatusComment"] && hideStatusComment(evt);
+		} catch (e) {
+			printErrorLog("feedNotifier",e);
+		}
+	}
+	//正式开始
 	try {
 		if(!$("feedHome")) {
 			return;
@@ -473,22 +488,18 @@ function addFeedEventMonitor() {
 	} catch (e) {
 		printErrorLog("readCookie",e);
 	}
-
-	function feedNotifier(evt) {
-		try {
-			if(evt.attrName!="style" || evt.newValue.indexOf("display: none")==-1) {
-				return;
-			}
-		 	cleanFeeds(evt);
-			ov["bxn_hideStatusComment"] && hideStatusComment(evt);
-		} catch (e) {
-			printErrorLog("feedNotifier",e);
-		}
-	}
 }
 
 //移除广告
 function removeAD() {
+	var removeShareADNotify=function(evt) {
+		try {
+			removeElementById("pop_share_ads");
+		} catch(e) {
+			printErrorLog("removeShareADNotify",e);
+		}
+	}
+
 	try {
 		var items,item;
 		var i;
@@ -500,8 +511,8 @@ function removeAD() {
 		removeElementById("sd_ad");
 		removeElementById("showAD");
 		removeElementById("huge-ad");
-		removeElementById("renrenAdPanel");
 		removeElementById("rrtvcSearchTip");
+		removeDivByClass("renrenAdPanel");
 		removeDivByClass("feed feed-flyer text-story expand bold-feed");
 		removeDivByClass("feed feed-flyer text-story expand media-story share-video bold-feed");
 		removeDivByClass("side-item template");
@@ -527,6 +538,10 @@ function removeAD() {
 			if(item.src.indexOf("gg.renren.com")!=-1 && item.parentNode.className!="blockcont text") {
 				removeElement(item);
 			}
+		}
+		item=$("dropmenuHolder");
+		if(item) {
+			item.addEventListener("DOMNodeInserted", removeShareADNotify, false);
 		}
 	} catch(e) {
 		printErrorLog("removeAD",e);
@@ -739,8 +754,7 @@ function removeTemplate() {
 		removeZidouTemplate();
 		removePublicHomepageTemplate();
 		removeGroupTemplate();
-
-		// 处理特殊页面主题
+		//处理特殊页面主题
 		var links=$X("//link[@type='text/css']");
 		for(var i=0;i<links.snapshotLength;i++) {
 			var link=links.snapshotItem(i);
@@ -784,7 +798,8 @@ function classicColor() {
 					".tab-menu li a { color: "+FCOLOR+" !important } "+
 					".rank_tab li { color: "+FCOLOR+" } "+
 					"td.pop_content .dialog_body a, td.pop_content .dialog_body a:visited { color: "+FCOLOR+" } "+
-					".m-chat-window.notifications .chat-conv .notifyitem .notifybody a { color: "+FCOLOR+" !important }");
+					".m-chat-window.notifications .chat-conv .notifyitem .notifybody a { color: "+FCOLOR+" !important }"+
+					"body.profile ul.tabs.sub-nav li a { color: "+FCOLOR+" }");
 
 		//改变链接的背景色
 		addStyles("a.action:hover{ background-color: "+BCOLOR+" } "+
@@ -981,22 +996,7 @@ function addNavMenu() {
 
 //在日志、相册中增加楼层计数
 function addFloorCounter() {
-	try {
-		if(location.host!="blog.renren.com" && (location.host!="photo.renren.com" || location.pathname!="/getphoto.do")) {
-			return;
-		}
-
-		addFloor();
-		var e=$("show-all-id");
-		if(!e) {
-			return;
-		}
-		e.parentNode.parentNode.addEventListener("DOMNodeInserted", addFloor, false);
-	} catch(e) {
-		printErrorLog("addFloorCounter",e);
-	}
-
-	function addFloor(evt) {
+	var addFloor=function(evt) {
 		try {
 			if(evt && (!evt.target.className || (location.host=="blog.renren.com" && evt.target.className!="replies with-arrow") || (location.host=="photo.renren.com" && evt.target.className!="replies"))) {
 				return;
@@ -1030,7 +1030,8 @@ function addFloorCounter() {
 			allReply++;
 			for(var i=0;i<dds.snapshotLength;i++) {
 				var dd=dds.snapshotItem(i);
-				for each (var e in dd.childNodes) {
+				for (var i in dd.childNodes) {
+					var e=dd.childNodes[i];
 					if(e.tagName && e.className && e.tagName=="DIV" && e.className=="info") {
 						if(e.lastChild && e.lastChild.className && e.lastChild.className=="fc") {
 							//添加过了，跳出外层循环
@@ -1056,6 +1057,21 @@ function addFloorCounter() {
 		} catch(e) {
 			printErrorLog("addFloorCounter",e);
 		}
+	}
+	//正式开始
+	try {
+		if(location.host!="blog.renren.com" && (location.host!="photo.renren.com" || location.pathname!="/getphoto.do")) {
+			return;
+		}
+
+		addFloor();
+		var e=$("show-all-id");
+		if(!e) {
+			return;
+		}
+		e.parentNode.parentNode.addEventListener("DOMNodeInserted", addFloor, false);
+	} catch(e) {
+		printErrorLog("addFloorCounter",e);
 	}
 }
 
@@ -1087,70 +1103,7 @@ function hideStatusComment() {
 
 //增加更多状态表情
 function moreStatusEmotions() {
-	try {
-		if(window.location.hostname=="reg.renren.com" || window.location.hostname=="login.renren.com") {
-			return;
-		}
-
-		//修正样式
-		addStyles("div.publisher ul.emotion, div.newsfeed-reply-emotions ul.emotion { letter-spacing:-6px }");
-
-		var curlist=[];
-		var list=$("status_emotions");
-		if(list) {
-			var items=$X("//ul[@id='status_emotions']//li//a//img");
-			for(var i=0;i<items.snapshotLength;i++) {
-				curlist[items.snapshotItem(i).getAttribute("emotion")]=items.snapshotItem(i);
-			}
-			for each (var el in emlist) {
-				if(!curlist[el.e]) {
-					var e=document.createElement("li");
-					e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'" src="http://xnimg.cn'+el.s+'" rsrc="http://xnimg.cn'+el.s+'"/></a>';
-					if(el.w) {
-						e.style.width="50px";
-						e.children[0].style.width="46px";
-					}
-					list.appendChild(e);
-				} else if (el.w) {
-					curlist[el.e].parentNode.style.width="46px";
-					curlist[el.e].parentNode.parentNode.style.width="50px";
-				}
-			}
-		}
-
-		list=$("publisher_emotion");
-		curlist=[];
-		if(list && list.firstElementChild) {
-			list=list.firstElementChild;
-			var items=$X("//ul[@class='emotion']//li//a//img");
-			for(var i=0;i<items.snapshotLength;i++) {
-				curlist[items.snapshotItem(i).getAttribute("emotion")]=items.snapshotItem(i);
-			}
-			for each (var el in emlist) {
-				if(!curlist[el.e]) {
-					var e=document.createElement("li");
-					e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img emotion="'+el.e+'" alt="'+el.t+'" title="'+el.t+'" src="http://xnimg.cn'+el.s+'" rsrc="http://xnimg.cn'+el.s+'"/></a>';
-					if(el.w) {
-						e.style.width="50px";
-						e.children[0].style.width="46px";
-					}
-					list.appendChild(e);
-				} else if (el.w) {
-					curlist[el.e].parentNode.style.width="46px";
-					curlist[el.e].parentNode.parentNode.style.width="50px";
-				}
-			}
-		}
-		//处理回复表情
-		var flag=$("dropmenuHolder");
-		if(flag) {
-			flag.addEventListener('DOMAttrModified', emotionNotifier, false);
-		}
-	} catch (e) {
-		printErrorLog("hideStatusComment",e);
-	}
-
-	function emotionNotifier(evt) {
+	var emotionNotifier=function(evt) {
 		try {
 			if(evt.newValue=="newsfeed-reply-emotions") {
 				var list=evt.target.firstElementChild;
@@ -1176,7 +1129,8 @@ function moreStatusEmotions() {
 					}
 				} else {
 					// 状态回复列表
-					for each (el in emlist) {
+					for (var i in emlist) {
+						el=emlist[i];
 						if(!curlist[el.e]) {
 							e=document.createElement("li");
 							e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>';
@@ -1196,6 +1150,71 @@ function moreStatusEmotions() {
 		} catch (e) {
 			printErrorLog("emotionNotifier",e);
 		}
+	}
+	//正式开始
+	try {
+		if(window.location.hostname=="reg.renren.com" || window.location.hostname=="login.renren.com") {
+			return;
+		}
+
+		//修正样式
+		addStyles("div.publisher ul.emotion, div.newsfeed-reply-emotions ul.emotion { letter-spacing:-6px }");
+
+		var curlist=[];
+		var list=$("status_emotions");
+		if(list) {
+			var items=$X("//ul[@id='status_emotions']//li//a//img");
+			for(var i=0;i<items.snapshotLength;i++) {
+				curlist[items.snapshotItem(i).getAttribute("emotion")]=items.snapshotItem(i);
+			}
+			for (var i in emlist) {
+				var el=emlist[i];
+				if(!curlist[el.e]) {
+					var e=document.createElement("li");
+					e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'" src="http://xnimg.cn'+el.s+'" rsrc="http://xnimg.cn'+el.s+'"/></a>';
+					if(el.w) {
+						e.style.width="50px";
+						e.children[0].style.width="46px";
+					}
+					list.appendChild(e);
+				} else if (el.w) {
+					curlist[el.e].parentNode.style.width="46px";
+					curlist[el.e].parentNode.parentNode.style.width="50px";
+				}
+			}
+		}
+
+		list=$("publisher_emotion");
+		curlist=[];
+		if(list && list.firstElementChild) {
+			list=list.firstElementChild;
+			var items=$X("//ul[@class='emotion']//li//a//img");
+			for(var i=0;i<items.snapshotLength;i++) {
+				curlist[items.snapshotItem(i).getAttribute("emotion")]=items.snapshotItem(i);
+			}
+			for (var i in emlist) {
+				var el=emlist[i];
+				if(!curlist[el.e]) {
+					var e=document.createElement("li");
+					e.innerHTML='<a onfocus="this.blur();" href="#nogo"><img emotion="'+el.e+'" alt="'+el.t+'" title="'+el.t+'" src="http://xnimg.cn'+el.s+'" rsrc="http://xnimg.cn'+el.s+'"/></a>';
+					if(el.w) {
+						e.style.width="50px";
+						e.children[0].style.width="46px";
+					}
+					list.appendChild(e);
+				} else if (el.w) {
+					curlist[el.e].parentNode.style.width="46px";
+					curlist[el.e].parentNode.parentNode.style.width="50px";
+				}
+			}
+		}
+		//处理回复表情
+		var flag=$("dropmenuHolder");
+		if(flag) {
+			flag.addEventListener('DOMAttrModified', emotionNotifier, false);
+		}
+	} catch (e) {
+		printErrorLog("hideStatusComment",e);
 	}
 }
 
@@ -1235,6 +1254,158 @@ function widerMessage() {
 
 //在鼠标移过时显示照片大图
 function largeImageViewer() {
+	//显示大图DIV
+	var showLargeImageViewer=function(mouseX) {
+		try {
+			var viewer=$('largeImageViewer');
+			if(!viewer) {
+				return;
+			}
+			if(mouseX>document.body.clientWidth/2) {
+				viewer.style.left="2px";
+				viewer.style.right="";
+			} else {
+				viewer.style.right="2px";
+				viewer.style.left="";
+			}
+
+			var imgBox=$('largeImage');
+			imgBox.alt="加载图片中...";
+			imgBox.src="";
+			viewer.style.display="block";
+		} catch (e) {
+			printErrorLog("showLargeImageViewer",e);
+		}
+	}
+	//获取一般图片的大图并显示出来
+	var showLargeImage=function(pageURL,imgId) {
+		try {
+			sendXmlHttpRequest({	method: 'GET', url: pageURL, onload: function (responseDetails) {
+				if(responseDetails.status!=200) {
+					return;
+				}
+				try {
+					var src;
+					var i,j;
+					if(responseDetails.responseText.search("<body id=\"errorPage\">")!=-1) {
+						setImageCache(imgId,"error");
+						$('largeImage').alt="加载图片失败";
+						return;
+					}
+					i=responseDetails.responseText.search(/<img .*?id="photo"/);
+					if(i>0) {
+						j=responseDetails.responseText.indexOf(">",i);
+						src=responseDetails.responseText.substring(i,j);
+						i=src.indexOf("src=\"")+5;
+						j=src.indexOf("\"",i);
+						src=src.substring(i,j);
+						setImageCache(imgId,src);
+						if($('largeImage').getAttribute("orig")==imgId) {
+							$('largeImage').src=src;
+						}
+					}
+				} catch (e) {
+					printErrorLog("showLargeImage_onload",e);
+				}
+			}});
+		} catch (e) {
+			printErrorLog("showLargeImage",e);
+		}
+	}
+	//获取相册中某一张图片的大图并显示出来
+	var showLargeImageInAlbum=function(album,pageN,imgId,imgDate) {
+		try {
+			sendXmlHttpRequest({	method: 'GET', url: album+"&curpage="+pageN, onload: function (responseDetails) {
+				if(responseDetails.status!=200) {
+					return;
+				}
+				try {
+					var i,j;
+					var res=responseDetails.responseText;
+					if(res.search("<body id=\"errorPage\">")!=-1) {
+						setImageCache(imgId,"error");
+						$('largeImage').alt="加载图片失败";
+						return;
+					}
+					// 搜索ID匹配的图片
+					i=res.search(RegExp("src=\"http://.*?"+imgId));
+					while(i!=-1 && (res.substring(i-60,i).indexOf("type=\"hidden\"")!=-1 || res.substring(i-30,i).indexOf("class=\"avatar\"")!=-1)) {
+						res=res.substring(i+10);
+						i=res.search(RegExp("src=\"http://.*?"+imgId));
+					}
+					// 当ID不匹配且为搜索小头像时，搜索时间匹配的图片
+					if(i==-1 && imgDate) {
+						res=responseDetails.responseText;
+						i=res.search(RegExp("src=\"http://.*?/"+imgDate+"/.*?\\.jpg\""));
+						while(i!=-1 && (res.substring(i-60,i).indexOf("type=\"hidden\"")!=-1 || res.substring(i-30,i).indexOf("class=\"avatar\"")!=-1)) {
+							res=res.substring(i+10);
+							i=res.search(RegExp("src=\"http://.*?/"+imgDate+"/.*?\\.jpg\""));
+						}
+					}
+					if(i!=-1) {
+						i=res.lastIndexOf(" href=\"",i)+7;
+						j=res.indexOf("\"",i);
+						res=res.substring(i,j);
+						if(res.search(/^[a-zA-Z]+:\/\//)==-1) {
+							if(res.charAt(0)!='/') {
+								res="/"+res;
+							}
+							res=album.substring(0,album.lastIndexOf("/"))+res;
+						}
+						showLargeImage(res,imgId);
+					} else {
+						i=res.search(/共[0-9]*张/);
+						if(i>0) {
+							j=res.indexOf("张",i);
+							if(res.indexOf("-"+res.substring(i+1,j+1))==-1) {
+								showLargeImageInAlbum(album,pageN+1,imgId,imgDate);
+							}
+						} else {
+							setImageCache(imgId,"error");
+							$('largeImage').alt="加载图片失败";
+							return;
+						}
+					}
+				} catch (e) {
+					printErrorLog("showLargeImageInAlbum_onload",e);
+				}
+			}});
+		} catch (e) {
+			printErrorLog("showLargeImageInAlbum",e);
+		}
+	}
+	//设置图片缓存
+	var setImageCache=function(imgId,src) {
+		try {
+			if(src!="error") {
+				var cookie=readCookie("xn_imageCache");
+				writeCookie("xn_imageCache",cookie+imgId+"|"+src+"|");
+			}
+			imgCache[imgId]=src;
+		} catch (e) {
+			printErrorLog("setImageCache",e);
+		}
+	}
+	//读取图片缓存
+	var getImageCache=function(imgId) {
+		try {
+			if(imgCache[imgId]) {
+				return imgCache[imgId];
+			} else {
+				var cookie=readCookie("xn_imageCache");
+				var cookies=cookie.split('|');
+				for(var i=0;i<cookies.length;i+=2) {
+					if(cookies[i]==imgId) {
+						return cookies[i+1];
+					}
+				}
+			}
+			return "";
+		} catch (e) {
+			printErrorLog("getImageCache",e);
+		}
+	}
+	//正式开始
 	try {
 		if(window.location.hostname=="reg.renren.com" || window.location.hostname=="login.renren.com") {
 			return;
@@ -1350,160 +1521,6 @@ function largeImageViewer() {
 	} catch (e) {
 		printErrorLog("largeImageViewer",e);
 	}
-
-	function showLargeImageViewer(mouseX) {
-		try {
-			var viewer=$('largeImageViewer');
-			if(!viewer) {
-				return;
-			}
-			if(mouseX>document.body.clientWidth/2) {
-				viewer.style.left="2px";
-				viewer.style.right="";
-			} else {
-				viewer.style.right="2px";
-				viewer.style.left="";
-			}
-
-			var imgBox=$('largeImage');
-			imgBox.alt="加载图片中...";
-			imgBox.src="";
-			viewer.style.display="block";
-		} catch (e) {
-			printErrorLog("showLargeImageViewer",e);
-		}
-	}
-
-	//获取一般图片的大图并显示出来
-	function showLargeImage(pageURL,imgId) {
-		try {
-			sendXmlHttpRequest({	method: 'GET', url: pageURL, onload: function (responseDetails) {
-				if(responseDetails.status!=200) {
-					return;
-				}
-				try {
-					var src;
-					var i,j;
-					if(responseDetails.responseText.search("<body id=\"errorPage\">")!=-1) {
-						setImageCache(imgId,"error");
-						$('largeImage').alt="加载图片失败";
-						return;
-					}
-					i=responseDetails.responseText.search(/<img .*?id="photo"/);
-					if(i>0) {
-						j=responseDetails.responseText.indexOf(">",i);
-						src=responseDetails.responseText.substring(i,j);
-						i=src.indexOf("src=\"")+5;
-						j=src.indexOf("\"",i);
-						src=src.substring(i,j);
-						setImageCache(imgId,src);
-						if($('largeImage').getAttribute("orig")==imgId) {
-							$('largeImage').src=src;
-						}
-					}
-				} catch (e) {
-					printErrorLog("showLargeImage_onload",e);
-				}
-			}});
-		} catch (e) {
-			printErrorLog("showLargeImage",e);
-		}
-	}
-
-	//获取相册中某一张图片的大图并显示出来
-	function showLargeImageInAlbum(album,pageN,imgId,imgDate) {
-		try {
-			sendXmlHttpRequest({	method: 'GET', url: album+"&curpage="+pageN, onload: function (responseDetails) {
-				if(responseDetails.status!=200) {
-					return;
-				}
-				try {
-					var i,j;
-					var res=responseDetails.responseText;
-					if(res.search("<body id=\"errorPage\">")!=-1) {
-						setImageCache(imgId,"error");
-						$('largeImage').alt="加载图片失败";
-						return;
-					}
-					// 搜索ID匹配的图片
-					i=res.search(RegExp("src=\"http://.*?"+imgId));
-					while(i!=-1 && (res.substring(i-60,i).indexOf("type=\"hidden\"")!=-1 || res.substring(i-30,i).indexOf("class=\"avatar\"")!=-1)) {
-						res=res.substring(i+10);
-						i=res.search(RegExp("src=\"http://.*?"+imgId));
-					}
-					// 当ID不匹配且为搜索小头像时，搜索时间匹配的图片
-					if(i==-1 && imgDate) {
-						res=responseDetails.responseText;
-						i=res.search(RegExp("src=\"http://.*?/"+imgDate+"/.*?\\.jpg\""));
-						while(i!=-1 && (res.substring(i-60,i).indexOf("type=\"hidden\"")!=-1 || res.substring(i-30,i).indexOf("class=\"avatar\"")!=-1)) {
-							res=res.substring(i+10);
-							i=res.search(RegExp("src=\"http://.*?/"+imgDate+"/.*?\\.jpg\""));
-						}
-					}
-					if(i!=-1) {
-						i=res.lastIndexOf(" href=\"",i)+7;
-						j=res.indexOf("\"",i);
-						res=res.substring(i,j);
-						if(res.search(/^[a-zA-Z]+:\/\//)==-1) {
-							if(res.charAt(0)!='/') {
-								res="/"+res;
-							}
-							res=album.substring(0,album.lastIndexOf("/"))+res;
-						}
-						showLargeImage(res,imgId);
-					} else {
-						i=res.search(/共[0-9]*张/);
-						if(i>0) {
-							j=res.indexOf("张",i);
-							if(res.indexOf("-"+res.substring(i+1,j+1))==-1) {
-								showLargeImageInAlbum(album,pageN+1,imgId,imgDate);
-							}
-						} else {
-							setImageCache(imgId,"error");
-							$('largeImage').alt="加载图片失败";
-							return;
-						}
-					}
-				} catch (e) {
-					printErrorLog("showLargeImageInAlbum_onload",e);
-				}
-			}});
-		} catch (e) {
-			printErrorLog("showLargeImageInAlbum",e);
-		}
-	}
-
-	//设置图片缓存
-	function setImageCache(imgId,src) {
-		try {
-			if(src!="error") {
-				var cookie=readCookie("xn_imageCache");
-				writeCookie("xn_imageCache",cookie+imgId+"|"+src+"|");
-			}
-			imgCache[imgId]=src;
-		} catch (e) {
-			printErrorLog("setImageCache",e);
-		}
-	}
-	//读取图片缓存
-	function getImageCache(imgId) {
-		try {
-			if(imgCache[imgId]) {
-				return imgCache[imgId];
-			} else {
-				var cookie=readCookie("xn_imageCache");
-				var cookies=cookie.split('|');
-				for(var i=0;i<cookies.length;i+=2) {
-					if(cookies[i]==imgId) {
-						return cookies[i+1];
-					}
-				}
-			}
-			return "";
-		} catch (e) {
-			printErrorLog("getImageCache",e);
-		}
-	}
 }
 
 //建立大图显示DIV
@@ -1604,7 +1621,86 @@ function showImagesInOnePage() {
 
 //显示共同好友
 function getMatualFriends() {
-	var myfriends=[];
+	var mfcount=0;
+	var mfcounter=null;
+	var mflist=null;
+	//获取fid的好友
+	var loadFriends=function(page,fid,myfriends) {
+		try {
+			sendXmlHttpRequest({
+		        method: 'GET',
+		        url: "http://friend.renren.com/GetFriendList.do?curpage="+page+"&id="+fid,
+				onload: function(res) {
+					if(res.status!=200) {
+						return;
+					}
+					try {
+						var friends=[];
+						var friendInfo;
+						while(friendInfo=/doPoke\(event,\'(\d+)\',\'(.+?)\'\)/ig.exec(res.responseText)) {
+							friends.push({id:friendInfo[1],name:friendInfo[2],node:null});
+						}
+						if(friends.length>0) {
+							for(var i=0;i<friends.length; i++) {
+								if(myfriends["X"+friends[i].id]!=null) {
+									myfriends["X"+friends[i].id]=null;
+									mfcount++;
+									mfcounter.innerHTML="("+mfcount+")"
+									friends[i].node=document.createElement("li");
+									friends[i].node.innerHTML+="<span><a href=\"http://renren.com/profile.do?id="+friends[i].id+"\">"+friends[i].name+"</a></span>";
+									mflist.appendChild(friends[i].node);
+									if(ov["bxn_showMatualFriendsImage"]) {
+										loadFriendTinyImage(friends[i]);
+									}
+								}
+							}
+							loadFriends(page+1,fid,myfriends);
+						} else {
+							$("mutualFriendsSpan").innerHTML="共同好友";
+						}
+					} catch (err) {
+						printErrorLog("loadFriends_onload",err);
+					}
+				}
+			});
+		} catch (err) {
+			printErrorLog("loadFriends",err);
+		}
+	}
+	//加入头像图标
+	var loadFriendTinyImage=function(friendInfo) {
+		try {
+			sendXmlHttpRequest({
+				method: 'GET',
+				url: "http://photo.renren.com/getalbumprofile.do?owner="+friendInfo.id,
+				onload: function(res) {
+					if(res.status!=200) {
+						return;
+					}
+					try {
+						var img=/<img .*?src="(http:\/\/h[ea]*d.+\/photos\/.+\/tiny_?.+?)"/i.exec(res.responseText);
+						if(img==null) {
+							img=/url\("?(http:\/\/h[ea]*d.+\/photos\/.+\/tiny_?.+?)"?\)/i.exec(res.responseText);
+							if(img==null) {
+								img=/url\("?(http:\/\/h[ea]*d.+\/photos\/.+\/.*_tiny?.+?)"?\)/i.exec(res.responseText);
+							}
+						}
+						if(img!=null) {
+							img=img[1];
+						} else {
+							img="http://head.xiaonei.com/photos/0/0/men_tiny.gif"
+						}
+						friendInfo.node.innerHTML="<a title=\"查看"+friendInfo.uname+"的个人主页\" href=\"http://renren.com/profile.do?id="+friendInfo.id+"\" style=\"background-image: url("+img+");\"></a>"+friendInfo.node.innerHTML;
+					} catch (err) {
+						printErrorLog("loadFriendTinyImage_onload",err);
+					}
+				}
+			});
+		} catch (err) {
+			printErrorLog("loadFriendTinyImage",err);
+		}
+	}
+	//正式开始
 	try {
 		if((window.location.pathname!="/profile.do" && window.location.pathname!="/") || window.location.href.search(/[\?&]id=[0-9]+/i)==-1) {
 			return;
@@ -1624,10 +1720,9 @@ function getMatualFriends() {
 		mfdiv.className = "profile-friends box";
 		mfdiv.innerHTML='<h4 class="box-header"><span id="mutualFriendsSpan">共同好友 (载入中...)</span>&nbsp;<a class="count" id="mutualFriendsCount">(0)</a></h4><div class="box-body" style="max-height:210px; overflow-y:auto; padding-left:0pt;"><div class="clearfix"><ul class="people-list" id="mutualFriendsList"></ul></div></div>';
 	    items.appendChild(mfdiv);
-		var mflist=$("mutualFriendsList");
-		var mfcounter=$("mutualFriendsCount");
-
-		var mfcount=0;
+		mflist=$("mutualFriendsList");
+		mfcounter=$("mutualFriendsCount");
+		var myfriends=[];
 		//载入自己的好友列表
 		sendXmlHttpRequest({
 	        method: 'GET',
@@ -1637,12 +1732,12 @@ function getMatualFriends() {
 					return;
 				}
 				try {
-					eval("friends="+ res.responseText);
-					var friends=friends.friends_ajax;
+					eval("var friends="+ res.responseText);
+					friends=friends.friends_ajax;
 					for(var i=0;i<friends.length;i++) {
 						myfriends["X"+friends[i].id]=1;
 					}
-					loadFriends(0);
+					loadFriends(0,fid,myfriends);
 				} catch (e) {
 					printErrorLog("mutualFriendsList_onload",e);
 				}
@@ -1651,86 +1746,30 @@ function getMatualFriends() {
 	} catch (e) {
 		printErrorLog("getMatualFriends",e);
 	}
-
-	//获取fid的好友
-	function loadFriends(page) {
-		try {
-			sendXmlHttpRequest({
-		        method: 'GET',
-		        url: "http://friend.renren.com/GetFriendList.do?curpage="+page+"&id="+fid,
-				onload: function(res) {
-					if(res.status!=200) {
-						return;
-					}
-					try {
-						var rs=[];
-						var mm;
-						var i;
-						while(mm=/doPoke\(event,\'(\d+)\',\'(.+?)\'\)/ig.exec(res.responseText)) {
-							rs.push({id:mm[1],name:mm[2],e:null});
-						}
-						if(rs.length>0) {
-							for(i=0;i<rs.length; i++) {
-								if(myfriends["X"+rs[i].id]!=null) {
-									myfriends["X"+rs[i].id]=null;
-									mfcount++;
-									mfcounter.innerHTML="("+mfcount+")"
-									rs[i].e=document.createElement("li");
-									if(ov["bxn_showMatualFriendsImage"]) {
-										loadFriendTinyImage(rs[i].id,rs[i].name,rs[i].e);
-									}
-									rs[i].e.innerHTML+="<span><a href=\"http://renren.com/profile.do?id="+rs[i].id+"\">"+rs[i].name+"</a></span>";
-									mflist.appendChild(rs[i].e);
-								}
-							}
-							loadFriends(page+1);
-						} else {
-							$("mutualFriendsSpan").innerHTML="共同好友";
-						}
-					} catch (e) {
-						printErrorLog("loadFriends_onload",e);
-					}
-				}
-			});
-		} catch (e) {
-			printErrorLog("loadFriends",e);
-		}
-	}
-
-	//加入头像图标
-	function loadFriendTinyImage(uid,uname,e) {
-		try {
-			sendXmlHttpRequest({
-				method: 'GET',
-				url: "http://photo.renren.com/getalbumprofile.do?owner="+uid,
-				onload: function(res) {
-					if(res.status!=200) {
-						return;
-					}
-					try {
-						var img=/url\("?(http:\/\/h[ea]*d.+\/photos\/.+\/tiny_?[^)^"]+)"?\)/i.exec(res.responseText);
-						if(img==null) {
-							img=/url\("?(http:\/\/h[ea]*d.+\/photos\/.+\/.*_tiny?[^)^"]+)"?\)/i.exec(res.responseText);
-						}
-						if(img!=null) {
-							img=img[1];
-							e.innerHTML="<a title=\"查看"+uname+"的个人主页\" href=\"http://renren.com/profile.do?id="+uid+"\" style=\"background-image: url("+img+");\"></a>"+e.innerHTML;
-						} else {
-							e.innerHTML="<a title=\"查看"+uname+"的个人主页\" href=\"http://renren.com/profile.do?id="+uid+"\" style=\"background-image: url(http://head.renren.com/photos/0/0/men_tiny.gif);\"></a>"+e.innerHTML;
-						}
-					} catch (e) {
-						printErrorLog("loadFriendTinyImage_onload",e);
-					}
-				}
-			});
-		} catch (e) {
-			printErrorLog("loadFriendTinyImage",e);
-		}
-	}
 }
 
 //检查更新
 function checkUpdate(manually) {
+	//隐藏升级提示
+	var hideUpdateNotify=function () {
+		try {
+			removeElement($("bxn_updateNotify"));
+			setOption("bxn_lastUpdate",today.toString());
+		} catch (e) {
+			printErrorLog("checkUpdate_onclick",e);
+		}
+	}
+	//设置立即升级按钮状态
+	var setUpdateButtonState=function(allow) {
+		try {
+			var e=$("bxn_updateNow");
+			e.disabled=!allow;
+			e.value=allow?"立即检查":"检查中...";
+		} catch (e) {
+			printErrorLog("setUpdateButtonState",e);
+		}
+	}
+	//正式开始
 	try {
 		if(!document.body || document.body.id=="tinymce" || document.body.parentNode.baseURI.indexOf("http://club.renren.com/zEditor/")!=-1) {
 			return;
@@ -1800,25 +1839,6 @@ function checkUpdate(manually) {
 	} catch (e) {
 		printErrorLog("checkUpdate",e);
 	}
-
-	function hideUpdateNotify() {
-		try {
-			removeElement($("bxn_updateNotify"));
-			setOption("bxn_lastUpdate",today.toString());
-		} catch (e) {
-			printErrorLog("checkUpdate_onclick",e);
-		}
-	}
-
-	function setUpdateButtonState(allow) {
-		try {
-			var e=$("bxn_updateNow");
-			e.disabled=!allow;
-			e.value=allow?"立即检查":"检查中...";
-		} catch (e) {
-			printErrorLog("setUpdateButtonState",e);
-		}
-	}
 }
 
 //取消选中“发布到新鲜事”选框
@@ -1882,25 +1902,8 @@ function allowModifySpecialFriend() {
 
 //自动检查新鲜事更新
 function autoRefreshFeeds() {
-	try {
-		if(window.location.hostname=="reg.renren.com" || window.location.hostname=="login.renren.com") {
-			return;
-		}
-
-		if(window.location.hostname=="home.renren.com") {
-			var s=document.createElement("script");
-			s.innerHTML="if(window.feedEditor && window.feedEditor.getNewFeeds) setInterval(window.feedEditor.getNewFeeds,"+getOption("bxn_checkFeedInterval",60)*1000+");";
-			document.body.appendChild(s);
-			s=$X1(".//li",$("feedHome"));
-			writeCookie("newestFeed",s.id);
-		} else {
-			setInterval(checkNewFeeds,getOption("bxn_checkFeedInterval",60)*1000);
-		}
-	} catch (e) {
-		printErrorLog("autoRefreshFeeds",e);
-	}
-
-	function checkNewFeeds() {
+	//检查新鲜事
+	var checkNewFeeds=function() {
 		try {
 			sendXmlHttpRequest({method: "GET", url: "http://renren.com/retrieveNews.do", onload: function (response) {
 				if(response.status!=200) {
@@ -2034,8 +2037,8 @@ function autoRefreshFeeds() {
 			printErrorLog("checkNewFeeds",e);
 		}
 	}
-
-	function closeFeed(evt) {
+	//关闭新鲜事提醒
+	var closeFeed=function(evt) {
 		try {
 			var o=evt.target;
 			var p=o.parentNode.parentNode;
@@ -2046,6 +2049,24 @@ function autoRefreshFeeds() {
 		} catch (e) {
 			printErrorLog("closeFeed",e);
 		}
+	}
+	//正式开始
+	try {
+		if(window.location.hostname=="reg.renren.com" || window.location.hostname=="login.renren.com") {
+			return;
+		}
+
+		if(window.location.hostname=="home.renren.com") {
+			var s=document.createElement("script");
+			s.innerHTML="if(window.feedEditor && window.feedEditor.getNewFeeds) setInterval(window.feedEditor.getNewFeeds,"+getOption("bxn_checkFeedInterval",60)*1000+");";
+			document.body.appendChild(s);
+			s=$X1(".//li",$("feedHome"));
+			writeCookie("newestFeed",s.id);
+		} else {
+			setInterval(checkNewFeeds,getOption("bxn_checkFeedInterval",60)*1000);
+		}
+	} catch (e) {
+		printErrorLog("autoRefreshFeeds",e);
 	}
 }
 
@@ -2105,6 +2126,78 @@ function createDropDownMenu() {
 
 //创建设置菜单
 function createConfigMenu() {
+	//点击确定
+	var menuOK=function(evt) {
+		try {
+			var e,o;
+			e=$("bxn_headAmount");
+			if(!/^[0-9]+$/.test(e.value) || parseInt(e.value)<0) {
+				alert("请在头像最大数量处输入一个非负整数！");
+				e.focus();
+				e.selectionStart=0;
+				e.selectionEnd=e.value.length;
+				return;
+			}
+			e=$("bxn_checkFeedInterval");
+			if(!/^[0-9]+$/.test(e.value) || parseInt(e.value)<=0) {
+				alert("请在更新新鲜事间隔时间处输入一个正整数！");
+				e.focus();
+				e.selectionStart=0;
+				e.selectionEnd=e.value.length;
+				return;
+			}
+
+			e=$("bxn_headAmount");
+			setOption("bxn_headAmount",parseInt(e.value));
+			e=$("bxn_checkFeedInterval");
+			setOption("bxn_checkFeedInterval",parseInt(e.value));
+			e=$("bxn_scriptLink");
+			setOption("bxn_scriptLink",e.value);
+			e=$("bxn_pageLink");
+			setOption("bxn_pageLink",e.value);
+			e=$("bxn_navExtraContent");
+			setOption("bxn_navExtraContent",e.value);
+
+			for (var i in options) {
+				o=options[i];
+				e=$(o.op);
+				e && setOption(o.op,e.checked);
+			}
+			menuCancel(evt);
+			window.location.reload();
+		} catch (e) {
+			printErrorLog("menuOK",e);
+		}
+	}
+	//点击取消
+	var menuCancel=function(evt) {
+		try {
+			var e=$("bxn_configMenu");
+			e && hideElement(e);
+		} catch (e) {
+			printErrorLog("menuCancel",e);
+		}
+	}
+	//点击显示导航栏新增项目详细
+	var navExtraShow=function(evt) {
+		try {
+			var e=$("bxn_navExtraBox");
+			var hide=(e.style.display=="none");
+			e.style.display=hide?"block":"none";
+			$("bxn_navExtraShow").innerHTML=hide?"隐藏":"显示";
+		} catch (e) {
+			printErrorLog("navExtraShow",e);
+		}
+	}
+	//点击立即更新
+	var checkUpdateNow=function(evt) {
+		try {
+			checkUpdate(true);
+		} catch (e) {
+			printErrorLog("checkUpdateNow",e);
+		}
+	}
+	//正式开始
 	try {
 		if(!document.body || document.body.id=="tinymce" || document.body.parentNode.baseURI.indexOf("http://club.renren.com/zEditor/")!=-1) {
 			return;
@@ -2244,7 +2337,8 @@ function createConfigMenu() {
 		menu.style.zIndex=20000;
 		menu.innerHTML=configMenuContent;
 		document.body.appendChild(menu);
-		for each (o in options) {
+		for (var i in options) {
+			o=options[i];
 			e=$(o.op);
 			if(e) {
 				e.checked=ov[o.op];
@@ -2262,76 +2356,6 @@ function createConfigMenu() {
 		$("bxn_updateNow").addEventListener("click",checkUpdateNow,false);
 	} catch (e) {
 		printErrorLog("createConfigMenu",e);
-	}
-
-	function menuOK(evt) {
-		try {
-			var e,o;
-			e=$("bxn_headAmount");
-			if(!/^[0-9]+$/.test(e.value) || parseInt(e.value)<0) {
-				alert("请在头像最大数量处输入一个非负整数！");
-				e.focus();
-				e.selectionStart=0;
-				e.selectionEnd=e.value.length;
-				return;
-			}
-			e=$("bxn_checkFeedInterval");
-			if(!/^[0-9]+$/.test(e.value) || parseInt(e.value)<=0) {
-				alert("请在更新新鲜事间隔时间处输入一个正整数！");
-				e.focus();
-				e.selectionStart=0;
-				e.selectionEnd=e.value.length;
-				return;
-			}
-
-			e=$("bxn_headAmount");
-			setOption("bxn_headAmount",parseInt(e.value));
-			e=$("bxn_checkFeedInterval");
-			setOption("bxn_checkFeedInterval",parseInt(e.value));
-			e=$("bxn_scriptLink");
-			setOption("bxn_scriptLink",e.value);
-			e=$("bxn_pageLink");
-			setOption("bxn_pageLink",e.value);
-			e=$("bxn_navExtraContent");
-			setOption("bxn_navExtraContent",e.value);
-
-			for each (o in options) {
-				e=$(o.op);
-				e && setOption(o.op,e.checked);
-			}
-			menuCancel(evt);
-			window.location.reload();
-		} catch (e) {
-			printErrorLog("menuOK",e);
-		}
-	}
-
-	function menuCancel(evt) {
-		try {
-			var e=$("bxn_configMenu");
-			e && hideElement(e);
-		} catch (e) {
-			printErrorLog("menuCancel",e);
-		}
-	}
-
-	function navExtraShow(evt) {
-		try {
-			var e=$("bxn_navExtraBox");
-			var hide=(e.style.display=="none");
-			e.style.display=hide?"block":"none";
-			$("bxn_navExtraShow").innerHTML=hide?"隐藏":"显示";
-		} catch (e) {
-			printErrorLog("navExtraShow",e);
-		}
-	}
-
-	function checkUpdateNow(evt) {
-		try {
-			checkUpdate(true);
-		} catch (e) {
-			printErrorLog("checkUpdateNow",e);
-		}
 	}
 }
 
