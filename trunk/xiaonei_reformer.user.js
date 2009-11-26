@@ -12,7 +12,7 @@
 // @exclude        http://wpi.renren.com/*
 // @exclude        http://*.renren.com/ajax*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.91.20091124
+// @version        1.5.92.20091126
 // @author         xz
 // ==/UserScript==
 
@@ -22,7 +22,7 @@ if (self != window.top){
 }
 
 //脚本版本，供自动更新用
-var version="1.5.91.20091124";
+var version="1.5.92.20091126";
 
 //选项列表
 var options=[
@@ -299,7 +299,7 @@ function addStyles(styles) {
 		var css=document.createElement("style");
 		css.type="text/css";
 		css.innerHTML=styles;
-		var node=document.getElementsByTagName("HEAD");
+		var node=$tag("head");
 		if(!node || node.length<1) {
 			document.body.insertBefore(css,document.body.childNodes[0]);
 		} else {
@@ -328,9 +328,6 @@ function sendXmlHttpRequest(req) {
 }
 //常用函数完
 
-init();
-reform();
-
 //初始化
 function init() {
 	try {
@@ -353,8 +350,10 @@ function init() {
 		for(var i=0;i<cookies.length;i+=2) {
 			imgCache[cookies[i]]=cookies[i+1];
 		}
+		return true;
 	} catch (err) {
 		printErrorLog("init",err);
+		return false;
 	}
 }
 
@@ -364,11 +363,11 @@ function reform() {
 		ov["bxn_removeAD"] && removeAD();
 		ov["bxn_removeStarNotification"] && removeStarNotification();
 		ov["bxn_removeProgress"] && removeDivByClass("info-integrity") && removeElement($("completeProfile"));
-		ov["bxn_removeAppRequest"] && removeElement($X1("//li[@class='l-app']"));
-		ov["bxn_removeEventRequest"] && removeElement($X1("//li[@class='l-event']"));
-		ov["bxn_removeNotificationRequest"] && removeElement($X1("//li[@class='l-request']"));
-		ov["bxn_removePollRequest"] && removeElement($X1("//li[@class='l-poll']"));
-		ov["bxn_removeGameRequest"] && removeElement($X1("//li[@class='l-game']"));
+		ov["bxn_removeAppRequest"] && removeRequest("l-app");
+		ov["bxn_removeEventRequest"] && removeRequest("l-event");
+		ov["bxn_removeNotificationRequest"] && removeRequest("l-request");
+		ov["bxn_removePollRequest"] && removeRequest("l-poll");
+		ov["bxn_removeGameRequest"] && removeRequest("l-game");
 		removeEmptyRequestArea();
 		ov["bxn_removeMusicPlayer"] && removeMusicPlayer();
 		ov["bxn_removeTemplate"] && removeTemplate();
@@ -463,6 +462,16 @@ function cleanFeeds() {
 	}
 }
 
+//删除请求
+function removeRequest(notification) {
+	try {
+		var node=$X1("//li//img[starts-with(@class,'"+notification+"')]");
+		node && removeElement(node.parentNode);
+	} catch(err) {
+		printErrorLog("removeNotification",e);
+	}
+}
+
 //为新鲜事列表增加监听函数，在点击"更多新鲜事"时可以处理新增的项目
 function addFeedEventMonitor() {
 	var feedNotifier=function(evt) {
@@ -486,7 +495,7 @@ function addFeedEventMonitor() {
 			flag.addEventListener('DOMAttrModified', feedNotifier, false);
 		}
 	} catch (e) {
-		printErrorLog("readCookie",e);
+		printErrorLog("addFeedEventMonitor",e);
 	}
 }
 
@@ -516,26 +525,23 @@ function removeAD() {
 		removeDivByClass("feed feed-flyer text-story expand bold-feed");
 		removeDivByClass("feed feed-flyer text-story expand media-story share-video bold-feed");
 		removeDivByClass("side-item template");
-		items=$X("//ul[@id='feedHome']//li//h3//a[@class='dark']");
+		items=$X("//ul[@id='feedHome']//li//h3//a[@class='dark' and starts-with(@href,'http://post.renren.com/click.do?')]");
 		for(i=0;i<items.snapshotLength;i++) {
-			item=items.snapshotItem(i);
-			if(item.href && item.href.indexOf("http://post.renren.com/click.do?")==0) {
-				item=item.parentNode.parentNode;
-				try {
-					var onclick=item.lastElementChild.getAttribute("onclick");
-					if(onclick.indexOf("javascript:")!=0) {
-						onclick="javascript:"+onclick;
-					}
-					window.location.href=onclick+";";
-				} catch(e) {
-					removeElement(item);
+			item=items.snapshotItem(i).parentNode.parentNode;
+			try {
+				var onclick=item.lastElementChild.getAttribute("onclick");
+				if(onclick.indexOf("javascript:")!=0) {
+					onclick="javascript:"+onclick;
 				}
+				window.location.href=onclick+";";
+			} catch(e) {
+				removeElement(item);
 			}
 		}
-		items=$X("//iframe");
+		items=$X("//iframe[contains(@src,'gg.renren.com')]");
 		for(i=0;i<items.snapshotLength;i++) {
 			item=items.snapshotItem(i);
-			if(item.src.indexOf("gg.renren.com")!=-1 && item.parentNode.className!="blockcont text") {
+			if(item.parentNode.className!="blockcont text") {
 				removeElement(item);
 			}
 		}
@@ -598,15 +604,16 @@ function hasTemplates()	{
 	try {
 		var items;
 		var i;
-		items=$tag("style");
+		var head=$tag("head")[0];
+		items=$tag("style",head);
 		for(i=0;i<items.length;i++) {
-			if(items[i].parentNode.tagName=="HEAD" && (items[i].innerHTML.indexOf("url(http://i.static.renren.com")!=-1) || items[i].innerHTML.indexOf("/page-profile-styles/")!=-1) {
+			if(items[i].innerHTML.indexOf("url(http://i.static.renren.com")!=-1 || items[i].innerHTML.indexOf("/page-profile-styles/")!=-1) {
 				return true;
 			}
 		}
-		items=$tag("link");
+		items=$tag("link",head);
 		for(i=0;i<items.length;i++) {
-			if(items[i].parentNode.tagName=="HEAD" && items[i].rel && items[i].rel=="stylesheet" && (items[i].href.indexOf("zidou_nav.css")!=-1 || items[i].href.indexOf("page-profile-styles")!=-1)) {
+			if(items[i].rel && items[i].rel=="stylesheet" && (items[i].href.indexOf("zidou_nav.css")!=-1 || items[i].href.indexOf("page-profile-styles")!=-1)) {
 				return true;
 			}
 		}
@@ -619,7 +626,6 @@ function hasTemplates()	{
 				}
 			}
 		}
-
 		var links=$X("//link[@type='text/css']");
 		for(var i=0;i<links.snapshotLength;i++) {
 			var link=links.snapshotItem(i);
@@ -638,12 +644,12 @@ function hasTemplates()	{
 function removeZidouTemplate() {
 	try {
 		var hasTemplate=false;
-		var templates=$tag("style");
+		var templates=$tag("style",$tag("head")[0]);
 		var template,items;
 		var i,m;
 		if(templates!=null) {
 			for(i=0;i<templates.length;i++) {
-				if(templates[i].parentNode.tagName=="HEAD" && templates[i].innerHTML.indexOf("url(http://i.static.renren.com")!=-1) {
+				if(templates[i].innerHTML.indexOf("url(http://i.static.renren.com")!=-1) {
 					template=templates[i];
 					hasTemplate=true;
 					break;
@@ -652,15 +658,7 @@ function removeZidouTemplate() {
 
 			if(hasTemplate=true && typeof(template)!="undefined") {
 				removeElement(template);	//删除紫豆模板效果
-
-				items=$X("//link[@rel='stylesheet']");
-	    		for (i=0;i<items.snapshotLength;i++) {
-					m=items.snapshotItem(i);
-					if(m.getAttribute("href").search("zidou_nav.css")!=-1) {
-						removeElement(m);	//删除紫豆导航栏
-						break;
-					}
-		    	}
+				removeElement($X1("//link[@rel='stylesheet' and contains(@href,'zidou_nav.css')]"));	//删除紫豆导航栏
 				removeElement($X1("//span[@class='zidou_domain']"));	//删除紫豆个人主页栏
 			}
 		}
@@ -672,17 +670,13 @@ function removeZidouTemplate() {
 //删除公共主页模板
 function removePublicHomepageTemplate() {
 	try {
-		var items=$X("//head//link[@rel='stylesheet']");
-		var item;
+		var items=$X("//head//link[@rel='stylesheet and (contains(@href,'zidou_nav.css') or contains(@href,'/page-profile-styles/'))']");
 		for(i=0;i<items.snapshotLength;i++) {
-			item=items.snapshotItem(i);
-			if(item.href.indexOf("zidou_nav.css")!=-1 || item.href.indexOf("/page-profile-styles/")!=-1) {
-				removeElement(item);
-			}
+			removeElement(items.snapshotItem(i));
 		}
 		items=$X("//head//style");
 		for(i=0;i<items.snapshotLength;i++) {
-			item=items.snapshotItem(i);
+			var item=items.snapshotItem(i);
 			if(item.innerHTML.indexOf("/page-profile-styles/")!=-1) {
 				removeElement(item);
 			}
@@ -719,12 +713,9 @@ function removeGroupTemplate() {
 				}
 			}
 			//删除群组内的特有CSS。（例如苹果学院）
-			items=$X("//link[@rel='stylesheet']");
+			items=$X("//link[@rel='stylesheet' and contains(@href,'qun-iframe')]");
 	    	for (i=0;i<items.snapshotLength;i++) {
-				e=items.snapshotItem(i);
-				if(e.href && e.href.indexOf("qun-iframe")!=-1) {
-					removeElement(e);
-				}
+				removeElement(items.snapshotItem(i));
 			}
 			//删除群组内的广告
 			items=$tag("a");
@@ -918,38 +909,6 @@ function classicColor() {
 		//改变设置了内嵌style的元素的字体颜色
 		setInterval("var items=document.getElementsByTagName('a'); for (var i=0;i<items.length;i++) { if(items[i].style.color=='rgb(0, 94, 172)') items[i].style.color='"+FCOLOR+"';};",2000);	//因为是有些（校内通栏）是异步载入，所以要重复执行
 
-		//删除装扮主页图片，用一般文字链接代替
-		var imgs = $X("//img[@src='http://xnimg.cn/imgpro/icons/paint-profile.gif']");
-		if(imgs.snapshotLength==0) {
-			imgs = $X("//img[@src='http://s.xnimg.cn/imgpro/icons/paint-profile.gif']");
-		}
-		if(imgs.snapshotLength>0) {
-			var p=imgs.snapshotItem(0).parentNode;
-			p.removeChild(imgs.snapshotItem(0));
-			p.innerHTML="<B>装扮主页</B>"
-		}
-		imgs = $X("//img[@src='http://xnimg.cn/imgpro/icons/paint-profile2.gif']");
-		if(imgs.snapshotLength==0) {
-			imgs = $X("//img[@src='http://s.xnimg.cn/imgpro/icons/paint-profile2.gif']");
-		}
-		if(imgs.snapshotLength>0) {
-			p=imgs.snapshotItem(0).parentNode;
-			p.removeChild(imgs.snapshotItem(0));
-			p.innerHTML="<B>查看装扮</B>"
-		}
-
-		// 改造发布图片按钮
-		var img=$("publisher_submit");
-		if(img) {
-			img.style.backgroundColor=BCOLOR;
-			img.style.backgroundImage="none";
-			img.style.textIndent=0;
-			img.style.MozBorderRadius="5px";
-			img.style.color="#FFFFFF";
-			img.style.border="1px solid #666666"
-			img.style.fontSize="14px";
-			img.style.fontWeight="bold";
-		}
 	} catch (e) {
 		printErrorLog("classicColor",e);
 	}
@@ -2375,3 +2334,12 @@ function showConfigMenu() {
 		printErrorLog("showConfigMenu",e);
 	}
 }
+
+function main(){
+	if(init()) {
+		reform();
+	}
+};
+
+main();
+
