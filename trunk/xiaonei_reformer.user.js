@@ -298,7 +298,11 @@ function addStyles(styles) {
 	try {
 		var css=document.createElement("style");
 		css.type="text/css";
-		css.innerHTML=styles;
+		try {
+			css.innerHTML=styles;
+		} catch(e) {
+			css.innerText=styles;
+		}
 		var node=$tag("head");
 		if(!node || node.length<1) {
 			document.body.insertBefore(css,document.body.childNodes[0]);
