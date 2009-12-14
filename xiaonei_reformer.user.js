@@ -2294,7 +2294,9 @@ function exec() {
 			names=names.substring(0,names.length-1);
 			chrome.extension.sendRequest({action:"getAll", names:names}, function(response) {
 				for(var option in response.options) {
-					options[option].value=(response.options[option]);
+					if(response.options[option]!=null) {
+						options[option].value=(response.options[option]);
+					}
 				}
 				exec();
 			});
