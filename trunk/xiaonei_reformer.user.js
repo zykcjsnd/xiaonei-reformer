@@ -12,12 +12,12 @@
 // @exclude        http://wpi.renren.com/*
 // @exclude        http://*.renren.com/ajax*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.92.20091209
+// @version        1.5.92.20091214
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.92.20091209";
+var version="1.5.92.20091214";
 
 //选项列表，选项名:{value:默认值,fn:对应处理函数,text:选项文本}
 var options={
@@ -269,10 +269,15 @@ function $option(name,value) {
 			GM_setValue(name,value);
 		} catch(err) {
 			try {
-				localStorage.setItem(name,JSON.stringify(value));
+				// Chrome/Chromium
+				chrome.extension.sendRequest({action:"set",name:name,value:value});
 			} catch(err) {
-				$error("$option",err);
-				return null;
+				try {
+					localStorage.setItem(name,JSON.stringify(value));
+				} catch(err) {
+					$error("$option",err);
+					return null;
+				}
 			}
 		}
 		return value;
@@ -752,6 +757,8 @@ function recoverOriginalTheme() {
 			var bc=document.defaultView.getComputedStyle(e,null).backgroundColor;
 			if(bc=="rgb(0, 94, 172)" || bc=="transparent") {
 				$style(".navigation { background: "+FCOLOR+"}");
+				//修正导航栏文字高度异常
+				$style(".navigation .menu-title { line-height: 35px }");
 			}
 		}
 		$style("#clubheader #navigation { background-color: "+BCOLOR+" } "+
@@ -2231,22 +2238,8 @@ function showConfigMenu() {
 	}
 }
 
-(function (){
+function exec() {
 	try {
-		//不在frame中运行
-		if (self != window.top){
-			return;
-		}
-		//获取已经保存的选项
-		for(var option in options) {
-			var value=null;
-			try {
-				value=GM_getValue(option,$option(option));
-			} catch(err) {
-				value=$option(option);
-			}
-			$option(option,value);
-		}
 		addFeedEventNotifier();
 		createImageViewer();
 		//设置大图缓存
@@ -2276,5 +2269,38 @@ function showConfigMenu() {
 		$error("exec",err);
 		return;
 	}
-})();
+}
 
+(function (){
+	try {
+		//不在frame中运行
+		if (self != window.top){
+			return;
+		}
+		//获取已经保存的选项
+		try {
+			//Firefox
+			for(var option in options) {
+				var value=GM_getValue(option,$option(option));
+				options[option].value=value;
+			}
+			exec();
+		} catch(err) {
+			//Chrome/Chromium
+			var names="";
+			for(var option in options) {
+				names+=option+"|";
+			}
+			names=names.substring(0,names.length-1);
+			chrome.extension.sendRequest({action:"getAll", names:names}, function(response) {
+				for(var option in response.options) {
+					options[option].value=(response.options[option]);
+				}
+				exec();
+			});
+		}
+	} catch(err) {
+		$error("init",err);
+		return;
+	}
+})();
