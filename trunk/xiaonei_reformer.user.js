@@ -12,12 +12,12 @@
 // @exclude        http://wpi.renren.com/*
 // @exclude        http://*.renren.com/ajax*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.5.92.20091214
+// @version        1.5.92.20091222
 // @author         xz
 // ==/UserScript==
 
 //脚本版本，供自动更新用
-var version="1.5.92.20091214";
+var version="1.5.92.20091222";
 
 //选项列表，选项名:{value:默认值,fn:对应处理函数,text:选项文本}
 var options={
@@ -1066,6 +1066,9 @@ function addExtraEmotions() {
 		{e:"(bh)",		t:"破碎的心",		s:"/imgpro/icons/statusface/broken-heart.gif"},
 		{e:"(4)",		t:"4周年",			s:"/imgpro/icons/statusface/4-years.gif"},
 		{e:"(cake)",	t:"周年蛋糕",		s:"/imgpro/icons/statusface/4-birthday.gif"},
+		{e:"(hh)",		t:"圣诞花环",		s:"/imgpro/icons/statusface/garland.gif"},
+		{e:"(stick)",	t:"拐杖糖",			s:"/imgpro/icons/statusface/stick.gif"},
+		{e:"(socks)",	t:"圣诞袜",			s:"/imgpro/icons/statusface/stocking.gif"},
 		{e:"(^)",		t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
 		{e:"(h)",		t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		{e:"(r)",		t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
