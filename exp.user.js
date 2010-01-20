@@ -12,7 +12,7 @@
 // @run-at         document-end
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
 // @version        2.0.0.20100113
-// @version2       200
+// @minver         200
 // @author         xz
 // ==/UserScript==
 
@@ -82,7 +82,7 @@ XNR.prototype={
 					fn0:removeBlogTheme},
 				removeXntBar:{
 					text:"去除校内通栏",
-					value:false,
+					value:true,
 					fn1:removeXntBar},
 				removePageTopNotice:{
 					text:"去除首页顶部通知",
@@ -138,7 +138,7 @@ XNR.prototype={
 					value:false},
 				removeGameRequest:{
 					text:"去除游戏邀请提示",
-					value:false}
+					value:false},
 			}
 		},
 		sweepFeeds:{
@@ -220,7 +220,7 @@ XNR.prototype={
 					text:"影评",
 					value:false,
 					fn1:removeFeeds,
-					argus1:[["@markFeedAsRead","iFilm"]]}
+					argus1:[["@markFeedAsRead","iFilm"]]},
 			}
 		},
 		reform:{
@@ -248,7 +248,7 @@ XNR.prototype={
 				removeFontRestriction:{
 					text:"去除页面的字体限制",
 					value:false,
-					fn2:removeFontRestriction}
+					fn2:removeFontRestriction},
 			}
 		},
 		patch:{
@@ -267,7 +267,7 @@ XNR.prototype={
 					value:true,
 					info:"在Linux下某些版本的Firefox中，可能会出现论坛的帖子正文偏右的错误。如果您遇到这个问题，请启用此功能。",
 					fn2:$patchCSS,
-					argus2:[["#articlehome .content{overflow:visible}"]]}
+					argus2:[["#articlehome .content{overflow:visible}"]]},
 			}
 		},
 		enhancement:{
@@ -312,7 +312,12 @@ XNR.prototype={
 					text:"去除昵称修改限制",
 					info:"允许非星级用户修改个人信息中的昵称",
 					value:true,
-					fn3:removeNicknameRestriction}
+					fn3:removeNicknameRestriction},
+				autoRefreshFeeds:{
+					text:"自动检查新鲜事更新",
+					value:true,
+					fn3:autoRefreshFeeds,
+					argus3:[["@checkFeedInterval"]]},
 			}
 		},
 		misc:{
@@ -330,18 +335,37 @@ XNR.prototype={
 				headAmount:{
 					info:"限制头像列表中头像显示最大数量，不会影响到共同好友列表",
 					type:"input",
-					value:12}
-			}
-		}
-	/* TODO:
-	//功能增强
-	checkUpdate:				{value:true,	fn:checkUpdate,					text:"自动检查脚本更新"},
-	autoRefreshFeeds:			{value:true,	fn:autoRefreshFeeds,			text:"自动检查新鲜事更新"},
-	lastUpdate:					{value:"",		fn:null,					text:""},
-	pageLink:					{value:"http://userscripts.org/scripts/show/45836",	fn:null,	text:""},
-	scriptLink:					{value:"http://userscripts.org/scripts/source/45836.user.js",	fn:null,	text:""},
-	checkFeedInterval:			{value:60,		fn:null,			text:"新鲜事检查间隔："},
-	*/
+					value:12},
+				checkFeedInterval:{
+					text:"新鲜事检查间隔",
+					value:30,
+					type:"input"},
+			},
+		},
+		update:{
+			text:"自动更新",
+			type:"group",
+			columns:1,
+			items:{
+				checkUpdate:{
+					text:"自动检查脚本更新",
+					value:true,
+					fn3:checkUpdate,
+					argus3:[["@checkLink","@pageLink","@scriptLink","@lastUpdate","@xnr_update"]]},
+				lastUpdate:{
+					text:"最后一次检查更新时间",
+					value:""},
+				checkLink:{
+					text:"检查更新地址",
+					value:"http://userscripts.org/scripts/source/45836.meta.js"},
+				pageLink:{
+					text:"脚本主页地址",
+					value:"http://userscripts.org/scripts/show/45836"},
+				scriptLink:{
+					text:"脚本下载地址",
+					value:"http://userscripts.org/scripts/source/45836.user.js"},
+			},
+		},
 	},
 	// 删除对象所有的DOM节点
 	remove:function() {
@@ -732,39 +756,18 @@ function $error(func,err) {
 	}
 };
 /*
- * 读取/设置选项
- * name: 选项名
- * value: 选项值（此值为空表示读取操作，否则为写入）
- * return: 返回选项值
+ * 保存到选项，当页面刷新时才真正写入
  */
-/* TODO useless
-function $option(name,value) {
-	return true;
-	if(value==null) {
-		// 读取
-		return options[name].value;
+function $save(name,value) {
+	var options=localStorage.getItem("xnr_save");
+	if(!options) {
+		options={};
 	} else {
-		// 保存
-		options[name].value=value;
-		try {
-			GM_setValue(name,value);
-		} catch(err) {
-			try {
-				// Chrome/Chromium
-				chrome.extension.sendRequest({action:"set",name:name,value:value});
-			} catch(err) {
-				try {
-					localStorage.setItem(name,JSON.stringify(value));
-				} catch(err) {
-					$error("$option",err);
-					return null;
-				}
-			}
-		}
-		return value;
+		options=JSON.parse(options);
 	}
+	options[name]=value;
+	localStorage.setItem("xnr_save",JSON.stringify(options));
 };
-*/
 /*
  * 创建一个DOM节点，以XNR对象包装
  */
@@ -847,17 +850,19 @@ function $get(url,func,userData) {
 		}
 	}
 };
+// TODO 初始化代码移进init
 // 图片缓存
 var imgCache=localStorage.getItem("xnr_cache");
 imgCache=imgCache?JSON.parse(imgCache):{};
 for(id in imgCache) {
 	if(imgCache[id].life<=0) {
-		imgCache[id]=undefined;
+		delete imgCache[id];
 	} else {
 		imgCache[id].life--;
 	}
 };
-
+// 新鲜事ID
+localStorage.setItem("xnr_feed",null);
 var $=XNR;
 
 //清除广告
@@ -1062,6 +1067,9 @@ function recoverOriginalTheme() {
 
 	// 好友列表中的链接背景色
 	css+="#friendpage ul.actions a:hover{background-color:"+BCOLOR+"}";
+
+	// 校内通栏上的提醒链接颜色
+	css+=".m-chat-window.notifications .chat-conv .notifyitem .notifybody a{color:"+XCOLOR+" !important}";
 	$patchCSS(css);
 };
 
@@ -1742,17 +1750,156 @@ function limitHeadAmount(amount) {
 	});
 };
 
+//自动检查新鲜事更新
+function autoRefreshFeeds(interval) {
+	if(!$cookie("id")) {
+		return;
+	}
+	if(location.hostname=="www.renren.com" && location.pathname.toLowerCase()=="/home.do") {
+		// 记录下最新更新的时间
+		localStorage.setItem("xnr_feed",$("#feedHome > li").get().id);
+	}
+	setInterval(function() {
+		// 应该用post，不过get也行
+		$get("http://www.renren.com/feedretrieve.do?p=0",function(url,html) {
+			try {
+				var r=html.split("##@L#");
+				if(r.length<4 && !/^\d+$/.test(r[1])) {
+					//回复结构变了
+					$("#xnr_feed").remove();
+					return;
+				}
+				// 获取新鲜事列表
+				var feedList=$node("ul").style("display","none").inner(r[0].replace(/onload=".*?"/,"").replace(/<script.*?<\/script>/,""));
+				if(feedList.heirs()==0) {
+					return;
+				}
+				// 已读的最新新鲜事ID
+				var feedId=localStorage.getItem("xnr_feed");
+				if(feedId=="") {
+					// 如果为空，则认为所有新鲜事都读了。。。
+					feedId=feedList.firstChild().attr("id");
+					localStorage.setItem("xnr_feed",feedId);
+				}
+				var feedCount=0;
+				// 判断有哪些新鲜事还没有读过
+				for(var i=0;i<feedList.heirs();i++) {
+					if(feedList.child(i).attr("id")==feedId) {
+						feedCount=i;
+						break;
+					}
+				}
+				if(feedCount<=0) {
+					return;
+				} else {
+					localStorage.setItem("xnr_feed",feedList.firstChild().attr("id"));
+				}
+
+				var tips=$("#wpiroot div.m-chat-button-notifications div.chat-conv");
+				// 有校内通栏的情况
+				if(tips.size()>0) {
+					//添加提醒
+					var node=tips.firstChild();
+					if(node.text().indexOf('无新提醒')!=-1) {
+						node.attr("class","notifyitem hide");
+					}
+					node=null;
+
+					for(var i=feedCount-1;i>=0;i--) {
+						var feed=$node("div").attr("class","notifyitem");
+						var feedInfo=feedList.child(i);
+						//图标
+						var icon=feedInfo.find("a.avatar img").attr("lala") || feedInfo.find("a.avatar img").attr("src");
+						$node("div","<img src='"+icon+"' style='height:16px;width:16px;float:left' />").appendTo(feed);
+						//关闭按钮
+						$node("div").attr("class","close").listen("click",function(evt) {
+							var obj=$(evt.target).parent();
+							var pnode=obj.parent();
+							obj.remove();
+							if(pnode.heirs()==1) {
+								pnode.firstChild().attr("class","notifyitem");
+							}
+						}).appendTo(feed);
+						//内容
+						$node("div","新鲜事："+feedInfo.child(1).inner()).attr("class","notifybody").appendTo(feed);
+						feed.attr("onmouseover","this.className=\"notifyitem hover\";").attr("onmouseout","this.className=\"notifyitem\";").prependTo(tips);
+					}
+					//增加提醒计数
+					var count=$("#wpiroot .m-chat-msgcount");
+					if(count.size()>0) {
+						count.inner((parseInt(count.text())+feedCount).toString()).attr("class","m-chat-msgcount");
+					}
+					return;
+				}
+				// 无校内通栏，或结构有变
+				var feed=$("#xnr_feed");
+				if(feed.size()==0) {
+					feed=$node("div").attr({style:"position:fixed;bottom:10px;right:20px;width:200px;z-index:100000;padding:5px;background-color:#E5E5E5;opacity:0.85;border:#000000 double 3px;-moz-border-radius:5px;",id:"xnr_feed"}).append($node("div","<span style='color:red;'>您有新的新鲜事</span><a style='float:right;' onclick='document.body.removeChild(document.getElementById(\"xnr_feed\"));'>关闭</a>")).append($node("div").style({maxHeight:"100px",width:"100%",overflowY:"auto"}).append($node("ul"))).appendTo(document.body);
+				}
+				feed=feed.find("ul");
+				if(feed.heirs()>0) {
+					feed.lastChild().style("borderBottom","1px solid");
+				}
+				for(var i=0;i<feedCount;i++) {
+					feed.append($node("li",feedList.child(i).child(1).inner().replace(/^ +| +$/,"")).attr("style","padding-top:5px;padding-bottom:5px;border-bottom:1px solid"));
+				}
+				feed.lastChild().style("borderBottom","");
+			} catch(err) {
+				$error("autoRefreshFeeds::$get",err);
+			}
+		});
+	},interval*1000);
+};
+
+//检查更新
+function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
+	var today=new Date();
+	if(!last) {
+		last=today;
+	} else {
+		last=new Date(last);
+	}
+	//一天只检查一次
+	if(!manually && (today-last)<3600000*24) {
+		return;
+	}
+	$save("lastUpdate",today.toString());
+	if(manually) {
+		$("#updateNow").attr({disabled:"disabled",value:"检查中..."});
+	}
+	$get(checkLink,function(url,html) {
+		try {
+			var ver=/@minver[ \t]*(\d+)/.exec(html) || ["","0"];
+			if(parseInt(ver[1])>XNR.prototype.version) {
+				$node("div",'<div><font color=crimson>校内网改造器已有新版本：'+/@version[ \t]*([0-9\.]+)/.exec(html)[1]+'</font> <a id="updateInstall" target="_blank" href="'+scriptLink+'">安装</a> <a id="updateGotoPage" target="_blank" href="'+pageLink+'">去看看</a> <a id="updateLater">以后再说</a></div>').attr({id:"updateNotify",style:"bottom:2px;position:fixed;z-index:100000;background-color:rgb(246,246,246)"}).appendTo(document.body);
+				$("#updateLater","#updateGotoPage","#updateInstall").listen("click",function() {
+					$("#updateNotify").remove();
+				});
+			} else {
+				if(manually==true) {
+					alert("没有找到更新版本");
+				}
+			}
+			if(manually) {
+				$("#updateNow").attr({disabled:null,value:"立即检查"});
+			}
+		} catch(err) {
+			$error("checkUpdate::$get",err);
+		}
+	});
+};
+
 (function() {
 	try {
-		// 不在内容可以编辑的frame中运行
-		if (self != window.top && document.designMode=="on") {
+		// 不在内容可以编辑的frame中运行，也不在body无id无class的frame中运行
+		if (self != window.top && (document.designMode=="on" || (!document.body.id && !document.body.className))) {
 			return;
 		}
 		// 各种选项
 		var options=new Object;
 		// 各个功能的执行函数。分四个优先级
 		var funcs=new Array(new Object,new Object,new Object,new Object);
-		// 解析选项
+		// 解析选项函数
 		var parse=function(o) {
 			try {
 				for(var op in o) {
@@ -1775,7 +1922,7 @@ function limitHeadAmount(amount) {
 				$error("parse",err);
 			}
 		};
-		// 执行各项功能
+		// 执行各项功能函数
 		var exec=function() {
 			try {
 				for(var i=0;i<4;i++) {
@@ -1808,15 +1955,39 @@ function limitHeadAmount(amount) {
 				$error("exec",err);
 			}
 		};
+		// 保存运行时更改的值
+		var save=function() {
+			var data=localStorage.getItem("xnr_save");
+			for(var option in data) {
+				var value=data[option];
+				options[option]=value;
+				try {
+					GM_setValue(option,value);
+				} catch(err) {
+					try {
+						// Chrome/Chromium
+						chrome.extension.sendRequest({action:"set",name:option,value:value});
+					} catch(err) {
+						try {
+							localStorage.setItem(option,JSON.stringify(value));
+						} catch(err) {
+							$error("save",err);
+						}
+					}
+				}
+			}
+			localStorage.setItem("xnr_save",null);
+		};
 
 		parse(XNR.prototype.options);
 		//获取已经保存的选项
 		try {
 			//Firefox
 			for(var option in options) {
-				var value=GM_getValue(option,options[option]);
-				options[option].value=value;
+				options[option]=GM_getValue(option,options[option]);
 			}
+			save();
+			// 执行
 			exec();
 		} catch(err) {
 			//Chrome/Chromium
@@ -1828,9 +1999,11 @@ function limitHeadAmount(amount) {
 			chrome.extension.sendRequest({action:"getAll", names:names}, function(response) {
 				for(var option in response.options) {
 					if(response.options[option]!=null) {
-						options[option].value=(response.options[option]);
+						options[option]=(response.options[option]);
 					}
 				}
+				save();
+				// 执行
 				exec();
 			});
 		}
