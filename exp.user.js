@@ -11,8 +11,8 @@
 // @match          https://*.renren.com/*
 // @run-at         document-end
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.0.0.20100113
-// @minver         200
+// @version        2.0.0.20100120
+// @miniver        200
 // @author         xz
 // ==/UserScript==
 
@@ -42,13 +42,14 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，供自动更新用，对应header中的@version2
-	version:200,
+	version:"2.0.0.20100120",
+	miniver:200,
 	// 选项列表
 	// 每一项存在如下可能的参数：
 	// text:文字描述
 	// type:类型。有项目分组group，复选框checkbox，标签label，文本框text，文本区域edit，默认为checkbox。
 	// columns:显示的列数。仅当type为group时有效。
-	// items:包含的项目。仅当type为group时有效
+	// list:包含的项目。仅当type为group时有效
 	// info:鼠标悬停提示。
 	// value:默认值。
 	// fnX:X为0~3，代表优先级，0最高。功能对应的函数。
@@ -59,7 +60,7 @@ XNR.prototype={
 			text:"清理页面",
 			type:"group",
 			columns:2,
-			items:{
+			list:{
 				removeAds:{
 					text:"清除广告",
 					value:true,
@@ -105,9 +106,9 @@ XNR.prototype={
 					value:false,
 					fn1:removeCommonPage},
 				removeFriendGuide:{
-					text:"去除边栏：寻找/邀请朋友"},
+					text:"去除边栏：寻找/邀请朋友",
 					value:false,
-					fn1:removeFriendGuide,
+					fn1:removeFriendGuide},
 				removeCommendation:{
 					text:"去除边栏：推荐/礼物",
 					value:false,
@@ -117,27 +118,27 @@ XNR.prototype={
 					value:true,
 					fn1:limitHeadAmount,
 					argus1:[["@headAmount"]]},
-			}
+			},
 		},
 		hideRequest:{
 			text:"隐藏请求",
 			type:"group",
 			columns:2,
-			items:{
+			list:{
 				removeAppRequest:{
-					text:"去除应用请求提示",
+					text:"隐藏应用请求提示",
 					value:false},
 				removeEventRequest:{
-					text:"去除活动邀请提示",
+					text:"隐藏活动邀请提示",
 					value:false},
 				removeNoticeRequest:{
-					text:"去除通知提示",
+					text:"隐藏通知提示",
 					value:false},
 				removePollRequest:{
-					text:"去除投票邀请提示",
+					text:"隐藏投票邀请提示",
 					value:false},
 				removeGameRequest:{
-					text:"去除游戏邀请提示",
+					text:"隐藏游戏邀请提示",
 					value:false},
 			}
 		},
@@ -145,7 +146,7 @@ XNR.prototype={
 			text:"清理新鲜事",
 			type:"group",
 			columns:5,
-			items:{
+			list:{
 				removeBlogFeed:{
 					text:"日志",
 					value:false,
@@ -227,7 +228,7 @@ XNR.prototype={
 			text:"改造界面",
 			type:"group",
 			columns:1,
-			items:{
+			list:{
 				addNavBarItem:{
 					text:"增加导航栏项目",
 					value:true,
@@ -255,17 +256,11 @@ XNR.prototype={
 			text:"修正界面错误",
 			type:"group",
 			columns:1,
-			items:{
-				fixNavHeight:{
-					text:"修正导航栏项目位置显示错误",
-					value:true,
-					info:"在Linux下某些版本的Firefox中，可能会出现导航栏上的项目位置显示偏下的错误。如果您遇到这个问题，请启用此功能。",
-					fn2:$patchCSS,
-					argus2:[[".navigation .menu-title{line-height:35px}"]]},
+			list:{
 				fixClubContent:{
 					text:"修正论坛帖子排版错误",
 					value:true,
-					info:"在Linux下某些版本的Firefox中，可能会出现论坛的帖子正文偏右的错误。如果您遇到这个问题，请启用此功能。",
+					info:"如果您将浏览器字体的最小大小设成大于12，可能会出现论坛的帖子正文偏右的错误。如果您遇到这个问题，请启用此功能。",
 					fn2:$patchCSS,
 					argus2:[["#articlehome .content{overflow:visible}"]]},
 			}
@@ -274,7 +269,7 @@ XNR.prototype={
 			text:"功能增强",
 			type:"group",
 			columns:1,
-			items:{
+			list:{
 				hideFeedContent:{
 					text:"隐藏新鲜事具体内容",
 					value:false,
@@ -324,7 +319,7 @@ XNR.prototype={
 			text:"其他",
 			type:"group",
 			columns:1,
-			items:{
+			list:{
 				markFeedAsRead:{
 					text:"把不需要的新鲜事设为已读",
 					value:false},
@@ -333,37 +328,42 @@ XNR.prototype={
 					type:"edit",
 					value:"论坛\nhttp://club.renren.com/"},
 				headAmount:{
+					text:"头像最大数量",
 					info:"限制头像列表中头像显示最大数量，不会影响到共同好友列表",
-					type:"input",
+					type:"text",
 					value:12},
 				checkFeedInterval:{
 					text:"新鲜事检查间隔",
 					value:30,
-					type:"input"},
+					type:"text"},
 			},
 		},
 		update:{
 			text:"自动更新",
 			type:"group",
 			columns:1,
-			items:{
+			list:{
 				checkUpdate:{
 					text:"自动检查脚本更新",
 					value:true,
 					fn3:checkUpdate,
-					argus3:[["@checkLink","@pageLink","@scriptLink","@lastUpdate","@xnr_update"]]},
+					argus3:[["@checkLink","@pageLink","@scriptLink","@lastUpdate"]]},
 				lastUpdate:{
 					text:"最后一次检查更新时间",
+					type:"label",
 					value:""},
 				checkLink:{
 					text:"检查更新地址",
-					value:"http://userscripts.org/scripts/source/45836.meta.js"},
+					value:"http://userscripts.org/scripts/source/45836.meta.js",
+					type:"text"},
 				pageLink:{
 					text:"脚本主页地址",
-					value:"http://userscripts.org/scripts/show/45836"},
+					value:"http://userscripts.org/scripts/show/45836",
+					type:"text"},
 				scriptLink:{
 					text:"脚本下载地址",
-					value:"http://userscripts.org/scripts/source/45836.user.js"},
+					value:"http://userscripts.org/scripts/source/45836.user.js",
+					type:"text"},
 			},
 		},
 	},
@@ -850,25 +850,15 @@ function $get(url,func,userData) {
 		}
 	}
 };
-// TODO 初始化代码移进init
 // 图片缓存
-var imgCache=localStorage.getItem("xnr_cache");
-imgCache=imgCache?JSON.parse(imgCache):{};
-for(id in imgCache) {
-	if(imgCache[id].life<=0) {
-		delete imgCache[id];
-	} else {
-		imgCache[id].life--;
-	}
-};
-// 新鲜事ID
-localStorage.setItem("xnr_feed",null);
+var imgCache;
+
 var $=XNR;
 
 //清除广告
 function removeAds() {
 	$(".ad-bar", ".banner", ".adimgr", ".blank-holder", ".blank-bar", ".renrenAdPanel", ".side-item.template").remove();
-	$("#sd_ad", "#showAD", "#huge-ad", "#rrtvcSearchTip", "#top-ads", "#bottom-ads", "#main-ads").remove();
+	$("#sd_ad", "#showAD", "#huge-ad", "#rrtvcSearchTip", "#top-ads", "#bottom-ads", "#main-ads", "#n-cAD").remove();
 	// 混迹于新鲜事中的广告
 	$("ul#feedHome > li").filter("a.dark[href^='http://post.renren.com/click.do?']").remove();
 };
@@ -1869,10 +1859,10 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 	}
 	$get(checkLink,function(url,html) {
 		try {
-			var ver=/@minver[ \t]*(\d+)/.exec(html) || ["","0"];
-			if(parseInt(ver[1])>XNR.prototype.version) {
-				$node("div",'<div><font color=crimson>校内网改造器已有新版本：'+/@version[ \t]*([0-9\.]+)/.exec(html)[1]+'</font> <a id="updateInstall" target="_blank" href="'+scriptLink+'">安装</a> <a id="updateGotoPage" target="_blank" href="'+pageLink+'">去看看</a> <a id="updateLater">以后再说</a></div>').attr({id:"updateNotify",style:"bottom:2px;position:fixed;z-index:100000;background-color:rgb(246,246,246)"}).appendTo(document.body);
-				$("#updateLater","#updateGotoPage","#updateInstall").listen("click",function() {
+			var ver=/@miniver[ \t]*(\d+)/.exec(html) || ["","0"];
+			if(parseInt(ver[1])>XNR.prototype.miniver) {
+				$node("div",'<div><font color=crimson>校内网改造器已有新版本：'+/@version[ \t]*([0-9\.]+)/.exec(html)[1]+'</font><a target="_blank" href="'+scriptLink+'">安装</a><a target="_blank" href="'+pageLink+'">去看看</a><a onclick="return false">以后再说</a></div>').attr({id:"updateNotify",style:"bottom:2px;position:fixed;z-index:100000;background-color:rgb(246,246,246)"}).appendTo(document.body);
+				$("#updateNotify a").listen("click",function() {
 					$("#updateNotify").remove();
 				});
 			} else {
@@ -1899,6 +1889,8 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 		var options=new Object;
 		// 各个功能的执行函数。分四个优先级
 		var funcs=new Array(new Object,new Object,new Object,new Object);
+		// 生成的选项代码
+		var optionsHTML="";
 		// 解析选项函数
 		var parse=function(o) {
 			try {
@@ -1909,13 +1901,30 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 					for(var i=0;i<4;i++) {
 						if(o[op]["fn"+i] && o[op]["value"]===true) {
 							(funcs[i])[op]=o[op]["fn"+i];
+							// 函数的参数也放进funcs里，在函数名后面加个@
 							if(o[op]["argus"+i]) {
 								(funcs[i])[op+"@"]=o[op]["argus"+i];
 							}
 						}
 					}
-					if(o[op].items) {
-						parse(o[op].items);
+					switch((o[op].type || "checkbox")) {
+						case "checkbox":
+							optionsHTML+="<li><input type=\"checkbox\" title=\""+(o[op].info || "")+"\" id=\""+op+"\"/>"+o[op].text+"</li>";
+							break;
+						case "group":
+							optionsHTML+="<h4>"+o[op].text+"</h4><ul class=\"ul"+o[op].columns+"\">";
+							parse(o[op].list);
+							optionsHTML+="</ul>";
+							break;
+						case "text":
+							optionsHTML+="<li>"+o[op].text+"&nbsp;<input type=\"input\" title=\""+(o[op].info || "")+"\" id=\""+op+"\"/></li>";
+							break;
+						case "label":
+							optionsHTML+="<li>"+o[op].text+"</li>";
+							break;
+						case "edit":
+							optionsHTML+="<li>"+o[op].text+"<br/>"+"<textarea id=\""+op+"\" title=\""+(o[op].info || "")+"\"></textarea></li>";
+							break;
 					}
 				}
 			} catch(err) {
@@ -1928,7 +1937,7 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 				for(var i=0;i<4;i++) {
 					var fns=funcs[i];
 					for(var fn in fns) {
-						// 以@结尾的是函数参数，跳过
+						// 以@结尾的是函数的参数，跳过
 						if(/@$/.test(fn)) {
 							continue;
 						}
@@ -1979,6 +1988,19 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 			localStorage.setItem("xnr_save",null);
 		};
 
+		// 建立图片缓存
+		localStorage.getItem("xnr_cache");
+		imgCache=imgCache?JSON.parse(imgCache):{};
+		for(id in imgCache) {
+			if(imgCache[id].life<=0) {
+				delete imgCache[id];
+			} else {
+				imgCache[id].life--;
+			}
+		};
+		// 清除新鲜事ID
+		localStorage.setItem("xnr_feed",null);
+
 		parse(XNR.prototype.options);
 		//获取已经保存的选项
 		try {
@@ -2007,6 +2029,48 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 				exec();
 			});
 		}
+		// 建立选项菜单
+		var menu=$node("div").attr("class","xnr_op").style("display","none");
+		var html="";
+		// 选项菜单的样式
+		html+='<style type="text/css">.xnr_op{width:450px;left:50%;margin-left:-225px;position:fixed;z-index:200000;}.xnr_op *{padding:0;margin:0}.xnr_op .tl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAS0lEQVR42o3OoQ0AIAxEUZYi7NEluggewwy1dMNyBgIJCSe+uTxxKSKuRKQgRRV1ZGicIKOG/NVGa/jB9oPrkzNQWVhZ2FloLBwMnD51rC95s060AAAAAElFTkSuQmCC)}.xnr_op .m{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAQCAYAAADwMZRfAAAAG0lEQVQ4jWMICgraQClmGDVk1JBRQ0YNCdoAAHYawHDC5WlcAAAAAElFTkSuQmCC)}.xnr_op .tr{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAARElEQVR42o3KoREAIAwEMJbi2KNLdBE8pjPUlg3Lo8BwvIhLEZEAB4MOCi0zy23H+TCg/uNR2TjYuDU2Khs7G42NzsZYRf6sL6b2F1EAAAAASUVORK5CYII%3D)}.xnr_op .bl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQY02MICgpaD8QbCGEGILGMWIVTiFXYQqzCdGIVmhOl8P///yDF/cQqNCVKIZLifoIKkTSYQz3YAg06UDivBwBLtawvNrYbVAAAAABJRU5ErkJggg%3D%3D)}.xnr_op .br{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQYlY3KoRUAIAhFUZbyuMdbgkXoFmaw6oaYyP5w2zXgCo6Jcasx1RhqdDVOJa6qMiWOX1ydOh5gAwkE4MDs0B5TPqwv1+d6zQAAAABJRU5ErkJggg%3D%3D)}.xnr_op .border{height:10px;overflow:hidden;width:10px;}.xnr_op h2 span{padding:4px 10px 5px;display:block}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op .content{background:white}.xnr_op .content>h2{background:#5C75AA;font-size:14px;color:white}.xnr_op .ver{float:right}.xnr_op .ops{width:430px;overflow:auto}.xnr_op h4{margin:6px;clear:both;font-size:13px}.xnr_op li{margin-bottom:4px}.xnr_op ul{list-style:none;clear:both;margin-left:15px}.xnr_op .ul5 li{width:20%;float:left}.xnr_op .ul2 li{width:50%;float:left}</style>';
+		html+='<table style="border-spacing:0"><tbody><tr><td class="border tl"></td><td class="border m"></td><td class="border tr"></td></tr><tr><td class="border m"></td><td class="content"><h2><span class="ver"></span><span>校内网改造器</span></h2><div class="ops">';
+		html+=optionsHTML;
+		html+='</div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border m"></td></tr><tr><td class="border bl"></td><td class="border m"></td><td class="border br"></td></tr></tbody></table>';
+		menu.inner(html).appendTo(document.body);
+		// 设置选项的值
+		for(var option in options) {
+			if(typeof options[option]=="boolean") {
+				menu.find("#"+option).prop("checked",options[option]);
+			} else {
+				menu.find("#"+option).prop("value",options[option]);
+			}
+		}
+		menu.find(".ver").text(XNR.prototype.version);
+		menu.find("input.ok").listen("click",function() {
+
+			//TODO save
+		});
+		menu.find("input.cancel").listen("click",function() {
+			$("body>.xnr_op").hide();
+		});
+		$(".nav-body .nav-other").prepend($node("div","<div class=\"menu-title\"><a onclick=\"return false\">改造</a></div>").attr("class","menu"));
+		$(".nav-body .nav-other").firstChild().find("a").listen("click",function(evt) {
+			try {
+				var menu=$("body>.xnr_op");
+				var menuBody=menu.find(".ops");
+				if(menuBody.size()==1) {
+					menuBody.style("height","");
+					menu.show();
+					if(window.innerHeight<menu.prop("offsetHeight")) {
+						menuBody.style("height",(window.innerHeight<200)?"100px":(window.innerHeight-120)+"px");
+					}
+					menu.style("top",parseInt(window.innerHeight-menu.prop("offsetHeight"))/2+"px");
+				}
+			} catch (err) {
+				$error("menu:show",err);
+			}
+		});
 	} catch(err) {
 		$error("init",err);
 		return;
