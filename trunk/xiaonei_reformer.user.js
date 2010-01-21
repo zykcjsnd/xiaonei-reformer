@@ -12,7 +12,7 @@
 // @run-at         document-end
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
 // @version        1.9.99.20100121
-// @miniver        199
+// @miniver        200
 // @author         xz
 // ==/UserScript==
 
@@ -43,7 +43,7 @@ function XNR(o) {
 XNR.prototype={
 	// 脚本版本，供自动更新用，对应header中的@version2
 	version:"1.9.99.20100121",
-	miniver:199,
+	miniver:200,
 	/*
 	 * 选项列表 TODO：待修改
 	 * 每一项存在如下可能的参数：
@@ -313,7 +313,7 @@ XNR.prototype={
 				fixPeopleList:{
 					text:"修正头像列表排版错误",
 					value:false,
-					info:"如果您将浏览器字体的最小大小设成大于12，首页的“最近来访”列表可能会出现因为头像错位的问题。如果您遇到这个问题，请启用此功能。",
+					info:"如果您将浏览器字体的最小大小设成大于12，首页的“最近来访”列表可能会出现头像错位的问题。如果您遇到这个问题，请启用此功能。",
 					fn2:$patchCSS,
 					argus2:[[".profile .extra-column .people-list li.online span img{margin-right:0px}.profile .extra-column .people-list li span.olname a{max-width:42px}"]]},
 
@@ -1482,6 +1482,9 @@ function showImageOnMouseOver() {
 					if($("#xnr_image").attr("orig")==imgId) {
 						showViewer(null,src);
 					}
+				} else {
+					imageCache(imgId,"error");
+					showViewer(null,"error");
 				}
 			} catch(err) {
 				$error("getImage::$get",err);
@@ -1551,6 +1554,31 @@ function showImageOnMouseOver() {
 			}
 		});
 	};
+	//获取日志中图片的大图并显示出来
+	var getBlogImage=function(pageURL,imgId) {
+		$get(pageURL,function(url,html) {
+			try {
+				if(html.search("<body id=\"errorPage\">")!=-1) {
+					imageCache(imgId,"error");
+					showViewer(null,"error");
+					return;
+				}
+				var src=new RegExp("<img .*?src=\"(.*?"+imgId+")\".*?>").exec(html);
+				if(src) {
+					src=src[1];
+					imageCache(imgId,src);
+					if($("#xnr_image").attr("orig")==imgId) {
+						showViewer(null,src);
+					}
+				} else {
+					imageCache(imgId,"error");
+					showViewer(null,"error");
+				}
+			} catch(err) {
+				$error("getBlogImage::$get",err);
+			}
+		});
+	};
 	// 读取/设置图片缓存
 	var imageCache=function(imgId,src) {
 		try {
@@ -1613,7 +1641,7 @@ function showImageOnMouseOver() {
 			if(imgSrc!="") {
 				imgId=imgSrc.substring(imgSrc.lastIndexOf("_"));
 				$('#xnr_image').attr("orig",imgId);
-				if (((imgSrc.indexOf('head_')!=-1 || imgSrc.indexOf('p_head_')!=-1 || imgSrc.indexOf('p_main_')!=-1 || imgSrc.indexOf('main_')!=-1 || ((imgSrc.match(/head\d+\./) || imgSrc.match(/\/H[^\/]*\.jpg/) || imgSrc.indexOf("head.xiaonei.com/photos/")!=-1) && imgSrc.indexOf('_')==-1)) && (t.parentNode.tagName=="A" || (t.parentNode.tagName=="I" && t.parentNode.parentNode.tagName=="A"))) || imgSrc.indexOf('tiny_')!=-1 || imgSrc.match(/tiny\d+\./)) {
+				if (((imgSrc.indexOf('head_')!=-1 || imgSrc.match(/[bp]_head_/) || imgSrc.match(/[bp]_main_/) || imgSrc.indexOf('main_')!=-1 || ((imgSrc.match(/head\d+\./) || imgSrc.match(/\/H[^\/]*\.jpg/) || imgSrc.indexOf("head.xiaonei.com/photos/")!=-1) && imgSrc.indexOf('_')==-1)) && (t.parentNode.tagName=="A" || (t.parentNode.tagName=="I" && t.parentNode.parentNode.tagName=="A"))) || imgSrc.indexOf('tiny_')!=-1 || imgSrc.match(/tiny\d+\./)) {
 					if(!pageURL && t.parentNode.tagName=="A") {
 						pageURL=t.parentNode.href;
 						if(pageURL.indexOf("javascript:")!=-1) {
@@ -1667,6 +1695,14 @@ function showImageOnMouseOver() {
 						getAlbumImage(pageURL,0,imgId,imgDate);
 						return;
 					}
+
+					//日志中的图片
+					if(pageURL.indexOf("blog.renren.com/GetEntry.do?")!=-1) {
+						showViewer(evt.pageX);
+						getBlogImage(pageURL,imgId);
+						return;
+					}
+
 					//一般图片或被圈相片或公共主页上的图片
 					if(pageURL.indexOf("getphoto.do")!=-1 || pageURL.indexOf("gettagphoto.do")!=-1 || pageURL.indexOf("page.renren.com/photo/photo?")!=-1 || pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/photo-[0-9]+/)) {
 						showViewer(evt.pageX);
