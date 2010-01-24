@@ -1,14 +1,15 @@
 {
 	"name": "人人网改造器",
-	"version": "1.9.99.199",
+	"version": "1.9.99.200",
 	"description": "为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能……",
 	"icons": { "16": "icon16.png", "32": "icon32.png", "48": "icon48.png" },
 	"background_page": "background.html",
-	"permissions": ["http://renren.com/*", "http://*.renren.com/*", "https://renren.com/*", "https://*.renren.com/*"],
+	"permissions": ["http://*/"],
 	"content_scripts": [{
 		"matches": ["http://renren.com/*", "http://*.renren.com/*", "https://renren.com/*", "https://*.renren.com/*"],
-		"js": ["xiaonei_reformer.min.user.js"],
-		"run_at": "document_end"
+		"js": ["xiaonei_reformer.user.js"],
+		"run_at": "document_end",
+		"all_frames": true
 	}]
 }
 
