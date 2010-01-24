@@ -5,13 +5,9 @@
 // @include        http://*.renren.com/*
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
-// @match          http://renren.com/*
-// @match          http://*.renren.com/*
-// @match          https://renren.com/*
-// @match          https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.9.99.20100123
-// @miniver        200
+// @version        1.9.99.20100124
+// @miniver        202
 // @author         xz
 // ==/UserScript==
 
@@ -41,8 +37,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，供自动更新用，对应header中的@version2
-	version:"1.9.99.20100121",
-	miniver:200,
+	version:"1.9.99.20100124",
+	miniver:202,
 	/*
 	 * 选项列表 TODO：待修改
 	 * 每一项存在如下可能的参数：
@@ -93,10 +89,14 @@ XNR.prototype={
 					text:"去除首页顶部通知",
 					value:true,
 					fn1:removePageTopNotice},
-				removeNewStar:{
-					text:"去除人气之星/新人栏",
+				removePageTopNotice:{
+					text:"去除首页顶部通知",
 					value:true,
-					fn1:removeNewStar},
+					fn1:removePageTopNotice},
+				removeNewStar:{
+					text:"去除首页发布框下的活动标签",
+					value:false,
+					fn1:removeActivityLabel},
 				removePaintReminder:{
 					text:"去除装扮主页提示",
 					value:true,
@@ -245,16 +245,52 @@ XNR.prototype={
 					argus1:[["@markFeedAsRead","iFilm"]]},
 			}
 		},
-		reform:{
-			text:"改造界面",
+		sweepNavBar:{
+			text:"改造导航栏",
 			type:"group",
-			columns:1,
+			columns:2,
 			list:{
+				widenNavBar:{
+					text:"加宽导航栏",
+					value:false,
+					fn2:widenNavBar,
+				},
+				removeNavPaint:{
+					text:"去除“装扮”链接",
+					value:false,
+					fn1:removeNavBarItem,
+					argus1:[["i.renren.com/shop"]],
+				},
+				removeNavGame:{
+					text:"去除“游戏”链接",
+					value:false,
+					fn1:removeNavBarItem,
+					argus1:[["game.renren.com"]],
+				},
+				removeNavVIP:{
+					text:"去除“升级VIP”链接",
+					value:false,
+					fn1:removeNavBarItem,
+					argus1:[["i.renren.com/pay"]],
+				},
+				removeNavPay:{
+					text:"去除“充值”链接",
+					value:false,
+					fn1:removeNavBarItem,
+					argus1:[["pay.renren.com"]],
+				},
+				removeNavInvite:{
+					text:"去除“邀请”链接",
+					value:false,
+					fn1:removeNavBarItem,
+					argus1:[["invite.renren.com"]],
+				},
 				addNavBarItem:{
 					text:"增加导航栏项目",
 					value:false,
 					fn2:addNavBarItem,
 					argus2:[["@navExtraContent"]],
+					style:"clear:both",
 					items:{
 						navExtraContent:{
 						text:"", //"导航栏新增项内容",
@@ -262,15 +298,25 @@ XNR.prototype={
 						type:"edit",
 						style:"width:350px;height:50px",
 						value:"论坛\nhttp://club.renren.com/"},
-					}},
-				widenNavBar:{
-					text:"加宽导航栏",
-					value:false,
-					fn2:widenNavBar},
+					},
+				},
+			},
+		},
+		reform:{
+			text:"改造界面",
+			type:"group",
+			columns:1,
+			list:{
 				recoverOriginalTheme:{
 					text:"使用早期的深蓝色主题（不会处理有模板的页面）",
 					value:true,
 					fn0:recoverOriginalTheme},
+				recoverBigDeleteBtn:{
+					text:"使用大号新鲜事删除按钮",
+					value:false,
+					fn2:$patchCSS,
+					argus2:[["ul.richlist.feeds li a.delete{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -115px 0 transparent;height:18px;width:18px}ul.richlist.feeds li a.delete:hover{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -133px 0 transparent;height:18px;width:18px}"]],
+				},
 				showImagesInOnePage:{
 					text:"相册所有图片在一页中显示",
 					value:false,
@@ -363,7 +409,7 @@ XNR.prototype={
 				},
 				showMatualFriends:{
 					text:"显示共同好友",
-					value:true,
+					value:false,
 					fn3:showMatualFriends,
 				},
 				removeFriendRestriction:{
@@ -914,7 +960,7 @@ function $get(url,func,userData) {
 	} catch(err) {
 		try {
 			// Chrome/Chromium
-			chrome.extension.sendRequest({action:"httpGet",url:url,userData:userData},function(response) {
+			chrome.extension.sendRequest({action:"httpGet",url:url,userData:userData,data:true},function(response) {
 				func(url,response.data,userData);
 			});
 		} catch(err) {
@@ -990,6 +1036,11 @@ function removePageTopNotice() {
 	$(".notice-holder","#notice_system").remove();
 };
 
+//移除状态发布框下的活动标签
+function removeActivityLabel() {
+	$(".status-publisher div.footer").remove();
+};
+
 //移除人气之星/新人栏
 function removeNewStar() {
 	$(".star-new").remove();
@@ -1043,6 +1094,16 @@ function removeFeeds(markFeedAsRead,feedClass,feedTag) {
 			$(elem).remove();
 		}
 	});
+};
+
+//删除导航栏上的项目
+function removeNavBarItem(link) {
+	if(link) {
+		var nav=$("div.nav-body .menu-title a[href*='"+link+"']");
+		if(nav.size()>0) {
+			nav.parent().parent().remove();
+		}
+	}
 };
 
 //在导航栏上增加项目
@@ -1118,7 +1179,7 @@ function recoverOriginalTheme() {
 	css+=".profile-actions a:hover{background-color:"+BCOLOR+"}";
 
 	// 提交按钮的背景色
-	css+=".input-button,.input-submit,.inputsubmit{background-color:"+XCOLOR+"}";
+	css+=".input-button,.input-submit,.inputsubmit,.subbutton{background-color:"+XCOLOR+"}";
 
 	// 分页项的鼠标移过时的背景色
 	css+=".pagerpro li a:hover,#pager a:hover,.page a:hover{background-color:"+BCOLOR+"}";
@@ -1664,7 +1725,7 @@ function showImageOnMouseOver() {
 			if(imgSrc!="") {
 				imgId=imgSrc.substring(imgSrc.lastIndexOf("_"));
 				$('#xnr_image').attr("orig",imgId);
-				if (((imgSrc.indexOf('head_')!=-1 || imgSrc.match(/[bp]_head_/) || imgSrc.match(/[bp]_main_/) || imgSrc.indexOf('main_')!=-1 || ((imgSrc.match(/head\d+\./) || imgSrc.match(/\/H[^\/]*\.jpg/) || imgSrc.indexOf("head.xiaonei.com/photos/")!=-1) && imgSrc.indexOf('_')==-1)) && (t.parentNode.tagName=="A" || (t.parentNode.tagName=="I" && t.parentNode.parentNode.tagName=="A"))) || imgSrc.indexOf('tiny_')!=-1 || imgSrc.match(/tiny\d+\./)) {
+				if (((imgSrc.match(/[^_]head_/) || imgSrc.match(/[bhp]_head_/) || imgSrc.match(/[bhp]_main_/) || imgSrc.match(/[^_]main_/) || ((imgSrc.match(/head\d+\./) || imgSrc.match(/\/H[^\/]*\.jpg/) || imgSrc.indexOf("head.xiaonei.com/photos/")!=-1) && imgSrc.indexOf('_')==-1)) && (t.parentNode.tagName=="A" || (t.parentNode.tagName=="I" && t.parentNode.parentNode.tagName=="A"))) || imgSrc.indexOf('tiny_')!=-1 || imgSrc.match(/tiny\d+\./)) {
 					if(!pageURL && t.parentNode.tagName=="A") {
 						pageURL=t.parentNode.href;
 						if(pageURL.indexOf("javascript:")!=-1) {
@@ -1772,15 +1833,15 @@ function showMatualFriends() {
 	if(sidebar.size()==0) {
 		return;
 	}
-	var mfdiv=$node('div','<h4 class="box-header"><span id="mfSpan">共同好友 (载入中...)</span>&nbsp;<a class="count" id="mfCount" style="text-decoration:none;">(0)</a></h4><div class="box-body" style="max-height:210px; overflow-y:auto; padding-left:0pt;"><div class="clearfix"><ul class="people-list" id="mfList"></ul></div></div>').attr({id:"mfBox",class:"profile-friends box"}).appendTo(sidebar);
-	var myfriends=[];
 	//载入自己的好友列表
 	$get('http://photo.renren.com/gettagfriends.do',function(url,html) {
 		try {
+			var myfriends=[];
 			var friends=$parse(html).friends_ajax;
 			for(var i in friends) {
 				myfriends[friends[i].id]=1;
 			}
+			$node('div','<h4 class="box-header"><span id="mfSpan">共同好友 (载入中...)</span>&nbsp;<a class="count" id="mfCount" style="text-decoration:none;">(0)</a></h4><div class="box-body" style="max-height:210px;overflow-y:auto;padding-left:0pt;"><div class="clearfix"><ul class="people-list" id="mfList"></ul></div></div>').attr({id:"mfBox",class:"profile-friends box"}).appendTo(sidebar);
 			loadFriends(0,fid,myfriends,0);
 		} catch(err) {
 			$error("showMutualFriends::$get",err);
@@ -2008,14 +2069,13 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 		if (self != window.top && (document.designMode=="on" || (!document.body.id && !document.body.className))) {
 			return;
 		}
-		// 运行环境 0:firefox 1:chrome/chromium extension 2:unknown
-		var env=2;
+		// 运行环境 1:firefox 2:chrome/chromium extension -1:unknown
+		const UNKNOWN=-1,FIREFOX=1,CHROME=2;
+		var env=UNKNOWN;
 		if(!window.chrome && GM_getValue) {
-			// firefox
-			env=0;
+			env=FIREFOX;
 		} else if(window.chrome && chrome.extension) {
-			// chrome/chromium
-			env=1;
+			env=CHROME;
 		};
 		// 各种选项
 		var options=new Object;
@@ -2159,7 +2219,7 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 					if(!elem.value.match(elem.getAttribute("check"))) {
 						alert(elem.getAttribute("fail"));
 						checkPass=fail;
-						return;
+						return false;
 					}
 				});
 				if(!checkPass) {
@@ -2215,17 +2275,12 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 				options[option]=data[option];
 			}
 			try {
-				if(env==0) {
-					// Firefox
+				if(env==FIREFOX) {
 					for(var option in data) {
 						GM_setValue(option,data[option]);
 					}
-				} else if(env==1) {
-					// Chrome/Chromium 插件
+				} else if(env==CHROME) {
 					chrome.extension.sendRequest({action:"set",data:options});
-				} else {
-					// 其他
-					localStorage.setItem("xnr_options",JSON.stringify(options));
 				}
 			} catch(err) {
 				$error("save",err);
@@ -2247,7 +2302,7 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 
 		parse(XNR.prototype.options);
 		//获取已经保存的选项
-		if(env==0) {
+		if(env==FIREFOX) {
 			//Firefox
 			for(var option in options) {
 				options[option]=GM_getValue(option,options[option]);
@@ -2255,7 +2310,7 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 			save();
 			exec();
 			buildMenu();
-		} else if(env==1) {
+		} else if(env==CHROME) {
 			//Chrome/Chromium 插件
 			chrome.extension.sendRequest({action:"get"}, function(response) {
 				for(var i in response.data) {
@@ -2265,15 +2320,6 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 				exec();
 				setTimeout(buildMenu,0);
 			});
-		} else {
-			// 其他
-			var saved=$parse(localStorage.getItem("xnr_options")); 
-			for(var option in saved) {
-				options[option]=saved[option];
-			}
-			save();
-			exec();
-			setTimeout(buildMenu,0);
 		}
 	} catch(err) {
 		$error("init",err);
