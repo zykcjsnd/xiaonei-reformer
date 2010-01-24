@@ -4,21 +4,30 @@
 <script>
 chrome.extension.onRequest.addListener(
 function(request, sender, sendResponse) {
-	if (request.action == "set") {
-		localStorage.setItem(request.name,JSON.stringify(request.value))
-		sendResponse({});
-	} else if (request.action == "get") {
-		sendResponse({value: JSON.parse(localStorage.getItem(request.name))});
-	} else if (request.action == "getAll") {
-		var names=request.names.split("|");
-		var options=new Object();
-		for(var i in names) {
-			options[names[i]]=JSON.parse(localStorage.getItem(names[i]));
-		}
-		sendResponse({options:options});
-	} else if (request.action == "request") {
-		var httpReq=$.get(req.url,function(data,text){req.onload(httpReq)});
-		sendResponse({});
+	switch(request.action) {
+		case "set":
+			localStorage.setItem("xnr_options",JSON.stringify(request.data));
+			break;
+		case "get":
+			var options=localStorage.getItem("xnr_options");
+			if(options==null || JSON.stringify(options)=="\"undefined\"") {
+				options={};
+			} else {
+				options=JSON.parse(options);
+			}
+			sendResponse({data:options});
+			break;
+		case "httpGet":
+			var httpReq= new XMLHttpRequest();
+			httpReq.onreadystatechange=function() {
+				if(httpReq.readyState==4 && httpReq.status==200) {
+					sendResponse({data:httpReq.responseText});
+				}
+			};
+		    httpReq.open("GET",request.url,true);
+			//httpReq.setRequestHeader("Cache-Control","no-cache");
+			httpReq.send();
+			break;
 	}
 });
 </script>
