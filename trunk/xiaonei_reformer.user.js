@@ -6,8 +6,9 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        1.9.99.20100124
-// @miniver        202
+// @version1.9.99.20100125
+// @version        1.9.99.20100127
+// @miniver        205
 // @author         xz
 // ==/UserScript==
 
@@ -37,10 +38,10 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，供自动更新用，对应header中的@version2
-	version:"1.9.99.20100124",
-	miniver:202,
+	version:"1.9.99.20100127",
+	miniver:205,
 	/*
-	 * 选项列表 TODO：待修改
+	 * 选项列表 TODO：待加listener属性
 	 * 每一项存在如下可能的参数：
 	 * text:文字描述
 	 * type:类型。有项目分组group，复选框checkbox，标签label，文本框text，文本区域edit，默认为checkbox。
@@ -57,73 +58,83 @@ XNR.prototype={
 	 */
 	options:{
 		cleanup:{
-			text:"清理页面",
-			type:"group",
-			columns:2,
-			list:{
+			category:"清理页面",
+			detail:{
 				removeAds:{
-					text:"清除广告",
+					text:"清除各类广告",
 					value:true,
-					fn0:removeAds},
+					fn0:removeAds
+				},
 				removeStarReminder:{
-					text:"去除升级为星级用户提示",
+					text:"去除升级星级用户提示",
 					value:true,
-					fn1:removeStarReminder},
+					fn1:removeStarReminder
+				},
 				removeMusicPlayer:{
-					text:"去除音乐播放器",
+					text:"去除VIP页面和日志中的音乐播放器",
 					value:false,
-					fn1:removeMusicPlayer},
+					fn1:removeMusicPlayer
+				},
 				removePageTheme:{
 					text:"去除页面主题模板",
 					value:false,
-					fn0:removePageTheme},
+					fn0:removePageTheme
+				},
 				removeBlogTheme:{
 					text:"去除日志信纸",
 					value:false,
-					fn0:removeBlogTheme},
+					fn0:removeBlogTheme
+				},
 				removeXntBar:{
-					text:"去除校内通栏",
+					text:"去除页面底部校内通栏",
 					value:false,
-					fn1:removeXntBar},
+					fn1:removeXntBar
+				},
 				removePageTopNotice:{
 					text:"去除首页顶部通知",
 					value:true,
-					fn1:removePageTopNotice},
+					fn1:removePageTopNotice
+				},
 				removePageTopNotice:{
 					text:"去除首页顶部通知",
 					value:true,
-					fn1:removePageTopNotice},
+					fn1:removePageTopNotice
+				},
 				removeNewStar:{
 					text:"去除首页发布框下的活动标签",
 					value:false,
-					fn1:removeActivityLabel},
-				removePaintReminder:{
-					text:"去除装扮主页提示",
-					value:true,
-					fn1:removePaintReminder},
+					fn1:removeActivityLabel
+				},
 				removeRenRenSurvey:{
-					text:"去除边栏：人人网调查",
+					text:"去除首页右边栏：人人网调查",
 					value:true,
-					fn1:removeRenRenSurvey},
+					fn1:removeRenRenSurvey
+				},
 				removeCommonPage:{
-					text:"去除边栏：公共主页推荐",
+					text:"去除首页右边栏：公共主页推荐",
 					value:false,
-					fn1:removeCommonPage},
+					fn1:removeCommonPage
+				},
 				removeFriendGuide:{
-					text:"去除边栏：寻找/邀请朋友",
+					text:"去除首页右边栏：寻找/邀请朋友",
 					value:false,
-					fn1:removeFriendGuide},
+					fn1:removeFriendGuide
+				},
 				removeCommendation:{
-					text:"去除边栏：推荐/礼物",
+					text:"去除首页右边栏：推荐/礼物",
 					value:false,
-					fn1:removeCommendation},
+					fn1:removeCommendation
+				},
+				removePaintReminder:{
+					text:"去除个人主页右上角装扮主页提示",
+					value:true,
+					fn1:removePaintReminder
+				},
 			},
 		},
 		hideRequest:{
-			text:"隐藏请求",
-			type:"group",
-			columns:2,
-			list:{
+			category:"清理请求",
+			detail:{
 				removeAppRequest:{
 					text:"隐藏应用请求提示",
 					value:false,
@@ -157,160 +168,160 @@ XNR.prototype={
 			},
 		},
 		sweepFeeds:{
-			text:"清理新鲜事",
-			type:"group",
-			columns:5,
-			items:{
+			category:"清理新鲜事",
+			detail:{
+				GROUP1:{
+					text:"屏蔽以下类型的新鲜事",
+					columns:5,
+					fn1:removeFeeds,
+					list:{
+						removeBlogFeed:{
+							text:"日志",
+							value:false,
+							argus1:[["@markFeedAsRead","iBlog"]]
+						},
+						removePollFeed:{
+							text:"投票",
+							value:false,
+							argus1:[["@markFeedAsRead","iPoll"]]
+						},
+						removeAppFeed:{
+							text:"应用",
+							value:false,
+							argus1:[["@markFeedAsRead","iApp"],["@markFeedAsRead","iSanguo"],["@markFeedAsRead","iMyj"]]
+						},
+						removeActFeed:{
+							text:"活动",
+							value:false,
+							argus1:[["@markFeedAsRead","iActs"]]
+						},
+						removeStatusFeed:{
+							text:"状态",
+							value:false,
+							argus1:[["@markFeedAsRead","iStatus"]]
+						},
+						removeGiftFeed:{
+							text:"礼物",
+							value:false,
+							argus1:[["@markFeedAsRead","iGift"]]
+						},
+						removeFriendFeed:{
+							text:"交友",
+							value:false,
+							argus1:[["@markFeedAsRead","iFriend"]]
+						},
+						removeImageFeed:{
+							text:"照片",
+							value:false,
+							argus1:[["@markFeedAsRead","iPhoto","相册"]]
+						},
+						removeImageTagFeed:{
+							text:"圈人",
+							value:false,
+							argus1:[["@markFeedAsRead","iPhoto","圈人"]]
+						},
+						removeProfileFeed:{
+							text:"头像",
+							value:false,
+							argus1:[["@markFeedAsRead","iProfile"]]
+						},
+						removeCommentFeed:{
+							text:"评论",
+							value:false,
+							argus1:[["@markFeedAsRead","iPost"]]
+						},
+						removeClassFeed:{
+							text:"班级",
+							value:false,
+							argus1:[["@markFeedAsRead","iClass"]]
+						},
+						removeShareFeed:{
+							text:"分享",
+							value:false,
+							argus1:[["@markFeedAsRead","iShare"]]
+						},
+						removeVipFeed:{
+							text:"VIP",
+							value:false,
+							argus1:[["@markFeedAsRead","iVip"]]
+						},
+						removeFilmFeed:{
+							text:"影评",
+							value:false,
+							argus1:[["@markFeedAsRead","iFilm"]]
+						},
+					},
+				},
 				markFeedAsRead:{
-					text:"设为已读",
+					text:"将屏蔽的新鲜事设为已读",
 					value:false,
-					style:"margin:5px;float:left;clear:right;",
 				},
 			},
-			list:{
-				removeBlogFeed:{
-					text:"日志",
-					value:false,
-					fn1:removeFeeds,
-					argus1:[["@markFeedAsRead","iBlog"]]},
-				removePollFeed:{
-					text:"投票",
-					value:false,
-					fn1:removeFeeds,
-					argus1:[["@markFeedAsRead","iPoll"]]},
-				removeAppFeed:{
-					text:"应用",
-					value:false,
-					fn1:removeFeeds,
-					argus1:[["@markFeedAsRead","iApp"],["@markFeedAsRead","iSanguo"],["@markFeedAsRead","iMyj"]]},
-				removeActFeed:{
-					text:"活动",
-					value:false,
-					fn1:removeFeeds,
-					argus1:[["@markFeedAsRead","iActs"]]},
-				removeStatusFeed:{
-					text:"状态",
-					value:false,
-					fn1:removeFeeds,
-					argus1:[["@markFeedAsRead","iStatus"]]},
-				removeGiftFeed:{
-					text:"礼物",
-					value:false,
-					fn1:removeFeeds,
-					argus1:[["@markFeedAsRead","iGift"]]},
-				removeFriendFeed:{
-					text:"交友",
-					value:false,
-					fn1:removeFeeds,
-					argus1:[["@markFeedAsRead","iFriend"]]},
-				removeImageFeed:{
-					text:"照片",
-					value:false,
-					fn1:removeFeeds,
-					argus1:[["@markFeedAsRead","iPhoto","相册"]]},
-				removeImageTagFeed:{
-					text:"圈人",
-					value:false,
-					fn1:removeFeeds,
-					argus1:[["@markFeedAsRead","iPhoto","圈人"]]},
-				removeProfileFeed:{
-					text:"头像",
-					value:false,
-					fn1:removeFeeds,
-					argus1:[["@markFeedAsRead","iProfile"]]},
-				removeCommentFeed:{
-					text:"评论",
-					value:false,
-					fn1:removeFeeds,
-					argus1:[["@markFeedAsRead","iPost"]]},
-				removeClassFeed:{
-					text:"班级",
-					value:false,
-					fn1:removeFeeds,
-					argus1:[["@markFeedAsRead","iClass"]]},
-				removeShareFeed:{
-					text:"分享",
-					value:false,
-					fn1:removeFeeds,
-					argus1:[["@markFeedAsRead","iShare"]]},
-				removeVipFeed:{
-					text:"VIP",
-					value:false,
-					fn1:removeFeeds,
-					argus1:[["@markFeedAsRead","iVip"]]},
-				removeFilmFeed:{
-					text:"影评",
-					value:false,
-					fn1:removeFeeds,
-					argus1:[["@markFeedAsRead","iFilm"]]},
-			}
 		},
 		sweepNavBar:{
-			text:"改造导航栏",
-			type:"group",
-			columns:2,
-			list:{
+			category:"改造导航栏",
+			detail:{
+				GROUP1:{
+					text:"去除以下链接",
+					columns:3,
+					fn1:removeNavBarItem,
+					list:{
+						removeNavPaint:{
+							text:"装扮",
+							value:false,
+							argus1:[["i.renren.com/shop"]],
+						},
+						removeNavApp:{
+							text:"应用",
+							value:false,
+							argus1:[["app.renren.com"]],
+						},
+						removeNavGame:{
+							text:"游戏",
+							value:false,
+							argus1:[["game.renren.com"]],
+						},
+						removeNavVIP:{
+							text:"升级VIP",
+							value:false,
+							argus1:[["i.renren.com/pay"]],
+						},
+						removeNavPay:{
+							text:"充值",
+							value:false,
+							argus1:[["pay.renren.com"]],
+						},
+						removeNavInvite:{
+							text:"邀请",
+							value:false,
+							argus1:[["invite.renren.com"]],
+						},
+					},
+				},
 				widenNavBar:{
 					text:"加宽导航栏",
 					value:false,
 					fn2:widenNavBar,
 				},
-				removeNavPaint:{
-					text:"去除“装扮”链接",
-					value:false,
-					fn1:removeNavBarItem,
-					argus1:[["i.renren.com/shop"]],
-				},
-				removeNavGame:{
-					text:"去除“游戏”链接",
-					value:false,
-					fn1:removeNavBarItem,
-					argus1:[["game.renren.com"]],
-				},
-				removeNavVIP:{
-					text:"去除“升级VIP”链接",
-					value:false,
-					fn1:removeNavBarItem,
-					argus1:[["i.renren.com/pay"]],
-				},
-				removeNavPay:{
-					text:"去除“充值”链接",
-					value:false,
-					fn1:removeNavBarItem,
-					argus1:[["pay.renren.com"]],
-				},
-				removeNavInvite:{
-					text:"去除“邀请”链接",
-					value:false,
-					fn1:removeNavBarItem,
-					argus1:[["invite.renren.com"]],
-				},
 				addNavBarItem:{
 					text:"增加导航栏项目",
+					type:"checkedit",
 					value:false,
+					info:"导航栏上新增项的内容。每两行表示一项，第一行为名称，第二行为地址。",
+					ctrl:{option:"navExtraContent",value:"论坛\nhttp://club.renren.com/",style:"width:280px;height:80px"},
 					fn2:addNavBarItem,
 					argus2:[["@navExtraContent"]],
-					style:"clear:both",
-					items:{
-						navExtraContent:{
-						text:"", //"导航栏新增项内容",
-						info:"导航栏上新增项的内容。每两行表示一项，第一行为名称，第二行为地址。",
-						type:"edit",
-						style:"width:350px;height:50px",
-						value:"论坛\nhttp://club.renren.com/"},
-					},
 				},
 			},
 		},
 		reform:{
-			text:"改造界面",
-			type:"group",
-			columns:1,
-			list:{
+			category:"改造界面",
+			detail:{
 				recoverOriginalTheme:{
-					text:"使用早期的深蓝色主题（不会处理有模板的页面）",
+					text:"使用早期的深蓝色主题（不影响有模板的页面）",
 					value:true,
-					fn0:recoverOriginalTheme},
+					fn0:recoverOriginalTheme,
+				},
 				recoverBigDeleteBtn:{
 					text:"使用大号新鲜事删除按钮",
 					value:false,
@@ -320,63 +331,52 @@ XNR.prototype={
 				showImagesInOnePage:{
 					text:"相册所有图片在一页中显示",
 					value:false,
-					fn3:showImagesInOnePage},
+					fn3:showImagesInOnePage,
+				},
 				removeFontRestriction:{
 					text:"去除页面的字体限制",
 					value:true,
-					fn2:removeFontRestriction},
+					fn2:removeFontRestriction,
+				},
 				limitHeadAmount:{
-					text:"限制头像列表中头像数量",
+					text:"限制头像列表中头像数量最多@@个",
+					type:"checktext",
 					value:false,
+					info:"限制头像列表中头像显示最大数量，不会影响到共同好友列表",
+					ctrl:{option:"headAmount",value:12,verify:"^[0-9]{1,2}$",failInfo:"请在头像最大数量处输入1～2位整数",style:"width:30px;"},
 					fn1:limitHeadAmount,
 					argus1:[["@headAmount"]],
-					items:{
-						headAmount:{
-							text:"头像最大数量",
-							info:"限制头像列表中头像显示最大数量，不会影响到共同好友列表",
-							type:"text",
-							style:"width:30px;",
-							check:"^[0-9]{1,2}$",
-							fail:"请在头像最大数量处输入1～2位整数",
-							value:12,
+				},
+				GROUP1:{
+					text:"修正界面错误",
+					columns:1,
+					fn2:$patchCSS,
+					list:{
+						fixClubContent:{
+							text:"修正论坛帖子排版错误",
+							value:false,
+							info:"如果您将浏览器字体的最小大小设成大于12，可能会出现论坛的帖子正文偏右的错误。如果您遇到这个问题，请启用此功能。",
+							argus2:[["#articlehome #comments .content,#articlehome #comments .signature{float:left;clear:both}"]],
+						},
+						fixPeopleList:{
+							text:"修正头像列表排版错误",
+							value:false,
+							info:"如果您将浏览器字体的最小大小设成大于12，首页的“最近来访”列表可能会出现头像错位的问题。如果您遇到这个问题，请启用此功能。",
+							argus2:[[".profile .extra-column .people-list li.online span img{margin-right:0px}.profile .extra-column .people-list li span.olname a{max-width:42px}"]],
+						},
+						fixNavItem:{
+							text:"修正导航栏项目高度",
+							value:false,
+							info:"如果您将浏览器字体的最小大小设成大于12，可能会出现导航栏上的项目高度过大的错误。如果您遇到这个问题，请启用此功能。",
+							argus2:[[".navigation .menu-title a{max-height:35px}"]],
 						},
 					}
-				},
+				}
 			},
 		},
-		patch:{
-			text:"修正界面错误",
-			type:"group",
-			columns:1,
-			list:{
-				fixClubContent:{
-					text:"修正论坛帖子排版错误",
-					value:false,
-					info:"如果您将浏览器字体的最小大小设成大于12，可能会出现论坛的帖子正文偏右的错误。如果您遇到这个问题，请启用此功能。",
-					fn2:$patchCSS,
-					argus2:[["#articlehome #comments .content,#articlehome #comments .signature{float:left;clear:both}"]],
-				},
-				fixPeopleList:{
-					text:"修正头像列表排版错误",
-					value:false,
-					info:"如果您将浏览器字体的最小大小设成大于12，首页的“最近来访”列表可能会出现头像错位的问题。如果您遇到这个问题，请启用此功能。",
-					fn2:$patchCSS,
-					argus2:[[".profile .extra-column .people-list li.online span img{margin-right:0px}.profile .extra-column .people-list li span.olname a{max-width:42px}"]],
-				},
-				fixNavItem:{
-					text:"修正导航栏项目高度",
-					value:false,
-					info:"如果您将浏览器字体的最小大小设成大于12，可能会出现导航栏上的项目高度过大的错误。如果您遇到这个问题，请启用此功能。",
-					fn2:$patchCSS,
-					argus2:[[".navigation .menu-title a{max-height:35px}"]],
-				}
-			}
-		},
 		enhancement:{
-			text:"功能增强",
-			type:"group",
-			columns:1,
-			list:{
+			category:"功能增强",
+			detail:{
 				hideFeedContent:{
 					text:"隐藏新鲜事具体内容",
 					value:false,
@@ -425,56 +425,49 @@ XNR.prototype={
 					fn3:removeNicknameRestriction,
 				},
 				autoRefreshFeeds:{
-					text:"自动检查新鲜事更新",
+					text:"自动检查新鲜事更新，每隔@@秒",
+					type:"checktext",
 					value:true,
+					ctrl:{option:"checkFeedInterval",value:30,verify:"^[3-9][0-9]$|^[1-9][0-9]{2,}$",failInfo:"为防止占用太多资源，新鲜事检查间隔时间至少为30秒。",style:"width:30px;"},
+					
 					fn3:autoRefreshFeeds,
 					argus3:[["@checkFeedInterval"]],
-					items:{
-						checkFeedInterval:{
-							text:"每间隔",
-							value:30,
-							style:"width:30px;",
-							check:"^[3-9][0-9]$|^[1-9][0-9]{2,}$",
-							fail:"为防止占用太多资源，新鲜事检查间隔时间至少为30秒。",
-							type:"text"},
-						checkFeedSecond:{
-							text:"秒",
-							type:"label",
-						},
-					},
 				},
 			}
 		},
 		update:{
-			text:"自动更新",
-			type:"group",
-			columns:1,
-			list:{
+			category:"自动更新",
+			detail:{
 				checkUpdate:{
 					text:"自动检查脚本更新",
 					value:true,
 					fn3:checkUpdate,
-					argus3:[["@checkLink","@pageLink","@scriptLink","@lastUpdate"]]},
+					argus3:[["@checkLink","@pageLink","@scriptLink","@lastUpdate"]],
+				},
 				lastUpdate:{
-					text:"最后一次检查更新时间",
+					text:"最后一次检查更新时间：@@",
 					type:"label",
-					value:"未知"},
+					value:"未知",
+				},
 				checkLink:{
-					text:"检查更新地址",
+					text:"检查更新地址：@@",
+					type:"text",
 					value:"http://userscripts.org/scripts/source/45836.meta.js",
-					style:"width:280px;",
-					type:"text"},
+					style:"width:275px;",
+				},
 				pageLink:{
-					text:"脚本主页地址",
+					text:"脚本主页地址：@@",
+					type:"text",
 					value:"http://userscripts.org/scripts/show/45836",
-					style:"width:280px;",
-					type:"text"},
+					style:"width:275px;",
+				},
 				scriptLink:{
-					text:"脚本下载地址",
+					text:"脚本下载地址：@@",
+					type:"text",
 					value:"http://userscripts.org/scripts/source/45836.user.js",
-					style:"width:280px;",
-					type:"text"},
-			},
+					style:"width:275px;",
+				},
+			}
 		},
 	},
 	// 删除对象所有的DOM节点
@@ -778,6 +771,26 @@ XNR.prototype={
 		}
 		return this;
 	},
+	// 增加一个类
+	addClass: function(str) {
+		this.each(function(index,elem) {
+			var xnr=$(elem);
+			var c=xnr.attr("class");
+			if(!c.match(new RegExp("\\b"+str+"\\b"))) {
+				xnr.attr("class",c+" "+str);
+			}
+		});
+	},
+	// 去除一个类
+	removeClass:function(str) {
+		this.each(function(index,elem) {
+			var xnr=$(elem);
+			var c=xnr.attr("class");
+			if(c.match(new RegExp("\\b"+str+"\\b"))) {
+				xnr.attr("class",c.replace(new RegExp("\\b"+str+"\\b"),"").replace(/^ +| +$/g,""));
+			}
+		});
+	},
 	// 获取/设置文本内容
 	text:function(txt) {
 		if(txt) {
@@ -1048,7 +1061,7 @@ function removeNewStar() {
 
 //移除装扮主页提示
 function removePaintReminder() {
-	$(".enter-paints").remove();
+	$(".enter-paints","#paintself","#paintother").remove();
 };
 
 //移除人人网调查
@@ -1160,20 +1173,19 @@ function recoverOriginalTheme() {
 	// 上传照片页分类Tab颜色
 	css+="#self-nav .selected a{background-color:"+BCOLOR+"}#self-nav .selected a:hover{background-color:"+BCOLOR+"}#self-nav li a{color:"+XCOLOR+"}";
 	// 导航栏背景色
-	var nav=$("div.navigation.clearfix").get();
-	if(nav) {
-		var bc=document.defaultView.getComputedStyle(nav,null).backgroundColor;
+	$("div.navigation.clearfix",".vip-header-new").each(function(index,elem) {
+		var bc=document.defaultView.getComputedStyle(elem,null).backgroundColor;
 		if(bc=="rgb(0, 94, 172)" || bc=="transparent") {
-			css+=".navigation{background:"+FCOLOR+"}";
+			css+=".navigation,.vip-header-new{background:"+FCOLOR+"}";
 		}
-	}
+	});
 	// 导航栏项目鼠标移过时的背景色
 	css+=".navigation .menu-title a:hover{background-color:"+BCOLOR+"}";
 	// 导航栏设置下拉菜单项目的背景色
 	css+=".menu-dropdown-border > div:not(.app-actions) a:hover{background-color:"+BCOLOR+" !important}";
 
 	// 首页左侧应用栏的背景色，回复的背景色
-	css+=".statuscmtitem, .home #sidebar{background-color:"+SCOLOR+"}";
+	css+=".statuscmtitem,.panel.bookmarks{background-color:"+SCOLOR+"}";
 
 	// 主页上头像下方操作栏
 	css+=".profile-actions a:hover{background-color:"+BCOLOR+"}";
@@ -1791,6 +1803,7 @@ function showImageOnMouseOver() {
 					if(pageURL.indexOf("getphoto.do")!=-1 || pageURL.indexOf("gettagphoto.do")!=-1 || pageURL.indexOf("page.renren.com/photo/photo?")!=-1 || pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/photo-[0-9]+/)) {
 						showViewer(evt.pageX);
 						getImage(pageURL,imgId);
+						return;
 					}
 				}
 			}
@@ -1850,7 +1863,7 @@ function showMatualFriends() {
 
 	//获取fid的好友
 	function loadFriends(page,fid,mfriends,mfcount) {
-		$get("http://friend.renren.com/GetFriendList.do?curpage="+page+"&id="+fid,function(url,html,mfriends) {
+		$get("http://friend.renren.com/GetFriendList.do?curpage="+page+"&id="+fid,function(url,html) {
 			try {
 				var friends=[];
 				var friendInfo;
@@ -1875,7 +1888,7 @@ function showMatualFriends() {
 			} catch(err) {
 				$error("loadFriends::$get",err);
 			}
-		},mfriends);
+		});
 	};
 };
 
@@ -2037,7 +2050,6 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 	if(!manually && (today-last)<3600000*24) {
 		return;
 	}
-	$save("lastUpdate",today.toString());
 	if(manually) {
 		$("#updateNow").attr({disabled:"disabled",value:"检查中..."});
 	}
@@ -2045,11 +2057,13 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 		try {
 			var ver=/@miniver[ \t]*(\d+)/.exec(html) || ["","0"];
 			if(parseInt(ver[1])>XNR.prototype.miniver) {
-				$node("div",'<div><font color=crimson>校内网改造器已有新版本：'+/@version[ \t]*([0-9\.]+)/.exec(html)[1]+'</font>&nbsp;<a target="_blank" href="'+scriptLink+'">安装</a>&nbsp;<a target="_blank" href="'+pageLink+'">去看看</a>&nbsp;<a onclick="return false">以后再说</a></div>').attr({id:"updateNotify",style:"bottom:2px;position:fixed;z-index:100000;background-color:rgb(246,246,246)"}).appendTo(document.body);
+				$node("div",'<div><font color=crimson>校内网改造器已有新版本：'+/@version[ \t]*([0-9\.]+)/.exec(html)[1]+'</font><a target="_blank" href="'+scriptLink+'"> 安装</a><a target="_blank" href="'+pageLink+'"> 去看看</a><a onclick="return false"> 以后再说</a></div>').attr({id:"updateNotify",style:"bottom:2px;position:fixed;z-index:100000;background-color:rgb(246,246,246)"}).appendTo(document.body);
 				$("#updateNotify a").listen("click",function() {
+					$save("lastUpdate",today.toString());
 					$("#updateNotify").remove();
 				});
 			} else {
+				$save("lastUpdate",today.toString());
 				if(manually==true) {
 					alert("没有找到更新版本");
 				}
@@ -2082,115 +2096,110 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 		// 各个功能的执行函数。分四个优先级
 		var funcs=new Array(new Object,new Object,new Object,new Object);
 		// 生成的选项代码
-		var optionsHTML="";
+		var detailHTML="";
+		var categoryHTML="";
 		// 解析选项函数
-		var parse=function(o,related) {
+		var parseDetail=function(o,p) {
 			try {
+				var index=-1;
 				for(var op in o) {
+					index++;
+					// 处理GROUPx
+					if(op.match(/^GROUP[0-9]*$/)) {
+						if(o[op].text!=null) {
+							detailHTML+="<div>"+o[op].text+"<br/>";
+						}
+						detailHTML+="<table><tbody>";
+						parseDetail(o[op].list,o[op]);
+						detailHTML+="</tbody></table></div>";
+						continue;
+					}
+					// 对应的选项名和值
 					if(o[op].value!=null) {
 						options[op]=o[op].value;
 					}
+					if(o[op].ctrl) {
+						options[o[op].ctrl.option]=o[op].ctrl.value;
+					}
+					// 对应的函数
 					for(var i=0;i<4;i++) {
 						if(o[op]["fn"+i]) {
 							(funcs[i])[op]={fn:o[op]["fn"+i],argus:o[op]["argus"+i]};
+						} else if (p && p["fn"+i]) {
+							// 继承父项目（GROUP）的函数
+							(funcs[i])[op]={fn:p["fn"+i],argus:o[op]["argus"+i]};
 						}
 					}
-					if(related) {
-						optionsHTML+="&nbsp;";
-					}
-					if(o[op].newline) {
-						optionsHTML+="<br/>";
+					// 有父项目，为GROUP中的
+					if(p) {
+						if(index%p.columns==0) {
+							detailHTML+="<tr>"
+						}
+						detailHTML+="<td>";
+						// 继承父项目的属性
+						o[op].style+=p.style || "";
+						o[op].type=o[op].type || p.type;
 					}
 					switch(o[op].type || "checkbox") {
 						case "checkbox":
-							optionsHTML+=related?"":"<li>";
-							optionsHTML+=o[op].style?"<div style=\""+o[op].style+"\">":"";
-							optionsHTML+="<input type=\"checkbox\" title=\""+(o[op].info || "")+"\" id=\""+op+"\"/><label title=\""+(o[op].info || "")+"\" for=\""+op+"\">"+o[op].text+"</label>";
-							if(o[op].items) {
-								parse(o[op].items,true);
-							}
-							optionsHTML+=o[op].style?"</div>":"";
-							optionsHTML+=related?"":"</li>";
+							detailHTML+="<div><input style=\""+o[op].style+"\" type=\"checkbox\" title=\""+(o[op].info || "")+"\" id=\""+op+"\"/><label title=\""+(o[op].info || "")+"\" for=\""+op+"\">"+o[op].text+"</label></div>";
 							break;
-						case "group":
-							optionsHTML+="<h4>"+o[op].text+"</h4>";
-							if(o[op].items) {
-								parse(o[op].items,true);
-							}
-							optionsHTML+="<ul class=\"ul"+o[op].columns+"\">";
-							parse(o[op].list);
-							optionsHTML+="</ul>";
+						case "checktext":
+							detailHTML+="<div><input style=\""+o[op].style+"\" type=\"checkbox\" title=\""+(o[op].info || "")+"\" id=\""+op+"\"/><label title=\""+(o[op].info || "")+"\" for=\""+op+"\">";
+							detailHTML+=o[op].text.replace("@@","</label>&nbsp;<input type=\"input\" title=\""+(o[op].info || "")+"\" id=\""+o[op].ctrl.option+"\" style=\""+(o[op].ctrl.style || "")+"\" verify=\""+(o[op].ctrl.verify || "")+"\" failInfo=\""+(o[op].ctrl.failInfo || "")+"\"/>&nbsp;<label title=\""+(o[op].info || "")+"\" for=\""+op+"\">");
+							detailHTML+="</label></div>";
 							break;
 						case "text":
-							optionsHTML+=related?"":"<li>";
-							optionsHTML+=o[op].text+"&nbsp;<input type=\"input\" title=\""+(o[op].info || "")+"\" id=\""+op+"\"";
-							optionsHTML+=o[op].style?" style=\""+o[op].style+"\"":"";
-							optionsHTML+=o[op].check?" check=\""+o[op].check+"\"":"";
-							optionsHTML+=o[op].fail?" fail=\""+o[op].fail+"\"":"";
-							optionsHTML+="/>";
-							if(o[op].items) {
-								parse(o[op].items,true);
-							}
-							optionsHTML+=related?"":"</li>";
+							detailHTML+="<div>";
+							detailHTML+=o[op].text.replace("@@","&nbsp;<input type=\"input\" title=\""+(o[op].info || "")+"\" id=\""+op+"\" style=\""+(o[op].style || "")+"\" verify=\""+(o[op].verify || "")+"\" failInfo=\""+(o[op].failInfo || "")+"\"/>&nbsp;");
+							detailHTML+="</div>";
+							break;
+						case "checkedit":
+							detailHTML+="<div><input style=\""+o[op].style+"\" type=\"checkbox\" title=\""+(o[op].info || "")+"\" id=\""+op+"\"/><label title=\""+(o[op].info || "")+"\" for=\""+op+"\">"+o[op].text+"</label></div>";
+							detailHTML+="<div><textarea id=\""+o[op].ctrl.option+"\" title=\""+(o[op].info || "")+"\" style=\""+(o[op].ctrl.style || "")+"\"></textarea></div>";
 							break;
 						case "label":
-							optionsHTML+=related?"":"<li>";
-							optionsHTML+=o[op].text;
-							if(o[op].value) {
-								optionsHTML+="："+o[op].value;
-							}
-							if(o[op].items) {
-								parse(o[op].items,true);
-							}
-							optionsHTML+=related?"":"</li>";
+							detailHTML+="<div style=\""+o[op].style+"\" title=\""+(o[op].info || "")+"\">"+o[op].text.replace("@@","<span style=\""+o[op].style+"\" title=\""+(o[op].info || "")+"\">"+o[op].value+"</span>")+"</div>";
 							break;
-						case "edit":
-							optionsHTML+=related?"":"<li>";
-							optionsHTML+=o[op].text+"<br/>"+"<textarea id=\""+op+"\" title=\""+(o[op].info || "")+"\"";
-							optionsHTML+=o[op].style?" style=\""+o[op].style+"\"":"";
-							optionsHTML+="></textarea>";
-							if(o[op].items) {
-								parse(o[op].items,true);
-							}
-							optionsHTML+=related?"":"</li>";
-							break;
+					}
+					if(p) {
+						detailHTML+="</td>";
+						if((index+1)%p.columns==0) {
+							detailHTML+="</tr>"
+						}
 					}
 				}
 			} catch(err) {
-				$error("parse",err);
+				$error("parseDetail",err);
 			}
 		};
 		// 执行各项功能函数
 		var exec=function() {
-			try {
-				for(var i=0;i<4;i++) {
-					var fns=funcs[i];
-					for(var fn in fns) {
-						try {
-							if(!(options[fn]===true)) {
-								continue;
-							}
-							var argus=fns[fn].argus;
-							if(argus) {
-								for(var t in argus) {
-									for(var j=0;j<4;j++) {
-										// 以@开头的是选项的值
-										if(/^@/.test(argus[t][j])) {
-											argus[t][j]=options[argus[t][j].substring(1)];
-										}
-									}
-									(fns[fn].fn)(argus[t][0],argus[t][1],argus[t][2],argus[t][3]);
-								}
-							} else {
-								(fns[fn].fn)();
-							}
-						} catch(err) {
-							$error(fn,err);
+			for(var i=0;i<4;i++) {
+				var fns=funcs[i];
+				for(var fn in fns) {
+					try {
+						if(!(options[fn]===true)) {
+							continue;
 						}
+						var argus=fns[fn].argus;
+						if(argus) {
+							for(var t in argus) {
+								for(var j=0;j<4;j++) {
+									// 以@开头的是选项的值
+									if(/^@/.test(argus[t][j])) {
+										argus[t][j]=options[argus[t][j].substring(1)];
+									}
+								}
+								(fns[fn].fn)(argus[t][0],argus[t][1],argus[t][2],argus[t][3]);
+							}
+						} else {
+							(fns[fn].fn)();
+						}
+					} catch(err) {
+						$error(fn,err);
 					}
 				}
-			} catch(err) {
-				$error("exec",err);
 			}
 		};
 		// 创建选项菜单
@@ -2198,10 +2207,12 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 			var menu=$node("div").attr("class","xnr_op").style("display","none");
 			var html="";
 			// 选项菜单的样式
-			html+='<style type="text/css">.xnr_op{width:450px;left:50%;margin-left:-225px;position:fixed;z-index:200000;}.xnr_op *{padding:0;margin:0}.xnr_op .tl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAS0lEQVR42o3OoQ0AIAxEUZYi7NEluggewwy1dMNyBgIJCSe+uTxxKSKuRKQgRRV1ZGicIKOG/NVGa/jB9oPrkzNQWVhZ2FloLBwMnD51rC95s060AAAAAElFTkSuQmCC)}.xnr_op .m{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAQCAYAAADwMZRfAAAAG0lEQVQ4jWMICgraQClmGDVk1JBRQ0YNCdoAAHYawHDC5WlcAAAAAElFTkSuQmCC)}.xnr_op .tr{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAARElEQVR42o3KoREAIAwEMJbi2KNLdBE8pjPUlg3Lo8BwvIhLEZEAB4MOCi0zy23H+TCg/uNR2TjYuDU2Khs7G42NzsZYRf6sL6b2F1EAAAAASUVORK5CYII%3D)}.xnr_op .bl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQY02MICgpaD8QbCGEGILGMWIVTiFXYQqzCdGIVmhOl8P///yDF/cQqNCVKIZLifoIKkTSYQz3YAg06UDivBwBLtawvNrYbVAAAAABJRU5ErkJggg%3D%3D)}.xnr_op .br{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQYlY3KoRUAIAhFUZbyuMdbgkXoFmaw6oaYyP5w2zXgCo6Jcasx1RhqdDVOJa6qMiWOX1ydOh5gAwkE4MDs0B5TPqwv1+d6zQAAAABJRU5ErkJggg%3D%3D)}.xnr_op .border{height:10px;overflow:hidden;width:10px;}.xnr_op h2 span{padding:4px 10px 5px;display:block}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op .content{background:white}.xnr_op .content>h2{background:#5C75AA;font-size:14px;color:white}.xnr_op .ver{float:right}.xnr_op .ops{width:430px;overflow:auto}.xnr_op h4{margin:6px;clear:both;font-size:13px;float:left}.xnr_op label{color:black;font-weight:normal}.xnr_op li{margin-bottom:4px}.xnr_op ul{list-style:none;clear:both;margin-left:15px}.xnr_op .ul5 li{width:20%;float:left}.xnr_op .ul2 li{width:50%;float:left}</style>';
-			html+='<table style="border-spacing:0"><tbody><tr><td class="border tl"></td><td class="border m"></td><td class="border tr"></td></tr><tr><td class="border m"></td><td class="content"><h2><span class="ver"></span><span>校内网改造器</span></h2><div class="ops">';
-			html+=optionsHTML;
-			html+='</div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border m"></td></tr><tr><td class="border bl"></td><td class="border m"></td><td class="border br"></td></tr></tbody></table>';
+			html+='<style type="text/css">.xnr_op{width:450px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op *{padding:0;margin:0}.xnr_op .tl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAS0lEQVR42o3OoQ0AIAxEUZYi7NEluggewwy1dMNyBgIJCSe+uTxxKSKuRKQgRRV1ZGicIKOG/NVGa/jB9oPrkzNQWVhZ2FloLBwMnD51rC95s060AAAAAElFTkSuQmCC)}.xnr_op .m{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAQCAYAAADwMZRfAAAAG0lEQVQ4jWMICgraQClmGDVk1JBRQ0YNCdoAAHYawHDC5WlcAAAAAElFTkSuQmCC)}.xnr_op .tr{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAARElEQVR42o3KoREAIAwEMJbi2KNLdBE8pjPUlg3Lo8BwvIhLEZEAB4MOCi0zy23H+TCg/uNR2TjYuDU2Khs7G42NzsZYRf6sL6b2F1EAAAAASUVORK5CYII%3D)}.xnr_op .bl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQY02MICgpaD8QbCGEGILGMWIVTiFXYQqzCdGIVmhOl8P///yDF/cQqNCVKIZLifoIKkTSYQz3YAg06UDivBwBLtawvNrYbVAAAAABJRU5ErkJggg%3D%3D)}.xnr_op .br{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQYlY3KoRUAIAhFUZbyuMdbgkXoFmaw6oaYyP5w2zXgCo6Jcasx1RhqdDVOJa6qMiWOX1ydOh5gAwkE4MDs0B5TPqwv1+d6zQAAAABJRU5ErkJggg%3D%3D)}.xnr_op .border{height:10px;overflow:hidden;width:10px;}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op .c{background:#FFFFF4}.xnr_op .c>h2{background:#5C75AA;font-size:14px;color:white}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:120px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .pages{width:310px}.xnr_op .category li{cursor:pointer;height:30px;line-height:30px}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{padding-left:10px;font-size:14px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%;table-layout:fixed}.xnr_op .pages>div>div>table{width:100%;table-layout:fixed;margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
+			html+='<table><tbody><tr><td class="border tl"></td><td class="border m" style="width:430px"></td><td class="border tr"></td></tr><tr><td class="border m"></td><td class="c"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>';
+			html+=categoryHTML;
+			html+='</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>校内网改造器</h1><p><b class="ver"></b></p><p><b>2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p></td></tr></tbody></table></div>';
+			html+=detailHTML;
+			html+='</td></tr></tbody></table></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border m"></td></tr><tr><td class="border bl"></td><td class="border m"></td><td class="border br"></td></tr></tbody></table>';
 			menu.inner(html).appendTo(document.body);
 			// 设置选项的值
 			for(var option in options) {
@@ -2211,24 +2222,44 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 					menu.find("#"+option).prop("value",options[option]);
 				}
 			}
-			menu.find(".ver").text(XNR.prototype.version);
+			// 点击分类切换事件
+			menu.find(".category ul").listen("click",function(evt) {
+				var t=evt.target;
+				if(t.tagName=="LI") {
+					t=t.firstChild;
+				}
+				$(".xnr_op .pages>div").hide();
+				$(".xnr_op .pages>div."+t.id).show();
+				$(".xnr_op .category li.selected").removeClass("selected");
+				$(t).parent().addClass("selected");
+			});
+			menu.find(".ver").text(XNR.prototype.version+" ("+XNR.prototype.miniver+")");
 			menu.find("input.ok").listen("click",function() {
 				var checkPass=true;
 				// 开始验证
-				$("body>.xnr_op *[check]").each(function(index,elem) {
-					if(!elem.value.match(elem.getAttribute("check"))) {
-						alert(elem.getAttribute("fail"));
-						checkPass=fail;
+				$("body>.xnr_op *[verify]").each(function(index,elem) {
+					if(!elem.value.match(elem.getAttribute("verify"))) {
+						var page=$(elem);
+						while(page.parent().prop("className")!="pages") {
+							page=page.parent();
+						}
+						$(".xnr_op .pages>div").hide();
+						$(".xnr_op .pages>div."+page.attr("class")).show();
+						$(".xnr_op .category li.selected").removeClass("selected");
+						$(".xnr_op .category #"+page.attr("class")).parent().addClass("selected");
+						alert(elem.getAttribute("failInfo"));
+						elem.focus();
+						checkPass=false;
 						return false;
 					}
 				});
 				if(!checkPass) {
 					return;
 				}
-				var content=$("body>.xnr_op td.content");
+				var content=$("body>.xnr_op td.pages");
 				for(var option in options) {
 					var ctrl=content.find("#"+option);
-					switch(ctrl.prop("tagName")+ctrl.attr("type")) {
+					switch(ctrl.prop("tagName")+(ctrl.attr("type") || "")) {
 						case "INPUTcheckbox":
 							$save(option,ctrl.prop("checked"));
 							break;
@@ -2236,7 +2267,7 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 							$save(option,ctrl.prop("value"));
 							break;
 						case "TEXTAREA":
-							$save(option,ctrl.text());
+							$save(option,ctrl.prop("value"));
 							break;
 					}
 				}
@@ -2252,15 +2283,8 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 				nav.firstChild().find("a").listen("click",function(evt) {
 					try {
 						var menu=$("body>.xnr_op");
-						var menuBody=menu.find(".ops");
-						if(menuBody.size()==1) {
-							menuBody.style("height","");
-							menu.show();
-							if(window.innerHeight<menu.prop("offsetHeight")) {
-								menuBody.style("height",(window.innerHeight<200)?"100px":(window.innerHeight-120)+"px");
-							}
-							menu.style("top",parseInt(window.innerHeight-menu.prop("offsetHeight"))/2+"px");
-						}
+						menu.show();
+						menu.style("top",parseInt(window.innerHeight-menu.prop("offsetHeight"))/2+"px");
 					} catch (err) {
 						$error("menu:show",err);
 					}
@@ -2299,8 +2323,15 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 		};
 		// 清除新鲜事ID
 		localStorage.setItem("xnr_feed",null);
-
-		parse(XNR.prototype.options);
+		// 解析选项，生成选项列表、执行函数列表和选项菜单
+		var i=0;
+		for(var category in XNR.prototype.options) {
+			i++;
+			categoryHTML+="<li class=\""+["even","odd"][i%2]+"\"><span id=\""+category+"\">"+XNR.prototype.options[category].category+"</span></li>";
+			detailHTML+="<div class=\""+category+"\" style=\"display:none\">";
+			parseDetail(XNR.prototype.options[category].detail);
+			detailHTML+="</div>";
+		}
 		//获取已经保存的选项
 		if(env==FIREFOX) {
 			//Firefox
