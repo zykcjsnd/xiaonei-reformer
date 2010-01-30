@@ -8,7 +8,7 @@
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
 // @version1.9.99.20100130
 // @version        1.9.99.20100130
-// @miniver        207
+// @miniver        208
 // @author         xz
 // ==/UserScript==
 
@@ -49,7 +49,7 @@ function XNR(o) {
 XNR.prototype={
 	// 脚本版本，供自动更新用，对应header中的@version2
 	version:"1.9.99.20100130",
-	miniver:207,
+	miniver:208,
 	/*
 	 * 选项列表
 	 */
@@ -340,11 +340,6 @@ XNR.prototype={
 					fn2:$patchCSS,
 					argus2:[["ul.richlist.feeds li a.delete{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -115px 0 transparent;height:18px;width:18px}ul.richlist.feeds li a.delete:hover{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -133px 0 transparent;height:18px;width:18px}"]],
 				},
-				showImagesInOnePage:{
-					text:"相册所有图片在一页中显示",
-					value:false,
-					fn3:showImagesInOnePage,
-				},
 				removeFontRestriction:{
 					text:"去除页面的字体限制",
 					value:true,
@@ -387,7 +382,7 @@ XNR.prototype={
 			},
 		},
 		enhancement:{
-			category:"功能增强",
+			category:"辅助功能",
 			detail:{
 				hideFeedContent:{
 					text:"隐藏新鲜事具体内容",
@@ -409,6 +404,11 @@ XNR.prototype={
 					text:"为评论增加楼层计数",
 					value:true,
 					fn2:addFloorCounter,
+				},
+				showImagesInOnePage:{
+					text:"相册所有图片在一页中显示",
+					value:false,
+					fn3:showImagesInOnePage,
 				},
 				showImageOnMouseOver:{
 					text:"在鼠标经过图片时显示大图",
@@ -519,7 +519,8 @@ XNR.prototype={
 	show:function() {
 		this.each(function(index,elem) {
 			try {
-				elem.style.display="block";
+				elem.style.display=null;
+				elem.style.visibility=null;
 			} catch(err) {
 			}
 		});
@@ -1004,6 +1005,41 @@ function $get(url,func,userData) {
 		$error("$get",err);
 	}
 };
+// 为Date类型增加格式化文本方法
+Date.prototype.format=function(fmt) {
+    var o = {
+        "M+": this.getMonth()+1, //月份
+        "d+": this.getDate(), //日
+        "h+": this.getHours()%12==0?12:this.getHours()%12, //小时，12小时制
+        "H+": this.getHours(), //小时,24小时制
+        "m+": this.getMinutes(), //分
+        "s+": this.getSeconds(), //秒
+        "q+": Math.floor((this.getMonth()+3)/3), //季度
+        "S": this.getMilliseconds() //毫秒
+    };
+    var week = {
+        "0": "\u65e5",
+        "1": "\u4e00",
+        "2": "\u4e8c",
+        "3": "\u4e09",
+        "4": "\u56db",
+        "5": "\u4e94",
+        "6": "\u516d"
+    };
+    if (/(y+)/.test(fmt)) {
+        fmt = fmt.replace(RegExp.$1,(this.getFullYear() + "").substring(4 - RegExp.$1.length));
+    }
+    if (/(E+)/.test(fmt)) {
+        fmt = fmt.replace(RegExp.$1,((RegExp.$1.length > 1) ? (RegExp.$1.length > 2 ? "\u661f\u671f": "\u5468") : "") + week[this.getDay() + ""]);
+    }
+    for (var k in o) {
+        if (new RegExp("(" + k + ")").test(fmt)) {
+            fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substring(("" + o[k]).length)));
+        }
+    }
+    return fmt;
+};
+
 // 图片缓存
 var imgCache;
 
@@ -1240,6 +1276,9 @@ function recoverOriginalTheme() {
 
 	// 校内通栏上的提醒链接颜色
 	css+=".m-chat-window.notifications .chat-conv .notifyitem .notifybody a{color:"+XCOLOR+" !important}";
+
+	// 热门分享
+	css+="ul.share-hot-list li h3 a,ul.share-hot-list li h3 a:hover{color:"+XCOLOR+"}";
 	$patchCSS(css);
 };
 
@@ -1532,10 +1571,10 @@ function addFloorCounter() {
 	if(location.host!="blog.renren.com" && location.host!="photo.renren.com") {
 		return;
 	}
-	addFloor();
-	$("div.replies").listen("DOMNodeInserted",addFloor);
+	addCounter();
+	$("div.replies").listen("DOMNodeInserted",addCounter);
 	
-	function addFloor(evt) {
+	function addCounter(evt) {
 		try {
 			if(evt && !/^replies/.test(evt.target.className)) {
 				return;
@@ -1544,9 +1583,12 @@ function addFloorCounter() {
 			if(location.host=="blog.renren.com") {
 				replyAmount=parseInt(/评论\((\d+)\)/.exec($("p.stat-article").text())[1]);
 			} else {
-				replyAmount=parseInt($("#commentCount").text());
+				replyAmount=parseInt($("#allComCount").text());
 				if(isNaN(replyAmount)) {
-					return;
+					replyAmount=parseInt($("#commentCount").text());
+					if(isNaN(replyAmount)) {
+						return;
+					}
 				}
 			}
 			//已显示的回复
@@ -1568,9 +1610,16 @@ function addFloorCounter() {
 				}
 			});
 			//隐藏“显示较早之前的评论”,防止重复点击
-			$("#showMoreComments").listen("click",function(evt){$("#showMoreComments").hide();});
+			//Chrome不支持DOMAttrModified事件。。https://bugs.webkit.org/show_bug.cgi?id=8191
+			$("#tempLoading").listen("DOMAttrModified",function(evt) {
+				if($("#tempLoading").style("visibility")=="hidden") {
+					$("#showMoreComments").show();
+				} else {
+					$("#showMoreComments").hide();
+				}
+			});
 		} catch(err) {
-			$error("addFloor",err);
+			$error("addCounter",err);
 		}
 	};
 };
@@ -2120,10 +2169,13 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 				$node("div",'<div><font color=crimson>校内网改造器已有新版本：'+ver+'</font><b> </b><a target="_blank" href="'+scriptLink+'">安装</a><b> </b><a target="_blank" href="'+pageLink+'">去看看</a><b> </b><a onclick="return false">以后再说</a></div>').attr({id:"updateNotify",style:"bottom:2px;position:fixed;z-index:100000;background-color:rgb(246,246,246)"}).appendTo(document.body);
 				$("#updateNotify a").listen("click",function() {
 					$save("lastUpdate",today.toString());
+					$("body>div.xnr_op #lastUpdate").text(today.format("yyyy-MM-dd HH:mm:ss"));
+
 					$("#updateNotify").remove();
 				});
 			} else {
 				$save("lastUpdate",today.toString());
+				$("body>div.xnr_op #lastUpdate").text(today.format("yyyy-MM-dd HH:mm:ss"));
 				if(evt) {
 					alert("最新版本为："+ver+" ("+miniver+")\n当前版本为："+XNR.prototype.version+" ("+XNR.prototype.miniver+")\n\n无须更新");
 				}
@@ -2224,7 +2276,7 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 							detailHTML+="<div><textarea id=\""+o[op].ctrl.option+"\" title=\""+(o[op].info || "")+"\" style=\""+(o[op].ctrl.style || "")+"\"></textarea></div>";
 							break;
 						case "label":
-							detailHTML+="<div title=\""+(o[op].info || "")+"\">"+o[op].text.replace("@@","<span style=\""+o[op].style+"\" title=\""+(o[op].info || "")+"\">"+o[op].value+"</span>")+"</div>";
+							detailHTML+="<div title=\""+(o[op].info || "")+"\">"+o[op].text.replace("@@","<span style=\""+o[op].style+"\" title=\""+(o[op].info || "")+"\" id=\""+op+"\"></span>")+"</div>";
 							break;
 						case "button":
 							detailHTML+="<div title=\""+(o[op].info || "")+"\"><input type=\"button\" info=\""+(o[op].info || "")+"\" id=\""+op+"\" value=\""+o[op].text+"\"/></div>";
@@ -2340,10 +2392,23 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 			menu.inner(html).appendTo(document.body);
 			// 设置选项的值
 			for(var option in options) {
+				var ctrl=menu.find("#"+option);
 				if((typeof options[option])=="boolean") {
-					menu.find("#"+option).prop("checked",options[option]);
+					ctrl.prop("checked",options[option]);
 				} else {
-					menu.find("#"+option).prop("value",options[option]);
+					switch(ctrl.prop("tagName")) {
+						case "SPAN":
+							var d=new Date(options[option]);
+							if(!isNaN(d)) {
+								// 时间格式
+								ctrl.text(d.format("yyyy-MM-dd HH:mm:ss"));
+							} else {
+								ctrl.text(options[option]);
+							}
+							break;
+						default:
+							ctrl.prop("value",options[option]);
+					}
 				}
 			}
 			// 点击分类切换事件
