@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name           校内人人网改造器 Xiaonei Reformer Min
+// @name           校内人人网改造器 Xiaonei Reformer
 // @namespace      Xiaonei_reformer
 // @include        http://renren.com/*
 // @include        http://*.renren.com/*
