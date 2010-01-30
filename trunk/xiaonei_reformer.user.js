@@ -6,11 +6,21 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version1.9.99.20100125
-// @version        1.9.99.20100127
-// @miniver        205
+// @version1.9.99.20100130
+// @version        1.9.99.20100130
+// @miniver        207
 // @author         xz
 // ==/UserScript==
+
+// 运行环境 1:firefox 2:chrome/chromium extension -1:unknown
+const UNKNOWN=-1,FIREFOX=1,CHROME=2;
+// 运行环境
+var agent=UNKNOWN;
+if(!window.chrome && GM_getValue) {
+	agent=FIREFOX;
+} else if(window.chrome && chrome.extension) {
+	agent=CHROME;
+};
 
 function XNR(o) {
 	if(!(this instanceof XNR)) {
@@ -38,23 +48,10 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，供自动更新用，对应header中的@version2
-	version:"1.9.99.20100127",
-	miniver:205,
+	version:"1.9.99.20100130",
+	miniver:207,
 	/*
-	 * 选项列表 TODO：待加listener属性
-	 * 每一项存在如下可能的参数：
-	 * text:文字描述
-	 * type:类型。有项目分组group，复选框checkbox，标签label，文本框text，文本区域edit，默认为checkbox。
-	 * columns:显示的列数。仅当type为group时有效。
-	 * list:包含的项目。仅当type为group时有效
-	 * info:鼠标悬停提示。
-	 * value:默认值。
-	 * fnX:X为0~3，代表优先级，0最高。功能对应的函数。
-	 * argusX:fnX的参数列表。按以下格式[[参数1-1,参数1-2,...],[参数2-1,参数2-2],...]，表示执行多次fnX以及每次的参数，
-	 * 每次的参数不超过4个，如果参数是其他选项的值，使用"@选项名"。
-	 * style:控件样式
-	 * check:验证规则
-	 * fail:验证失败时弹出的信息
+	 * 选项列表
 	 */
 	options:{
 		cleanup:{
@@ -178,77 +175,92 @@ XNR.prototype={
 						removeBlogFeed:{
 							text:"日志",
 							value:false,
-							argus1:[["@markFeedAsRead","iBlog"]]
+							argus1:[[null,"@markFeedAsRead","iBlog"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iBlog"]]}],
 						},
 						removePollFeed:{
 							text:"投票",
 							value:false,
-							argus1:[["@markFeedAsRead","iPoll"]]
+							argus1:[[null,"@markFeedAsRead","iPoll"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iPoll"]]}],
 						},
 						removeAppFeed:{
 							text:"应用",
 							value:false,
-							argus1:[["@markFeedAsRead","iApp"],["@markFeedAsRead","iSanguo"],["@markFeedAsRead","iMyj"]]
+							argus1:[[null,"@markFeedAsRead","iApp"],[null,"@markFeedAsRead","iSanguo"],[null,"@markFeedAsRead","iMyj"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iApp"],["@markFeedAsRead","iSanguo"],["@markFeedAsRead","iMyj"]]}],
 						},
 						removeActFeed:{
 							text:"活动",
 							value:false,
-							argus1:[["@markFeedAsRead","iActs"]]
+							argus1:[[null,"@markFeedAsRead","iActs"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iAct"]]}],
 						},
 						removeStatusFeed:{
 							text:"状态",
 							value:false,
-							argus1:[["@markFeedAsRead","iStatus"]]
+							argus1:[[null,"@markFeedAsRead","iStatus"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iStatus"]]}],
 						},
 						removeGiftFeed:{
 							text:"礼物",
 							value:false,
-							argus1:[["@markFeedAsRead","iGift"]]
+							argus1:[[null,"@markFeedAsRead","iGift"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iGift"]]}],
 						},
 						removeFriendFeed:{
 							text:"交友",
 							value:false,
-							argus1:[["@markFeedAsRead","iFriend"]]
+							argus1:[[null,"@markFeedAsRead","iFriend"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iFriend"]]}],
 						},
 						removeImageFeed:{
 							text:"照片",
 							value:false,
-							argus1:[["@markFeedAsRead","iPhoto","相册"]]
+							argus1:[[null,"@markFeedAsRead","iPhoto","相册"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iPhoto","相册"]]}],
 						},
 						removeImageTagFeed:{
 							text:"圈人",
 							value:false,
-							argus1:[["@markFeedAsRead","iPhoto","圈人"]]
+							argus1:[[null,"@markFeedAsRead","iPhoto","圈人"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iPhoto","圈人"]]}],
 						},
 						removeProfileFeed:{
 							text:"头像",
 							value:false,
-							argus1:[["@markFeedAsRead","iProfile"]]
+							argus1:[[null,"@markFeedAsRead","iProfile"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iProfile"]]}],
 						},
 						removeCommentFeed:{
 							text:"评论",
 							value:false,
-							argus1:[["@markFeedAsRead","iPost"]]
+							argus1:[[null,"@markFeedAsRead","iPost"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iPost"]]}],
 						},
 						removeClassFeed:{
 							text:"班级",
 							value:false,
-							argus1:[["@markFeedAsRead","iClass"]]
+							argus1:[[null,"@markFeedAsRead","iClass"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iClass"]]}],
 						},
 						removeShareFeed:{
 							text:"分享",
 							value:false,
-							argus1:[["@markFeedAsRead","iShare"]]
+							argus1:[[null,"@markFeedAsRead","iShare"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iShare"]]}],
 						},
 						removeVipFeed:{
 							text:"VIP",
 							value:false,
-							argus1:[["@markFeedAsRead","iVip"]]
+							argus1:[[null,"@markFeedAsRead","iVip"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iVip"]]}],
 						},
 						removeFilmFeed:{
 							text:"影评",
 							value:false,
-							argus1:[["@markFeedAsRead","iFilm"]]
+							argus1:[[null,"@markFeedAsRead","iFilm"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iFilm"]]}],
 						},
 					},
 				},
@@ -383,9 +395,10 @@ XNR.prototype={
 					fn2:hideFeedContent,
 				},
 				flodStatusComment:{
-					text:"收起新鲜事回复",
+					text:"默认收起新鲜事回复",
 					value:true,
 					fn3:flodStatusComment,
+					trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:flodStatusComment}],
 				},
 				addExtraEmotions:{
 					text:"增加额外的表情项",
@@ -429,7 +442,6 @@ XNR.prototype={
 					type:"checktext",
 					value:true,
 					ctrl:{option:"checkFeedInterval",value:30,verify:"^[3-9][0-9]$|^[1-9][0-9]{2,}$",failInfo:"为防止占用太多资源，新鲜事检查间隔时间至少为30秒。",style:"width:30px;"},
-					
 					fn3:autoRefreshFeeds,
 					argus3:[["@checkFeedInterval"]],
 				},
@@ -437,35 +449,48 @@ XNR.prototype={
 		},
 		update:{
 			category:"自动更新",
+			agent:FIREFOX,
 			detail:{
 				checkUpdate:{
 					text:"自动检查脚本更新",
 					value:true,
 					fn3:checkUpdate,
-					argus3:[["@checkLink","@pageLink","@scriptLink","@lastUpdate"]],
+					argus3:[[null,"@checkLink","@pageLink","@scriptLink","@lastUpdate"]],
 				},
 				lastUpdate:{
 					text:"最后一次检查更新时间：@@",
 					type:"label",
 					value:"未知",
 				},
+				manualCheck:{
+					text:"立刻检查",
+					type:"button",
+					value:true,
+					trigger:[{target:".xnr_op input#manualCheck",evt:"click",fn:checkUpdate,argus:[["@checkLink","@pageLink","@scriptLink","@lastUpdate"]]}],
+				},
 				checkLink:{
 					text:"检查更新地址：@@",
 					type:"text",
 					value:"http://userscripts.org/scripts/source/45836.meta.js",
-					style:"width:275px;",
+					style:"width:270px;",
+					verify:"[A-Za-z]+://[^.]+\.[^.]+/.*",
+					failInfo:"请输入正确的检查更新地址",
 				},
 				pageLink:{
 					text:"脚本主页地址：@@",
 					type:"text",
 					value:"http://userscripts.org/scripts/show/45836",
-					style:"width:275px;",
+					style:"width:270px;",
+					verify:"[A-Za-z]+://[^.]+\.[^.]+/.*",
+					failInfo:"请输入正确的脚本主页地址",
 				},
 				scriptLink:{
 					text:"脚本下载地址：@@",
 					type:"text",
 					value:"http://userscripts.org/scripts/source/45836.user.js",
-					style:"width:275px;",
+					style:"width:270px;",
+					verify:"[A-Za-z]+://[^.]+\.[^.]+/.*",
+					failInfo:"请输入正确的脚本下载地址",
 				},
 			}
 		},
@@ -968,17 +993,15 @@ function $cookie(name,value) {
 // 发送HTTP GET请求
 function $get(url,func,userData) {
 	try {
-		// Firefox
-		GM_xmlhttpRequest({method:"GET",url:url,onload:function(o){if(o.status==200){func(url,o.responseText,userData);}}});
-	} catch(err) {
-		try {
-			// Chrome/Chromium
+		if(agent==FIREFOX) {
+			GM_xmlhttpRequest({method:"GET",url:url,onload:function(o){if(o.status==200){func(url,o.responseText,userData);}}});
+		} else if(agent==CHROME) {
 			chrome.extension.sendRequest({action:"httpGet",url:url,userData:userData,data:true},function(response) {
 				func(url,response.data,userData);
 			});
-		} catch(err) {
-			$error("$get",err);
 		}
+	} catch(err) {
+		$error("$get",err);
 	}
 };
 // 图片缓存
@@ -1097,8 +1120,8 @@ function hideRequest(reqClass) {
 };
 
 //隐藏新鲜事或标记为已读
-function removeFeeds(markFeedAsRead,feedClass,feedTag) {
-	var feeds=$("ul[id='feedHome'] > li").filter(".details .legend ."+feedClass+(feedTag?"[alt='"+feedTag+"']":""));
+function removeFeeds(evt,markFeedAsRead,feedClass,feedTag) {
+	var feeds=$("ul#feedHome > li").filter(".details .legend ."+feedClass+(feedTag?"[alt='"+feedTag+"']":""));
 	feeds.each(function(index,elem) {
 		if(markFeedAsRead) {
 			//为防止javascript被禁用导致执行onclick出错，先将其隐藏
@@ -1303,13 +1326,35 @@ function hideFeedContent() {
 };
 
 //收起新鲜事回复
-function flodStatusComment() {
-	$("#feedHome .details .legend a[id*='reply']").each(function(index,elem) {
+function flodStatusComment(evt) {
+	var obj;
+	if(evt==null) {
+		obj=$("#feedHome");
+	} else {
+		if(evt.target.nodeType!=1) {
+			// Chrome ...
+			return;
+		}
+		obj=$(evt.target);
+	}
+	var scripts="";
+	obj.find(".details .legend a[id*='reply']").each(function(index,elem) {
 		var a=$(elem);
 		if(a.heirs()==0) {
-			a.invoke("onclick");
+			// Firefox only...
+			if(agent==FIREFOX) {
+				a.invoke("onclick");
+			} else {
+				scripts+=a.attr("onclick")+";";
+			}
+		} else if(evt) {
+			// Chrome ...
+			scripts+=a.attr("onclick")+";";
 		}
 	});
+	if(scripts) {
+		setTimeout(function(){$node("script",scripts).appendTo(document.body)},0);
+	}
 };
 
 //增加更多状态表情
@@ -1571,14 +1616,26 @@ function showImageOnMouseOver() {
 					showViewer(null,"error");
 					return;
 				}
-				var src=/<img (.*?id="photo" .*?)>/.exec(html);
+				var src=/var photo *= *({.*});?/.exec(html);
 				if(src) {
+					src=JSON.parse(src[1]);
+					if(src.photo && src.photo.large) {
+						if($("#xnr_image").attr("orig")==imgId) {
+							imageCache(imgId,src.photo.large);
+							showViewer(null,src.photo.large);
+						}
+						return;
+					}
+				}
+				if(src=/<img (.*?id="photo" .*?)>/.exec(html)) {
 					src=(/src="(.*?)"/.exec(src[1]))[1];
 					imageCache(imgId,src);
 					if($("#xnr_image").attr("orig")==imgId) {
 						showViewer(null,src);
-					}
-				} else {
+					} 
+					return;
+				}
+				if($("#xnr_image").attr("orig")==imgId) {
 					imageCache(imgId,"error");
 					showViewer(null,"error");
 				}
@@ -1683,14 +1740,16 @@ function showImageOnMouseOver() {
 			}
 			if(src) {
 				// 设置
-				if(src!="error") {
+				if(src!="error" && src.indexOf("a.gif")==-1) {
 					imgCache[imgId]={src:src,life:100};
 					localStorage.setItem("xnr_cache",JSON.stringify(imgCache));
 				}
 			} else {
 				if(imgCache[imgId]) {
-					imgCache[imgId].life=100;
-					return imgCache[imgId].src;
+					if(imgCache[imgId].src.indexOf("a.gif")==-1) {
+						imgCache[imgId].life=100;
+						return imgCache[imgId].src;
+					}
 				}
 				return "";
 			}
@@ -1736,7 +1795,7 @@ function showImageOnMouseOver() {
 			}
 			if(imgSrc!="") {
 				imgId=imgSrc.substring(imgSrc.lastIndexOf("_"));
-				$('#xnr_image').attr("orig",imgId);
+				$("#xnr_image").attr("orig",imgId);
 				if (((imgSrc.match(/[^_]head_/) || imgSrc.match(/[bhp]_head_/) || imgSrc.match(/[bhp]_main_/) || imgSrc.match(/[^_]main_/) || ((imgSrc.match(/head\d+\./) || imgSrc.match(/\/H[^\/]*\.jpg/) || imgSrc.indexOf("head.xiaonei.com/photos/")!=-1) && imgSrc.indexOf('_')==-1)) && (t.parentNode.tagName=="A" || (t.parentNode.tagName=="I" && t.parentNode.parentNode.tagName=="A"))) || imgSrc.indexOf('tiny_')!=-1 || imgSrc.match(/tiny\d+\./)) {
 					if(!pageURL && t.parentNode.tagName=="A") {
 						pageURL=t.parentNode.href;
@@ -2037,8 +2096,8 @@ function autoRefreshFeeds(interval) {
 	},interval*1000);
 };
 
-//检查更新 TODO 手动更新
-function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
+//检查更新
+function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 	//last="2000-1-1";
 	var today=new Date();
 	if(!last) {
@@ -2047,28 +2106,29 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 		last=new Date(last);
 	}
 	//一天只检查一次
-	if(!manually && (today-last)<3600000*24) {
+	if(!evt && (today-last)<3600000*24) {
 		return;
 	}
-	if(manually) {
+	if(evt) {
 		$("#updateNow").attr({disabled:"disabled",value:"检查中..."});
 	}
 	$get(checkLink,function(url,html) {
 		try {
-			var ver=/@miniver[ \t]*(\d+)/.exec(html) || ["","0"];
-			if(parseInt(ver[1])>XNR.prototype.miniver) {
-				$node("div",'<div><font color=crimson>校内网改造器已有新版本：'+/@version[ \t]*([0-9\.]+)/.exec(html)[1]+'</font><a target="_blank" href="'+scriptLink+'"> 安装</a><a target="_blank" href="'+pageLink+'"> 去看看</a><a onclick="return false"> 以后再说</a></div>').attr({id:"updateNotify",style:"bottom:2px;position:fixed;z-index:100000;background-color:rgb(246,246,246)"}).appendTo(document.body);
+			var miniver=(/@miniver[ \t]+(\d+)/.exec(html) || ["","0"])[1];
+			var ver=(/@version[ \t]+([0-9\.]+)/.exec(html) || ["","未知"])[1];
+			if(parseInt(miniver)>XNR.prototype.miniver) {
+				$node("div",'<div><font color=crimson>校内网改造器已有新版本：'+ver+'</font><b> </b><a target="_blank" href="'+scriptLink+'">安装</a><b> </b><a target="_blank" href="'+pageLink+'">去看看</a><b> </b><a onclick="return false">以后再说</a></div>').attr({id:"updateNotify",style:"bottom:2px;position:fixed;z-index:100000;background-color:rgb(246,246,246)"}).appendTo(document.body);
 				$("#updateNotify a").listen("click",function() {
 					$save("lastUpdate",today.toString());
 					$("#updateNotify").remove();
 				});
 			} else {
 				$save("lastUpdate",today.toString());
-				if(manually==true) {
-					alert("没有找到更新版本");
+				if(evt) {
+					alert("最新版本为："+ver+" ("+miniver+")\n当前版本为："+XNR.prototype.version+" ("+XNR.prototype.miniver+")\n\n无须更新");
 				}
 			}
-			if(manually) {
+			if(evt) {
 				$("#updateNow").attr({disabled:null,value:"立即检查"});
 			}
 		} catch(err) {
@@ -2083,26 +2143,25 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 		if (self != window.top && (document.designMode=="on" || (!document.body.id && !document.body.className))) {
 			return;
 		}
-		// 运行环境 1:firefox 2:chrome/chromium extension -1:unknown
-		const UNKNOWN=-1,FIREFOX=1,CHROME=2;
-		var env=UNKNOWN;
-		if(!window.chrome && GM_getValue) {
-			env=FIREFOX;
-		} else if(window.chrome && chrome.extension) {
-			env=CHROME;
-		};
 		// 各种选项
 		var options=new Object;
 		// 各个功能的执行函数。分四个优先级
 		var funcs=new Array(new Object,new Object,new Object,new Object);
+		// 各个功能的事件触发器
+		var triggers=new Array;
 		// 生成的选项代码
 		var detailHTML="";
 		var categoryHTML="";
 		// 解析选项函数
 		var parseDetail=function(o,p) {
 			try {
+				// 功能计数，用于GROUPx中换行
 				var index=-1;
 				for(var op in o) {
+					// 不支持当前浏览器
+					if(o[op].agent && (o[op].agent & agent)==0){
+						continue;
+					}
 					index++;
 					// 处理GROUPx
 					if(op.match(/^GROUP[0-9]*$/)) {
@@ -2128,6 +2187,12 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 						} else if (p && p["fn"+i]) {
 							// 继承父项目（GROUP）的函数
 							(funcs[i])[op]={fn:p["fn"+i],argus:o[op]["argus"+i]};
+						}
+					}
+					// 有事件触发器
+					if(o[op].trigger) {
+						for(var i in o[op].trigger) {
+							triggers.push([op,o[op].trigger[i]]);
 						}
 					}
 					// 有父项目，为GROUP中的
@@ -2159,7 +2224,10 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 							detailHTML+="<div><textarea id=\""+o[op].ctrl.option+"\" title=\""+(o[op].info || "")+"\" style=\""+(o[op].ctrl.style || "")+"\"></textarea></div>";
 							break;
 						case "label":
-							detailHTML+="<div style=\""+o[op].style+"\" title=\""+(o[op].info || "")+"\">"+o[op].text.replace("@@","<span style=\""+o[op].style+"\" title=\""+(o[op].info || "")+"\">"+o[op].value+"</span>")+"</div>";
+							detailHTML+="<div title=\""+(o[op].info || "")+"\">"+o[op].text.replace("@@","<span style=\""+o[op].style+"\" title=\""+(o[op].info || "")+"\">"+o[op].value+"</span>")+"</div>";
+							break;
+						case "button":
+							detailHTML+="<div title=\""+(o[op].info || "")+"\"><input type=\"button\" info=\""+(o[op].info || "")+"\" id=\""+op+"\" value=\""+o[op].text+"\"/></div>";
 							break;
 					}
 					if(p) {
@@ -2185,13 +2253,13 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 						var argus=fns[fn].argus;
 						if(argus) {
 							for(var t in argus) {
-								for(var j=0;j<4;j++) {
+								for(var j=0;j<argus[t].length;j++) {
 									// 以@开头的是选项的值
 									if(/^@/.test(argus[t][j])) {
 										argus[t][j]=options[argus[t][j].substring(1)];
 									}
 								}
-								(fns[fn].fn)(argus[t][0],argus[t][1],argus[t][2],argus[t][3]);
+								(fns[fn].fn)(argus[t][0],argus[t][1],argus[t][2],argus[t][3],argus[t][4]);
 							}
 						} else {
 							(fns[fn].fn)();
@@ -2202,12 +2270,68 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 				}
 			}
 		};
+		var createTriggers=function() {
+			var existTrigger=[];
+			for(var i in triggers) {
+				if(!(options[triggers[i][0]]===true)) {
+					continue;
+				}
+				var trigger=triggers[i][1];
+				if(trigger.argus) {
+					for(var c in trigger.argus) {
+						for(var j=0;j<trigger.argus[c].length;j++) {
+							// 以@开头的是选项的值
+							if(/^@/.test(trigger.argus[c][j])) {
+								trigger.argus[c][j]=options[trigger.argus[c][j].substring(1)];
+							}
+						}
+					}
+				}
+				// 设置对应触发器序号
+				var target=$(trigger.target);
+				var index=target.attr("tidx") || "";
+				index+=i+",";
+				target.attr("tidx",index);
+				// 对于同一对象的同一事件，只建立一个listener
+				if(!existTrigger[trigger.target+trigger.evt]) {
+					existTrigger[trigger.target+trigger.evt]=true;
+					target.listen(trigger.evt,function(evt) {
+						var tidx;
+						switch(evt.type) {
+							case "click":
+								tidx=evt.target.getAttribute("tidx");
+								break;
+							case "DOMNodeInserted":
+								tidx=evt.relatedNode.getAttribute("tidx");
+								break;
+						}
+						if(!tidx) {
+							return;
+						}
+						tidx=tidx.substring(0,tidx.length-1).split(",");
+						for(var i in tidx) {
+							var t=triggers[parseInt(tidx[i])][1];
+							if(t.evt==evt.type) {
+								var argus=t.argus;
+								if(argus) {
+									for(var j in argus) {
+										(t.fn)(evt,argus[j][0],argus[j][1],argus[j][2],argus[j][3],argus[j][4]);
+									}
+								} else {
+									t.fn(evt);
+								}
+							}
+						}
+					});
+				}
+			}
+		};
 		// 创建选项菜单
 		var buildMenu=function() {
 			var menu=$node("div").attr("class","xnr_op").style("display","none");
 			var html="";
 			// 选项菜单的样式
-			html+='<style type="text/css">.xnr_op{width:450px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op *{padding:0;margin:0}.xnr_op .tl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAS0lEQVR42o3OoQ0AIAxEUZYi7NEluggewwy1dMNyBgIJCSe+uTxxKSKuRKQgRRV1ZGicIKOG/NVGa/jB9oPrkzNQWVhZ2FloLBwMnD51rC95s060AAAAAElFTkSuQmCC)}.xnr_op .m{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAQCAYAAADwMZRfAAAAG0lEQVQ4jWMICgraQClmGDVk1JBRQ0YNCdoAAHYawHDC5WlcAAAAAElFTkSuQmCC)}.xnr_op .tr{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAARElEQVR42o3KoREAIAwEMJbi2KNLdBE8pjPUlg3Lo8BwvIhLEZEAB4MOCi0zy23H+TCg/uNR2TjYuDU2Khs7G42NzsZYRf6sL6b2F1EAAAAASUVORK5CYII%3D)}.xnr_op .bl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQY02MICgpaD8QbCGEGILGMWIVTiFXYQqzCdGIVmhOl8P///yDF/cQqNCVKIZLifoIKkTSYQz3YAg06UDivBwBLtawvNrYbVAAAAABJRU5ErkJggg%3D%3D)}.xnr_op .br{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQYlY3KoRUAIAhFUZbyuMdbgkXoFmaw6oaYyP5w2zXgCo6Jcasx1RhqdDVOJa6qMiWOX1ydOh5gAwkE4MDs0B5TPqwv1+d6zQAAAABJRU5ErkJggg%3D%3D)}.xnr_op .border{height:10px;overflow:hidden;width:10px;}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op .c{background:#FFFFF4}.xnr_op .c>h2{background:#5C75AA;font-size:14px;color:white}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:120px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .pages{width:310px}.xnr_op .category li{cursor:pointer;height:30px;line-height:30px}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{padding-left:10px;font-size:14px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%;table-layout:fixed}.xnr_op .pages>div>div>table{width:100%;table-layout:fixed;margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
+			html+='<style type="text/css">.xnr_op{width:450px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op *{padding:0;margin:0}.xnr_op .tl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAS0lEQVR42o3OoQ0AIAxEUZYi7NEluggewwy1dMNyBgIJCSe+uTxxKSKuRKQgRRV1ZGicIKOG/NVGa/jB9oPrkzNQWVhZ2FloLBwMnD51rC95s060AAAAAElFTkSuQmCC)}.xnr_op .m{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAQCAYAAADwMZRfAAAAG0lEQVQ4jWMICgraQClmGDVk1JBRQ0YNCdoAAHYawHDC5WlcAAAAAElFTkSuQmCC)}.xnr_op .tr{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAARElEQVR42o3KoREAIAwEMJbi2KNLdBE8pjPUlg3Lo8BwvIhLEZEAB4MOCi0zy23H+TCg/uNR2TjYuDU2Khs7G42NzsZYRf6sL6b2F1EAAAAASUVORK5CYII%3D)}.xnr_op .bl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQY02MICgpaD8QbCGEGILGMWIVTiFXYQqzCdGIVmhOl8P///yDF/cQqNCVKIZLifoIKkTSYQz3YAg06UDivBwBLtawvNrYbVAAAAABJRU5ErkJggg%3D%3D)}.xnr_op .br{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQYlY3KoRUAIAhFUZbyuMdbgkXoFmaw6oaYyP5w2zXgCo6Jcasx1RhqdDVOJa6qMiWOX1ydOh5gAwkE4MDs0B5TPqwv1+d6zQAAAABJRU5ErkJggg%3D%3D)}.xnr_op .border{height:10px;overflow:hidden;width:10px;}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op .c{background:#FFFFF4}.xnr_op .c>h2{background:#5C75AA;font-size:14px;color:white}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .pages{width:310px}.xnr_op .category li{cursor:pointer;height:30px;line-height:30px}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{padding-left:10px;font-size:14px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%;table-layout:fixed}.xnr_op .pages>div>div>table{width:100%;table-layout:fixed;margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
 			html+='<table><tbody><tr><td class="border tl"></td><td class="border m" style="width:430px"></td><td class="border tr"></td></tr><tr><td class="border m"></td><td class="c"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>';
 			html+=categoryHTML;
 			html+='</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>校内网改造器</h1><p><b class="ver"></b></p><p><b>2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p></td></tr></tbody></table></div>';
@@ -2243,6 +2367,7 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 						while(page.parent().prop("className")!="pages") {
 							page=page.parent();
 						}
+						// 切换到有错的项
 						$(".xnr_op .pages>div").hide();
 						$(".xnr_op .pages>div."+page.attr("class")).show();
 						$(".xnr_op .category li.selected").removeClass("selected");
@@ -2299,11 +2424,11 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 				options[option]=data[option];
 			}
 			try {
-				if(env==FIREFOX) {
+				if(agent==FIREFOX) {
 					for(var option in data) {
 						GM_setValue(option,data[option]);
 					}
-				} else if(env==CHROME) {
+				} else if(agent==CHROME) {
 					chrome.extension.sendRequest({action:"set",data:options});
 				}
 			} catch(err) {
@@ -2326,14 +2451,17 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 		// 解析选项，生成选项列表、执行函数列表和选项菜单
 		var i=0;
 		for(var category in XNR.prototype.options) {
+			if(((XNR.prototype.options[category].agent || agent)& agent)!=agent) {
+				continue;
+			}
 			i++;
 			categoryHTML+="<li class=\""+["even","odd"][i%2]+"\"><span id=\""+category+"\">"+XNR.prototype.options[category].category+"</span></li>";
 			detailHTML+="<div class=\""+category+"\" style=\"display:none\">";
 			parseDetail(XNR.prototype.options[category].detail);
 			detailHTML+="</div>";
 		}
-		//获取已经保存的选项
-		if(env==FIREFOX) {
+		//先获取已经保存的选项再执行
+		if(agent==FIREFOX) {
 			//Firefox
 			for(var option in options) {
 				options[option]=GM_getValue(option,options[option]);
@@ -2341,7 +2469,8 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 			save();
 			exec();
 			buildMenu();
-		} else if(env==CHROME) {
+			createTriggers();
+		} else if(agent==CHROME) {
 			//Chrome/Chromium 插件
 			chrome.extension.sendRequest({action:"get"}, function(response) {
 				for(var i in response.data) {
@@ -2349,7 +2478,7 @@ function checkUpdate(checkLink,pageLink,scriptLink,last,manually) {
 				}
 				save();
 				exec();
-				setTimeout(buildMenu,0);
+				setTimeout(function(){buildMenu();createTriggers()},0);
 			});
 		}
 	} catch(err) {
