@@ -6,9 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version1.9.99.20100130
-// @version        1.9.99.20100130
-// @miniver        208
+// @version        2.0.0.20100201
+// @miniver        209
 // @author         xz
 // ==/UserScript==
 
@@ -47,9 +46,9 @@ function XNR(o) {
 	return this;
 };
 XNR.prototype={
-	// 脚本版本，供自动更新用，对应header中的@version2
-	version:"1.9.99.20100130",
-	miniver:208,
+	// 脚本版本，供自动更新用，对应header中的@version和@miniver
+	version:"2.0.0.20100201",
+	miniver:209,
 	/*
 	 * 选项列表
 	 */
@@ -89,22 +88,22 @@ XNR.prototype={
 				},
 				removePageTopNotice:{
 					text:"去除首页顶部通知",
-					value:true,
-					fn1:removePageTopNotice
-				},
-				removePageTopNotice:{
-					text:"去除首页顶部通知",
-					value:true,
-					fn1:removePageTopNotice
+					value:false,
+					fn1:removePageTopNotice,
 				},
 				removeNewStar:{
 					text:"去除首页发布框下的活动标签",
 					value:false,
 					fn1:removeActivityLabel
 				},
+				removeNewStar:{
+					text:"去除人气之星/新人栏",
+					value:false,
+					fn1:removeNewStar,
+				},
 				removeRenRenSurvey:{
 					text:"去除首页右边栏：人人网调查",
-					value:true,
+					value:false,
 					fn1:removeRenRenSurvey
 				},
 				removeCommonPage:{
@@ -165,11 +164,11 @@ XNR.prototype={
 			},
 		},
 		sweepFeeds:{
-			category:"清理新鲜事",
+			category:"处理新鲜事",
 			detail:{
 				GROUP1:{
 					text:"屏蔽以下类型的新鲜事",
-					columns:5,
+					columns:4,
 					fn1:removeFeeds,
 					list:{
 						removeBlogFeed:{
@@ -187,14 +186,15 @@ XNR.prototype={
 						removeAppFeed:{
 							text:"应用",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","iApp"],[null,"@markFeedAsRead","iSanguo"],[null,"@markFeedAsRead","iMyj"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iApp"],["@markFeedAsRead","iSanguo"],["@markFeedAsRead","iMyj"]]}],
+							argus1:[[null,"@markFeedAsRead","iApp"],[null,"@markFeedAsRead","iSanguo"],[null,"@markFeedAsRead","iMyj"],[null,"@markFeedAsRead","#app.xnimg.cn/application/"]],
+							info:"包括外部网站（比如大众点评网）上的新鲜事",
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iApp"],["@markFeedAsRead","iSanguo"],["@markFeedAsRead","iMyj"],["@markFeedAsRead","#app.xnimg.cn/application/"]]}],
 						},
 						removeActFeed:{
 							text:"活动",
 							value:false,
 							argus1:[[null,"@markFeedAsRead","iActs"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iAct"]]}],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iActs"]]}],
 						},
 						removeStatusFeed:{
 							text:"状态",
@@ -233,7 +233,7 @@ XNR.prototype={
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iProfile"]]}],
 						},
 						removeCommentFeed:{
-							text:"评论",
+							text:"留言",
 							value:false,
 							argus1:[[null,"@markFeedAsRead","iPost"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iPost"]]}],
@@ -256,17 +256,53 @@ XNR.prototype={
 							argus1:[[null,"@markFeedAsRead","iVip"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iVip"]]}],
 						},
+						removeVipMusicFeed:{
+							text:"音乐",
+							value:false,
+							argus1:[[null,"@markFeedAsRead","iVipmusic"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iVipmusic"]]}],
+						},
 						removeFilmFeed:{
 							text:"影评",
 							value:false,
 							argus1:[[null,"@markFeedAsRead","iFilm"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","iFilm"]]}],
 						},
+						removeConnectFeed:{
+							text:"连接",
+							value:false,
+							argus1:[[null,"@markFeedAsRead","#connect.renren.com"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","#connect.renren.com"]]}],
+						},
+						removePublicPageFeed:{
+							text:"公共主页",
+							value:false,
+							argus1:[[null,"@markFeedAsRead","#follow-add"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","#follow-add"]]}],
+						},
 					},
 				},
 				markFeedAsRead:{
 					text:"将屏蔽的新鲜事设为已读",
 					value:false,
+				},
+				loadMoreFeeds:{
+					text:"默认显示@@页新鲜事",
+					type:"checktext",
+					value:false,
+					ctrl:{option:"loadFeedPage",value:2,verify:"^[2-9]$",failInfo:"新鲜事页数只能为2~9",style:"width:15px;"},
+					fn3:loadMoreFeeds,
+					argus3:[["@loadFeedPage"]],
+				},
+				hideFeedContent:{
+					text:"隐藏新鲜事具体内容",
+					value:false,
+					fn2:hideFeedContent,
+				},
+				flodStatusComment:{
+					text:"默认收起新鲜事回复",
+					value:false,
+					fn3:flodStatusComment,
 				},
 			},
 		},
@@ -320,7 +356,7 @@ XNR.prototype={
 					type:"checkedit",
 					value:false,
 					info:"导航栏上新增项的内容。每两行表示一项，第一行为名称，第二行为地址。",
-					ctrl:{option:"navExtraContent",value:"论坛\nhttp://club.renren.com/",style:"width:280px;height:80px"},
+					ctrl:{option:"navExtraContent",value:"论坛\nhttp://club.renren.com/",style:"width:280px;height:80px;overflow:auto;word-wrap:normal"},
 					fn2:addNavBarItem,
 					argus2:[["@navExtraContent"]],
 				},
@@ -342,7 +378,8 @@ XNR.prototype={
 				},
 				removeFontRestriction:{
 					text:"去除页面的字体限制",
-					value:true,
+					value:false,
+					info:"使页面字体采用浏览器的设定",
 					fn2:removeFontRestriction,
 				},
 				limitHeadAmount:{
@@ -384,17 +421,6 @@ XNR.prototype={
 		enhancement:{
 			category:"辅助功能",
 			detail:{
-				hideFeedContent:{
-					text:"隐藏新鲜事具体内容",
-					value:false,
-					fn2:hideFeedContent,
-				},
-				flodStatusComment:{
-					text:"默认收起新鲜事回复",
-					value:true,
-					fn3:flodStatusComment,
-					trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:flodStatusComment}],
-				},
 				addExtraEmotions:{
 					text:"增加额外的表情项",
 					value:true,
@@ -452,7 +478,7 @@ XNR.prototype={
 			agent:FIREFOX,
 			detail:{
 				checkUpdate:{
-					text:"自动检查脚本更新",
+					text:"自动检查脚本更新（24小时内最多检查一次）",
 					value:true,
 					fn3:checkUpdate,
 					argus3:[[null,"@checkLink","@pageLink","@scriptLink","@lastUpdate"]],
@@ -1157,7 +1183,12 @@ function hideRequest(reqClass) {
 
 //隐藏新鲜事或标记为已读
 function removeFeeds(evt,markFeedAsRead,feedClass,feedTag) {
-	var feeds=$("ul#feedHome > li").filter(".details .legend ."+feedClass+(feedTag?"[alt='"+feedTag+"']":""));
+	if(feedClass.charAt(0)=='#') {
+		// 带有#的无类型，判断icon的路径
+		var feeds=$("ul#feedHome > li").filter(".details .legend img[lala*='"+feedClass.substring(1)+"']");
+	} else {
+		var feeds=$("ul#feedHome > li").filter(".details .legend ."+feedClass+(feedTag?"[alt='"+feedTag+"']":""));
+	}
 	feeds.each(function(index,elem) {
 		if(markFeedAsRead) {
 			//为防止javascript被禁用导致执行onclick出错，先将其隐藏
@@ -1166,6 +1197,18 @@ function removeFeeds(evt,markFeedAsRead,feedClass,feedTag) {
 			$(elem).remove();
 		}
 	});
+};
+
+// 默认加载更多页新鲜事
+function loadMoreFeeds(pages) {
+	if(location.pathname!="/Home.do") {
+		return;
+	}
+	// 先改造load函数，原来的load最后有个scrollTo会使页面滚动
+	var	func="(function(){if(window.XN.page.home.feedFilter.oldLoad){return;};window.XN.page.home.feedFilter.oldLoad=window.XN.page.home.feedFilter.load;window.XN.page.home.feedFilter.load=function(a,b){var y=window.scrollY;window.XN.page.home.feedFilter.oldLoad(a,b);window.scrollTo(0,y)};})();";
+	// 只要当前页数比预定页数少，就不断加载下一页
+	func+="function loadMoreFeeds(){if(window.XN.page.home.feedFilter.currentPage<"+pages+"){XN.Page.home.feedFilter.loadMore();setTimeout(loadMoreFeeds,1000);}};loadMoreFeeds();";
+	location.href="javascript:"+func;
 };
 
 //删除导航栏上的项目
@@ -1365,35 +1408,26 @@ function hideFeedContent() {
 };
 
 //收起新鲜事回复
-function flodStatusComment(evt) {
-	var obj;
-	if(evt==null) {
-		obj=$("#feedHome");
-	} else {
-		if(evt.target.nodeType!=1) {
-			// Chrome ...
-			return;
-		}
-		obj=$(evt.target);
-	}
+function flodStatusComment() {
 	var scripts="";
-	obj.find(".details .legend a[id*='reply']").each(function(index,elem) {
+	// feedView是公共主页的
+	$("#feedHome","#feedView").find(".details .legend a[id*='reply']").each(function(index,elem) {
 		var a=$(elem);
 		if(a.heirs()==0) {
 			// Firefox only...
 			if(agent==FIREFOX) {
 				a.invoke("onclick");
 			} else {
-				scripts+=a.attr("onclick")+";";
+				// Chrome ...
+				scripts+="try{"+a.attr("onclick")+"}catch(e){};";
 			}
-		} else if(evt) {
-			// Chrome ...
-			scripts+=a.attr("onclick")+";";
 		}
 	});
 	if(scripts) {
 		setTimeout(function(){$node("script",scripts).appendTo(document.body)},0);
 	}
+	// 修改loadJSON方法，loadJSON方法最后调用show强制显示，以后点击更多新鲜事时就不用一个个去收起了
+	location.href="javascript:(function(){XN.app.status.replyEditor.prototype.oldloadJSON=XN.app.status.replyEditor.prototype.loadJSON;XN.app.status.replyEditor.prototype.loadJSON=function(a){this.oldloadJSON(a);this.hide();}})()";
 };
 
 //增加更多状态表情
@@ -1475,6 +1509,7 @@ function addExtraEmotions() {
 		{e:"(stick)",	t:"拐杖糖",			s:"/imgpro/icons/statusface/stick.gif"},
 		{e:"(socks)",	t:"圣诞袜",			s:"/imgpro/icons/statusface/stocking.gif"},
 		{e:"(元旦)",	t:"元旦快乐",		s:"/imgpro/icons/statusface/gantan.gif"},
+		{e:"(虎年)",	t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
 		{e:"(^)",		t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
 		{e:"(h)",		t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		{e:"(r)",		t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
@@ -1704,7 +1739,7 @@ function showImageOnMouseOver() {
 				}
 				// 搜索ID匹配的图片
 				var res=null;
-				while(res=new RegExp("<a .*?href=\"(.*?)\".*?>[^<]*?<img (.*?src=\"http://.+?"+imgId+"\".*?)>","ig").exec(html)) {
+				while(res=new RegExp("<a .*?href=\"(.*?)\".*?>[^<]*?<img (.*?src=\"http://.+?"+imgId+"\"[^>]*?)>","ig").exec(html)) {
 					if(res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
 						res=res[1];
 						break;
@@ -1712,7 +1747,7 @@ function showImageOnMouseOver() {
 				}
 				// 当ID不匹配且为搜索小头像时，搜索时间标记匹配的图片
 				if(!res && imgDate) {
-					while(res=RegExp("<a .*?href=\"(.*?)\".*?>[^<]*?<img (src=\"http://.*?/"+imgDate+"/.*?\".*?)>","ig").exec(html)) {
+					while(res=RegExp("<a .*?href=\"(.*?)\".*?>[^<]*?<img (src=\"http://.*?/"+imgDate+"/.*?\"[^>]*?)>","ig").exec(html)) {
 						if(res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
 							res=res[1];
 							break;
@@ -1884,13 +1919,21 @@ function showImageOnMouseOver() {
 					}
 
 					//小头像，包括一种非常古老的（"http://head.xiaonei.com/photos/20070201/1111/tiny[0-9]+.jpg"）
-					if((imgSrc.indexOf("tiny_")!=-1 || (imgSrc.indexOf("tiny")!=-1 && imgSrc.indexOf("_")==-1)) && pageURL.indexOf("getalbumprofile.do")==-1) {
+					if((imgSrc.indexOf("tiny_")!=-1 || (imgSrc.indexOf("tiny")!=-1 && imgSrc.indexOf("_")==-1)) && pageURL.indexOf("getalbumprofile.do")==-1 && pageURL.indexOf("page.renren.com")==-1) {
 						if(imgSrc.indexOf("_")!=-1) {
 							imgDate=/[hf][dm]n?\d+\/(.*?)\/[h_]*tiny_/.exec(imgSrc)[1];
 						} else {
 							imgDate=/photos\/(.*?)\/[h_]*tiny/.exec(imgSrc)[1];
 						}
 						pageURL="http://photo.renren.com/getalbumprofile.do?owner="+/id=(\d+)/.exec(pageURL)[1];
+					}
+
+					// 公共主页链接小图
+					if(pageURL.match(/page.renren.com\/[0-9]+/)) {
+						imgDate=/\/(\d{8})\//.exec(imgSrc)[1];
+						showViewer(evt.pageX);
+						getAlbumImage("http://page.renren.com/photo/album?owner="+/page.renren.com\/([0-9]+)/.exec(pageURL)[1]+"&h=1",0,imgId,imgDate);
+						return;
 					}
 
 					//相册封面图片或头像图片
@@ -1908,7 +1951,7 @@ function showImageOnMouseOver() {
 					}
 
 					//一般图片或被圈相片或公共主页上的图片
-					if(pageURL.indexOf("getphoto.do")!=-1 || pageURL.indexOf("gettagphoto.do")!=-1 || pageURL.indexOf("page.renren.com/photo/photo?")!=-1 || pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/photo-[0-9]+/)) {
+					if(pageURL.indexOf("getphoto.do")!=-1 || pageURL.indexOf("gettagphoto.do")!=-1 || pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/photo-[0-9]+/) || pageURL.indexOf("page.renren.com/photo/photo?")!=-1) {
 						showViewer(evt.pageX);
 						getImage(pageURL,imgId);
 						return;
@@ -2383,7 +2426,7 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 			var menu=$node("div").attr("class","xnr_op").style("display","none");
 			var html="";
 			// 选项菜单的样式
-			html+='<style type="text/css">.xnr_op{width:450px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op *{padding:0;margin:0}.xnr_op .tl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAS0lEQVR42o3OoQ0AIAxEUZYi7NEluggewwy1dMNyBgIJCSe+uTxxKSKuRKQgRRV1ZGicIKOG/NVGa/jB9oPrkzNQWVhZ2FloLBwMnD51rC95s060AAAAAElFTkSuQmCC)}.xnr_op .m{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAQCAYAAADwMZRfAAAAG0lEQVQ4jWMICgraQClmGDVk1JBRQ0YNCdoAAHYawHDC5WlcAAAAAElFTkSuQmCC)}.xnr_op .tr{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAARElEQVR42o3KoREAIAwEMJbi2KNLdBE8pjPUlg3Lo8BwvIhLEZEAB4MOCi0zy23H+TCg/uNR2TjYuDU2Khs7G42NzsZYRf6sL6b2F1EAAAAASUVORK5CYII%3D)}.xnr_op .bl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQY02MICgpaD8QbCGEGILGMWIVTiFXYQqzCdGIVmhOl8P///yDF/cQqNCVKIZLifoIKkTSYQz3YAg06UDivBwBLtawvNrYbVAAAAABJRU5ErkJggg%3D%3D)}.xnr_op .br{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQYlY3KoRUAIAhFUZbyuMdbgkXoFmaw6oaYyP5w2zXgCo6Jcasx1RhqdDVOJa6qMiWOX1ydOh5gAwkE4MDs0B5TPqwv1+d6zQAAAABJRU5ErkJggg%3D%3D)}.xnr_op .border{height:10px;overflow:hidden;width:10px;}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op .c{background:#FFFFF4}.xnr_op .c>h2{background:#5C75AA;font-size:14px;color:white}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .pages{width:310px}.xnr_op .category li{cursor:pointer;height:30px;line-height:30px}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{padding-left:10px;font-size:14px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%;table-layout:fixed}.xnr_op .pages>div>div>table{width:100%;table-layout:fixed;margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
+			html+='<style type="text/css">.xnr_op{width:450px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op .tl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAS0lEQVR42o3OoQ0AIAxEUZYi7NEluggewwy1dMNyBgIJCSe+uTxxKSKuRKQgRRV1ZGicIKOG/NVGa/jB9oPrkzNQWVhZ2FloLBwMnD51rC95s060AAAAAElFTkSuQmCC)}.xnr_op .m{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAQCAYAAADwMZRfAAAAG0lEQVQ4jWMICgraQClmGDVk1JBRQ0YNCdoAAHYawHDC5WlcAAAAAElFTkSuQmCC)}.xnr_op .tr{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAARElEQVR42o3KoREAIAwEMJbi2KNLdBE8pjPUlg3Lo8BwvIhLEZEAB4MOCi0zy23H+TCg/uNR2TjYuDU2Khs7G42NzsZYRf6sL6b2F1EAAAAASUVORK5CYII%3D)}.xnr_op .bl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQY02MICgpaD8QbCGEGILGMWIVTiFXYQqzCdGIVmhOl8P///yDF/cQqNCVKIZLifoIKkTSYQz3YAg06UDivBwBLtawvNrYbVAAAAABJRU5ErkJggg%3D%3D)}.xnr_op .br{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQYlY3KoRUAIAhFUZbyuMdbgkXoFmaw6oaYyP5w2zXgCo6Jcasx1RhqdDVOJa6qMiWOX1ydOh5gAwkE4MDs0B5TPqwv1+d6zQAAAABJRU5ErkJggg%3D%3D)}.xnr_op .border{height:10px;overflow:hidden;width:10px;}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op .c{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .pages{width:310px}.xnr_op .category li{cursor:pointer;height:30px;line-height:30px}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{padding-left:10px;font-size:14px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%;table-layout:fixed}.xnr_op .pages>div>div>table{width:100%;table-layout:fixed;margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
 			html+='<table><tbody><tr><td class="border tl"></td><td class="border m" style="width:430px"></td><td class="border tr"></td></tr><tr><td class="border m"></td><td class="c"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>';
 			html+=categoryHTML;
 			html+='</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>校内网改造器</h1><p><b class="ver"></b></p><p><b>2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p></td></tr></tbody></table></div>';
