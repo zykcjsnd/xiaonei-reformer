@@ -7,7 +7,7 @@
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
 // @version        2.0.0.20100201
-// @miniver        209
+// @miniver        210
 // @author         xz
 // ==/UserScript==
 
@@ -48,7 +48,7 @@ function XNR(o) {
 XNR.prototype={
 	// 脚本版本，供自动更新用，对应header中的@version和@miniver
 	version:"2.0.0.20100201",
-	miniver:209,
+	miniver:210,
 	/*
 	 * 选项列表
 	 */
@@ -499,7 +499,7 @@ XNR.prototype={
 					type:"text",
 					value:"http://userscripts.org/scripts/source/45836.meta.js",
 					style:"width:270px;",
-					verify:"[A-Za-z]+://[^.]+\.[^.]+/.*",
+					verify:"[A-Za-z]+://[^/]+\.[^/]+/.*",
 					failInfo:"请输入正确的检查更新地址",
 				},
 				pageLink:{
@@ -507,7 +507,7 @@ XNR.prototype={
 					type:"text",
 					value:"http://userscripts.org/scripts/show/45836",
 					style:"width:270px;",
-					verify:"[A-Za-z]+://[^.]+\.[^.]+/.*",
+					verify:"[A-Za-z]+://[^/]+\.[^/]+/.*",
 					failInfo:"请输入正确的脚本主页地址",
 				},
 				scriptLink:{
@@ -515,7 +515,7 @@ XNR.prototype={
 					type:"text",
 					value:"http://userscripts.org/scripts/source/45836.user.js",
 					style:"width:270px;",
-					verify:"[A-Za-z]+://[^.]+\.[^.]+/.*",
+					verify:"[A-Za-z]+://[^/]+\.[^/]+/.*",
 					failInfo:"请输入正确的脚本下载地址",
 				},
 			}
