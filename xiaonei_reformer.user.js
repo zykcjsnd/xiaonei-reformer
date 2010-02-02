@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.0.1.20100202
-// @miniver        211
+// @version        2.0.2.20100202
+// @miniver        212
 // @author         xz
 // ==/UserScript==
 
@@ -47,8 +47,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，供自动更新用，对应header中的@version和@miniver
-	version:"2.0.1.20100202",
-	miniver:211,
+	version:"2.0.2.20100202",
+	miniver:212,
 	/*
 	 * 选项列表
 	 */
@@ -59,32 +59,32 @@ XNR.prototype={
 				removeAds:{
 					text:"清除各类广告",
 					value:true,
-					fn0:removeAds
+					fn0:removeAds,
 				},
 				removeStarReminder:{
 					text:"去除升级星级用户提示",
 					value:true,
-					fn1:removeStarReminder
+					fn1:removeStarReminder,
 				},
 				removeMusicPlayer:{
 					text:"去除VIP页面和日志中的音乐播放器",
 					value:false,
-					fn1:removeMusicPlayer
+					fn1:removeMusicPlayer,
 				},
 				removePageTheme:{
 					text:"去除页面主题模板",
 					value:false,
-					fn0:removePageTheme
+					fn0:removePageTheme,
 				},
 				removeBlogTheme:{
 					text:"去除日志信纸",
 					value:false,
-					fn0:removeBlogTheme
+					fn0:removeBlogTheme,
 				},
 				removeXntBar:{
 					text:"去除页面底部校内通栏",
 					value:false,
-					fn1:removeXntBar
+					fn1:removeXntBar,
 				},
 				removePageTopNotice:{
 					text:"去除首页顶部通知",
@@ -94,7 +94,7 @@ XNR.prototype={
 				removeNewStar:{
 					text:"去除首页发布框下的活动标签",
 					value:false,
-					fn1:removeActivityLabel
+					fn1:removeActivityLabel,
 				},
 				removeNewStar:{
 					text:"去除人气之星/新人栏",
@@ -104,27 +104,32 @@ XNR.prototype={
 				removeRenRenSurvey:{
 					text:"去除首页右边栏：人人网调查",
 					value:false,
-					fn1:removeRenRenSurvey
+					fn1:removeRenRenSurvey,
 				},
 				removeCommonPage:{
 					text:"去除首页右边栏：公共主页推荐",
 					value:false,
-					fn1:removeCommonPage
+					fn1:removeCommonPage,
 				},
 				removeFriendGuide:{
 					text:"去除首页右边栏：寻找/邀请朋友",
 					value:false,
-					fn1:removeFriendGuide
+					fn1:removeFriendGuide,
 				},
 				removeCommendation:{
 					text:"去除首页右边栏：推荐/礼物",
 					value:false,
-					fn1:removeCommendation
+					fn1:removeCommendation,
 				},
 				removePaintReminder:{
 					text:"去除个人主页右上角装扮主页提示",
 					value:true,
-					fn1:removePaintReminder
+					fn1:removePaintReminder,
+				},
+				removeTree:{
+					text:"去除个人主页左侧◯◯树框",
+					value:false,
+					fn1:removeTree,
 				},
 			},
 		},
@@ -408,7 +413,6 @@ XNR.prototype={
 					text:"限制头像列表中头像数量最多@@个",
 					type:"checktext",
 					value:false,
-					info:"限制头像列表中头像显示最大数量，不会影响到共同好友列表",
 					ctrl:{option:"headAmount",value:12,verify:"^[0-9]{1,2}$",failInfo:"请在头像最大数量处输入1～2位整数",style:"width:30px;"},
 					fn1:limitHeadAmount,
 					argus1:[["@headAmount"]],
@@ -467,11 +471,6 @@ XNR.prototype={
 					text:"默认使用悄悄话",
 					value:false,
 					fn3:useWhisper,
-				},
-				showMatualFriends:{
-					text:"显示共同好友",
-					value:false,
-					fn3:showMatualFriends,
 				},
 				removeFriendRestriction:{
 					text:"去除特别好友修改限制",
@@ -1171,6 +1170,11 @@ function removePaintReminder() {
 	$(".enter-paints","#paintself","#paintother").remove();
 };
 
+//移除◯◯树框
+function removeTree() {
+	$(".profile-film.box").remove();
+};
+
 //移除人人网调查
 function removeRenRenSurvey() {
 	$(".side-item.sales-poll").remove();
@@ -1183,7 +1187,7 @@ function removeCommonPage() {
 
 //移除边栏：寻找/邀请朋友
 function removeFriendGuide() {
-	$(".side-item.contact-fri",".guide-find-friend").remove();
+	$(".side-item.contact-fri",".guide-find-friend",".inviteguys").remove();
 };
 
 //移除边栏：推荐/礼物
@@ -1700,12 +1704,16 @@ function showImageOnMouseOver() {
 				}
 				viewer.style({display:"block",postion:"fixed"});
 			}
+			var image=viewer.find('#xnr_image');
 			if(!src) {
-				viewer.find('#xnr_image').attr({alt:"载入图片中...",src:""});
+				image.attr("src","").style("display","").style("display","none");
+				viewer.style({backgroundImage:"url('http://s.xnimg.cn/imgpro/bg/bg_line_loading.gif')",height:"13px",width:"200px"});
 			} else if(src=="error") {
-				viewer.find('#xnr_image').attr({alt:"载入图片失败",src:""});
+				image.attr("src","").style("display","none");
+				viewer.style({backgroundImage:'url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDACgcHiMeGSgjISMtKygwPGRBPDc3PHtYXUlkkYCZlo+AjIqgtObDoKrarYqMyP/L2u71////m8H////6/+b9//j/2wBDASstLTw1PHZBQXb4pYyl+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj/wAARCACMAMgDASIAAhEBAxEB/8QAGgABAAMBAQEAAAAAAAAAAAAAAAEDBAIFBv/EADMQAAICAQIEAwcDBAMBAAAAAAECAAMRBDESIUFRBRNhFCIyQnGBkSMzoUNSYnIVU8HR/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFhEBAQEAAAAAAAAAAAAAAAAAABEB/9oADAMBAAIRAxEAPwDzYiICIiAiTGD2gREnEYJBODgbmBEScEgkA4G5kQESSpABIODse8iAiJPCQoYg4OxgREnhbAODg7HEiAiSFJBIBIG57SICIkgE7An6QIiIgIiICIiAiIgIiIG3Ru6aXUGtuFsoM9uZm5CzohF9jKAeOxWAAP0Inn6Zimj1DLjIZDz59TNFF3mqOK/is7cRQr9OhgV+e92l1YaxnQcPDxb44pxpVD6PUhnCDKcz95K2vbptUbCCwCjIA/u9JFDCnQu7oHFjgBW64gdVpQmnur9qTLlcHB6faZrK662XFosU78I2/M0ae2m7UJWdLWAxweZ/+zI4AdgNswPR4NNZRpU/WCu7BeYzuN5VYy6bT1hK62JZwS6AnkZ1jhu0NPVcMfucyL6rLtPUakZvffOB6wObhWuvJPl1qFBwUyuw6CabLKhTWpegbsM0nGD2GJRcSniYPvjAXPAOfwibH822kur3qSx+XHLHYnb1gU+6tFBW9MEOvwEhgTz5TJpK1882Mc1U+8T37TRpiU8PFpU8aMRX6k4EyVO9LsnlI7E44WXPOBrrfTPVqnxd7wBbJHfpMdvs/D+iLQ2fnIxieiLa6VFNyUrZZuAgwvbMx6l7E4qrNPShPVUx+DAupLLo6+AqvuuxJUHOJYwWu/U3sp4BWq4XluBK9P7+iwvMqrJ2yWIwJ0tr261qMMamGHXGMcgCf4gZdVXTXXU1QcFxxYY55TNNXiGRqeHhwqKFX1EywEREBERAREQEREC6jU2adXWsgceMnHPlO/b9V/2/wJmiBpfW32VPW7BlbG42lVlrWIitjhQYAEriB3VYarVsUAlTkZkByLA+ATnODtOYgaV1tiu1nChdjniK8x9JT5tnAqcR4VzgTiIFhutNnmcbB8YyDgyXvd6RWxyA3Fk7yqIF9Ortq2IYAYCtzEV6q2oPwYDOcl8c/wAyiIEkkkknJPUy0aq0UmokMhGAGGcfSUxAse53rRCfdTYAY+87OruNbqW+P4mxzPpmURAte+x6UqY5VNs7yqIgIiICIiAiIgIiICIndSeZYFJwOsDlVZjhQSewE6et0+NGX6jE9jTulSBawFE0m1WXBAIO4MzVj5wAscAEnsJrq8N1FmCVCD/IyzU1rpr+Kg8PENu0qzY/MFjLSNa+Drj3rjn0WSfB0xyub8TJi5TyLD7ztb9So5O+PzIR23g9nyWqfqMSizw7Up/T4h/iczSniVq/EFb+Jpr8Rqb4gVi6R4jKyHDKVPYjE5n0vFTenPgdex5zLd4Zp7BlM1n05iWkeJE13+H3U5Iw6jqsySoREQEREBERAREQEREBERAS2rIyRKpbQ4V/e2O8DQlpHeWi/HWR5XLIwZwyYmWh28ywHfAxAdi5GTgdJCDnIUe+31gUaj90ysHG07v/AHmlcrLsWuOufrznQtB+JceolUSjSjHOa25+m801a61OTniHrvPNmlSXrBO/eTcVo1Gta4YXKjrPPO5mgCZzuYw1EREqEREBERAREQETUmlzvNNekHaB5wRjsJ2tDnpPWTSAdJcunUdIHjrpHMsXQMe89gVqOk6wBtA82rSWIMKxA7Sw6R2+IzfiMQPHasV2FB0M5OBZylt/77/7GUE+/MtNtWkS2sOdzO/YElui56cfUzRiaZYvYEnP/Hp2E34jEDzj4cvYSi+gUEJ957GJ5/iH7q/6/wDsmrjBiWNoGHecge+BPbIjDXgnRuJWdO46T6E1qegnDUKekqPnijDcSMYnuPpQekzvox2geVE2vpOwlLadhtAoidFGG4iB7yUjtLgoEnaTAREmBTdqFqOMEt2lB1jnZVE1PUlnxDJ7ys6OvuwgUe1W9x+J0ursG6qR6S0aOvu35h6K6kLLWXPaBgtbidm2ycyhlYsSAfsJfYrlieHGTnG06rXhXBmWl2lvNVXCU653mgatOqtMkSo2jVVnfI+0kaio/NMMSkegLazs6/mYfECDYpBzy6TiV27yaKf6o6T0F1hOMgTEFQ7jJl9FNDA8ZYducivRyv8AcI5dxMwqqHMWv+ZPlr0tMVI0cu4kEA7kSjyxy/W/iR5bdLV/EVY7esHkCCZRZT6SxW8qz9RwQR0lzLkS4zrzbKfSJsdIlGiJyrTqBMmcyYEyZzJzAmTOYgdTk1od1U/aMxmByaKj8gnJ01Z6EfeW5jMCg6ROjMJydGej/wATTmMwMZ0lndZw+ktPQH6Gb8xmB5Z0lo+UzpNLcefDj74npZkZkhWHyLB8p+xnJrcbhx9p6GYzEWvNOQfi/iQSx2fM9Izkoh3UfiIVj05QMRdgk44czbOPJqzngHKSzYlRy8ThmiBwry1XmJSc4likwNgcTrImVWM7UmBfJlXEROgeUDuJyDJgTEiIExIiBMSIgTEiIE5jMiDAmRIJxOSxzA7kFgJUSZwWMC0vK2eVkmcEmB0zRKSekQP/2Q%3D%3D")',width:"200px",height:"120px"});
 			} else {
-				viewer.find('#xnr_image').attr({alt:"显示图片中...",src:src,rsrc:src});
+				image.attr({src:src,rsrc:src}).style("display","");
+				viewer.style({backgroundImage:"",width:"",height:""});
 			}
 		} catch (err) {
 			$error("showViewer",err);
@@ -1870,7 +1878,7 @@ function showImageOnMouseOver() {
 			}
 			// 如果图片显示框还没有创建，则先创建它
 			if($("#xnr_viewer").size()==0) {
-				$node("div",'<img id="xnr_image" alt="加载图片中..." src=""/>').attr("id","xnr_viewer").style({border:"3px double rgb(102,102,102)",display:"none",backgroundColor:"rgb(246,246,246)",top:"2px",zIndex:"199999",right:"2px",position:"fixed"}).appendTo(document.body);
+				$node("div",'<img id="xnr_image" src=""/>').attr("id","xnr_viewer").style({border:"3px double rgb(102,102,102)",display:"none",backgroundColor:"rgb(246,246,246)",top:"2px",zIndex:"199999",right:"2px",position:"fixed"}).appendTo(document.body);
 			}
 			var t = evt.target;
 			var imgId,cache,pageURL;
@@ -1998,69 +2006,6 @@ function useWhisper() {
 	if(chk.size()>0 && chk.prop("checked")==false) {
 		chk.prop("checked",true).invoke("onclick");
 	}
-};
-
-//显示共同好友
-function showMatualFriends() {
-	if(location.pathname!="/profile.do" || !location.href.match(/[\?&]id=[0-9]+/i)) {
-		return;
-	}
-	//朋友的ID
-	var fid=/[\?&]id=([0-9]+)/i.exec(location.href)[1];
-	//自己的ID
-	var mid=$cookie("id");
-	if(fid==mid) {	//在自己页面
-		return;
-	}
-	//侧栏
-	var sidebar=$("div.extra-column > .box-holder");
-	if(sidebar.size()==0) {
-		return;
-	}
-	//载入自己的好友列表
-	$get('http://photo.renren.com/gettagfriends.do',function(url,html) {
-		try {
-			var myfriends=[];
-			var friends=$parse(html).friends_ajax;
-			for(var i in friends) {
-				myfriends[friends[i].id]=1;
-			}
-			$node('div','<h4 class="box-header"><span id="mfSpan">共同好友 (载入中...)</span>&nbsp;<a class="count" id="mfCount" style="text-decoration:none;">(0)</a></h4><div class="box-body" style="max-height:210px;overflow-y:auto;padding-left:0pt;"><div class="clearfix"><ul class="people-list" id="mfList"></ul></div></div>').attr({id:"mfBox",class:"profile-friends box"}).appendTo(sidebar);
-			loadFriends(0,fid,myfriends,0);
-		} catch(err) {
-			$error("showMutualFriends::$get",err);
-		}
-	});
-
-	//获取fid的好友
-	function loadFriends(page,fid,mfriends,mfcount) {
-		$get("http://friend.renren.com/GetFriendList.do?curpage="+page+"&id="+fid,function(url,html) {
-			try {
-				var friends=[];
-				var friendInfo;
-				while(friendInfo=/showRequestFriendDialog\('(\d+)','(.+?)','(.+?)'\)/ig.exec(html)) {
-					friends.push({id:friendInfo[1],name:friendInfo[2],img:friendInfo[3]});
-				}
-				if(friends.length>0) {
-					var mflist=$("#mfList");
-					var mfcounter=$("#mfCount");
-					for(var i in friends) {
-						if(mfriends[friends[i].id]!=null) {
-							mfriends[friends[i].id]=null;
-							mfcount++;
-							mfcounter.text("("+mfcount+")");
-							mflist.append($node("li","<a title=\"查看"+friends[i].name+"的个人主页\" href=\"http://renren.com/profile.do?id="+friends[i].id+"\" style=\"background-image:url('"+friends[i].img+"')\"></a><span><a href=\"http://renren.com/profile.do?id="+friends[i].id+"\">"+friends[i].name+"</a></span>"));
-						}
-					}
-					loadFriends(page+1,fid,mfriends,mfcount);
-				} else {
-					$("#mfSpan").text("共同好友");
-				}
-			} catch(err) {
-				$error("loadFriends::$get",err);
-			}
-		});
-	};
 };
 
 //去除只有星级用户才能修改特别好友的限制
