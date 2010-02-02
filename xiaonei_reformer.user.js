@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.0.0.20100201
-// @miniver        210
+// @version        2.0.1.20100202
+// @miniver        211
 // @author         xz
 // ==/UserScript==
 
@@ -47,8 +47,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，供自动更新用，对应header中的@version和@miniver
-	version:"2.0.0.20100201",
-	miniver:210,
+	version:"2.0.1.20100202",
+	miniver:211,
 	/*
 	 * 选项列表
 	 */
@@ -131,37 +131,59 @@ XNR.prototype={
 		hideRequest:{
 			category:"清理请求",
 			detail:{
-				removeAppRequest:{
-					text:"隐藏应用请求提示",
-					value:false,
+				GROUP1:{
+					text:"屏蔽以下类型的请求",
+					columns:2,
 					fn1:hideRequest,
-					argus1:[["l-app"]],
+					list:{
+						removeAppRequest:{
+							text:"应用请求",
+							value:false,
+							argus1:[["l-app"]],
+						},
+						removeEventRequest:{
+							text:"活动邀请",
+							value:false,
+							argus1:[["l-event"]],
+						},
+						removeNoticeRequest:{
+							text:"通知",
+							value:false,
+							argus1:[["l-request"]],
+						},
+						removePollRequest:{
+							text:"投票邀请",
+							value:false,
+							argus1:[["l-poll"]],
+						},
+						removeGameRequest:{
+							text:"游戏邀请",
+							value:false,
+							argus1:[["l-game"],["l-restaurants"],["l-paopaoyu"]],
+						},
+						removePokeRequest:{
+							text:"招呼",
+							value:false,
+							argus1:[["l-poke"]],
+						},
+						removeFriendRequest:{
+							text:"好友申请",
+							value:false,
+							argus1:[["l-friend"]],
+						},
+						removeRecommendRequest:{
+							text:"好友推荐",
+							value:false,
+							argus1:[["l-recommend"]],
+						},
+						removeTagRequest:{
+							text:"圈人",
+							value:false,
+							argus1:[["l-tag"]],
+						},
+					},
 				},
-				removeEventRequest:{
-					text:"隐藏活动邀请提示",
-					value:false,
-					fn1:hideRequest,
-					argus1:[["l-event"]],
-				},
-				removeNoticeRequest:{
-					text:"隐藏通知提示",
-					value:false,
-					fn1:hideRequest,
-					argus1:[["l-request"]],
-				},
-				removePollRequest:{
-					text:"隐藏投票邀请提示",
-					value:false,
-					fn1:hideRequest,
-					argus1:[["l-poll"]],
-				},
-				removeGameRequest:{
-					text:"隐藏游戏邀请提示",
-					value:false,
-					fn1:hideRequest,
-					argus1:[["l-game"],["l-restaurants"]],
-				},
-			},
+			}
 		},
 		sweepFeeds:{
 			category:"处理新鲜事",
@@ -1564,41 +1586,39 @@ function addExtraEmotions() {
 		}
 	}
 	//处理回复表情
-	var holder=$("#dropmenuHolder");
-	if(holder.size()>0) {
-		holder.listen('DOMAttrModified',function(evt) {
-			try {
-				if(evt.newValue=="newsfeed-reply-emotions") {
-					var list=$(evt.target).firstChild();
-					//已经有的表情列表
-					var curlist=[];
-					list.find('img').each(function(index,elem) {
-						curlist[elem.getAttribute("emotion")]=elem;
-					});
-					if(list.inner().indexOf("/icons/statusface/")==-1) {
-						// 日志/照片回复列表
-						for(var i=1;i<=emlist1.length;i++) {
-							if(!curlist["("+emlist1[i-1]+")"]) {
-								var node=$node("li",'<a onfocus="this.blur();" href="#nogo"><img src="http://xnimg.cn/imgpro/emotions/tie/'+i+'.gif" title="'+emlist1[i-1]+'" alt="'+emlist1[i-1]+'" emotion="('+emlist1[i-1]+')"/></a>');
-								list.append(node);
-							}
-						}
-					} else {
-						// 状态回复列表
-						for (var i in emlist) {
-							var el=emlist[i];
-							if(!curlist[el.e]) {
-								var node=$node("li",'<a onfocus="this.blur();" href="#nogo"><img src="http://xnimg.cn'+el.s+'" title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>');
-								list.append(node);
-							}
-						}
+	$("#dropmenuHolder").listen('DOMNodeInserted',function(evt) {
+		try {
+			if(evt.target.className!="emotion") {
+				return;
+			}
+			var list=$(evt.target);
+			//已经有的表情列表
+			var curlist=[];
+			list.find('img').each(function(index,elem) {
+				curlist[elem.getAttribute("emotion")]=elem;
+			});
+			if(list.inner().indexOf("/icons/statusface/")==-1) {
+				// 日志/照片回复列表
+				for(var i=1;i<=emlist1.length;i++) {
+					if(!curlist["("+emlist1[i-1]+")"]) {
+						var node=$node("li",'<a onfocus="this.blur();" href="#nogo"><img src="http://xnimg.cn/imgpro/emotions/tie/'+i+'.gif" title="'+emlist1[i-1]+'" alt="'+emlist1[i-1]+'" emotion="('+emlist1[i-1]+')"/></a>');
+						list.append(node);
 					}
 				}
-			} catch (err) {
-				$error("addExtraEmotions::listen",err);
+			} else {
+				// 状态回复列表
+				for (var i in emlist) {
+					var el=emlist[i];
+					if(!curlist[el.e]) {
+						var node=$node("li",'<a onfocus="this.blur();" href="#nogo"><img src="http://xnimg.cn'+el.s+'" title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>');
+						list.append(node);
+					}
+				}
 			}
-		});
-	}
+		} catch (err) {
+			$error("addExtraEmotions::listen",err);
+		}
+	});
 };
 
 //在日志、相册中增加楼层计数
