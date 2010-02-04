@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.0.2.20100202
-// @miniver        212
+// @version        2.1.0.20100204
+// @miniver        213
 // @author         xz
 // ==/UserScript==
 
@@ -47,8 +47,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，供自动更新用，对应header中的@version和@miniver
-	version:"2.0.2.20100202",
-	miniver:212,
+	version:"2.1.0.20100204",
+	miniver:213,
 	/*
 	 * 选项列表
 	 */
@@ -80,6 +80,7 @@ XNR.prototype={
 					text:"去除日志信纸",
 					value:false,
 					fn0:removeBlogTheme,
+					page:"blog.renren.com",
 				},
 				removeXntBar:{
 					text:"去除页面底部校内通栏",
@@ -90,46 +91,115 @@ XNR.prototype={
 					text:"去除首页顶部通知",
 					value:false,
 					fn1:removePageTopNotice,
+					page:"renren.com/[hH]ome.do",
 				},
 				removeNewStar:{
 					text:"去除首页发布框下的活动标签",
 					value:false,
 					fn1:removeActivityLabel,
+					page:"renren.com/[hH]ome.do",
 				},
 				removeNewStar:{
 					text:"去除人气之星/新人栏",
 					value:false,
 					fn1:removeNewStar,
+					page:"renren.com/[hH]ome.do",
+				},
+				removeFriendGuide:{
+					text:"去除寻找/邀请朋友栏",
+					value:false,
+					fn1:removeFriendGuide,
+					page:"/www.renren.com|/renren.com",
 				},
 				removeRenRenSurvey:{
 					text:"去除首页右边栏：人人网调查",
 					value:false,
 					fn1:removeRenRenSurvey,
+					page:"renren.com/[hH]ome.do",
 				},
 				removeCommonPage:{
 					text:"去除首页右边栏：公共主页推荐",
 					value:false,
 					fn1:removeCommonPage,
-				},
-				removeFriendGuide:{
-					text:"去除首页右边栏：寻找/邀请朋友",
-					value:false,
-					fn1:removeFriendGuide,
+					page:"renren.com/[hH]ome.do",
 				},
 				removeCommendation:{
 					text:"去除首页右边栏：推荐/礼物",
 					value:false,
 					fn1:removeCommendation,
+					page:"renren.com/[hH]ome.do",
+				},
+				removeMayKnow:{
+					text:"去除首页右边栏：可能认识他们",
+					value:false,
+					fn1:removeMayKnow,
+					page:"renren.com/[hH]ome.do",
 				},
 				removePaintReminder:{
 					text:"去除个人主页右上角装扮主页提示",
 					value:true,
 					fn1:removePaintReminder,
+					page:"renren.com/[Pp]rofile.do",
 				},
-				removeTree:{
+				removeLeftAlbum:{
+					text:"去除个人主页左侧相册框",
+					value:false,
+					fn1:removeLeftAlbum,
+					page:"renren.com/[Pp]rofile.do",
+				},
+				removeLeftShare:{
+					text:"去除个人主页左侧分享框",
+					value:false,
+					fn1:removeLeftShare,
+					page:"renren.com/[Pp]rofile.do",
+				},
+				removeLeftGift:{
+					text:"去除个人主页左侧礼物框",
+					value:false,
+					fn1:removeLeftGift,
+					page:"renren.com/[Pp]rofile.do",
+				},
+				removeLeftTree:{
 					text:"去除个人主页左侧◯◯树框",
 					value:false,
-					fn1:removeTree,
+					fn1:removeLeftTree,
+					page:"renren.com/[Pp]rofile.do",
+				},
+				removeMidAlbum:{
+					text:"去除个人主页中间个人相册框",
+					value:false,
+					fn1:removeMidAlbum,
+					page:"renren.com/[Pp]rofile.do",
+				},
+				removeMidBlog:{
+					text:"去除个人主页中间个人日志框",
+					value:false,
+					fn1:removeMidBlog,
+					page:"renren.com/[Pp]rofile.do",
+				},
+				removeRightSpecialFriends:{
+					text:"去除个人主页右侧特别好友框",
+					value:false,
+					fn1:removeRightSpecialFriends,
+					page:"renren.com/[Pp]rofile.do",
+				},
+				removeRightFootprint:{
+					text:"去除个人主页右侧最近来访框",
+					value:false,
+					fn1:removeRightFootprint,
+					page:"renren.com/[Pp]rofile.do",
+				},
+				removeRightFriends:{
+					text:"去除个人主页右侧好友框",
+					value:false,
+					fn1:removeRightFriends,
+					page:"renren.com/[Pp]rofile.do",
+				},
+				removeRightMutualFriends:{
+					text:"去除个人主页右侧共同好友框",
+					value:false,
+					fn1:removeRightMutualFriends,
+					page:"renren.com/[Pp]rofile.do",
 				},
 			},
 		},
@@ -140,6 +210,7 @@ XNR.prototype={
 					text:"屏蔽以下类型的请求",
 					columns:2,
 					fn1:hideRequest,
+					page:"renren.com/[hH]ome.do",
 					list:{
 						removeAppRequest:{
 							text:"应用请求",
@@ -197,6 +268,7 @@ XNR.prototype={
 					text:"屏蔽以下类型的新鲜事",
 					columns:4,
 					fn1:removeFeeds,
+					page:"/www.renren.com|/renren.com",
 					list:{
 						removeBlogFeed:{
 							text:"日志",
@@ -320,16 +392,19 @@ XNR.prototype={
 					ctrl:{option:"loadFeedPage",value:2,verify:"^[2-9]$",failInfo:"新鲜事页数只能为2~9",style:"width:15px;"},
 					fn3:loadMoreFeeds,
 					argus3:[["@loadFeedPage"]],
+					page:"renren.com/[hH]ome.do",
 				},
 				hideFeedContent:{
 					text:"隐藏新鲜事具体内容",
 					value:false,
 					fn2:hideFeedContent,
+					page:"renren.com/[hH]ome.do",
 				},
 				flodStatusComment:{
 					text:"默认收起新鲜事回复",
 					value:false,
 					fn3:flodStatusComment,
+					page:"/www.renren.com|/renren.com",
 				},
 			},
 		},
@@ -402,6 +477,7 @@ XNR.prototype={
 					value:false,
 					fn2:$patchCSS,
 					argus2:[["ul.richlist.feeds li a.delete{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -115px 0 transparent;height:18px;width:18px}ul.richlist.feeds li a.delete:hover{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -133px 0 transparent;height:18px;width:18px}"]],
+					page:"/www.renren.com|/renren.com",
 				},
 				removeFontRestriction:{
 					text:"去除页面的字体限制",
@@ -427,6 +503,7 @@ XNR.prototype={
 							value:false,
 							info:"如果您将浏览器字体的最小大小设成大于12，可能会出现论坛的帖子正文偏右的错误。如果您遇到这个问题，请启用此功能。",
 							argus2:[["#articlehome #comments .content,#articlehome #comments .signature{float:left;clear:both}"]],
+							page:"club.renren.com",
 						},
 						fixPeopleList:{
 							text:"修正头像列表排版错误",
@@ -451,16 +528,19 @@ XNR.prototype={
 					text:"增加额外的表情项",
 					value:true,
 					fn2:addExtraEmotions,
+					page:"/www.renren.com|/renren.com",
 				},
 				addFloorCounter:{
 					text:"为评论增加楼层计数",
 					value:true,
 					fn2:addFloorCounter,
+					page:"blog.renren.com|photo.renren.com",
 				},
 				showImagesInOnePage:{
 					text:"相册所有图片在一页中显示",
 					value:false,
 					fn3:showImagesInOnePage,
+					page:"photo.renren.com",
 				},
 				showImageOnMouseOver:{
 					text:"在鼠标经过图片时显示大图",
@@ -477,12 +557,14 @@ XNR.prototype={
 					info:"允许非星级用户修改特别好友",
 					value:true,
 					fn2:removeFriendRestriction,
+					page:"friend.renren.com",
 				},
 				removeNicknameRestriction:{
 					text:"去除昵称修改限制",
 					info:"允许非星级用户修改个人信息中的昵称",
 					value:true,
 					fn3:removeNicknameRestriction,
+					page:"renren.com/[Pp]rofile.do",
 				},
 				autoRefreshFeeds:{
 					text:"自动检查新鲜事更新，每隔@@秒",
@@ -547,6 +629,22 @@ XNR.prototype={
 		this.each(function(index,elem) {
 			try {
 				elem.parentNode.removeChild(elem);
+			} catch(err) {
+			}
+		});
+		return null;
+	},
+	// 删除对象所有DOM节点，如果删除后父节点无其他子节点，一并删除
+	purge:function() {
+		this.each(function(index,elem) {
+			try {
+				var p=elem.parentNode;
+				p.removeChild(elem);
+				while (p.childElementCount==0) {
+					var q=p.parentNode;
+					q.removeChild(p);
+					p=q;
+				}
 			} catch(err) {
 			}
 		});
@@ -625,7 +723,7 @@ XNR.prototype={
 	// 获取对象第一个DOM节点的子节点数
 	heirs:function() {
 		try {
-			return this.get().children.length;
+			return this.get().childElementCount;
 		} catch(err) {
 			return 0;
 		}
@@ -1134,15 +1232,13 @@ function removePageTheme() {
 
 // 删除日志主题模板
 function removeBlogTheme() {
-	if(location.host=="blog.renren.com") {
-		$("head style").each(function(index,elem) {
-			var xhr=$(elem);
-			if(xhr.text().indexOf(".text-article")!=-1) {
-				xhr.remove();
-				return false;
-			}
-		});
-	}
+	$("head style").each(function(index,elem) {
+		var xhr=$(elem);
+		if(xhr.text().indexOf(".text-article")!=-1) {
+			xhr.remove();
+			return false;
+		}
+	});
 };
 
 //移除校内通栏
@@ -1170,9 +1266,54 @@ function removePaintReminder() {
 	$(".enter-paints","#paintself","#paintother").remove();
 };
 
+//移除个人主页左侧相册框
+function removeLeftAlbum() {
+	$(".profile-albumlist.box").purge();
+};
+
+//移除个人主页左侧分享框
+function removeLeftShare() {
+	$(".profile-share.box").purge();
+};
+
+//去除个人主页左侧礼物框
+function removeLeftGift() {
+	$(".profile-gift.box").purge();
+};
+
 //移除◯◯树框
-function removeTree() {
-	$(".profile-film.box").remove();
+function removeLeftTree() {
+	$(".profile-film.box").purge();
+};
+
+//去除个人主页中间个人相册框
+function removeMidAlbum() {
+	$(".profile-album.box").purge();
+};
+
+//去除个人主页中间个人相册框
+function removeMidBlog() {
+	$(".profile-blog.box").purge();
+};
+
+//移除个人主页右侧特别好友框
+function removeRightSpecialFriends() {
+	$(".profile-spfriends.box").purge();
+};
+
+//移除个人主页右侧最近来访框
+function removeRightFootprint() {
+	$(".profile-footprint.box").purge();
+};
+
+//移除个人主页右侧好友框
+function removeRightFriends() {
+	$(".profile-friends.box").purge();
+};
+
+//移除个人主页右侧共同好友框
+function removeRightMutualFriends() {
+	$(".profile-page.box").purge();
 };
 
 //移除人人网调查
@@ -1195,6 +1336,11 @@ function removeCommendation() {
 	$(".side-item.selected").remove();
 };
 
+//移除边栏：可能认识他们
+function removeMayKnow() {
+	$(".side-item.pymk").remove();
+};
+
 //隐藏请求
 function hideRequest(reqClass) {
 	try {
@@ -1211,7 +1357,7 @@ function hideRequest(reqClass) {
 function removeFeeds(evt,markFeedAsRead,feedClass,feedTag) {
 	if(feedClass.charAt(0)=='#') {
 		// 带有#的无类型，判断icon的路径
-		var feeds=$("ul#feedHome > li").filter(".details .legend img[lala*='"+feedClass.substring(1)+"']");
+		var feeds=$("ul#feedHome > li").filter(".details .legend img[lala*='"+feedClass.substring(1)+"'],.details .legend img[src*='"+feedClass.substring(1)+"']");
 	} else {
 		var feeds=$("ul#feedHome > li").filter(".details .legend ."+feedClass+(feedTag?"[alt='"+feedTag+"']":""));
 	}
@@ -1227,14 +1373,16 @@ function removeFeeds(evt,markFeedAsRead,feedClass,feedTag) {
 
 // 默认加载更多页新鲜事
 function loadMoreFeeds(pages) {
-	if(location.pathname!="/Home.do") {
-		return;
-	}
-	// 先改造load函数，原来的load最后有个scrollTo会使页面滚动
-	var	func="(function(){if(window.XN.page.home.feedFilter.oldLoad){return;};window.XN.page.home.feedFilter.oldLoad=window.XN.page.home.feedFilter.load;window.XN.page.home.feedFilter.load=function(a,b){var y=window.scrollY;window.XN.page.home.feedFilter.oldLoad(a,b);window.scrollTo(0,y)};})();";
+	// 先改造load函数，原来的load最后有个window.scrollTo会使页面滚动
 	// 只要当前页数比预定页数少，就不断加载下一页
-	func+="function loadMoreFeeds(){if(window.XN.page.home.feedFilter.currentPage<"+pages+"){XN.Page.home.feedFilter.loadMore();setTimeout(loadMoreFeeds,1000);}};loadMoreFeeds();";
-	location.href="javascript:"+func;
+	var func="javascript:window.XN.page.home.feedFilter.oldLoad=window.XN.page.home.feedFilter.load;window.XN.page.home.feedFilter.load=function(a,b){var oldScrollTo=window.scrollTo;window.scrollTo=function(){};window.XN.page.home.feedFilter.oldLoad(a,b);window.scrollTo=oldScrollTo;};function loadMoreFeeds(){if(window.XN.page.home.feedFilter.currentPage<"+(pages-1)+"){if(!window.XN.page.home.feedFilter.loading){XN.Page.home.feedFilter.loadMore()};setTimeout(loadMoreFeeds,1000);}else{window.XN.page.home.feedFilter.load=window.XN.page.home.feedFilter.oldLoad;window.XN.page.home.feedFilter.oldLoad=null}};loadMoreFeeds();";
+	if(agent==FIREFOX) {
+		location.href=func;
+	} else {
+		setTimeout(function() {
+			location.href=func;
+		},0);
+	}
 };
 
 //删除导航栏上的项目
@@ -1297,7 +1445,9 @@ function recoverOriginalTheme() {
 	// 分类Tab的文字颜色
 	css+=".profile .profile-tabs-circle a,.page-tabs .tabpanel a,.page-tabs .tabpanel a:hover,.page-tabs .tabpanel a:visited,.stabs a:not(.current):hover span{color:"+XCOLOR+"}";
 	// 公共主页分类Tab选中项背景色
-	css+=".stabs a.current span,.stabs a.current:hover span{background-color:"+BCOLOR+"}";
+	if(location.host=="page.renren.com") {
+		css+=".stabs a.current span,.stabs a.current:hover span{background-color:"+BCOLOR+"}";
+	}
 	// 上传照片页分类Tab颜色
 	css+="#self-nav .selected a{background-color:"+BCOLOR+"}#self-nav .selected a:hover{background-color:"+BCOLOR+"}#self-nav li a{color:"+XCOLOR+"}";
 	// 导航栏背景色
@@ -1313,7 +1463,9 @@ function recoverOriginalTheme() {
 	css+=".menu-dropdown-border > div:not(.app-actions) a:hover{background-color:"+BCOLOR+" !important}";
 
 	// 首页左侧应用栏的背景色，回复的背景色
-	css+=".statuscmtitem,.panel.bookmarks{background-color:"+SCOLOR+"}";
+	if(location.pathname=="/Home.do") {
+		css+=".statuscmtitem,.panel.bookmarks{background-color:"+SCOLOR+"}";
+	}
 
 	// 主页上头像下方操作栏
 	css+=".profile-actions a:hover{background-color:"+BCOLOR+"}";
@@ -1335,19 +1487,31 @@ function recoverOriginalTheme() {
 	css+=".share-actions a.share:hover{background-color:"+BCOLOR+"}";
 
 	// 论坛导航栏的背景色
-	css+="#clubheader #navigation,#clubheader #utility{background-color:"+XCOLOR+"}";
+	if(location.host=="club.renren.com") {
+		css+="#clubheader #navigation,#clubheader #utility{background-color:"+XCOLOR+"}";
+	}
 
 	// 用户请求中心按钮
 	css+="ul.figureslist.requests button{background-color:"+XCOLOR+" !important}";
 
 	// 好友列表中的链接背景色
-	css+="#friendpage ul.actions a:hover{background-color:"+BCOLOR+"}";
+	if(location.host=="friend.renren.com") {
+		css+="#friendpage ul.actions a:hover{background-color:"+BCOLOR+"}";
+	}
 
 	// 校内通栏上的提醒链接颜色
 	css+=".m-chat-window.notifications .chat-conv .notifyitem .notifybody a{color:"+XCOLOR+" !important}";
 
 	// 热门分享
-	css+="ul.share-hot-list li h3 a,ul.share-hot-list li h3 a:hover{color:"+XCOLOR+"}";
+	if(location.host=="share.renren.com") {
+		css+="ul.share-hot-list li h3 a,ul.share-hot-list li h3 a:hover{color:"+XCOLOR+"}";
+	}
+
+	// 客服中心
+	if(location.host=="support.renren.com") {
+		css+=".gbcontainer h3{color:"+XCOLOR+" !important}";
+		css+=".inputbutton.gbing{background-color:"+FCOLOR+"}";
+	}
 	$patchCSS(css);
 };
 
@@ -1452,8 +1616,8 @@ function flodStatusComment() {
 	if(scripts) {
 		setTimeout(function(){$node("script",scripts).appendTo(document.body)},0);
 	}
-	// 修改loadJSON方法，loadJSON方法最后调用show强制显示，以后点击更多新鲜事时就不用一个个去收起了
-	location.href="javascript:(function(){XN.app.status.replyEditor.prototype.oldloadJSON=XN.app.status.replyEditor.prototype.loadJSON;XN.app.status.replyEditor.prototype.loadJSON=function(a){this.oldloadJSON(a);this.hide();}})()";
+	// 修改loadJSON方法，loadJSON方法原最后会调用show强制显示
+	location.href="javascript:(function(){if(!XN.app.status)return;XN.app.status.replyEditor.prototype.oldloadJSON=XN.app.status.replyEditor.prototype.loadJSON;XN.app.status.replyEditor.prototype.loadJSON=function(a){this.oldloadJSON(a);this.hide();}})()";
 };
 
 //增加更多状态表情
@@ -1627,9 +1791,6 @@ function addExtraEmotions() {
 
 //在日志、相册中增加楼层计数
 function addFloorCounter() {
-	if(location.host!="blog.renren.com" && location.host!="photo.renren.com") {
-		return;
-	}
 	addCounter();
 	$("div.replies").listen("DOMNodeInserted",addCounter);
 	
@@ -2240,19 +2401,23 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 					if(o[op].ctrl) {
 						options[o[op].ctrl.option]=o[op].ctrl.value;
 					}
-					// 对应的函数
-					for(var i=0;i<4;i++) {
-						if(o[op]["fn"+i]) {
-							(funcs[i])[op]={fn:o[op]["fn"+i],argus:o[op]["argus"+i]};
-						} else if (p && p["fn"+i]) {
-							// 继承父项目（GROUP）的函数
-							(funcs[i])[op]={fn:p["fn"+i],argus:o[op]["argus"+i]};
+
+					// 是否限制了页面
+					if((!o[op].page || location.href.match(o[op].page)) || (!o[op].page && (!p || !p.page || location.href.match(p.page)))) {
+						// 对应的函数
+						for(var i=0;i<4;i++) {
+							if(o[op]["fn"+i]) {
+								(funcs[i])[op]={fn:o[op]["fn"+i],argus:o[op]["argus"+i]};
+							} else if (p && p["fn"+i]) {
+								// 继承父项目（GROUP）的函数
+								(funcs[i])[op]={fn:p["fn"+i],argus:o[op]["argus"+i]};
+							}
 						}
-					}
-					// 有事件触发器
-					if(o[op].trigger) {
-						for(var i in o[op].trigger) {
-							triggers.push([op,o[op].trigger[i]]);
+						// 有事件触发器
+						if(o[op].trigger) {
+							for(var i in o[op].trigger) {
+								triggers.push([op,o[op].trigger[i]]);
+							}
 						}
 					}
 					// 有父项目，为GROUP中的
@@ -2312,7 +2477,7 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 						}
 						var argus=fns[fn].argus;
 						if(argus) {
-							for(var t in argus) {
+							for(var t=0;t<argus.length;t++) {
 								for(var j=0;j<argus[t].length;j++) {
 									// 以@开头的是选项的值
 									if(/^@/.test(argus[t][j])) {
@@ -2551,7 +2716,7 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 				}
 				save();
 				exec();
-				setTimeout(function(){buildMenu();createTriggers()},0);
+				setTimeout(function(){buildMenu();createTriggers()},50);
 			});
 		}
 	} catch(err) {
