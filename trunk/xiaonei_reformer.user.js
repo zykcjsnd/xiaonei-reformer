@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.1.0.20100204
-// @miniver        213
+// @version        2.1.1.20100204
+// @miniver        214
 // @author         xz
 // ==/UserScript==
 
@@ -47,8 +47,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，供自动更新用，对应header中的@version和@miniver
-	version:"2.1.0.20100204",
-	miniver:213,
+	version:"2.1.1.20100204",
+	miniver:214,
 	/*
 	 * 选项列表
 	 */
@@ -528,7 +528,7 @@ XNR.prototype={
 					text:"增加额外的表情项",
 					value:true,
 					fn2:addExtraEmotions,
-					page:"/www.renren.com|/renren.com",
+					page:"/www.renren.com|/renren.com|/status.renren.com",
 				},
 				addFloorCounter:{
 					text:"为评论增加楼层计数",
@@ -1375,13 +1375,11 @@ function removeFeeds(evt,markFeedAsRead,feedClass,feedTag) {
 function loadMoreFeeds(pages) {
 	// 先改造load函数，原来的load最后有个window.scrollTo会使页面滚动
 	// 只要当前页数比预定页数少，就不断加载下一页
-	var func="javascript:window.XN.page.home.feedFilter.oldLoad=window.XN.page.home.feedFilter.load;window.XN.page.home.feedFilter.load=function(a,b){var oldScrollTo=window.scrollTo;window.scrollTo=function(){};window.XN.page.home.feedFilter.oldLoad(a,b);window.scrollTo=oldScrollTo;};function loadMoreFeeds(){if(window.XN.page.home.feedFilter.currentPage<"+(pages-1)+"){if(!window.XN.page.home.feedFilter.loading){XN.Page.home.feedFilter.loadMore()};setTimeout(loadMoreFeeds,1000);}else{window.XN.page.home.feedFilter.load=window.XN.page.home.feedFilter.oldLoad;window.XN.page.home.feedFilter.oldLoad=null}};loadMoreFeeds();";
+	var func="window.XN.page.home.feedFilter.oldLoad=window.XN.page.home.feedFilter.load;window.XN.page.home.feedFilter.load=function(a,b){var oldScrollTo=window.scrollTo;window.scrollTo=function(){};window.XN.page.home.feedFilter.oldLoad(a,b);window.scrollTo=oldScrollTo;};function loadMoreFeeds(){if(window.XN.page.home.feedFilter.currentPage<"+(pages-1)+"){if(!window.XN.page.home.feedFilter.loading){XN.Page.home.feedFilter.loadMore()};setTimeout(loadMoreFeeds,1000);}else{window.XN.page.home.feedFilter.load=window.XN.page.home.feedFilter.oldLoad;window.XN.page.home.feedFilter.oldLoad=null}};loadMoreFeeds();";
 	if(agent==FIREFOX) {
-		location.href=func;
+		location.href="javascript:"+func;
 	} else {
-		setTimeout(function() {
-			location.href=func;
-		},0);
+		$node("script").text(func).appendTo(document.body);
 	}
 };
 
@@ -2716,7 +2714,7 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 				}
 				save();
 				exec();
-				setTimeout(function(){buildMenu();createTriggers()},50);
+				setTimeout(function(){buildMenu();createTriggers()},0);
 			});
 		}
 	} catch(err) {
