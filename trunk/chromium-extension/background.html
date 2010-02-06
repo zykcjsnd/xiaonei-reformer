@@ -6,7 +6,14 @@ chrome.extension.onRequest.addListener(
 function(request, sender, sendResponse) {
 	switch(request.action) {
 		case "set":
-			localStorage.setItem("xnr_options",JSON.stringify(request.data));
+			var options=localStorage.getItem("xnr_options");
+			if(options==null || JSON.stringify(options)=="\"undefined\"") {
+				options={};
+			} else {
+				options=JSON.parse(options);
+			}
+			options[request.name]=request.data;
+			localStorage.setItem("xnr_options",JSON.stringify(options));
 			break;
 		case "get":
 			var options=localStorage.getItem("xnr_options");
