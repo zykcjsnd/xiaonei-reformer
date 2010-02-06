@@ -2402,9 +2402,12 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 
 // 自动升级后提示。用于Chrome
 function updatedNotify(lastVer) {
-	if(lastVer!=0 && lastVer<XNR.prototype.miniver) {
+	if(lastVer==0) {
+		// 首次运行。。？
+		$save("lastVersion",XNR.prototype.miniver);
+	} else if(lastVer<XNR.prototype.miniver) {
 		setTimeout(function() {
-			$node("div",'<div><font color=crimson>人人网改造器已经自动更新为：'+XNR.prototype.version+' ('+XNR.prototype.miniver+')</font><b> </b><a target="_blank" href="http://xiaonei-reformer.googlecode.com/files/Changelog.txt">查看更新内容</a><b> </b><a href="#" onclick="document.getElementById(\'updatedNotify\').style.display=\'none\';location.reload();return false;">关闭</a>').attr({id:"updatedNotify",style:"top:2px;position:fixed;z-index:100000;background-color:rgb(246,246,246)"}).appendTo(document.body);
+			$node("div",'<div><font color=crimson>人人网改造器已经自动更新为：'+XNR.prototype.version+' ('+XNR.prototype.miniver+')</font><b> </b><a target="_blank" href="http://xiaonei-reformer.googlecode.com/files/Changelog.txt">查看更新内容</a><b> </b><a href="#" onclick="document.getElementById(\'updatedNotify\').style.display=\'none\';return false;">关闭</a>').attr({id:"updatedNotify",style:"top:2px;position:fixed;z-index:100000;background-color:rgb(246,246,246)"}).appendTo(document.body);
 		},0);
 		$save("lastVersion",XNR.prototype.miniver);
 	}
