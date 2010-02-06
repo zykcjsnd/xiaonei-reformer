@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.1.1.20100204
-// @miniver        214
+// @version        2.2.0.20100206
+// @miniver        216
 // @author         xz
 // ==/UserScript==
 
@@ -46,9 +46,9 @@ function XNR(o) {
 	return this;
 };
 XNR.prototype={
-	// 脚本版本，供自动更新用，对应header中的@version和@miniver
-	version:"2.1.1.20100204",
-	miniver:214,
+	// 脚本版本，主要供更新用，对应header中的@version和@miniver
+	version:"2.2.0.20100206",
+	miniver:216,
 	/*
 	 * 选项列表
 	 */
@@ -542,6 +542,13 @@ XNR.prototype={
 					fn3:showImagesInOnePage,
 					page:"photo.renren.com",
 				},
+				hideImageTagOnMouseOver:{
+					text:"当鼠标在照片上时隐藏圈人框",
+					value:false,
+					info:"仍然可以在照片右侧的被圈人列表中看到圈人情况",
+					fn3:hideImageTagOnMouseOver,
+					page:"photo.renren.com",
+				},
 				showImageOnMouseOver:{
 					text:"在鼠标经过图片时显示大图",
 					value:true,
@@ -578,24 +585,26 @@ XNR.prototype={
 		},
 		update:{
 			category:"自动更新",
-			agent:FIREFOX,
 			detail:{
 				checkUpdate:{
 					text:"自动检查脚本更新（24小时内最多检查一次）",
 					value:true,
 					fn3:checkUpdate,
 					argus3:[[null,"@checkLink","@pageLink","@scriptLink","@lastUpdate"]],
+					agent:FIREFOX,
 				},
 				lastUpdate:{
 					text:"最后一次检查更新时间：@@",
 					type:"label",
 					value:"未知",
+					agent:FIREFOX,
 				},
 				manualCheck:{
 					text:"立刻检查",
 					type:"button",
 					value:true,
 					trigger:[{target:".xnr_op input#manualCheck",evt:"click",fn:checkUpdate,argus:[["@checkLink","@pageLink","@scriptLink","@lastUpdate"]]}],
+					agent:FIREFOX,
 				},
 				checkLink:{
 					text:"检查更新地址：@@",
@@ -604,6 +613,7 @@ XNR.prototype={
 					style:"width:270px;",
 					verify:"[A-Za-z]+://[^/]+\.[^/]+/.*",
 					failInfo:"请输入正确的检查更新地址",
+					agent:FIREFOX,
 				},
 				pageLink:{
 					text:"脚本主页地址：@@",
@@ -612,6 +622,7 @@ XNR.prototype={
 					style:"width:270px;",
 					verify:"[A-Za-z]+://[^/]+\.[^/]+/.*",
 					failInfo:"请输入正确的脚本主页地址",
+					agent:FIREFOX,
 				},
 				scriptLink:{
 					text:"脚本下载地址：@@",
@@ -620,6 +631,19 @@ XNR.prototype={
 					style:"width:270px;",
 					verify:"[A-Za-z]+://[^/]+\.[^/]+/.*",
 					failInfo:"请输入正确的脚本下载地址",
+					agent:FIREFOX,
+				},
+				updatedNotify:{
+					text:"自动升级后提示",
+					value:true,
+					fn3:updatedNotify,
+					argus3:[["@lastVersion"]],
+					agent:CHROME,
+				},
+				lastVersion:{
+					type:"hidden",
+					value:0,
+					agent:CHROME,
 				},
 			}
 		},
@@ -674,7 +698,7 @@ XNR.prototype={
 	// 遍历对象的DOM节点，参数为一回调函数，function(index,elem){}，返回false终止遍历;
 	each:function(func) {
 		if(typeof func == "function") {
-			for(i in this.domNodes) {
+			for(var i in this.domNodes) {
 				if(func(i,this.domNodes[i])===false) {
 					break;
 				}
@@ -914,7 +938,7 @@ XNR.prototype={
 	style:function(o,v) {
 		switch(typeof o) {
 			case "object":
-				for(n in o) {
+				for(var n in o) {
 					this.each(function(index,elem) {
 						try {
 							elem.style[n]=o[n];
@@ -1051,12 +1075,14 @@ function $error(func,err) {
 	}
 };
 /*
- * 保存到选项，当页面刷新时才真正写入
+ * 保存选项，当页面刷新时内存中的数据才会更新，切记
  */
 function $save(name,value) {
-	var toSave=$parse(localStorage.getItem("xnr_save"));
-	toSave[name]=value;
-	localStorage.setItem("xnr_save",JSON.stringify(toSave));
+	if(agent==FIREFOX) {
+		GM_setValue(name,value);
+	} else if(agent==CHROME) {
+		chrome.extension.sendRequest({action:"set",name:name,data:value});
+	}
 };
 /*
  * 取代JSON.parse。JSON.parse在chromium中有问题，不能很好处理undefined
@@ -1210,6 +1236,8 @@ function removeMusicPlayer() {
 
 //删除页面主题模板
 function removePageTheme() {
+	//删除节日模板
+	$("head link[rel='stylesheet'][href*='/csspro/themes/'][href*='.css']").remove();
 	//删除紫豆模板
 	$("head style").each(function(index,elem) {
 		var xhr=$(elem);
@@ -1395,13 +1423,19 @@ function removeNavBarItem(link) {
 
 //在导航栏上增加项目
 function addNavBarItem(content) {
-	if(content) {
-		var nav=$("div.nav-main");
-		var items=content.split("\n");
-		for(i=0;i<items.length;i+=2) {
-			$node("div",'<div class="menu-title"><a href="'+items[i+1]+'">'+items[i]+'</a></div>').attr("class","menu").appendTo(nav);
-		}
+	if(!content) {
+		return;
 	}
+	var nav=$("div.nav-main");
+	if(nav.size()==0) {
+		return;
+	}
+	var items=content.split("\n");
+	for(var i=0;i<items.length;i+=2) {
+		$node("div",'<div class="menu-title"><a href="'+items[i+1]+'" target="_blank">'+items[i]+'</a></div>').attr("class","menu").appendTo(nav);
+	}
+	//防止被自作主张改动链接
+	location.href="javascript:(function(){var e=document.body.querySelectorAll('.nav-main .menu-title > a');for(var i in e){e[i]._ad_rd=true;}})();";
 };
 
 //加宽导航栏
@@ -1448,17 +1482,18 @@ function recoverOriginalTheme() {
 	}
 	// 上传照片页分类Tab颜色
 	css+="#self-nav .selected a{background-color:"+BCOLOR+"}#self-nav .selected a:hover{background-color:"+BCOLOR+"}#self-nav li a{color:"+XCOLOR+"}";
-	// 导航栏背景色
+	
 	$("div.navigation.clearfix",".vip-header-new").each(function(index,elem) {
 		var bc=document.defaultView.getComputedStyle(elem,null).backgroundColor;
 		if(bc=="rgb(0, 94, 172)" || bc=="transparent") {
+			// 导航栏背景色
 			css+=".navigation,.vip-header-new{background:"+FCOLOR+"}";
+			// 导航栏项目鼠标移过时的背景色
+			css+=".navigation .menu-title a:hover{background-color:"+BCOLOR+"}";
+			// 导航栏设置下拉菜单项目的背景色
+			css+=".menu-dropdown-border > div:not(.app-actions) a:hover{background-color:"+BCOLOR+" !important}";
 		}
 	});
-	// 导航栏项目鼠标移过时的背景色
-	css+=".navigation .menu-title a:hover{background-color:"+BCOLOR+"}";
-	// 导航栏设置下拉菜单项目的背景色
-	css+=".menu-dropdown-border > div:not(.app-actions) a:hover{background-color:"+BCOLOR+" !important}";
 
 	// 首页左侧应用栏的背景色，回复的背景色
 	if(location.pathname=="/Home.do") {
@@ -1585,6 +1620,11 @@ function showImagesInOnePage() {
 	$("ol.pagerpro").remove();
 };
 
+//当鼠标在照片上隐藏圈人框
+function hideImageTagOnMouseOver() {
+	$("#photoContainer").attr({"onmouseover":"document.getElementsByClassName('tagshowcon')[0].style.visibility='hidden'","onmouseout":"document.getElementsByClassName('tagshowcon')[0].style.visibility=null"});
+};
+
 //去除页面字体限制
 function removeFontRestriction() {
 	$patchCSS("*{font-family:none !important}");
@@ -1697,12 +1737,17 @@ function addExtraEmotions() {
 		{e:"(stick)",	t:"拐杖糖",			s:"/imgpro/icons/statusface/stick.gif"},
 		{e:"(socks)",	t:"圣诞袜",			s:"/imgpro/icons/statusface/stocking.gif"},
 		{e:"(元旦)",	t:"元旦快乐",		s:"/imgpro/icons/statusface/gantan.gif"},
-		{e:"(虎年)",	t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
+	//	{e:"(虎年)",	t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
+		{e:"(tiger)",	t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
+		{e:"(ny)",		t:"布老虎",			s:"/imgpro/icons/statusface/tiger2.gif"},
+		{e:"(boy)",		t:"男孩",			s:"/imgpro/icons/statusface/boy.gif"},
+		{e:"(girl)",	t:"女孩",			s:"/imgpro/icons/statusface/girl.gif"},
 		{e:"(^)",		t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
 		{e:"(h)",		t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		{e:"(r)",		t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
 		{e:"(w)",		t:"宇航员",			s:"/imgpro/icons/ico_spacewalker.gif"},
-		{e:"(earth)",	t:"地球",			s:"/imgpro/icons/statusface/earth.gif"},
+		{e:"(earth)",	t:"地球",			s:"/imgpro/icons/statusface/wwf-earth.gif"},
+		{e:"(LG)",		t:"LG棒棒糖",		s:"/imgpro/activity/lg-lolipop/faceicon_2.gif"},
 		{e:"(i)",		t:"电灯泡",			s:"/img/ems/bulb.gif"},
 		{e:"(zg)",		t:"烛光",			s:"/img/ems/candle.gif"},
 		{e:"(gsilk)",	t:"绿丝带",			s:"/img/ems/gsilk.gif"},
@@ -1711,7 +1756,6 @@ function addExtraEmotions() {
 		{e:"(f)",		t:"拳头",			s:"/img/ems/fist.gif"},
 	//	{e:"(l)",		t:"爱",				s:"/img/ems/love.gif"}, 与:a相同
 		{e:"(t)",		t:"火炬",			s:"/img/ems/torch.gif"},
-		{e:"(LG)",		t:"LG棒棒糖",		s:"/activity/lg-lolipop/faceicon_2.gif"}
 	];
 	//日志/照片回复表情列表，直接与序号/URL对应
 	emlist1=["不","谄笑","吃饭","调皮","尴尬","汗","惊恐","囧-窘迫","可爱","酷","流口水","猫猫笑","色","生病","叹气","淘气","舔","偷笑","吐","吻","晕","猪猪头","住嘴","大笑","害羞","惊呆","口罩","哭","困","难过","生气","书呆子","微笑"];
@@ -2333,7 +2377,7 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 			var miniver=(/@miniver[ \t]+(\d+)/.exec(html) || ["","0"])[1];
 			var ver=(/@version[ \t]+([0-9\.]+)/.exec(html) || ["","未知"])[1];
 			if(parseInt(miniver)>XNR.prototype.miniver) {
-				$node("div",'<div><font color=crimson>校内网改造器已有新版本：'+ver+'</font><b> </b><a target="_blank" href="'+scriptLink+'">安装</a><b> </b><a target="_blank" href="'+pageLink+'">去看看</a><b> </b><a onclick="return false">以后再说</a></div>').attr({id:"updateNotify",style:"bottom:2px;position:fixed;z-index:100000;background-color:rgb(246,246,246)"}).appendTo(document.body);
+				$node("div",'<div><font color=crimson>人人网改造器已有新版本：'+ver+'</font><b> </b><a target="_blank" href="'+scriptLink+'">安装</a><b> </b><a target="_blank" href="'+pageLink+'">去看看</a><b> </b><a href="#" onclick="return false">以后再说</a></div>').attr({id:"updateNotify",style:"bottom:2px;position:fixed;z-index:100000;background-color:rgb(246,246,246)"}).appendTo(document.body);
 				$("#updateNotify a").listen("click",function() {
 					$save("lastUpdate",today.toString());
 					$("body>div.xnr_op #lastUpdate").text(today.format("yyyy-MM-dd HH:mm:ss"));
@@ -2356,10 +2400,20 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 	});
 };
 
+// 自动升级后提示。用于Chrome
+function updatedNotify(lastVer) {
+	if(lastVer!=0 && lastVer<XNR.prototype.miniver) {
+		setTimeout(function() {
+			$node("div",'<div><font color=crimson>人人网改造器已经自动更新为：'+XNR.prototype.version+' ('+XNR.prototype.miniver+')</font><b> </b><a target="_blank" href="http://xiaonei-reformer.googlecode.com/files/Changelog.txt">查看更新内容</a><b> </b><a href="#" onclick="document.getElementById(\'updatedNotify\').style.display=\'none\';location.reload();return false;">关闭</a>').attr({id:"updatedNotify",style:"top:2px;position:fixed;z-index:100000;background-color:rgb(246,246,246)"}).appendTo(document.body);
+		},0);
+		$save("lastVersion",XNR.prototype.miniver);
+	}
+};
+
 (function() {
 	try {
 		// 不在内容可以编辑的frame中运行，也不在body无id无class的frame中运行
-		if (self != window.top && (document.designMode=="on" || (!document.body.id && !document.body.className))) {
+		if (self != window.top && (document.designMode=="on" || (!document.body.id && !document.body.className) || document.body.className=="pages")) {
 			return;
 		}
 		// 各种选项
@@ -2557,7 +2611,7 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 			html+='<style type="text/css">.xnr_op{width:450px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op .tl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAS0lEQVR42o3OoQ0AIAxEUZYi7NEluggewwy1dMNyBgIJCSe+uTxxKSKuRKQgRRV1ZGicIKOG/NVGa/jB9oPrkzNQWVhZ2FloLBwMnD51rC95s060AAAAAElFTkSuQmCC)}.xnr_op .m{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAQCAYAAADwMZRfAAAAG0lEQVQ4jWMICgraQClmGDVk1JBRQ0YNCdoAAHYawHDC5WlcAAAAAElFTkSuQmCC)}.xnr_op .tr{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAARElEQVR42o3KoREAIAwEMJbi2KNLdBE8pjPUlg3Lo8BwvIhLEZEAB4MOCi0zy23H+TCg/uNR2TjYuDU2Khs7G42NzsZYRf6sL6b2F1EAAAAASUVORK5CYII%3D)}.xnr_op .bl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQY02MICgpaD8QbCGEGILGMWIVTiFXYQqzCdGIVmhOl8P///yDF/cQqNCVKIZLifoIKkTSYQz3YAg06UDivBwBLtawvNrYbVAAAAABJRU5ErkJggg%3D%3D)}.xnr_op .br{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQYlY3KoRUAIAhFUZbyuMdbgkXoFmaw6oaYyP5w2zXgCo6Jcasx1RhqdDVOJa6qMiWOX1ydOh5gAwkE4MDs0B5TPqwv1+d6zQAAAABJRU5ErkJggg%3D%3D)}.xnr_op .border{height:10px;overflow:hidden;width:10px;}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op .c{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .pages{width:310px}.xnr_op .category li{cursor:pointer;height:30px;line-height:30px}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{padding-left:10px;font-size:14px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%;table-layout:fixed}.xnr_op .pages>div>div>table{width:100%;table-layout:fixed;margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
 			html+='<table><tbody><tr><td class="border tl"></td><td class="border m" style="width:430px"></td><td class="border tr"></td></tr><tr><td class="border m"></td><td class="c"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>';
 			html+=categoryHTML;
-			html+='</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>校内网改造器</h1><p><b class="ver"></b></p><p><b>2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p></td></tr></tbody></table></div>';
+			html+='</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>人人网改造器</h1><p><b class="ver"></b></p><p><b>2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p></td></tr></tbody></table></div>';
 			html+=detailHTML;
 			html+='</td></tr></tbody></table></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border m"></td></tr><tr><td class="border bl"></td><td class="border m"></td><td class="border br"></td></tr></tbody></table>';
 			menu.inner(html).appendTo(document.body);
@@ -2652,30 +2706,10 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 				});
 			}
 		};
-		// 保存运行时更改的值。
-		var save=function() {
-			var data=$parse(localStorage.getItem("xnr_save"));
-			// 先更新内存中的数据
-			for(var option in data) {
-				options[option]=data[option];
-			}
-			try {
-				if(agent==FIREFOX) {
-					for(var option in data) {
-						GM_setValue(option,data[option]);
-					}
-				} else if(agent==CHROME) {
-					chrome.extension.sendRequest({action:"set",data:options});
-				}
-			} catch(err) {
-				$error("save",err);
-			}
-			localStorage.setItem("xnr_save",null);
-		};
 
 		// 建立图片缓存
 		imgCache=$parse(localStorage.getItem("xnr_cache"));
-		for(id in imgCache) {
+		for(var id in imgCache) {
 			if(imgCache[id].life<=0) {
 				delete imgCache[id];
 			} else {
@@ -2702,7 +2736,6 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 			for(var option in options) {
 				options[option]=GM_getValue(option,options[option]);
 			}
-			save();
 			exec();
 			buildMenu();
 			createTriggers();
@@ -2712,7 +2745,6 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 				for(var i in response.data) {
 					options[i]=response.data[i];
 				}
-				save();
 				exec();
 				setTimeout(function(){buildMenu();createTriggers()},0);
 			});
