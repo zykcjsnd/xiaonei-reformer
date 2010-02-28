@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.2.0.20100206
-// @miniver        216
+// @version        2.2.1.20100228
+// @miniver        218
 // @author         xz
 // ==/UserScript==
 
@@ -47,8 +47,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.2.0.20100206",
-	miniver:216,
+	version:"2.2.1.20100228",
+	miniver:218,
 	/*
 	 * 选项列表
 	 */
@@ -80,6 +80,12 @@ XNR.prototype={
 					text:"去除日志信纸",
 					value:false,
 					fn0:removeBlogTheme,
+					page:"blog.renren.com",
+				},
+				removeBlogLinks:{
+					text:"去除日志中整段链接",
+					value:false,
+					fn1:removeBlogLinks,
 					page:"blog.renren.com",
 				},
 				removeXntBar:{
@@ -469,7 +475,7 @@ XNR.prototype={
 			detail:{
 				recoverOriginalTheme:{
 					text:"使用早期的深蓝色主题（不影响有模板的页面）",
-					value:true,
+					value:false,
 					fn0:recoverOriginalTheme,
 				},
 				recoverBigDeleteBtn:{
@@ -535,6 +541,12 @@ XNR.prototype={
 					value:true,
 					fn2:addFloorCounter,
 					page:"blog.renren.com|photo.renren.com",
+				},
+				addBlogLinkProtocolsSupport:{
+					text:"允许在日志中添加HTTPS/FTP协议的链接",
+					value:true,
+					fn2:addBlogLinkProtocolsSupport,
+					page:"blog.renren.com/NewEntry.do|blog.renren.com/.*/editBlog",
 				},
 				showImagesInOnePage:{
 					text:"相册所有图片在一页中显示",
@@ -648,6 +660,17 @@ XNR.prototype={
 			}
 		},
 	},
+	// 遍历对象的DOM节点，参数为一回调函数，function(index,elem){}，返回false终止遍历;
+	each:function(func) {
+		if(typeof func == "function") {
+			for(var i in this.domNodes) {
+				if(func(i,this.domNodes[i])===false) {
+					break;
+				}
+			}
+		}
+		return this;
+	},
 	// 删除对象所有的DOM节点
 	remove:function() {
 		this.each(function(index,elem) {
@@ -695,16 +718,24 @@ XNR.prototype={
 		});
 		return this;
 	},
-	// 遍历对象的DOM节点，参数为一回调函数，function(index,elem){}，返回false终止遍历;
-	each:function(func) {
-		if(typeof func == "function") {
-			for(var i in this.domNodes) {
-				if(func(i,this.domNodes[i])===false) {
-					break;
+	// 转换对象所有节点为另一类型节点
+	switchTo:function(o) {
+		if(o instanceof XNR) {
+			o=o.get();
+		}
+		if(o.nodeType) {
+			var xnr=this;
+			this.each(function(index,elem) {
+				var newNode=o.cloneNode(false);
+				while(elem.childNodes.length>0) {
+					newNode.appendChild(elem.childNodes[0]);
 				}
-			}
+				elem.parentNode.replaceChild(newNode,elem);
+				xnr.domNodes[index]=newNode;
+			});
 		}
 		return this;
+
 	},
 	// 获取对象中的DOM节点数量
 	size:function() {
@@ -787,8 +818,8 @@ XNR.prototype={
 		} else if(node.nodeType==1) {
 			if(pos<0) {
 				pos=0;
-			} else if (pos>node.children.length) {
-				pos=node.children.length;
+			} else if (pos>node.childElementCount) {
+				pos=node.childElementCount;
 			}
 			if(o instanceof XNR) {
 				o.each(function(index,elem) {
@@ -796,7 +827,7 @@ XNR.prototype={
 					pos++;
 				});
 			} else if(o.nodeType==1){
-				if(pos==node.children.length) {
+				if(pos==node.childElementCount) {
 					//在最后
 					node.appendChild(o);
 				} else {
@@ -868,13 +899,22 @@ XNR.prototype={
 		return XNR(res);
 	},
 	// 过滤出有符合条件子节点的节点
-	filter:function(str) {
+	// o可以为字符串，作为CSS选择器。也可为函数，function(elem)，返回false或等价物时滤除
+	filter:function(o) {
 		var res=new Array();
-		this.each(function(index,elem) {
-			if(elem.querySelector(str)) {
-				res.push(elem);
-			}
-		});
+		if(typeof o=="string") {
+			this.each(function(index,elem) {
+				if(elem.querySelector(str)) {
+					res.push(elem);
+				}
+			});
+		} else if(typeof o=="function") {
+			this.each(function(index,elem) {
+				if(o(elem)) {
+					res.push(elem);
+				}
+			});
+		}
 		this.domNodes=res;
 		return this;
 	},
@@ -1258,13 +1298,25 @@ function removePageTheme() {
 	$("#themeLink").remove();
 };
 
-// 删除日志主题模板
+// 删除日志信纸
 function removeBlogTheme() {
 	$("head style").each(function(index,elem) {
 		var xhr=$(elem);
 		if(xhr.text().indexOf(".text-article")!=-1) {
 			xhr.remove();
 			return false;
+		}
+	});
+};
+
+// 删除日志中整段的链接
+function removeBlogLinks() {
+	var node=document.createElement("span");
+	$("#blogContent a").each(function(index,elem) {
+		var o=$(elem);
+		// 只处理链接到个人主页或外部链接中非ASCII文字大于20个的。
+		if(elem.href.match("/profile.do") || elem.href.match(/renren.com\/[a-z0-9]+$/) || o.text().match(/[\u0100-\uffff]{20,}/)) {
+			o.switchTo(node);
 		}
 	});
 };
@@ -1742,11 +1794,13 @@ function addExtraEmotions() {
 		{e:"(ny)",		t:"布老虎",			s:"/imgpro/icons/statusface/tiger2.gif"},
 		{e:"(boy)",		t:"男孩",			s:"/imgpro/icons/statusface/boy.gif"},
 		{e:"(girl)",	t:"女孩",			s:"/imgpro/icons/statusface/girl.gif"},
+		{e:"(earth)",	t:"地球",			s:"/imgpro/icons/statusface/wwf-earth.gif"},
+		{e:"(ty)",		t:"汤圆",			s:"/imgpro/icons/statusface/tang-yuan.gif"},
+		{e:"(dl)",		t:"灯笼",			s:"/imgpro/icons/statusface/lantern.gif"},
 		{e:"(^)",		t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
 		{e:"(h)",		t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		{e:"(r)",		t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
 		{e:"(w)",		t:"宇航员",			s:"/imgpro/icons/ico_spacewalker.gif"},
-		{e:"(earth)",	t:"地球",			s:"/imgpro/icons/statusface/wwf-earth.gif"},
 		{e:"(LG)",		t:"LG棒棒糖",		s:"/imgpro/activity/lg-lolipop/faceicon_2.gif"},
 		{e:"(i)",		t:"电灯泡",			s:"/img/ems/bulb.gif"},
 		{e:"(zg)",		t:"烛光",			s:"/img/ems/candle.gif"},
@@ -1884,6 +1938,11 @@ function addFloorCounter() {
 			$error("addCounter",err);
 		}
 	};
+};
+
+// 允许在日志中插入HTTPS/FTP协议的链接
+function addBlogLinkProtocolsSupport() {
+	location.href='javascript:(function(){var f=window.tinyMCE.editors.editor.plugins.xnLink.update.toString().replace("/^http:/","/^https?:|^ftp:/").replace(/function \\(\\) *{/,"").replace(/}$/,"");window.tinyMCE.editors.editor.plugins.xnLink.update=new Function(f);})()';
 };
 
 //在鼠标移过时显示照片大图
@@ -2150,7 +2209,7 @@ function showImageOnMouseOver() {
 					}
 
 					//小头像，包括一种非常古老的（"http://head.xiaonei.com/photos/20070201/1111/tiny[0-9]+.jpg"）
-					if((imgSrc.indexOf("tiny_")!=-1 || (imgSrc.indexOf("tiny")!=-1 && imgSrc.indexOf("_")==-1)) && pageURL.indexOf("getalbumprofile.do")==-1 && pageURL.indexOf("page.renren.com")==-1) {
+					if((imgSrc.indexOf("tiny_")!=-1 || (imgSrc.indexOf("tiny")!=-1 && imgSrc.indexOf("_")==-1)) && pageURL.indexOf("getalbumprofile.do")==-1 && !pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/album-[0-9]+/) && pageURL.indexOf("page.renren.com")==-1) {
 						if(imgSrc.indexOf("_")!=-1) {
 							imgDate=/[hf][dm]n?\d+\/(.*?)\/[h_]*tiny_/.exec(imgSrc)[1];
 						} else {
@@ -2231,7 +2290,7 @@ function removeNicknameRestriction() {
 		}
 		setTimeout(function() {
 			var input=$("#nkname");
-			var attrs={class:input.attr("class"),type:input.attr("type"),tabindex:input.attr("tabindex"),maxlength:input.attr("maxlength"),name:input.attr("name")};
+			var attrs={"class":input.attr("class"),type:input.attr("type"),tabindex:input.attr("tabindex"),maxlength:input.attr("maxlength"),name:input.attr("name")};
 			var p=input.parent();
 			input.remove();
 			p.find("span.hint.gray").remove();
@@ -2275,7 +2334,7 @@ function autoRefreshFeeds(interval) {
 					return;
 				}
 				// 获取新鲜事列表
-				var feedList=$node("ul").style("display","none").inner(r[0].replace(/onload=".*?"/,"").replace(/<script.*?<\/script>/,""));
+				var feedList=$node("ul").style("display","none").inner(r[0].replace(/onload=".*?"/g,"").replace(/<script.*?<\/script>/g,"").replace("src=\"http://s.xnimg.cn/a.gif\"","").replace("lala=","src="));
 				if(feedList.heirs()==0) {
 					return;
 				}
@@ -2370,7 +2429,7 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 		return;
 	}
 	if(evt) {
-		$("#updateNow").attr({disabled:"disabled",value:"检查中..."});
+		$("#manualCheck").attr({disabled:"disabled",value:"检查中..."});
 	}
 	$get(checkLink,function(url,html) {
 		try {
@@ -2392,7 +2451,7 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 				}
 			}
 			if(evt) {
-				$("#updateNow").attr({disabled:null,value:"立即检查"});
+				$("#manualCheck").attr({disabled:null,value:"立即检查"});
 			}
 		} catch(err) {
 			$error("checkUpdate::$get",err);
