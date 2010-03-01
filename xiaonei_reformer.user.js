@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.2.1.20100228
-// @miniver        218
+// @version        2.2.1.20100301
+// @miniver        220
 // @author         xz
 // ==/UserScript==
 
@@ -47,11 +47,10 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.2.1.20100228",
-	miniver:218,
-	/*
-	 * 选项列表
-	 */
+	version:"2.2.1.20100301",
+	miniver:220,
+
+	// 选项列表
 	options:{
 		cleanup:{
 			category:"清理页面",
@@ -589,7 +588,7 @@ XNR.prototype={
 					text:"自动检查新鲜事更新，每隔@@秒",
 					type:"checktext",
 					value:true,
-					ctrl:{option:"checkFeedInterval",value:30,verify:"^[3-9][0-9]$|^[1-9][0-9]{2,}$",failInfo:"为防止占用太多资源，新鲜事检查间隔时间至少为30秒。",style:"width:30px;"},
+					ctrl:{option:"checkFeedInterval",value:60,verify:"^[3-9][0-9]$|^[1-9][0-9]{2,}$",failInfo:"为防止占用太多资源，新鲜事检查间隔时间至少为30秒。",style:"width:30px;"},
 					fn3:autoRefreshFeeds,
 					argus3:[["@checkFeedInterval"]],
 				},
@@ -751,7 +750,7 @@ XNR.prototype={
 		}
 	},
 	// 获取对象第一个DOM节点的第一个子节点(经XNR对象包装)
-	firstChild:function() {
+	first:function() {
 		try {
 			return XNR(this.get().firstElementChild);
 		} catch(err) {
@@ -759,7 +758,7 @@ XNR.prototype={
 		}
 	},
 	// 获取对象第一个DOM节点的最后一个子节点(经XNR对象包装)
-	lastChild:function() {
+	last:function() {
 		try {
 			return XNR(this.get().lastElementChild);
 		} catch(err) {
@@ -787,6 +786,22 @@ XNR.prototype={
 	parent:function() {
 		try {
 			return XNR(this.get().parentNode);
+		} catch(err) {
+			return null;
+		}
+	},
+	// 获取对象第一个DOM节点的上一个相邻节点(经XNR对象包装)
+	previous:function() {
+		try {
+			return XNR(this.get().previousElementSibling);
+		} catch(err) {
+			return null;
+		}
+	},
+	// 获取对象第一个DOM节点的下一个相邻节点(经XNR对象包装)
+	next:function() {
+		try {
+			return XNR(this.get().nextElementSibling);
 		} catch(err) {
 			return null;
 		}
@@ -1216,6 +1231,61 @@ function $get(url,func,userData) {
 		$error("$get",err);
 	}
 };
+// 弹出窗口
+function $popup(title,content,height,stayTime,speed) {
+	if($._popup) {
+		$._popup.remove();
+	}
+	var node=$node("div").style({width:"200px",position:"fixed",bottom:"5px",left:"5px",backgroundColor:"#F0F5F8",border:"1px solid #B8D4E8",zIndex:100000,height:"15px"});
+	$node("div",(title || "提示")+'<a style="float:right;font-size:x-small;color:white;cursor:pointer" class="x">关闭</a>').style({background:"#526EA6",color:"white",fontWeight:"bold",fontSize:"normal",padding:"3px"}).appendTo(node);
+	$node("div",content).style("margin","5px").appendTo(node);
+	node.appendTo(document.body);
+	// 展开
+	setTimeout(function unflod(){
+		try {
+			var h=parseInt(node.style("height"));
+			if(h<height) {
+				node.style("height",(h+speed)+"px");
+				setTimeout(unflod,50);
+			} else {
+				if(stayTime>0) {
+					setTimeout(flod,stayTime*1000);
+					node.find("a.x").text("关闭("+stayTime+")");
+					var timer=setInterval(function() {
+						if(!node || stayTime<=0) {
+							clearInterval(timer);
+						} else {
+							stayTime--;
+							node.find("a.x").text("关闭("+stayTime+")");
+						}
+					},1000);
+				}
+			}
+		} catch(err) {
+		}
+	},speed);
+	node.find("a.x").listen("click",function(){
+		node.remove();
+		node=$._popup=null;
+	});
+	$._popup=node;
+	return node;
+	// 收起
+	function flod() {
+		try {
+			var h=parseInt(node.style("height"));
+			if(h<=0) {
+				node.remove();
+				node=$._popup=null;
+			} else {
+				node.style("height",(h-speed)+"px");
+				setTimeout(flod,50);
+			}
+		} catch(err) {
+		}
+	}
+};
+
 // 为Date类型增加格式化文本方法
 Date.prototype.format=function(fmt) {
     var o = {
@@ -1631,7 +1701,7 @@ function showImagesInOnePage() {
 	var photoAmount=parseInt(/共 *([0-9]+) *张/.exec(items.text())[1]);
 	items.text("共"+photoAmount+"张");
 	// 总页数
-	var maxPage=((photoAmount-1)/album.firstChild().heirs());
+	var maxPage=((photoAmount-1)/album.first().heirs());
 	// 当前页数
 	var curPage=/[\?&]curpage=([0-9]+)/i.exec(location.href);
 	if(curPage==null) {
@@ -1639,7 +1709,7 @@ function showImagesInOnePage() {
 	} else {
 		curPage=parseInt(curPage[1]);
 	}
-	album.firstChild().attr("page",curPage);
+	album.first().attr("page",curPage);
 	for(var i=0;i<=maxPage;i++) {
 		if(i==curPage) {
 			continue;
@@ -1648,7 +1718,7 @@ function showImagesInOnePage() {
 			try {
 				var photoList=/<div .*? class="photo-list clearfix".*?>([\d\D]+?)<\/div>/.exec(res)[1];
 				var pos;
-				if(page>parseInt(album.lastChild().attr("page"))) {
+				if(page>parseInt(album.last().attr("page"))) {
 					pos=album.heirs();
 				} else {
 					// 二分查找法确定插入位置low
@@ -1663,7 +1733,7 @@ function showImagesInOnePage() {
 					}
 					pos=low;
 				}
-				album.insert($node("div",photoList).firstChild().attr("page",page),pos);
+				album.insert($node("div",photoList).first().attr("page",page),pos);
 			} catch (err) {
 				$error("showImagesInOnePage::$get",err);
 			}
@@ -1918,7 +1988,7 @@ function addFloorCounter() {
 			}
 			shownReplies.each(function(index,elem) {
 				var info=$(elem).find(".info");
-				if(info.firstChild().attr("class")!="fc") {
+				if(info.first().attr("class")!="fc") {
 					info.prepend($node("span",(replyStartFloor+parseInt(index)+1)+"楼 ").attr("class","fc").style("color","grey"));
 				} else {
 					//添加过了，不再继续
@@ -2208,11 +2278,13 @@ function showImageOnMouseOver() {
 						imgDate=/photos\/([0-9]{8}\/[0-9]+)/.exec(imgSrc)[1];
 					}
 
-					//小头像，包括一种非常古老的（"http://head.xiaonei.com/photos/20070201/1111/tiny[0-9]+.jpg"）
+					//小头像
 					if((imgSrc.indexOf("tiny_")!=-1 || (imgSrc.indexOf("tiny")!=-1 && imgSrc.indexOf("_")==-1)) && pageURL.indexOf("getalbumprofile.do")==-1 && !pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/album-[0-9]+/) && pageURL.indexOf("page.renren.com")==-1) {
-						if(imgSrc.indexOf("_")!=-1) {
+						if(imgSrc.indexOf("_")!=-1 && imgSrc.indexOf("head.xiaonei.com")==-1) {
 							imgDate=/[hf][dm]n?\d+\/(.*?)\/[h_]*tiny_/.exec(imgSrc)[1];
 						} else {
+							// 较为古老的"http://head.xiaonei.com/photos/20070624/1111/tiny_[0-9a-z]+.jpg" 
+							// 以及非常古老的"http://head.xiaonei.com/photos/20070201/1111/tiny[0-9]+.jpg"
 							imgDate=/photos\/(.*?)\/[h_]*tiny/.exec(imgSrc)[1];
 						}
 						pageURL="http://photo.renren.com/getalbumprofile.do?owner="+/id=(\d+)/.exec(pageURL)[1];
@@ -2254,7 +2326,7 @@ function showImageOnMouseOver() {
 	}).listen('mouseout',function(evt) {
 		try {
 			if (!evt.shiftKey && !evt.ctrlKey && !evt.altKey) {
-				$('#xnr_viewer').style("display","none").find("#xnr_image").attr({src:"",orig:""});
+				$('#xnr_viewer').style("display","none").find("#xnr_image").attr({src:"",orig:"",rsrc:""});
 			}
 		} catch(err) {
 			$error("showImageOnMouseOver::onmouseout",err);
@@ -2342,7 +2414,7 @@ function autoRefreshFeeds(interval) {
 				var feedId=localStorage.getItem("xnr_feed");
 				if(feedId=="") {
 					// 如果为空，则认为所有新鲜事都读了。。。
-					feedId=feedList.firstChild().attr("id");
+					feedId=feedList.first().attr("id");
 					localStorage.setItem("xnr_feed",feedId);
 				}
 				var feedCount=0;
@@ -2356,14 +2428,14 @@ function autoRefreshFeeds(interval) {
 				if(feedCount<=0) {
 					return;
 				} else {
-					localStorage.setItem("xnr_feed",feedList.firstChild().attr("id"));
+					localStorage.setItem("xnr_feed",feedList.first().attr("id"));
 				}
 
 				var tips=$("#wpiroot div.m-chat-button-notifications div.chat-conv");
 				// 有校内通栏的情况
 				if(tips.size()>0) {
 					//添加提醒
-					var node=tips.firstChild();
+					var node=tips.first();
 					if(node.text().indexOf('无新提醒')!=-1) {
 						node.attr("class","notifyitem hide");
 					}
@@ -2381,7 +2453,7 @@ function autoRefreshFeeds(interval) {
 							var pnode=obj.parent();
 							obj.remove();
 							if(pnode.heirs()==1) {
-								pnode.firstChild().attr("class","notifyitem");
+								pnode.first().attr("class","notifyitem");
 							}
 						}).appendTo(feed);
 						//内容
@@ -2402,12 +2474,12 @@ function autoRefreshFeeds(interval) {
 				}
 				feed=feed.find("ul");
 				if(feed.heirs()>0) {
-					feed.lastChild().style("borderBottom","1px solid");
+					feed.last().style("borderBottom","1px solid");
 				}
 				for(var i=0;i<feedCount;i++) {
 					feed.append($node("li",feedList.child(i).child(1).inner().replace(/^ +| +$/,"")).attr("style","padding-top:5px;padding-bottom:5px;border-bottom:1px solid"));
 				}
-				feed.lastChild().style("borderBottom","");
+				feed.last().style("borderBottom","");
 			} catch(err) {
 				$error("autoRefreshFeeds::$get",err);
 			}
@@ -2436,23 +2508,19 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 			var miniver=(/@miniver[ \t]+(\d+)/.exec(html) || ["","0"])[1];
 			var ver=(/@version[ \t]+([0-9\.]+)/.exec(html) || ["","未知"])[1];
 			if(parseInt(miniver)>XNR.prototype.miniver) {
-				$node("div",'<div><font color=crimson>人人网改造器已有新版本：'+ver+'</font><b> </b><a target="_blank" href="'+scriptLink+'">安装</a><b> </b><a target="_blank" href="'+pageLink+'">去看看</a><b> </b><a href="#" onclick="return false">以后再说</a></div>').attr({id:"updateNotify",style:"bottom:2px;position:fixed;z-index:100000;background-color:rgb(246,246,246)"}).appendTo(document.body);
-				$("#updateNotify a").listen("click",function() {
-					$save("lastUpdate",today.toString());
-					$("body>div.xnr_op #lastUpdate").text(today.format("yyyy-MM-dd HH:mm:ss"));
-
-					$("#updateNotify").remove();
+				var pop=$popup(null,'<div style="color:black"><div>人人网改造器已有新版本：<br/>'+ver+'</div><div class="links" style="padding-top:5px;float:right"><a target="_blank" href="'+scriptLink+'">安装</a><b> </b><a target="_blank" href="'+pageLink+'">去看看</a></div></div>',80,30,5);
+				pop.find(".links a").listen("click",function() {
+					pop.remove();
 				});
-			} else {
-				$save("lastUpdate",today.toString());
-				$("body>div.xnr_op #lastUpdate").text(today.format("yyyy-MM-dd HH:mm:ss"));
-				if(evt) {
-					alert("最新版本为："+ver+" ("+miniver+")\n当前版本为："+XNR.prototype.version+" ("+XNR.prototype.miniver+")\n\n无须更新");
-				}
+			} else if(evt) {
+				// 手动点击检查更新按钮时要弹出提示
+				alert("最新版本为："+ver+" ("+miniver+")\n当前版本为："+XNR.prototype.version+" ("+XNR.prototype.miniver+")\n\n无须更新");
 			}
 			if(evt) {
 				$("#manualCheck").attr({disabled:null,value:"立即检查"});
 			}
+			$save("lastUpdate",today.toString());
+			$("body>div.xnr_op #lastUpdate").text(today.format("yyyy-MM-dd HH:mm:ss"));
 		} catch(err) {
 			$error("checkUpdate::$get",err);
 		}
@@ -2466,7 +2534,7 @@ function updatedNotify(lastVer) {
 		$save("lastVersion",XNR.prototype.miniver);
 	} else if(lastVer<XNR.prototype.miniver) {
 		setTimeout(function() {
-			$node("div",'<div><font color=crimson>人人网改造器已经自动更新为：'+XNR.prototype.version+' ('+XNR.prototype.miniver+')</font><b> </b><a target="_blank" href="http://xiaonei-reformer.googlecode.com/files/Changelog.txt">查看更新内容</a><b> </b><a href="#" onclick="document.getElementById(\'updatedNotify\').style.display=\'none\';return false;">关闭</a>').attr({id:"updatedNotify",style:"top:2px;position:fixed;z-index:100000;background-color:rgb(246,246,246)"}).appendTo(document.body);
+			$popup(null,'<div style="color:black">人人网改造器已经自动更新到:<br/>'+XNR.prototype.version+' ('+XNR.prototype.miniver+')</div><div><a href="http://code.google.com/p/xiaonei-reformer/source/browse/trunk/Changelog.txt" style="padding-top:5px;float:right" target="_blank">查看更新内容</a></div>',80,15,5);
 		},0);
 		$save("lastVersion",XNR.prototype.miniver);
 	}
@@ -2549,7 +2617,7 @@ function updatedNotify(lastVer) {
 							detailHTML+="<div><input style=\""+o[op].style+"\" type=\"checkbox\" title=\""+(o[op].info || "")+"\" id=\""+op+"\"/><label title=\""+(o[op].info || "")+"\" for=\""+op+"\">"+o[op].text+"</label></div>";
 							break;
 						case "checktext":
-							detailHTML+="<div><input style=\""+o[op].style+"\" type=\"checkbox\" title=\""+(o[op].info || "")+"\" id=\""+op+"\"/><label title=\""+(o[op].info || "")+"\" for=\""+op+"\">";
+							detailHTML+="<div><input style=\""+o[op].style+"\" type=\"checkbox\" title=\""+(o[op].info || "")+"\" id=\""+op+"\" onclick=\"document.getElementById('"+o[op].ctrl.option+"').disabled=(this.checked?null:'disabled')\"/><label title=\""+(o[op].info || "")+"\" for=\""+op+"\">";
 							detailHTML+=o[op].text.replace("@@","</label>&nbsp;<input type=\"input\" title=\""+(o[op].info || "")+"\" id=\""+o[op].ctrl.option+"\" style=\""+(o[op].ctrl.style || "")+"\" verify=\""+(o[op].ctrl.verify || "")+"\" failInfo=\""+(o[op].ctrl.failInfo || "")+"\"/>&nbsp;<label title=\""+(o[op].info || "")+"\" for=\""+op+"\">");
 							detailHTML+="</label></div>";
 							break;
@@ -2559,8 +2627,8 @@ function updatedNotify(lastVer) {
 							detailHTML+="</div>";
 							break;
 						case "checkedit":
-							detailHTML+="<div><input style=\""+o[op].style+"\" type=\"checkbox\" title=\""+(o[op].info || "")+"\" id=\""+op+"\"/><label title=\""+(o[op].info || "")+"\" for=\""+op+"\">"+o[op].text+"</label></div>";
-							detailHTML+="<div><textarea id=\""+o[op].ctrl.option+"\" title=\""+(o[op].info || "")+"\" style=\""+(o[op].ctrl.style || "")+"\"></textarea></div>";
+							detailHTML+="<div><input style=\""+o[op].style+"\" type=\"checkbox\" title=\""+(o[op].info || "")+"\" id=\""+op+"\" onclick=\"document.getElementById('"+o[op].ctrl.option+"').disabled=(this.checked?null:'disabled')\"/><label title=\""+(o[op].info || "")+"\" for=\""+op+"\">"+o[op].text+"</label></div>";
+							detailHTML+="<div><textarea id=\""+o[op].ctrl.option+"\" title=\""+(o[op].info || "")+"\" style=\""+(o[op].ctrl.style || "")+";resize:none\"></textarea></div>";
 							break;
 						case "label":
 							detailHTML+="<div title=\""+(o[op].info || "")+"\">"+o[op].text.replace("@@","<span style=\""+o[op].style+"\" title=\""+(o[op].info || "")+"\" id=\""+op+"\"></span>")+"</div>";
@@ -2680,29 +2748,41 @@ function updatedNotify(lastVer) {
 			// 设置选项的值
 			for(var option in options) {
 				var ctrl=menu.find("#"+option);
-				if((typeof options[option])=="boolean") {
-					ctrl.prop("checked",options[option]);
-				} else {
-					switch(ctrl.prop("tagName")) {
-						case "SPAN":
-							var d=new Date(options[option]);
-							if(!isNaN(d)) {
-								// 时间格式
-								ctrl.text(d.format("yyyy-MM-dd HH:mm:ss"));
-							} else {
-								ctrl.text(options[option]);
-							}
-							break;
-						default:
-							ctrl.prop("value",options[option]);
-					}
+				switch(ctrl.prop("tagName")) {
+					case "SPAN":
+						var d=new Date(options[option]);
+						if(!isNaN(d)) {
+							// 时间格式
+							ctrl.text(d.format("yyyy-MM-dd HH:mm:ss"));
+						} else {
+							ctrl.text(options[option]);
+						}
+						break;
+					case "INPUT":
+						switch(ctrl.prop("type")) {
+							case "checkbox":
+								ctrl.prop("checked",options[option]);
+								break;
+							case "button":
+								break;
+							default:
+								ctrl.prop("value",options[option]);
+								// 如果是单纯的INPUT，将会将它自己设为可用
+								ctrl.prop("disabled",options[ctrl.parent().first().attr("id")]?null:"disabled");
+								break;
+						}
+						break;
+					case "TEXTAREA":
+						ctrl.prop("value",options[option]);
+						ctrl.prop("disabled",options[ctrl.parent().previous().first().attr("id")]?null:"disabled");
+						break;
 				}
 			}
 			// 点击分类切换事件
 			menu.find(".category ul").listen("click",function(evt) {
 				var t=evt.target;
 				if(t.tagName=="LI") {
-					t=t.firstChild;
+					t=t.firstElementChild;
 				}
 				$(".xnr_op .pages>div").hide();
 				$(".xnr_op .pages>div."+t.id).show();
@@ -2713,7 +2793,7 @@ function updatedNotify(lastVer) {
 			menu.find("input.ok").listen("click",function() {
 				var checkPass=true;
 				// 开始验证
-				$("body>.xnr_op *[verify]").each(function(index,elem) {
+				$("body>.xnr_op *[verify]:not([disabled])").each(function(index,elem) {
 					if(!elem.value.match(elem.getAttribute("verify"))) {
 						var page=$(elem);
 						while(page.parent().prop("className")!="pages") {
@@ -2736,6 +2816,9 @@ function updatedNotify(lastVer) {
 				var content=$("body>.xnr_op td.pages");
 				for(var option in options) {
 					var ctrl=content.find("#"+option);
+					if(ctrl.prop("disabled")) {
+						continue;
+					}
 					switch(ctrl.prop("tagName")+(ctrl.attr("type") || "")) {
 						case "INPUTcheckbox":
 							$save(option,ctrl.prop("checked"));
@@ -2757,7 +2840,7 @@ function updatedNotify(lastVer) {
 			var nav=$(".nav-body .nav-other");
 			if(nav.size()==1) {
 				nav.prepend($node("div","<div class=\"menu-title\"><a onclick=\"return false\">改造</a></div>").attr("class","menu"));
-				nav.firstChild().find("a").listen("click",function(evt) {
+				nav.first().find("a").listen("click",function(evt) {
 					try {
 						var menu=$("body>.xnr_op");
 						menu.show();
