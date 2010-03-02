@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.2.1.20100301
-// @miniver        220
+// @version        2.2.1.20100302
+// @miniver        221
 // @author         xz
 // ==/UserScript==
 
@@ -47,8 +47,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.2.1.20100301",
-	miniver:220,
+	version:"2.2.1.20100302",
+	miniver:221,
 
 	// 选项列表
 	options:{
@@ -514,7 +514,7 @@ XNR.prototype={
 							text:"修正头像列表排版错误",
 							value:false,
 							info:"如果您将浏览器字体的最小大小设成大于12，首页的“最近来访”列表可能会出现头像错位的问题。如果您遇到这个问题，请启用此功能。",
-							argus2:[[".profile .extra-column .people-list li.online span img{margin-right:0px}.profile .extra-column .people-list li span.olname a{max-width:42px}"]],
+							argus2:[[".profile .extra-column .people-list li.online span img{margin-right:0px}.profile .extra-column .people-list li span.olname a{max-width:42px}.home .footprint .people-list li span.olname a{display:block}"]],
 						},
 						fixNavItem:{
 							text:"修正导航栏项目高度",
@@ -919,7 +919,7 @@ XNR.prototype={
 		var res=new Array();
 		if(typeof o=="string") {
 			this.each(function(index,elem) {
-				if(elem.querySelector(str)) {
+				if(elem.querySelector(o)) {
 					res.push(elem);
 				}
 			});
