@@ -7,7 +7,7 @@
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
 // @version        2.3.0.20100306
-// @miniver        224
+// @miniver        225
 // @author         xz
 // ==/UserScript==
 
@@ -48,7 +48,7 @@ function XNR(o) {
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
 	version:"2.3.0.20100306",
-	miniver:224,
+	miniver:225,
 
 	// 选项列表
 	options:{
@@ -2278,7 +2278,7 @@ function showImageOnMouseOver() {
 					if(!pageURL) {
 						return;
 					}
-					
+
 					// 电影海报
 					if(imgSrc.contains("movie.img.xiaonei.com/upload/movie/cover/")) {
 						cache=imgSrc.replace("/cover/","/bigcover/");
@@ -2288,7 +2288,7 @@ function showImageOnMouseOver() {
 					}
 
 					// 没有附加码，也不属于一般头像，也不是非常古老的头像（http://head.xiaonei.com/photos/20070201/1111/head[0-9]+.jpg），直接改URL
-					if(imgSrc.contains('_') && !imgSrc.match(/head_.+_/) && !imgSrc.contains("http://hd")) {
+					if(imgSrc.contains('head_') && !imgSrc.match(/head_.+_/) && !imgSrc.contains("http://hd")) {
 						cache=imgSrc.replace("head_","large_");
 						imageCache(imgId,cache);
 						showViewer(evt.pageX,cache);
@@ -2336,7 +2336,7 @@ function showImageOnMouseOver() {
 						getBlogImage(pageURL,imgId);
 						return;
 					}
-
+					
 					//一般图片或被圈相片或公共主页上的图片
 					if(pageURL.contains("getphoto.do") || pageURL.contains("gettagphoto.do") || pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/photo-[0-9]+/) || pageURL.contains("page.renren.com/photo/photo?")) {
 						showViewer(evt.pageX);
