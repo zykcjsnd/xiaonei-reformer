@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.2.2.20100305
-// @miniver        223
+// @version        2.3.0.20100306
+// @miniver        224
 // @author         xz
 // ==/UserScript==
 
@@ -47,8 +47,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.2.1.20100302",
-	miniver:221,
+	version:"2.3.0.20100306",
+	miniver:224,
 
 	// 选项列表
 	options:{
@@ -75,17 +75,22 @@ XNR.prototype={
 					value:false,
 					fn0:removePageTheme,
 				},
+				removeFloatBox:{
+					text:"去除页面飘浮物",
+					value:false,
+					fn1:removeFloatBox,
+				},
 				removeBlogTheme:{
 					text:"去除日志信纸",
 					value:false,
 					fn0:removeBlogTheme,
-					page:"blog.renren.com",
+					page:"blog\\.renren\\.com",
 				},
 				removeBlogLinks:{
 					text:"去除日志中整段链接",
 					value:false,
 					fn1:removeBlogLinks,
-					page:"blog.renren.com",
+					page:"blog\\.renren\\.com",
 				},
 				removeXntBar:{
 					text:"去除页面底部校内通栏",
@@ -96,115 +101,121 @@ XNR.prototype={
 					text:"去除首页顶部通知",
 					value:false,
 					fn1:removePageTopNotice,
-					page:"renren.com/[hH]ome.do",
+					page:"renren\\.com/[hH]ome.do",
 				},
 				removeNewStar:{
 					text:"去除首页发布框下的活动标签",
 					value:false,
 					fn1:removeActivityLabel,
-					page:"renren.com/[hH]ome.do",
+					page:"renren\\.com/[hH]ome.do",
 				},
 				removeNewStar:{
 					text:"去除人气之星/新人栏",
 					value:false,
 					fn1:removeNewStar,
-					page:"renren.com/[hH]ome.do",
+					page:"renren\\.com/[hH]ome.do",
 				},
 				removeFriendGuide:{
 					text:"去除寻找/邀请朋友栏",
 					value:false,
 					fn1:removeFriendGuide,
-					page:"/www.renren.com|/renren.com",
+					page:"/www\\.renren\\.com|/renren\\.com",
 				},
 				removeRenRenSurvey:{
-					text:"去除首页右边栏：人人网调查",
+					text:"去除首页右侧人人网调查",
 					value:false,
 					fn1:removeRenRenSurvey,
-					page:"renren.com/[hH]ome.do",
+					page:"renren\\.com/[hH]ome\\.do",
 				},
 				removeCommonPage:{
-					text:"去除首页右边栏：公共主页推荐",
+					text:"去除首页右侧公共主页推荐",
 					value:false,
 					fn1:removeCommonPage,
-					page:"renren.com/[hH]ome.do",
+					page:"renren\\.com/[hH]ome\\.do",
 				},
 				removeCommendation:{
-					text:"去除首页右边栏：推荐/礼物",
+					text:"去除首页右侧推荐/礼物",
 					value:false,
 					fn1:removeCommendation,
-					page:"renren.com/[hH]ome.do",
+					page:"renren\\.com/[hH]ome\\.do",
 				},
 				removeMayKnow:{
-					text:"去除首页右边栏：可能认识他们",
+					text:"去除首页右侧“可能认识他们”",
 					value:false,
 					fn1:removeMayKnow,
-					page:"renren.com/[hH]ome.do",
+					page:"renren\\.com/[hH]ome\\.do",
+				},
+				removeSponsorsWidget:{
+					text:"去除首页右侧赞助商内容",
+					value:true,
+					fn1:removeSponsorsWidget,
+					page:"renren\\.com/[hH]ome\\.do",
 				},
 				removePaintReminder:{
 					text:"去除个人主页右上角装扮主页提示",
 					value:true,
 					fn1:removePaintReminder,
-					page:"renren.com/[Pp]rofile.do",
+					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeLeftAlbum:{
 					text:"去除个人主页左侧相册框",
 					value:false,
 					fn1:removeLeftAlbum,
-					page:"renren.com/[Pp]rofile.do",
+					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeLeftShare:{
 					text:"去除个人主页左侧分享框",
 					value:false,
 					fn1:removeLeftShare,
-					page:"renren.com/[Pp]rofile.do",
+					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeLeftGift:{
 					text:"去除个人主页左侧礼物框",
 					value:false,
 					fn1:removeLeftGift,
-					page:"renren.com/[Pp]rofile.do",
+					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeLeftTree:{
 					text:"去除个人主页左侧◯◯树框",
 					value:false,
 					fn1:removeLeftTree,
-					page:"renren.com/[Pp]rofile.do",
+					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeMidAlbum:{
 					text:"去除个人主页中间个人相册框",
 					value:false,
 					fn1:removeMidAlbum,
-					page:"renren.com/[Pp]rofile.do",
+					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeMidBlog:{
 					text:"去除个人主页中间个人日志框",
 					value:false,
 					fn1:removeMidBlog,
-					page:"renren.com/[Pp]rofile.do",
+					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeRightSpecialFriends:{
 					text:"去除个人主页右侧特别好友框",
 					value:false,
 					fn1:removeRightSpecialFriends,
-					page:"renren.com/[Pp]rofile.do",
+					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeRightFootprint:{
 					text:"去除个人主页右侧最近来访框",
 					value:false,
 					fn1:removeRightFootprint,
-					page:"renren.com/[Pp]rofile.do",
+					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeRightFriends:{
 					text:"去除个人主页右侧好友框",
 					value:false,
 					fn1:removeRightFriends,
-					page:"renren.com/[Pp]rofile.do",
+					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeRightMutualFriends:{
 					text:"去除个人主页右侧共同好友框",
 					value:false,
 					fn1:removeRightMutualFriends,
-					page:"renren.com/[Pp]rofile.do",
+					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 			},
 		},
@@ -215,7 +226,7 @@ XNR.prototype={
 					text:"屏蔽以下类型的请求",
 					columns:2,
 					fn1:hideRequest,
-					page:"renren.com/[hH]ome.do",
+					page:"renren\\.com/[hH]ome\\.do",
 					list:{
 						removeAppRequest:{
 							text:"应用请求",
@@ -273,7 +284,7 @@ XNR.prototype={
 					text:"屏蔽以下类型的新鲜事",
 					columns:4,
 					fn1:removeFeeds,
-					page:"/www.renren.com|/renren.com",
+					page:"/www\\.renren\\.com|/renren\\.com",
 					list:{
 						removeBlogFeed:{
 							text:"日志",
@@ -308,8 +319,8 @@ XNR.prototype={
 						removeImageFeed:{
 							text:"照片",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","^上传了\\d+张照片至|^的照片"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","^上传了\\d+张照片至|^的照片"]]}],
+							argus1:[[null,"@markFeedAsRead","^上传了\\d+张照片至|^的照片|美化了一张照片$"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","^上传了\\d+张照片至|^的照片|美化了一张照片$"]]}],
 						},
 						removeImageTagFeed:{
 							text:"圈人",
@@ -332,8 +343,8 @@ XNR.prototype={
 						removeFilmFeed:{
 							text:"电影",
 							value:false,
-							argus1:[[null,"@markFeedAsRead",null,"<a [^>]*href=\"http://movie.xiaonei.com/"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead",null,"<a [^>]*href=\"http://movie.xiaonei.com/"]]}],
+							argus1:[[null,"@markFeedAsRead",null,"<a [^>]*href=\"http://movie.xiaonei.com/|<a [^>]*href=\"http://movie.renren.com/"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead",null,"<a [^>]*href=\"http://movie.xiaonei.com/|<a [^>]*href=\"http://movie.renren.com/"]]}],
 						},
 						removeMusicFeed:{
 							text:"音乐",
@@ -341,12 +352,23 @@ XNR.prototype={
 							argus1:[[null,"@markFeedAsRead","^上传了音乐"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","^上传了音乐"]]}],
 						},
-
 						removeConnectFeed:{
 							text:"连接",
 							value:false,
 							argus1:[[null,"@markFeedAsRead",null,"<a [^>]*href=\"http://www.connect.renren.com/"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead",null,"<a [^>]*href=\"http://www.connect.xiaonei.com/"]]}],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead",null,"<a [^>]*href=\"http://www.connect.renren.com/"]]}],
+						},
+						removeVipFeed:{
+							text:"VIP相关",
+							value:false,
+							argus1:[[null,"@markFeedAsRead","^更换了主页模板皮肤|^成为了人人网.*VIP会员特权"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","^更换了主页模板皮肤|^成为了人人网.*VIP会员特权"]]}],
+						},
+						removeGroupFeed:{
+							text:"品牌专区",
+							value:false,
+							argus1:[[null,"@markFeedAsRead",null,"<a [^>]*href=\"http://group.renren.com/"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead",null,"<a [^>]*href=\"http://group.renren.com/"]]}],
 						},
 						removePublicPageFeed:{
 							text:"公共主页",
@@ -367,19 +389,19 @@ XNR.prototype={
 					ctrl:{option:"loadFeedPage",value:2,verify:"^[2-9]$",failInfo:"新鲜事页数只能为2~9",style:"width:15px;"},
 					fn3:loadMoreFeeds,
 					argus3:[["@loadFeedPage"]],
-					page:"renren.com/[hH]ome.do",
+					page:"renren\\.com/[hH]ome\\.do",
 				},
 				hideFeedContent:{
 					text:"隐藏新鲜事具体内容",
 					value:false,
 					fn2:hideFeedContent,
-					page:"renren.com/[hH]ome.do",
+					page:"renren\\.com/[hH]ome\\.do",
 				},
 				flodStatusComment:{
 					text:"默认收起新鲜事回复",
 					value:false,
 					fn3:flodStatusComment,
-					page:"/www.renren.com|/renren.com",
+					page:"/www\\.renren\\.com|/renren\\.com",
 				},
 			},
 		},
@@ -452,7 +474,7 @@ XNR.prototype={
 					value:false,
 					fn2:$patchCSS,
 					argus2:[["ul.richlist.feeds li a.delete{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -115px 0 transparent;height:18px;width:18px}ul.richlist.feeds li a.delete:hover{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -133px 0 transparent;height:18px;width:18px}"]],
-					page:"/www.renren.com|/renren.com",
+					page:"/www\\.renren\\.com|/renren\\.com",
 				},
 				removeFontRestriction:{
 					text:"去除页面的字体限制",
@@ -478,7 +500,7 @@ XNR.prototype={
 							value:false,
 							info:"如果您将浏览器字体的最小大小设成大于12，可能会出现论坛的帖子正文偏右的错误。如果您遇到这个问题，请启用此功能。",
 							argus2:[["#articlehome #comments .content,#articlehome #comments .signature{float:left;clear:both}"]],
-							page:"club.renren.com",
+							page:"club\\.renren\\.com",
 						},
 						fixPeopleList:{
 							text:"修正头像列表排版错误",
@@ -503,32 +525,32 @@ XNR.prototype={
 					text:"增加额外的表情项",
 					value:true,
 					fn2:addExtraEmotions,
-					page:"/www.renren.com|/renren.com|/status.renren.com",
+					page:"/www\\.renren\\.com|/renren\\.com|/status\\.renren\\.com",
 				},
 				addFloorCounter:{
 					text:"为评论增加楼层计数",
 					value:true,
 					fn2:addFloorCounter,
-					page:"blog.renren.com|photo.renren.com",
+					page:"blog\\.renren\\.com|photo\\.renren\\.com",
 				},
 				addBlogLinkProtocolsSupport:{
 					text:"允许在日志中添加HTTPS/FTP协议的链接",
 					value:true,
 					fn2:addBlogLinkProtocolsSupport,
-					page:"blog.renren.com/NewEntry.do|blog.renren.com/.*/editBlog",
+					page:"blog\\.renren\\.com/NewEntry\\.do|blog\\.renren\\.com/.*/editBlog",
 				},
 				showImagesInOnePage:{
 					text:"相册所有图片在一页中显示",
 					value:false,
 					fn3:showImagesInOnePage,
-					page:"photo.renren.com",
+					page:"photo\\.renren\\.com",
 				},
 				hideImageTagOnMouseOver:{
 					text:"当鼠标在照片上时隐藏圈人框",
 					value:false,
 					info:"仍然可以在照片右侧的被圈人列表中看到圈人情况",
 					fn3:hideImageTagOnMouseOver,
-					page:"photo.renren.com",
+					page:"photo\\.renren\\.com",
 				},
 				showImageOnMouseOver:{
 					text:"在鼠标经过图片时显示大图",
@@ -545,14 +567,14 @@ XNR.prototype={
 					info:"允许非星级用户修改特别好友",
 					value:true,
 					fn2:removeFriendRestriction,
-					page:"friend.renren.com",
+					page:"friend\\.renren\\.com",
 				},
 				removeNicknameRestriction:{
 					text:"去除昵称修改限制",
 					info:"允许非星级用户修改个人信息中的昵称",
 					value:true,
 					fn3:removeNicknameRestriction,
-					page:"renren.com/[Pp]rofile.do",
+					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				autoRefreshFeeds:{
 					text:"自动检查新鲜事更新，每隔@@秒",
@@ -1291,6 +1313,10 @@ Date.prototype.format=function(fmt) {
     }
     return fmt;
 };
+// 为String对象增加contains方法
+String.prototype.contains=function(str) {
+	return this.indexOf(str)!=-1;
+};
 
 // 图片缓存
 var imgCache;
@@ -1329,6 +1355,8 @@ function removePageTheme() {
 	});
 	// 删除紫豆导航栏
 	$("head link[rel='stylesheet'][href*='zidou_nav.css']").remove();
+	// 删除个人域名栏
+	$("#domain_wrapper").remove();
 	// 修复Logo
 	var logo=$("img[src*='viplogo-renren.png']").attr({height:null,width:null});
 	if(logo.size()>0) {
@@ -1337,6 +1365,11 @@ function removePageTheme() {
 	// 删除公共主页模板
 	$("#themeLink").remove();
 };
+
+// 删除页面漂浮物（VIP）
+function removeFloatBox() {
+	$("#floatBox").remove();
+}
 
 // 删除日志信纸
 function removeBlogTheme() {
@@ -1459,6 +1492,11 @@ function removeCommendation() {
 //移除边栏：可能认识他们
 function removeMayKnow() {
 	$(".side-item.pymk").remove();
+};
+
+// 移除赞助商内容
+function removeSponsorsWidget() {
+	$("#sponsorsWidget").remove();
 };
 
 //隐藏请求
@@ -2192,7 +2230,7 @@ function showImageOnMouseOver() {
 			switch(t.tagName) {
 				case "IMG":
 				//将地址放到style中的图片
-					if(t.src.match("xnimg.cn/a.gif") && t.style.backgroundImage.match("url(")) {
+					if(t.src.contains("xnimg.cn/a.gif") && t.style.backgroundImage.contains("url(")) {
 						imgSrc=t.style.backgroundImage.replace(/^url\("|"\);?$/g,"");
 					} else {
 						imgSrc=t.src;
@@ -2200,12 +2238,12 @@ function showImageOnMouseOver() {
 					break;
 				case "SPAN":;	// 同DIV
 				case "DIV":
-					if(t.style.backgroundImage.match("url(")) {
+					if(t.style.backgroundImage.contains("url(")) {
 						imgSrc=t.style.backgroundImage.replace(/^url\("?|"?\);?$/g,"");
 					}
 					break;
 				case "A":
-					if(t.style && t.style.backgroundImage.match("url(")) {
+					if(t.style && t.style.backgroundImage.contains("url(")) {
 						imgSrc=t.style.backgroundImage.replace(/^url\("?|"?\);?$/g,"");
 						pageURL=t.href;
 					}
@@ -2225,7 +2263,7 @@ function showImageOnMouseOver() {
 					showViewer(evt.pageX,cache);
 					return;
 				}
-				if (((imgSrc.match(/[^_]head_/) || imgSrc.match(/[bhp]_head_/) || imgSrc.match(/[bhp]_main_/) || imgSrc.match(/[^_]main_/) || ((imgSrc.match(/head\d+\./) || imgSrc.match(/\/H[^\/]*\.jpg/) || imgSrc.match("head.xiaonei.com/photos/")) && !imgSrc.match('_'))) && (t.parentNode.tagName=="A" || (t.parentNode.tagName=="I" && t.parentNode.parentNode.tagName=="A"))) || imgSrc.match('tiny_') || imgSrc.match(/tiny\d+\./) || imgSrc.match("movie.img.xiaonei.com/upload/movie/cover")) {
+				if (((imgSrc.match(/[^_]head_/) || imgSrc.match(/[bhp]_head_/) || imgSrc.match(/[bhp]_main_/) || imgSrc.match(/[^_]main_/) || ((imgSrc.match(/head\d+\./) || imgSrc.match(/\/H[^\/]*\.jpg/) || imgSrc.contains("head.xiaonei.com/photos/")) && !imgSrc.contains('_'))) && (t.parentNode.tagName=="A" || (t.parentNode.tagName=="I" && t.parentNode.parentNode.tagName=="A"))) || imgSrc.contains('tiny_') || imgSrc.match(/tiny\d+\./) || imgSrc.contains("movie.img.xiaonei.com/upload/movie/cover")) {
 					if(!pageURL && t.parentNode.tagName=="A") {
 						pageURL=t.parentNode.href;
 						if(pageURL.indexOf("javascript:")!=-1) {
@@ -2242,7 +2280,7 @@ function showImageOnMouseOver() {
 					}
 					
 					// 电影海报
-					if(imgSrc.match("movie.img.xiaonei.com/upload/movie/cover/")) {
+					if(imgSrc.contains("movie.img.xiaonei.com/upload/movie/cover/")) {
 						cache=imgSrc.replace("/cover/","/bigcover/");
 						imageCache(imgId,cache);
 						showViewer(evt.pageX,cache);
@@ -2250,7 +2288,7 @@ function showImageOnMouseOver() {
 					}
 
 					// 没有附加码，也不属于一般头像，也不是非常古老的头像（http://head.xiaonei.com/photos/20070201/1111/head[0-9]+.jpg），直接改URL
-					if(imgSrc.match('_') && !imgSrc.match(/head_.+_/) && !imgSrc.match("http://hd")) {
+					if(imgSrc.contains('_') && !imgSrc.match(/head_.+_/) && !imgSrc.contains("http://hd")) {
 						cache=imgSrc.replace("head_","large_");
 						imageCache(imgId,cache);
 						showViewer(evt.pageX,cache);
@@ -2258,7 +2296,7 @@ function showImageOnMouseOver() {
 					}
 
 					// 非常古老的头像（http://head.xiaonei.com/photos/20070201/1111/head[0-9]+.jpg），其head后的[0-9]+可能有变，以时间为准
-					if(!imgSrc.match("_") && imgSrc.match(/head\.xiaonei\.com\/photos\/[0-9]{8}\/[0-9]+\/head[0-9]+/)) {
+					if(!imgSrc.contains("_") && imgSrc.match(/head\.xiaonei\.com\/photos\/[0-9]{8}\/[0-9]+\/head[0-9]+/)) {
 						imgDate=/photos\/([0-9]{8}\/[0-9]+)/.exec(imgSrc)[1];
 					}
 
@@ -2271,8 +2309,8 @@ function showImageOnMouseOver() {
 					}
 
 					//小头像
-					if((imgSrc.match("tiny_") || (imgSrc.match("tiny") && !imgSrc.match("_"))) && !pageURL.match("getalbumprofile.do") && !pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/album-[0-9]+/) && !pageURL.match("page.renren.com")) {
-						if(imgSrc.match("_") && !imgSrc.match("head.xiaonei.com")) {
+					if((imgSrc.contains("tiny_") || (imgSrc.contains("tiny") && !imgSrc.contains("_"))) && !pageURL.contains("getalbumprofile.do") && !pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/album-[0-9]+/) && !pageURL.contains("page.renren.com")) {
+						if(imgSrc.contains("_") && !imgSrc.contains("head.xiaonei.com")) {
 							imgDate=/[hf][dm]n?\d+\/(.*?)\/[h_]*tiny_/.exec(imgSrc)[1];
 						} else {
 							// 较为古老的"http://head.xiaonei.com/photos/20070624/1111/tiny_[0-9a-z]+.jpg" 
@@ -2280,27 +2318,27 @@ function showImageOnMouseOver() {
 							imgDate=/photos\/(.*?)\/[h_]*tiny/.exec(imgSrc)[1];
 						}
 						pageURL="http://photo.renren.com/getalbumprofile.do?owner="+/id=(\d+)/.exec(pageURL)[1];
-					} else if(pageURL.match("/profile.do?")) {
+					} else if(pageURL.contains("/profile.do?")) {
 						// 头像图片（新鲜事中）
 						pageURL="http://photo.renren.com/getalbumprofile.do?owner="+/id=(\d+)/.exec(pageURL)[1];
 					}
 
 					//相册封面图片或头像图片
-					if(pageURL.match("getalbum.do") || pageURL.match("getalbumprofile.do") || pageURL.match("/photo/album?") || pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/album-[0-9]+/)) {
+					if(pageURL.contains("getalbum.do") || pageURL.contains("getalbumprofile.do") || pageURL.contains("/photo/album?") || pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/album-[0-9]+/)) {
 						showViewer(evt.pageX);
 						getAlbumImage(pageURL,0,imgId,imgDate);
 						return;
 					}
 
 					//日志中的图片
-					if(pageURL.match("blog.renren.com/GetEntry.do?")) {
+					if(pageURL.contains("blog.renren.com/GetEntry.do?")) {
 						showViewer(evt.pageX);
 						getBlogImage(pageURL,imgId);
 						return;
 					}
 
 					//一般图片或被圈相片或公共主页上的图片
-					if(pageURL.match("getphoto.do") || pageURL.match("gettagphoto.do") || pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/photo-[0-9]+/) || pageURL.match("page.renren.com/photo/photo?")) {
+					if(pageURL.contains("getphoto.do") || pageURL.contains("gettagphoto.do") || pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/photo-[0-9]+/) || pageURL.contains("page.renren.com/photo/photo?")) {
 						showViewer(evt.pageX);
 						getImage(pageURL,imgId);
 						return;
@@ -2866,7 +2904,7 @@ function updatedNotify(lastVer) {
 					options[i]=response.data[i];
 				}
 				exec();
-				setTimeout(function(){buildMenu();createTriggers()},0);
+				setTimeout(function(){buildMenu();createTriggers();},200);
 			});
 		}
 	} catch(err) {
