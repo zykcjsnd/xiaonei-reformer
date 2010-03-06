@@ -7,7 +7,7 @@
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
 // @version        2.3.0.20100306
-// @miniver        225
+// @miniver        226
 // @author         xz
 // ==/UserScript==
 
@@ -48,7 +48,7 @@ function XNR(o) {
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
 	version:"2.3.0.20100306",
-	miniver:225,
+	miniver:226,
 
 	// 选项列表
 	options:{
@@ -295,8 +295,8 @@ XNR.prototype={
 						removePollFeed:{
 							text:"投票",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","^参与了投票","<a [^>]*href=\"http://abc.renren.com/"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","^参与了投票","<a [^>]*href=\"http://abc.renren.com/"]]}],
+							argus1:[[null,"@markFeedAsRead",null,"<a [^>]*href=\"http://abc.renren.com/"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead",null,"<a [^>]*href=\"http://abc.renren.com/"]]}],
 						},
 						removeAppFeed:{
 							text:"应用",
@@ -1502,12 +1502,12 @@ function removeSponsorsWidget() {
 //隐藏请求
 function hideRequest(reqClass) {
 	try {
-		$(".side-item.requests li img."+reqClass).parent().remove();
+		$(".side-item.newrequests li img."+reqClass).parent().remove();
 	} catch(err) {
 	}
 	// 如果请求框没有项目了，删掉
-	if($(".side-item.requests ul.icon").heirs()==0) {
-		$(".side-item.requests").remove();
+	if($(".side-item.newrequests ul.icon").heirs()==0) {
+		$(".side-item.newrequests").remove();
 	}
 };
 
@@ -2419,7 +2419,7 @@ function autoRefreshFeeds(interval) {
 					return;
 				}
 				// 获取新鲜事列表
-				var feedList=$node("ul").style("display","none").inner(r[0].replace(/onload=".*?"/g,"").replace(/<script.*?<\/script>/g,"").replace("src=\"http://s.xnimg.cn/a.gif\"","").replace("lala=","src="));
+				var feedList=$node("ul").style("display","none").inner(r[0].replace(/onload=".*?"/g,"").replace(/<script.*?<\/script>/g,"").replace(/src="http:\/\/s\.xnimg\.cn\/a\.gif"/g,"").replace(/lala=/g,"src="));
 				if(feedList.heirs()==0) {
 					return;
 				}
