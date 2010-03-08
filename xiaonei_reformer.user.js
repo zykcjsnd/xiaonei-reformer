@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.0.20100307
-// @miniver        227
+// @version        2.3.1.20100308
+// @miniver        228
 // @author         xz
 // ==/UserScript==
 
@@ -47,8 +47,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.0.20100307",
-	miniver:227,
+	version:"2.3.1.20100308",
+	miniver:228,
 
 	// 选项列表
 	options:{
@@ -289,92 +289,92 @@ XNR.prototype={
 						removeBlogFeed:{
 							text:"日志",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","^发表日志"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","^发表日志"]]}],
+							argus1:[[null,"@markFeedAsRead","blog"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","blog"]]}],
 						},
 						removePollFeed:{
 							text:"投票",
 							value:false,
-							argus1:[[null,"@markFeedAsRead",null,"<a [^>]*href=\"http://abc.renren.com/"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead",null,"<a [^>]*href=\"http://abc.renren.com/"]]}],
+							argus1:[[null,"@markFeedAsRead","poll"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","poll"]]}],
 						},
 						removeAppFeed:{
 							text:"应用",
 							value:false,
-							argus1:[[null,"@markFeedAsRead",null,"<a [^>]*href=\"http://apps?.renren.com/"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead",null,"<a [^>]*href=\"http://apps?.renren.com/"]]}],
+							argus1:[[null,"@markFeedAsRead","app"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","app"]]}],
 						},
 						removeStatusFeed:{
 							text:"状态",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","^:",null,"getReplyOfTheDoing"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","^:",null,"getReplyOfTheDoing"]]}],
+							argus1:[[null,"@markFeedAsRead","status"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","status"]]}],
 						},
 						removeGiftFeed:{
 							text:"礼物",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","^收到","<a [^>]*href=\"http://gift.renren.com/"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","^收到","<a [^>]*href=\"http://gift.renren.com/"]]}],
+							argus1:[[null,"@markFeedAsRead","gift"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","gift"]]}],
 						},
 						removeImageFeed:{
 							text:"照片",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","^上传了\\d+张照片至|^的照片|美化了一张照片$"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","^上传了\\d+张照片至|^的照片|美化了一张照片$"]]}],
+							argus1:[[null,"@markFeedAsRead","photo"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","photo"]]}],
 						},
 						removeImageTagFeed:{
 							text:"圈人",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","照片中被圈出来了$"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","照片中被圈出来了$"]]}],
+							argus1:[[null,"@markFeedAsRead","tag"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","tag"]]}],
 						},
 						removeProfileFeed:{
 							text:"头像",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","^修改了头像"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","^修改了头像"]]}],
+							argus1:[[null,"@markFeedAsRead","profile"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","profile"]]}],
 						},
 						removeShareFeed:{
 							text:"分享",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","^分享"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","^分享"]]}],
+							argus1:[[null,"@markFeedAsRead","share"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","share"]]}],
 						},
 						removeFilmFeed:{
 							text:"电影",
 							value:false,
-							argus1:[[null,"@markFeedAsRead",null,"<a [^>]*href=\"http://movie.xiaonei.com/|<a [^>]*href=\"http://movie.renren.com/"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead",null,"<a [^>]*href=\"http://movie.xiaonei.com/|<a [^>]*href=\"http://movie.renren.com/"]]}],
+							argus1:[[null,"@markFeedAsRead","movie"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","movie"]]}],
 						},
 						removeMusicFeed:{
 							text:"音乐",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","^上传了音乐"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","^上传了音乐"]]}],
+							argus1:[[null,"@markFeedAsRead","music"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","music"]]}],
 						},
 						removeConnectFeed:{
 							text:"连接",
 							value:false,
-							argus1:[[null,"@markFeedAsRead",null,null,"<a [^>]*href=\"http://www.connect.renren.com/"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead",null,null,"<a [^>]*href=\"http://www.connect.renren.com/"]]}],
+							argus1:[[null,"@markFeedAsRead","connect"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","connect"]]}],
 						},
 						removeVipFeed:{
 							text:"VIP相关",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","^更换了主页模板皮肤|^成为了人人网.*VIP会员特权"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","^更换了主页模板皮肤|^成为了人人网.*VIP会员特权"]]}],
+							argus1:[[null,"@markFeedAsRead","vip"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","vip"]]}],
 						},
 						removeGroupFeed:{
 							text:"品牌专区",
 							value:false,
-							argus1:[[null,"@markFeedAsRead",null,"<a [^>]*href=\"http://group.renren.com/"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead",null,"<a [^>]*href=\"http://group.renren.com/"]]}],
+							argus1:[[null,"@markFeedAsRead","group"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","group"]]}],
 						},
 						removePublicPageFeed:{
 							text:"公共主页",
 							value:false,
-							argus1:[[null,"@markFeedAsRead",null,"<a [^>]*href=\"http://page.renren.com/"]],
-							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead",null,"<a [^>]*href=\"http://page.renren.com/"]]}],
+							argus1:[[null,"@markFeedAsRead","page"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","page"]]}],
 						},
 					},
 				},
@@ -400,8 +400,16 @@ XNR.prototype={
 				flodStatusComment:{
 					text:"默认收起新鲜事回复",
 					value:false,
-					fn3:flodStatusComment,
+					fn3:flodFeedComment,
 					page:"/www\\.renren\\.com|/renren\\.com",
+				},
+				autoRefreshFeeds:{
+					text:"自动检查新鲜事更新，每隔@@秒",
+					type:"checktext",
+					value:true,
+					ctrl:{option:"checkFeedInterval",value:60,verify:"^[3-9][0-9]$|^[1-9][0-9]{2,}$",failInfo:"为防止占用太多资源，新鲜事检查间隔时间至少为30秒。",style:"width:30px;"},
+					fn3:autoRefreshFeeds,
+					argus3:[["@checkFeedInterval",{"blog":"@removeBlogFeed","poll":"@removePollFeed","app":"@removeAppFeed","status":"@removeStatusFeed","gift":"@removeGiftFeed","photo":"@removeImageFeed","tag":"@removeImageTagFeed","profile":"@removeProfileFeed","share":"@removeShareFeed","movie":"@removeFilmFeed","music":"@removeMusicFeed","connect":"@removeConnectFeed","vip":"@removeVipFeed","group":"@removeGroupFeed","page":"@removePublicPageFeed"}]],
 				},
 			},
 		},
@@ -575,14 +583,6 @@ XNR.prototype={
 					value:true,
 					fn3:removeNicknameRestriction,
 					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
-				},
-				autoRefreshFeeds:{
-					text:"自动检查新鲜事更新，每隔@@秒",
-					type:"checktext",
-					value:true,
-					ctrl:{option:"checkFeedInterval",value:60,verify:"^[3-9][0-9]$|^[1-9][0-9]{2,}$",failInfo:"为防止占用太多资源，新鲜事检查间隔时间至少为30秒。",style:"width:30px;"},
-					fn3:autoRefreshFeeds,
-					argus3:[["@checkFeedInterval"]],
 				},
 			}
 		},
@@ -1328,7 +1328,6 @@ Date.prototype.format=function(fmt) {
 String.prototype.contains=function(str) {
 	return this.indexOf(str)!=-1;
 };
-
 // 图片缓存
 var imgCache;
 
@@ -1522,14 +1521,56 @@ function hideRequest(reqClass) {
 	}
 };
 
+// 判断新鲜事类型，feed为li经XNR包装，可以指定判断是否为某一类型
+function getFeedType(feed,feedType) {
+	var types={
+		"blog":		["^发表日志"],
+		"poll":		[null,"<a [^>]*href=\"http://abc.renren.com/"],
+		"app":		[null,"<a [^>]*href=\"http://apps?.renren.com/"],
+		"status":	["^:",null,"getReplyOfTheDoing"],
+		"gift":		["^收到","<a [^>]*href=\"http://gift.renren.com/"],
+		"photo":	["^上传了\\d+张照片至|^的照片|美化了一张照片$"],
+		"tag":		["照片中被圈出来了$"],
+		"profile":	["^修改了头像"],
+		"share":	["^分享"],
+		"movie":	[null,"<a [^>]*href=\"http://movie.xiaonei.com/|<a [^>]*href=\"http://movie.renren.com/"],
+		"music":	["^上传了音乐"],
+		"connect":	[null,null,"<a [^>]*href=\"http://www.connect.renren.com/"],
+		"vip":		["^更换了主页模板皮肤|^成为了人人网.*VIP会员特权"],
+		"group":	[null,"<a [^>]*href=\"http://group.renren.com/"],
+		"page":		[null,"<a [^>]*href=\"http://page.renren.com/"],
+	};
+
+	var feedFooter=feed.find(".details .legend");
+	var feedTitle=feed.find("h3");
+	// 删除所有链接子节点，只留下文本节点
+	var feedTitleText=feedTitle.clone();
+	feedTitleText.find("a").remove();
+
+	if(feedType) {
+		var feedText=types[feedType][0];
+		var feedHTML=types[feedType][1];
+		var feedFooterHTML=types[feedType][2];
+		if ((!feedText || new RegExp(feedText).test(feedTitleText.text().replace(/^[ \t]+|[ \t]+$/g,""))) && (!feedHTML || new RegExp(feedHTML).test(feedTitle.inner())) && (!feedFooterHTML || new RegExp(feedFooterHTML).test(feedFooter.inner()))) {
+			return feedType;
+		}
+	} else {
+		for(i in types) {
+			var feedText=types[i][0];
+			var feedHTML=types[i][1];
+			var feedFooterHTML=types[i][2];
+			if ((!feedText || new RegExp(feedText).test(feedTitleText.text().replace(/^[ \t]+|[ \t]+$/g,""))) && (!feedHTML || new RegExp(feedHTML).test(feedTitle.inner())) && (!feedFooterHTML || new RegExp(feedFooterHTML).test(feedFooter.inner()))) {
+				return i;
+			}
+		}
+	}
+	return "";
+}
+
 //隐藏新鲜事或标记为已读
-function removeFeeds(evt,markFeedAsRead,feedText,feedHTML,feedFooter) {
+function removeFeeds(evt,markFeedAsRead,feedType) {
 	var feeds=$("ul#feedHome > li").filter(function(elem) {
-		var feedTitle=$(elem).find("h3");
-		// 删除所有链接子节点，只留下文本节点
-		var feedTitleText=feedTitle.clone();
-		feedTitleText.find("a").remove();
-		return (!feedText || new RegExp(feedText).test(feedTitleText.text().replace(/^[ \t]+|[ \t]+$/g,""))) && (!feedHTML || new RegExp(feedHTML).test(feedTitle.inner())) && (!feedFooter || new RegExp(feedFooter).test($(elem).find(".details .legend").inner()));
+		return getFeedType($(elem),feedType);
 	});
 	feeds.each(function(index,elem) {
 		if(markFeedAsRead) {
@@ -1781,26 +1822,26 @@ function hideFeedContent() {
 };
 
 //收起新鲜事回复
-function flodStatusComment() {
-	var scripts="";
+function flodFeedComment() {
+	var code="";
 	// feedView是公共主页的
 	$("#feedHome","#feedView").find(".details .legend a[id*='reply']").each(function(index,elem) {
 		var a=$(elem);
 		if(a.heirs()==0) {
-			// Firefox only...
 			if(agent==FIREFOX) {
+				// Firefox only...
 				a.invoke("onclick");
 			} else {
-				// Chrome ...
-				scripts+="try{"+a.attr("onclick")+"}catch(e){};";
+				// Chrome ... I hate U
+				code+="setTimeout(function(){"+a.attr("onclick")+"},"+(index*150+66)+");"
 			}
 		}
 	});
-	if(scripts) {
-		setTimeout(function(){$node("script",scripts).appendTo(document.body)},0);
+	if(code) {
+		setTimeout($node("script",code).appendTo(document.body),50);
 	}
-	// 修改loadJSON方法，loadJSON方法原最后会调用show强制显示
-	location.href="javascript:(function(){if(!XN.app.status)return;XN.app.status.replyEditor.prototype.oldloadJSON=XN.app.status.replyEditor.prototype.loadJSON;XN.app.status.replyEditor.prototype.loadJSON=function(a){this.oldloadJSON(a);this.hide();}})()";
+	// 修改loadJSON方法，loadJSON原方法最后会调用show强制显示
+	location.href="javascript:(function(){if(!XN.app.status)return;var code=XN.app.status.replyEditor.prototype.loadJSON.toString().replace(/function *\\(json\\) *{/,'').replace(/}$/,'').replace(/this.show\\([^\\)]*\\)/,'this.hide()');XN.app.status.replyEditor.prototype.loadJSON=new Function('json',code);})()";
 };
 
 //增加更多状态表情
@@ -1820,7 +1861,8 @@ function addExtraEmotions() {
 		{e:"(难过)",	t:"难过",			s:"/imgpro/icons/statusface/6.gif"},
 	//	{e:":-p",		t:"吐舌头",			s:"/imgpro/icons/statusface/7.gif"},
 		{e:":a",		t:"爱",				s:"/imgpro/icons/statusface/8.gif"},
-		{e:"(v)",		t:"花儿",			s:"/imgpro/icons/statusface/9.gif"},
+	//	{e:"(v)",		t:"花儿",			s:"/imgpro/icons/statusface/9.gif"},
+		{e:"(花)",		t:"花儿",			s:"/imgpro/icons/statusface/9.gif"},
 		{e:"(38)",		t:"校内女人",		s:"/imgpro/icons/statusface/10.gif"},
 	//	{e:"8-|",		t:"书呆子",			s:"/imgpro/icons/statusface/13.gif"},
 		{e:"(书呆子)",	t:"书呆子",			s:"/imgpro/icons/statusface/13.gif"},
@@ -1850,7 +1892,8 @@ function addExtraEmotions() {
 		{e:"(晕)",		t:"晕",				s:"/imgpro/emotions/tie/21.gif"},
 		{e:"(s)",		t:"大兵",			s:"/imgpro/icons/statusface/soldier.gif"},
 		{e:"(NBA)",		t:"篮球",			s:"/imgpro/icons/statusface/basketball4.gif"},
-		{e:"(bee)",		t:"小蜜蜂",			s:"/imgpro/icons/statusface/bee.gif"},
+		{e:"(蜜蜂)",	t:"小蜜蜂",			s:"/imgpro/icons/statusface/bee.gif"},
+	//	{e:"(bee)",		t:"小蜜蜂",			s:"/imgpro/icons/statusface/bee.gif"},
 		{e:"(fl)",		t:"花仙子",			s:"/imgpro/icons/statusface/hanago.gif"},
 		{e:"(zz)",		t:"粽子",			s:"/imgpro/icons/statusface/zongzi.gif"},
 		{e:"(cap)",		t:"学位帽",			s:"/imgpro/icons/statusface/mortarboard.gif"},
@@ -1890,6 +1933,7 @@ function addExtraEmotions() {
 		{e:"(earth)",	t:"地球",			s:"/imgpro/icons/statusface/wwf-earth.gif"},
 		{e:"(ty)",		t:"汤圆",			s:"/imgpro/icons/statusface/tang-yuan.gif"},
 		{e:"(dl)",		t:"灯笼",			s:"/imgpro/icons/statusface/lantern.gif"},
+		{e:"(nrj)",		t:"女人节",			s:"/imgpro/icons/statusface/lipstick.gif"},
 		{e:"(^)",		t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
 		{e:"(h)",		t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		{e:"(r)",		t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
@@ -1919,11 +1963,12 @@ function addExtraEmotions() {
 			var el=emlist[i];
 			//不在已有列表中
 			if(!curlist[el.e]) {
-				var node=$node("li",'<a onfocus="this.blur();" href="#nogo"><img title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'" src="http://xnimg.cn'+el.s+'" rsrc="http://xnimg.cn'+el.s+'"/></a>').attr("suck","you");
+				var node=$node("li").append($node("a").attr("href","#nogo").append($node("img").attr({title:el.t,alt:el.t,emotion:el.e,src:"http://xnimg.cn"+el.s,rsrc:"http://xnimg.cn"+el.s})));
 				list.append(node);
 			} 
 		}
 	}
+
 
 	//首页的状态表情列表
 	var list=$("#publisher_emotion > ul");
@@ -1937,7 +1982,7 @@ function addExtraEmotions() {
 			var el=emlist[i];
 			//不在已有列表中
 			if(!curlist[el.e]) {
-				var node=$node("li",'<a onfocus="this.blur();" href="#nogo"><img emotion="'+el.e+'" alt="'+el.t+'" title="'+el.t+'" src="http://xnimg.cn'+el.s+'" rsrc="http://xnimg.cn'+el.s+'"/></a>');
+				var node=$node("li").append($node("a").attr("href","#nogo").append($node("img").attr({title:el.t,alt:el.t,emotion:el.e,src:"http://xnimg.cn"+el.s,rsrc:"http://xnimg.cn"+el.s})));
 				list.append(node);
 			}
 		}
@@ -1967,7 +2012,7 @@ function addExtraEmotions() {
 				for (var i in emlist) {
 					var el=emlist[i];
 					if(!curlist[el.e]) {
-						var node=$node("li",'<a onfocus="this.blur();" href="#nogo"><img src="http://xnimg.cn'+el.s+'" title="'+el.t+'" alt="'+el.t+'" emotion="'+el.e+'"/></a>');
+						var node=$node("li").append($node("a").attr("href","#nogo").append($node("img").attr({title:el.t,alt:el.t,emotion:el.e,src:"http://xnimg.cn"+el.s,rsrc:"http://xnimg.cn"+el.s})));
 						list.append(node);
 					}
 				}
@@ -2260,7 +2305,7 @@ function showImageOnMouseOver() {
 					}
 					break;
 			}
-			if(imgSrc!="" && !imgSrc.match(/\/large|_large|large_/)) {
+			if(imgSrc!="" && !imgSrc.match(/\/large|_large|large_|\/photos\/0\/0\//)) {
 				imgId=imgSrc.substring(imgSrc.lastIndexOf("_"));
 				//一种非常古老的图片（http://fm071.img.renren.com/pic001/20070201/2002/H[0-9]+[A-Z]+.jpg），改imgId
 				if(imgSrc.match(/http:\/\/.*?\.img\.renren\.com\/pic\d+\/\d{8}\/\d+\/H.*?\.jpg/)) {
@@ -2276,10 +2321,10 @@ function showImageOnMouseOver() {
 				}
 					
 				if(!pageURL && t.parentNode.tagName=="A") {
-					pageURL=t.parentNode.href;
-					if(pageURL.indexOf("javascript:")!=-1) {
+					if($(t.parentNode).attr("href").match(/^#|^javascript:/)) {
 						return;
 					}
+					pageURL=t.parentNode.href;
 				} else if (!pageURL && t.parentNode.tagName=="I" && t.parentNode.parentNode.tagName=="A") {
 					pageURL=t.parentNode.parentNode.href;
 				} else if (t.className=="avatar") {
@@ -2403,12 +2448,12 @@ function limitHeadAmount(amount) {
 };
 
 //自动检查新鲜事更新
-function autoRefreshFeeds(interval) {
+function autoRefreshFeeds(interval,feedFilter) {
 	if(!$cookie("id")) {
 		return;
 	}
 	if(location.hostname=="www.renren.com" && location.pathname.toLowerCase()=="/home.do") {
-		// 记录下最新更新的时间
+		// 记录下最新更新的一条
 		if($("#feedHome").heirs()>0) {
 			localStorage.setItem("xnr_feed",$("#feedHome > li").get().id);
 		}
@@ -2425,6 +2470,13 @@ function autoRefreshFeeds(interval) {
 				}
 				// 获取新鲜事列表
 				var feedList=$node("ul").style("display","none").inner(r[0].replace(/onload=".*?"/g,"").replace(/<script.*?<\/script>/g,"").replace(/src="http:\/\/s\.xnimg\.cn\/a\.gif"/g,"").replace(/lala=/g,"src="));
+				// 滤除被屏蔽的新鲜事类型
+				for(var i=feedList.heirs()-1;i>=0;i--) {
+					var feedType=getFeedType(feedList.child(i));
+					if(feedType && feedFilter[feedType]) {
+						feedList.child(i).remove();
+					}
+				}
 				if(feedList.heirs()==0) {
 					return;
 				}
@@ -2666,6 +2718,23 @@ function updatedNotify(lastVer) {
 				$error("parseDetail",err);
 			}
 		};
+		// 解析功能函数参数
+		var parseArguments=function(o) {
+			for(var i in o) {
+				var arg=o[i];
+				switch(typeof arg) {
+					case "string":
+						if(/^@/.test(arg)) {
+							// 以@开头的是选项的值
+							o[i]=options[arg.substring(1)];
+						}
+						break;
+					case "object":
+						parseArguments(arg);
+						break;
+				}
+			}
+		};
 		// 执行各项功能函数
 		var exec=function() {
 			for(var i=0;i<4;i++) {
@@ -2678,12 +2747,7 @@ function updatedNotify(lastVer) {
 						var argus=fns[fn].argus;
 						if(argus) {
 							for(var t=0;t<argus.length;t++) {
-								for(var j=0;j<argus[t].length;j++) {
-									// 以@开头的是选项的值
-									if(/^@/.test(argus[t][j])) {
-										argus[t][j]=options[argus[t][j].substring(1)];
-									}
-								}
+								parseArguments(argus[t]);
 								(fns[fn].fn)(argus[t][0],argus[t][1],argus[t][2],argus[t][3],argus[t][4]);
 							}
 						} else {
