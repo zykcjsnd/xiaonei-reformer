@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.1.20100308
-// @miniver        228
+// @version        2.3.2.20100309
+// @miniver        229
 // @author         xz
 // ==/UserScript==
 
@@ -47,7 +47,7 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.1.20100308",
+	version:"2.3.2.20100309",
 	miniver:228,
 
 	// 选项列表
@@ -584,6 +584,17 @@ XNR.prototype={
 					fn3:removeNicknameRestriction,
 					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
+				showLoginInfo:{
+					text:"显示登录信息",
+					value:false,
+					fn3:showLoginInfo,
+					argus3:[["@lastSid"]]
+				},
+				lastSid:{
+					text:"最近一次登录时的SessionID",
+					type:"hidden",
+					value:"",
+				}
 			}
 		},
 		update:{
@@ -1225,18 +1236,21 @@ function $get(url,func,userData) {
 	}
 };
 // 弹出窗口
-function $popup(title,content,geometry,stayTime,popSpeed) {
-	if($._popup) {
-		$._popup.remove();
+function $popup(id,title,content,geometry,stayTime,popSpeed) {
+	if(!$._popup) {
+		$._popup={};
+	}
+	if($._popup[id]) {
+		$._popup[id].remove();
 	}
 	const timeout=50;
 	var node=$node("div").style({position:"fixed",backgroundColor:"#F0F5F8",border:"1px solid #B8D4E8",zIndex:100000,overflow:"hidden"});
 	// geometry 按照标准的X表示法，宽x高+x+y，高是自动计算，忽略输入值。默认200x0+5-5
-	var geo=/(\d+)x\d+([+-]?)(\d*)([+-]?)(\d*)/.exec(geometry);
+	var geo=/^(\d+)x\d+([+-]?)(\d*)([+-]?)(\d*)$/.exec(geometry);
 	if(!geo) {
 		geo=["","200","+","5","-","5"];
 	}
-	node.style("width",geo[1]+"px").style((geo[2] || "+")=="+"?"left":"right",(geo[3] || "0")+"px").style((geo[4] || "-")=="+"?"top":"bottom",(geo[5] || "0")+"px");
+	node.style("width",(geo[1]=="0"?"auto":geo[1]+"px")).style((geo[2] || "+")=="+"?"left":"right",(geo[3] || "0")+"px").style((geo[4] || "-")=="+"?"top":"bottom",(geo[5] || "0")+"px");
 
 	$node("div",(title || "提示")+'<a style="float:right;font-size:x-small;color:white;cursor:pointer" class="x">关闭</a>').style({background:"#526EA6",color:"white",fontWeight:"bold",fontSize:"normal",padding:"3px"}).appendTo(node);
 	$node("div",content).style("margin","5px").appendTo(node);
@@ -1270,9 +1284,9 @@ function $popup(title,content,geometry,stayTime,popSpeed) {
 	},timeout);
 	node.find("a.x").listen("click",function(){
 		node.remove();
-		node=$._popup=null;
+		node=$._popup[id]=null;
 	});
-	$._popup=node;
+	$._popup[id]=node;
 	return node;
 	// 收起
 	function flod() {
@@ -1280,9 +1294,9 @@ function $popup(title,content,geometry,stayTime,popSpeed) {
 			var h=parseInt(node.style("height"));
 			if(h<=0) {
 				node.remove();
-				node=$._popup=null;
+				node=$._popup[id]=null;
 			} else {
-				node.style("height",(h-popSpeed)+"px");
+				node.style("height",(h>popSpeed?h-popSpeed:0)+"px");
 				setTimeout(flod,timeout);
 			}
 		} catch(err) {
@@ -2434,6 +2448,20 @@ function removeNicknameRestriction() {
 	});
 };
 
+// 显示上一次登录信息
+function showLoginInfo(lastSid) {
+	var sid=$cookie("xnsid");
+	if(!sid || sid==lastSid) {
+		return;
+	}
+	$save("lastSid",sid);
+	$get("http://safe.renren.com/ajax.do?type=logInfo",function(url,data) {
+		data=data.replace(/<(\/?)a[^>]*>/g,"<$1span>").replace("<dt>当前登录信息</dt>","");
+		data+="<div><a style='float:right;padding:5px' href='http://safe.renren.com/alarm.do' target='_blank'>更多信息<a></div>"
+		$popup("login","登录信息",data,"0x0-5-5",30,5);
+	});
+};
+
 //限制头像列表中的头像数量
 function limitHeadAmount(amount) {
 	if(amount==0) {
@@ -2578,7 +2606,7 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 			var miniver=(/@miniver[ \t]+(\d+)/.exec(html) || ["","0"])[1];
 			var ver=(/@version[ \t]+([0-9\.]+)/.exec(html) || ["","未知"])[1];
 			if(parseInt(miniver)>XNR.prototype.miniver) {
-				var pop=$popup(null,'<div style="color:black"><div>人人网改造器已有新版本：<br/>'+ver+' ('+XNR.prototype.miniver+')</div><div class="links" style="padding-top:5px;padding-bottom:5px;float:right"><a target="_blank" href="'+scriptLink+'">安装</a><b> </b><a target="_blank" href="'+pageLink+'">去看看</a></div></div>',null,30,5);
+				var pop=$popup("update",null,'<div style="color:black"><div>人人网改造器已有新版本：<br/>'+ver+' ('+XNR.prototype.miniver+')</div><div class="links" style="padding-top:5px;padding-bottom:5px;float:right"><a target="_blank" href="'+scriptLink+'">安装</a><b> </b><a target="_blank" href="'+pageLink+'">去看看</a></div></div>',null,30,5);
 				pop.find(".links a").listen("click",function() {
 					pop.remove();
 				});
@@ -2604,7 +2632,7 @@ function updatedNotify(lastVer) {
 		$save("lastVersion",XNR.prototype.miniver);
 	} else if(lastVer<XNR.prototype.miniver) {
 		setTimeout(function() {
-			$popup(null,'<div style="color:black">人人网改造器已经自动更新到:<br/>'+XNR.prototype.version+' ('+XNR.prototype.miniver+')</div><div><a href="http://code.google.com/p/xiaonei-reformer/source/browse/trunk/Changelog.txt" style="padding-top:5px;padding-bottom:5px;float:right" target="_blank">查看更新内容</a></div>',null,15,5);
+			$popup("updated",null,'<div style="color:black">人人网改造器已经自动更新到:<br/>'+XNR.prototype.version+' ('+XNR.prototype.miniver+')</div><div><a href="http://code.google.com/p/xiaonei-reformer/source/browse/trunk/Changelog.txt" style="padding-top:5px;padding-bottom:5px;float:right" target="_blank">查看更新内容</a></div>',null,15,5);
 		},0);
 		$save("lastVersion",XNR.prototype.miniver);
 	}
