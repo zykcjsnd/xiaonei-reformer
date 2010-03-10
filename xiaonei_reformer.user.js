@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.2.20100309
-// @miniver        229
+// @version        2.3.2.20100310
+// @miniver        230
 // @author         xz
 // ==/UserScript==
 
@@ -47,8 +47,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.2.20100309",
-	miniver:228,
+	version:"2.3.2.20100310",
+	miniver:230,
 
 	// 选项列表
 	options:{
@@ -594,7 +594,13 @@ XNR.prototype={
 					text:"最近一次登录时的SessionID",
 					type:"hidden",
 					value:"",
-				}
+				},
+				disableOrangeName:{
+					text:"不显示他人的橙名",
+					info:"要禁止自己的橙名显示，请到隐私设置页面",
+					value:false,
+					fn2:disableOrangeName,
+				},
 			}
 		},
 		update:{
@@ -2460,6 +2466,11 @@ function showLoginInfo(lastSid) {
 		data+="<div><a style='float:right;padding:5px' href='http://safe.renren.com/alarm.do' target='_blank'>更多信息<a></div>"
 		$popup("login","登录信息",data,"0x0-5-5",30,5);
 	});
+};
+
+// 不显示橙名
+function disableOrangeName() {
+	$(".lively-user").removeClass("lively-user");
 };
 
 //限制头像列表中的头像数量
