@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.2.20100310
-// @miniver        230
+// @version        2.3.2.20100311
+// @miniver        231
 // @author         xz
 // ==/UserScript==
 
@@ -47,8 +47,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.2.20100310",
-	miniver:230,
+	version:"2.3.2.20100311",
+	miniver:231,
 
 	// 选项列表
 	options:{
@@ -119,34 +119,40 @@ XNR.prototype={
 					text:"去除寻找/邀请朋友栏",
 					value:false,
 					fn1:removeFriendGuide,
-					page:"/www\\.renren\\.com|/renren\\.com",
+					page:"/www\\.renren\\.com|/renren\\.com|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+				},
+				removeRenRenPoint:{
+					text:"去除首页右侧等级栏",
+					value:false,
+					fn1:removeRenRenPoint,
+					page:"renren\\.com/[hH]ome\\.do",
 				},
 				removeRenRenSurvey:{
-					text:"去除首页右侧人人网调查",
+					text:"去除首页右侧人人网调查栏",
 					value:false,
 					fn1:removeRenRenSurvey,
 					page:"renren\\.com/[hH]ome\\.do",
 				},
 				removeCommonPage:{
-					text:"去除首页右侧公共主页推荐",
+					text:"去除首页右侧公共主页推荐栏",
 					value:false,
 					fn1:removeCommonPage,
 					page:"renren\\.com/[hH]ome\\.do",
 				},
 				removeCommendation:{
-					text:"去除首页右侧推荐/礼物",
+					text:"去除首页右侧人人网推荐/礼物栏",
 					value:false,
 					fn1:removeCommendation,
 					page:"renren\\.com/[hH]ome\\.do",
 				},
 				removeMayKnow:{
-					text:"去除首页右侧“可能认识他们”",
+					text:"去除首页右侧好友推荐栏",
 					value:false,
 					fn1:removeMayKnow,
 					page:"renren\\.com/[hH]ome\\.do",
 				},
 				removeSponsorsWidget:{
-					text:"去除首页右侧赞助商内容",
+					text:"去除首页右侧赞助商内容栏",
 					value:true,
 					fn1:removeSponsorsWidget,
 					page:"renren\\.com/[hH]ome\\.do",
@@ -158,61 +164,61 @@ XNR.prototype={
 					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeLeftAlbum:{
-					text:"去除个人主页左侧相册框",
+					text:"去除个人主页左侧相册栏",
 					value:false,
 					fn1:removeLeftAlbum,
 					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeLeftShare:{
-					text:"去除个人主页左侧分享框",
+					text:"去除个人主页左侧分享栏",
 					value:false,
 					fn1:removeLeftShare,
 					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeLeftGift:{
-					text:"去除个人主页左侧礼物框",
+					text:"去除个人主页左侧礼物栏",
 					value:false,
 					fn1:removeLeftGift,
 					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeLeftTree:{
-					text:"去除个人主页左侧◯◯树框",
+					text:"去除个人主页左侧◯◯树栏",
 					value:false,
 					fn1:removeLeftTree,
 					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeMidAlbum:{
-					text:"去除个人主页中间个人相册框",
+					text:"去除个人主页中间个人相册栏",
 					value:false,
 					fn1:removeMidAlbum,
 					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeMidBlog:{
-					text:"去除个人主页中间个人日志框",
+					text:"去除个人主页中间个人日志栏",
 					value:false,
 					fn1:removeMidBlog,
 					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeRightSpecialFriends:{
-					text:"去除个人主页右侧特别好友框",
+					text:"去除个人主页右侧特别好友栏",
 					value:false,
 					fn1:removeRightSpecialFriends,
 					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeRightFootprint:{
-					text:"去除个人主页右侧最近来访框",
+					text:"去除个人主页右侧最近来访栏",
 					value:false,
 					fn1:removeRightFootprint,
 					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeRightFriends:{
-					text:"去除个人主页右侧好友框",
+					text:"去除个人主页右侧好友栏",
 					value:false,
 					fn1:removeRightFriends,
 					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeRightMutualFriends:{
-					text:"去除个人主页右侧共同好友框",
+					text:"去除个人主页右侧共同好友栏",
 					value:false,
 					fn1:removeRightMutualFriends,
 					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
@@ -284,96 +290,96 @@ XNR.prototype={
 					text:"屏蔽以下类型的新鲜事",
 					columns:4,
 					fn1:removeFeeds,
-					page:"/www\\.renren\\.com|/renren\\.com",
+					page:"/www\\.renren\\.com|/renren\\.com|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 					list:{
 						removeBlogFeed:{
 							text:"日志",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","blog"]],
+							argus1:[["@markFeedAsRead","blog"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","blog"]]}],
 						},
 						removePollFeed:{
 							text:"投票",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","poll"]],
+							argus1:[["@markFeedAsRead","poll"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","poll"]]}],
 						},
 						removeAppFeed:{
 							text:"应用",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","app"]],
+							argus1:[["@markFeedAsRead","app"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","app"]]}],
 						},
 						removeStatusFeed:{
 							text:"状态",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","status"]],
+							argus1:[["@markFeedAsRead","status"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","status"]]}],
 						},
 						removeGiftFeed:{
 							text:"礼物",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","gift"]],
+							argus1:[["@markFeedAsRead","gift"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","gift"]]}],
 						},
 						removeImageFeed:{
 							text:"照片",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","photo"]],
+							argus1:[["@markFeedAsRead","photo"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","photo"]]}],
 						},
 						removeImageTagFeed:{
 							text:"圈人",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","tag"]],
+							argus1:[["@markFeedAsRead","tag"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","tag"]]}],
 						},
 						removeProfileFeed:{
 							text:"头像",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","profile"]],
+							argus1:[["@markFeedAsRead","profile"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","profile"]]}],
 						},
 						removeShareFeed:{
 							text:"分享",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","share"]],
+							argus1:[["@markFeedAsRead","share"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","share"]]}],
 						},
 						removeFilmFeed:{
 							text:"电影",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","movie"]],
+							argus1:[["@markFeedAsRead","movie"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","movie"]]}],
 						},
 						removeMusicFeed:{
 							text:"音乐",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","music"]],
+							argus1:[["@markFeedAsRead","music"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","music"]]}],
 						},
 						removeConnectFeed:{
 							text:"连接",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","connect"]],
+							argus1:[["@markFeedAsRead","connect"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","connect"]]}],
 						},
 						removeVipFeed:{
 							text:"VIP相关",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","vip"]],
+							argus1:[["@markFeedAsRead","vip"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","vip"]]}],
 						},
 						removeGroupFeed:{
 							text:"品牌专区",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","group"]],
+							argus1:[["@markFeedAsRead","group"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","group"]]}],
 						},
 						removePublicPageFeed:{
 							text:"公共主页",
 							value:false,
-							argus1:[[null,"@markFeedAsRead","page"]],
+							argus1:[["@markFeedAsRead","page"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","page"]]}],
 						},
 					},
@@ -395,13 +401,13 @@ XNR.prototype={
 					text:"隐藏新鲜事具体内容",
 					value:false,
 					fn2:hideFeedContent,
-					page:"renren\\.com/[hH]ome\\.do",
+					page:"/www\\.renren\\.com|/renren\\.com|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				flodStatusComment:{
 					text:"默认收起新鲜事回复",
 					value:false,
 					fn3:flodFeedComment,
-					page:"/www\\.renren\\.com|/renren\\.com",
+					page:"/www\\.renren\\.com|/renren\\.com|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				autoRefreshFeeds:{
 					text:"自动检查新鲜事更新，每隔@@秒",
@@ -498,6 +504,12 @@ XNR.prototype={
 					fn1:limitHeadAmount,
 					argus1:[["@headAmount"]],
 				},
+				disableOrangeName:{
+					text:"不显示他人的橙名",
+					info:"要禁止自己的橙名显示，请到隐私设置页面",
+					value:false,
+					fn2:disableOrangeName,
+				},
 				GROUP1:{
 					text:"修正界面错误",
 					columns:1,
@@ -585,21 +597,15 @@ XNR.prototype={
 					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				showLoginInfo:{
-					text:"显示登录信息",
+					text:"登录时提示登录信息",
 					value:false,
 					fn3:showLoginInfo,
-					argus3:[["@lastSid"]]
+					argus3:[["@lastSid"]],
 				},
 				lastSid:{
 					text:"最近一次登录时的SessionID",
 					type:"hidden",
 					value:"",
-				},
-				disableOrangeName:{
-					text:"不显示他人的橙名",
-					info:"要禁止自己的橙名显示，请到隐私设置页面",
-					value:false,
-					fn2:disableOrangeName,
 				},
 			}
 		},
@@ -610,7 +616,7 @@ XNR.prototype={
 					text:"自动检查脚本更新（24小时内最多检查一次）",
 					value:true,
 					fn3:checkUpdate,
-					argus3:[[null,"@checkLink","@pageLink","@scriptLink","@lastUpdate"]],
+					argus3:[[false,"@checkLink","@pageLink","@scriptLink","@lastUpdate"]],
 					agent:FIREFOX,
 				},
 				lastUpdate:{
@@ -623,7 +629,7 @@ XNR.prototype={
 					text:"立刻检查",
 					type:"button",
 					value:true,
-					trigger:[{target:".xnr_op input#manualCheck",evt:"click",fn:checkUpdate,argus:[["@checkLink","@pageLink","@scriptLink","@lastUpdate"]]}],
+					trigger:[{target:".xnr_op input#manualCheck",evt:"click",fn:checkUpdate,argus:[[true,"@checkLink","@pageLink","@scriptLink","@lastUpdate"]]}],
 					agent:FIREFOX,
 				},
 				checkLink:{
@@ -1499,6 +1505,11 @@ function removeRightMutualFriends() {
 	$(".profile-page.box").purge();
 };
 
+//移除人人网等级栏
+function removeRenRenPoint() {
+	$(".side-item.point").remove();
+};
+
 //移除人人网调查
 function removeRenRenSurvey() {
 	$(".side-item.sales-poll").remove();
@@ -1588,7 +1599,7 @@ function getFeedType(feed,feedType) {
 }
 
 //隐藏新鲜事或标记为已读
-function removeFeeds(evt,markFeedAsRead,feedType) {
+function removeFeeds(markFeedAsRead,feedType) {
 	var feeds=$("ul#feedHome > li").filter(function(elem) {
 		return getFeedType($(elem),feedType);
 	});
@@ -1686,17 +1697,12 @@ function recoverOriginalTheme() {
 	// 上传照片页分类Tab颜色
 	css+="#self-nav .selected a{background-color:"+BCOLOR+"}#self-nav .selected a:hover{background-color:"+BCOLOR+"}#self-nav li a{color:"+XCOLOR+"}";
 	
-	$("div.navigation.clearfix",".vip-header-new").each(function(index,elem) {
-		var bc=document.defaultView.getComputedStyle(elem,null).backgroundColor;
-		if(bc=="rgb(0, 94, 172)" || bc=="transparent") {
-			// 导航栏背景色
-			css+=".navigation,.vip-header-new{background:"+FCOLOR+"}";
-			// 导航栏项目鼠标移过时的背景色
-			css+=".navigation .menu-title a:hover{background-color:"+BCOLOR+"}";
-			// 导航栏设置下拉菜单项目的背景色
-			css+=".menu-dropdown-border > div:not(.app-actions) a:hover{background-color:"+BCOLOR+" !important}";
-		}
-	});
+	// 导航栏背景色
+	css+=".navigation,.navigation .nav-body,.vip-header-new{background:"+FCOLOR+"}";
+	// 导航栏项目鼠标移过时的背景色
+	css+=".navigation .menu-title a:hover{background-color:"+BCOLOR+"}";
+	// 导航栏设置下拉菜单项目的背景色
+	css+=".menu-dropdown-border > div:not(.app-actions) a:hover{background-color:"+BCOLOR+" !important}";
 
 	// 首页左侧应用栏的背景色，回复的背景色
 	if(location.pathname=="/Home.do") {
@@ -2463,8 +2469,8 @@ function showLoginInfo(lastSid) {
 	$save("lastSid",sid);
 	$get("http://safe.renren.com/ajax.do?type=logInfo",function(url,data) {
 		data=data.replace(/<(\/?)a[^>]*>/g,"<$1span>").replace("<dt>当前登录信息</dt>","");
-		data+="<div><a style='float:right;padding:5px' href='http://safe.renren.com/alarm.do' target='_blank'>更多信息<a></div>"
-		$popup("login","登录信息",data,"0x0-5-5",30,5);
+		data+="<div><a style='float:right;padding:5px' href='http://safe.renren.com/alarm.do' target='_blank'>更多信息<a></div>";
+		$popup("login","登录信息",data,"0x0-5-5",15,5);
 	});
 };
 
@@ -2597,7 +2603,7 @@ function autoRefreshFeeds(interval,feedFilter) {
 };
 
 //检查更新
-function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
+function checkUpdate(manualCheck,checkLink,pageLink,scriptLink,last) {
 	//last="2000-1-1";
 	var today=new Date();
 	if(!last) {
@@ -2606,10 +2612,10 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 		last=new Date(last);
 	}
 	//一天只检查一次
-	if(!evt && (today-last)<3600000*24) {
+	if(!manualCheck && (today-last)<3600000*24) {
 		return;
 	}
-	if(evt) {
+	if(manualCheck) {
 		$("#manualCheck").attr({disabled:"disabled",value:"检查中..."});
 	}
 	$get(checkLink,function(url,html) {
@@ -2621,11 +2627,11 @@ function checkUpdate(evt,checkLink,pageLink,scriptLink,last) {
 				pop.find(".links a").listen("click",function() {
 					pop.remove();
 				});
-			} else if(evt) {
+			} else if(manualCheck) {
 				// 手动点击检查更新按钮时要弹出提示
 				alert("最新版本为："+ver+" ("+miniver+")\n当前版本为："+XNR.prototype.version+" ("+XNR.prototype.miniver+")\n\n无须更新");
 			}
-			if(evt) {
+			if(manualCheck) {
 				$("#manualCheck").attr({disabled:null,value:"立即检查"});
 			}
 			$save("lastUpdate",today.toString());
@@ -2808,8 +2814,9 @@ function updatedNotify(lastVer) {
 				if(trigger.argus) {
 					for(var c in trigger.argus) {
 						for(var j=0;j<trigger.argus[c].length;j++) {
+							// @@的是event对象
 							// 以@开头的是选项的值
-							if(/^@/.test(trigger.argus[c][j])) {
+							if(/^@/.test(trigger.argus[c][j]) && "@@"!=trigger.argus[c][j]) {
 								trigger.argus[c][j]=options[trigger.argus[c][j].substring(1)];
 							}
 						}
@@ -2843,10 +2850,15 @@ function updatedNotify(lastVer) {
 								var argus=t.argus;
 								if(argus) {
 									for(var j in argus) {
-										(t.fn)(evt,argus[j][0],argus[j][1],argus[j][2],argus[j][3],argus[j][4]);
+										for(var k in argus[j]) {
+											if(argus[j][k]=="@@") {
+												argus[j][k]=evt;
+											}
+										}
+										(t.fn)(argus[j][0],argus[j][1],argus[j][2],argus[j][3],argus[j][4]);
 									}
 								} else {
-									t.fn(evt);
+									t.fn();
 								}
 							}
 						}
