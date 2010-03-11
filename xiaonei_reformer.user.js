@@ -2623,7 +2623,7 @@ function checkUpdate(manualCheck,checkLink,pageLink,scriptLink,last) {
 			var miniver=(/@miniver[ \t]+(\d+)/.exec(html) || ["","0"])[1];
 			var ver=(/@version[ \t]+([0-9\.]+)/.exec(html) || ["","未知"])[1];
 			if(parseInt(miniver)>XNR.prototype.miniver) {
-				var pop=$popup("update",null,'<div style="color:black"><div>人人网改造器已有新版本：<br/>'+ver+' ('+XNR.prototype.miniver+')</div><div class="links" style="padding-top:5px;padding-bottom:5px;float:right"><a target="_blank" href="'+scriptLink+'">安装</a><b> </b><a target="_blank" href="'+pageLink+'">去看看</a></div></div>',null,30,5);
+				var pop=$popup("update",null,'<div style="color:black"><div>人人网改造器已有新版本：<br/>'+ver+' ('+miniver+')</div><div class="links" style="padding-top:5px;padding-bottom:5px;float:right"><a target="_blank" href="'+scriptLink+'">安装</a><b> </b><a target="_blank" href="'+pageLink+'">去看看</a></div></div>',null,30,5);
 				pop.find(".links a").listen("click",function() {
 					pop.remove();
 				});
