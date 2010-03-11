@@ -7,7 +7,7 @@
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
 // @version        2.3.2.20100311
-// @miniver        231
+// @miniver        232
 // @author         xz
 // ==/UserScript==
 
@@ -48,7 +48,7 @@ function XNR(o) {
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
 	version:"2.3.2.20100311",
-	miniver:231,
+	miniver:232,
 
 	// 选项列表
 	options:{
@@ -488,7 +488,7 @@ XNR.prototype={
 					value:false,
 					fn2:$patchCSS,
 					argus2:[["ul.richlist.feeds li a.delete{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -115px 0 transparent;height:18px;width:18px}ul.richlist.feeds li a.delete:hover{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -133px 0 transparent;height:18px;width:18px}"]],
-					page:"/www\\.renren\\.com|/renren\\.com",
+					page:"/www\\.renren\\.com|/renren\\.com|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeFontRestriction:{
 					text:"去除页面的字体限制",
