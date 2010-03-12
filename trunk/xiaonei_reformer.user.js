@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.2.20100311
-// @miniver        232
+// @version        2.3.2.20100312
+// @miniver        234
 // @author         xz
 // ==/UserScript==
 
@@ -47,8 +47,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.2.20100311",
-	miniver:232,
+	version:"2.3.2.20100312",
+	miniver:234,
 
 	// 选项列表
 	options:{
@@ -407,7 +407,7 @@ XNR.prototype={
 					text:"默认收起新鲜事回复",
 					value:false,
 					fn3:flodFeedComment,
-					page:"/www\\.renren\\.com|/renren\\.com|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/www\\.renren\\.com|/renren\\.com|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/page\\.renren\\.com",
 				},
 				autoRefreshFeeds:{
 					text:"自动检查新鲜事更新，每隔@@秒",
@@ -1364,7 +1364,8 @@ function removeAds() {
 	$(".ad-bar", ".banner", ".adimgr", ".blank-holder", ".blank-bar", ".renrenAdPanel", ".side-item.template", ".rrdesk").remove();
 	$("#sd_ad", "#showAD", "#huge-ad", "#rrtvcSearchTip", "#top-ads", "#bottom-ads", "#main-ads", "#n-cAD").remove();
 	// 混迹于新鲜事中的广告
-	$("ul#feedHome > li").filter("a.dark[href^='http://post.renren.com/click.do?']").remove();
+	$("ul#feedHome > li").filter("a.dark[href^='http://post.renren.com/click.do?']").remove(); // 新鲜事2010.03改版后是否还有效？
+	$("ul#feedHome > li").filter("a[href^='http://edm.renren.com/link.do?']").remove();
 };
 
 //删除成为星级用户提示
@@ -1960,6 +1961,7 @@ function addExtraEmotions() {
 		{e:"(ty)",		t:"汤圆",			s:"/imgpro/icons/statusface/tang-yuan.gif"},
 		{e:"(dl)",		t:"灯笼",			s:"/imgpro/icons/statusface/lantern.gif"},
 		{e:"(nrj)",		t:"女人节",			s:"/imgpro/icons/statusface/lipstick.gif"},
+		{e:"(zsj)",		t:"植树节",			s:"/imgpro/icons/statusface/trees.gif"},
 		{e:"(^)",		t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
 		{e:"(h)",		t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		{e:"(r)",		t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
@@ -2353,8 +2355,8 @@ function showImageOnMouseOver() {
 					pageURL=t.parentNode.href;
 				} else if (!pageURL && t.parentNode.tagName=="I" && t.parentNode.parentNode.tagName=="A") {
 					pageURL=t.parentNode.parentNode.href;
-				} else if (t.className=="avatar") {
-					pageURL="http://photo.renren.com/getalbumprofile.do?owner="+$cookie("id");
+				//} else if (t.className=="avatar") {
+				//	pageURL="http://photo.renren.com/getalbumprofile.do?owner="+$cookie("id");
 				}
 
 				if(!pageURL) {
@@ -2377,11 +2379,11 @@ function showImageOnMouseOver() {
 					return;
 				}
 
-				// 公共主页链接小图
-				if(pageURL.match(/page.renren.com\/[0-9]+/)) {
+				// 公共主页相册封面图
+				if(pageURL.match(/page.renren.com\/.*\/album\//)) {
 					imgDate=/\/(\d{8})\//.exec(imgSrc)[1];
 					showViewer(evt.pageX);
-					getAlbumImage("http://page.renren.com/photo/album?owner="+/page.renren.com\/([0-9]+)/.exec(pageURL)[1]+"&h=1",0,imgId,imgDate);
+					getAlbumImage(pageURL,0,imgId,imgDate);
 					return;
 				}
 
@@ -2390,8 +2392,7 @@ function showImageOnMouseOver() {
 					imgDate=/photos\/([0-9]{8}\/[0-9]+)/.exec(imgSrc)[1];
 				}
 
-
-				//小头像
+				// 小头像
 				if((imgSrc.contains("tiny_") || (imgSrc.contains("tiny") && !imgSrc.contains("_"))) && !pageURL.contains("album") && !pageURL.contains("page.renren.com")) {
 					imgDate=/\/([0-9]{8}\/[0-9]+)\//.exec(imgSrc)[1];
 					pageURL="http://photo.renren.com/getalbumprofile.do?owner="+/id=(\d+)/.exec(pageURL)[1];
@@ -2400,22 +2401,22 @@ function showImageOnMouseOver() {
 					pageURL="http://photo.renren.com/getalbumprofile.do?owner="+/id=(\d+)/.exec(pageURL)[1];
 				}
 
-				//相册封面图片或头像图片
+				// 相册封面图片或头像图片
 				if(pageURL.contains("getalbum.do") || pageURL.contains("getalbumprofile.do") || pageURL.contains("/photo/album?") || pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/album-[0-9]+/)) {
 					showViewer(evt.pageX);
 					getAlbumImage(pageURL,0,imgId,imgDate);
 					return;
 				}
 
-				//日志中的图片
+				// 日志中的图片
 				if(pageURL.contains("blog.renren.com/GetEntry.do?")) {
 					showViewer(evt.pageX);
 					getBlogImage(pageURL,imgId);
 					return;
 				}
 					
-				//一般图片或被圈相片或公共主页上的图片
-				if(pageURL.contains("getphoto.do") || pageURL.contains("gettagphoto.do") || pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/photo-[0-9]+/) || pageURL.contains("page.renren.com/photo/photo?")) {
+				// 一般图片或被圈相片或公共主页上的图片
+				if(pageURL.contains("getphoto.do") || pageURL.contains("gettagphoto.do") || pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/photo-[0-9]+/) || pageURL.match(/page\.renren\.com\/.*\/photo\//)) {
 					showViewer(evt.pageX);
 					getImage(pageURL,imgId);
 					return;
