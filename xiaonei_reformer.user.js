@@ -7,7 +7,7 @@
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
 // @version        2.3.2.20100312
-// @miniver        234
+// @miniver        235
 // @author         xz
 // ==/UserScript==
 
@@ -48,7 +48,7 @@ function XNR(o) {
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
 	version:"2.3.2.20100312",
-	miniver:234,
+	miniver:235,
 
 	// 选项列表
 	options:{
@@ -1794,7 +1794,7 @@ function showImagesInOnePage() {
 	// 总页数
 	var maxPage=((photoAmount-1)/album.first().heirs());
 	// 当前页数
-	var curPage=/[\?&]curpage=([0-9]+)/i.exec(location.href);
+	var curPage=/[?&]curpage=([0-9]+)/i.exec(location.href);
 	if(curPage==null) {
 		curPage=0;
 	} else {
@@ -2380,10 +2380,18 @@ function showImageOnMouseOver() {
 				}
 
 				// 公共主页相册封面图
-				if(pageURL.match(/page.renren.com\/.*\/album\//)) {
+				if(pageURL.match(/page\.renren\.com\/.*\/album\//)) {
 					imgDate=/\/(\d{8})\//.exec(imgSrc)[1];
 					showViewer(evt.pageX);
 					getAlbumImage(pageURL,0,imgId,imgDate);
+					return;
+				}
+
+				// 公共主页上其他公共主页的链接
+				if(pageURL.match(/page\.renren\.com\/[^/]+$/)) {
+					imgDate=/\/(\d{8})\//.exec(imgSrc)[1];
+					showViewer(evt.pageX);
+					getAlbumImage("http://page.renren.com/photo/album?owner="+/page\.renren\.com\/([^/?&]+)/.exec(pageURL)[1]+"&h=1",0,imgId,imgDate);
 					return;
 				}
 
