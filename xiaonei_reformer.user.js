@@ -122,10 +122,10 @@ XNR.prototype={
 					page:"/www\\.renren\\.com|/renren\\.com|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeRenRenPoint:{
-					text:"去除首页右侧等级栏",
+					text:"去除等级栏",
 					value:false,
 					fn1:removeRenRenPoint,
-					page:"renren\\.com/[hH]ome\\.do",
+					page:"/www\\.renren\\.com|/renren\\.com|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeRenRenSurvey:{
 					text:"去除首页右侧人人网调查栏",
@@ -1508,7 +1508,7 @@ function removeRightMutualFriends() {
 
 //移除人人网等级栏
 function removeRenRenPoint() {
-	$(".side-item.point").remove();
+	$(".side-item.point",".profile-point").remove();
 };
 
 //移除人人网调查
