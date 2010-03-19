@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.2.20100312
-// @miniver        235
+// @version        2.3.2.20100318
+// @miniver        236
 // @author         xz
 // ==/UserScript==
 
@@ -47,8 +47,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.2.20100312",
-	miniver:235,
+	version:"2.3.2.20100318",
+	miniver:236,
 
 	// 选项列表
 	options:{
@@ -1366,6 +1366,8 @@ function removeAds() {
 	// 混迹于新鲜事中的广告
 	$("ul#feedHome > li").filter("a.dark[href^='http://post.renren.com/click.do?']").remove(); // 新鲜事2010.03改版后是否还有效？
 	$("ul#feedHome > li").filter("a[href^='http://edm.renren.com/link.do?']").remove();
+	// 人人桌面
+	$("ul#feedHome > li").filter("a[href^='http://im.renren.com/']").remove();
 };
 
 //删除成为星级用户提示
@@ -1568,7 +1570,7 @@ function getFeedType(feed,feedType) {
 		"movie":	[null,"<a [^>]*href=\"http://movie.xiaonei.com/|<a [^>]*href=\"http://movie.renren.com/"],
 		"music":	["^上传了音乐"],
 		"connect":	[null,null,"<a [^>]*href=\"http://www.connect.renren.com/"],
-		"vip":		["^更换了主页模板皮肤|^成为了人人网.*VIP会员特权"],
+		"vip":		["^更换了主页模板皮肤|^成为了人人网.*VIP会员特权|^开启了人人网VIP个性域名"],
 		"group":	[null,"<a [^>]*href=\"http://group.renren.com/"],
 		"page":		[null,"<a [^>]*href=\"http://page.renren.com/"],
 	};
@@ -1723,7 +1725,12 @@ function recoverOriginalTheme() {
 	css+=".pagerpro li a:hover,#pager a:hover,.page a:hover{background-color:"+BCOLOR+"}";
 
 	// 弹出框提交按钮背景色
-	css+="td.pop_content .dialog_buttons input{background-color:"+XCOLOR+" !important}";
+	if($("head > link[href*='/csspro/base/layout.css']").size()>0) {
+		// layout.css中有 background-color:#005EAC !important;
+		css+="td.pop_content .dialog_buttons input{background-color:"+XCOLOR+" !important}";
+	} else {
+		css+="td.pop_content .dialog_buttons input{background-color:"+XCOLOR+"}";
+	}
 	// 弹出框消息的背景色
 	css+="td.pop_content h2{background-color:"+BCOLOR+"}";
 	// 弹出框链接的颜色
@@ -2981,7 +2988,7 @@ function updatedNotify(lastVer) {
 			});
 			var nav=$(".nav-body .nav-other");
 			if(nav.size()==1) {
-				nav.prepend($node("div","<div class=\"menu-title\"><a onclick=\"return false\">改造</a></div>").attr("class","menu"));
+				nav.prepend($node("div","<div class=\"menu-title\"><a onclick=\"return false\" href=\"#nogo\">改造</a></div>").attr("class","menu"));
 				nav.first().find("a").listen("click",function(evt) {
 					try {
 						var menu=$("body>.xnr_op");
