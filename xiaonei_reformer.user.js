@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.2.20100318
-// @miniver        236
+// @version        2.3.3.20100324
+// @miniver        237
 // @author         xz
 // ==/UserScript==
 
@@ -47,8 +47,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.2.20100318",
-	miniver:236,
+	version:"2.3.3.20100324",
+	miniver:237,
 
 	// 选项列表
 	options:{
@@ -382,6 +382,13 @@ XNR.prototype={
 							argus1:[["@markFeedAsRead","page"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","page"]]}],
 						},
+						removeContactFeed:{
+							text:"保持联络",
+							value:false,
+							argus1:[["@markFeedAsRead","contact"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","contact"]]}],
+
+						},
 					},
 				},
 				markFeedAsRead:{
@@ -493,7 +500,7 @@ XNR.prototype={
 				removeFontRestriction:{
 					text:"去除页面的字体限制",
 					value:false,
-					info:"使页面字体采用浏览器的设定",
+				info:"使页面字体采用浏览器的设定",
 					fn2:removeFontRestriction,
 				},
 				limitHeadAmount:{
@@ -606,6 +613,12 @@ XNR.prototype={
 					text:"最近一次登录时的SessionID",
 					type:"hidden",
 					value:"",
+				},
+				enableStealthMenu:{
+					text:"启用快速通道功能",
+					info:"鼠标经过人名链接时，显示对方相册/日志/留言板等的链接，不会在对方的最近来访中留下记录",
+					value:false,
+					fn3:enableStealthMenu,
 				},
 			}
 		},
@@ -1573,6 +1586,7 @@ function getFeedType(feed,feedType) {
 		"vip":		["^更换了主页模板皮肤|^成为了人人网.*VIP会员特权|^开启了人人网VIP个性域名"],
 		"group":	[null,"<a [^>]*href=\"http://group.renren.com/"],
 		"page":		[null,"<a [^>]*href=\"http://page.renren.com/"],
+		"contact":	["^你和.*和好朋友保持联络$"],
 	};
 
 	var feedFooter=feed.find(".details .legend");
@@ -1850,6 +1864,24 @@ function removeFontRestriction() {
 	$patchCSS("*{font-family:none !important}");
 };
 
+// 不显示橙名
+function disableOrangeName() {
+	$(".lively-user").removeClass("lively-user");
+};
+
+//限制头像列表中的头像数量
+function limitHeadAmount(amount) {
+	if(amount==0) {
+		return;
+	}
+	$("ul.people-list","ul.users").each(function(index,elem) {
+		var list=$(elem);
+		while(list.heirs()>amount) {
+			$(elem).child(amount).remove();
+		}
+	});
+};
+
 //隐藏新鲜事内容
 function hideFeedContent() {
 	$patchCSS("ul.richlist.feeds li div.content{display:none;}");
@@ -1969,6 +2001,7 @@ function addExtraEmotions() {
 		{e:"(dl)",		t:"灯笼",			s:"/imgpro/icons/statusface/lantern.gif"},
 		{e:"(nrj)",		t:"女人节",			s:"/imgpro/icons/statusface/lipstick.gif"},
 		{e:"(zsj)",		t:"植树节",			s:"/imgpro/icons/statusface/trees.gif"},
+		{e:"(zg)",		t:"整蛊作战",		s:"/imgpro/icons/statusface/tomato.png"},
 		{e:"(^)",		t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
 		{e:"(h)",		t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		{e:"(r)",		t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
@@ -2490,20 +2523,48 @@ function showLoginInfo(lastSid) {
 	});
 };
 
-// 不显示橙名
-function disableOrangeName() {
-	$(".lively-user").removeClass("lively-user");
-};
-
-//限制头像列表中的头像数量
-function limitHeadAmount(amount) {
-	if(amount==0) {
+// 潜入功能
+function enableStealthMenu() {
+	var myid=$cookie("id");
+	if(!myid) {
 		return;
 	}
-	$("ul.people-list","ul.users").each(function(index,elem) {
-		var list=$(elem);
-		while(list.heirs()>amount) {
-			$(elem).child(amount).remove();
+	$("body").listen('mouseover', function(evt) {
+		try {
+			var t=evt.target;
+			if(t.id=="stealthMenu" || t.parentNode.id=="stealthMenu") {
+				return;
+			}
+			$("#stealthMenu").remove();
+			if(t.tagName!="A" || !/\/profile\.do/.test(t.href)) {
+				return;
+			}
+			if(t.id || /#|&v=/.test(t.href) || t.style.backgroundImage) {
+				return;
+			}
+			var id=/[&?]id=([0-9]+)/.exec(t.href)[1];
+			if(myid==id) {
+				return;
+			}
+			var rect=t.getBoundingClientRect();
+			var pages=[
+				{name:"Ta的相册",url:"http://photo.renren.com/getalbumlist.do?id=@@"},
+				{name:"Ta的日志",url:"http://blog.renren.com/GetBlog.do?id=@@"},	// http://blog.renren.com/blog/@@/friends
+				{name:"与Ta相关的日志",url:"http://blog.renren.com/SomeoneRelativeBlog.do?id=@@"}, // http://blog.renren.com/blog/@@/friendsRelatives
+				{name:"Ta的分享",url:"http://share.renren.com/share/ShareList.do?id=@@"},
+				{name:"Ta的留言板",url:"http://gossip.renren.com/getgossiplist.do?id=@@"},
+				{name:"Ta的好友",url:"http://friend.renren.com/GetFriendList.do?id=@@"},
+				{name:"Ta的状态",url:"http://status.renren.com/status/@@"},
+			];
+			var html="";
+			for(var i in pages) {
+				html+="<a target='_blank' href='";
+				html+=pages[i].url.replace("@@",id);
+				html+="'>"+pages[i].name+"</a><br/>"
+			}
+			var node=$node("div",html).attr("id","stealthMenu").style({position:"fixed",left:parseInt(rect.left)+"px",top:parseInt(rect.bottom)+"px",backgroundColor:"#EEEEEE",opacity:0.88,padding:"5px",border:"1px solid #5C75AA",zIndex:99999}).appendTo(document.body);
+		} catch(err) {
+			$error("enableStealth::mouseover",err);
 		}
 	});
 };
@@ -2884,15 +2945,20 @@ function updatedNotify(lastVer) {
 		};
 		// 创建选项菜单
 		var buildMenu=function() {
+			var nav=$(".nav-body .nav-other");
+			if(nav.size()!=1) {
+				return;
+			}
+
 			var menu=$node("div").attr("class","xnr_op").style("display","none");
 			var html="";
 			// 选项菜单的样式
-			html+='<style type="text/css">.xnr_op{width:450px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op .tl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAS0lEQVR42o3OoQ0AIAxEUZYi7NEluggewwy1dMNyBgIJCSe+uTxxKSKuRKQgRRV1ZGicIKOG/NVGa/jB9oPrkzNQWVhZ2FloLBwMnD51rC95s060AAAAAElFTkSuQmCC)}.xnr_op .m{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAQCAYAAADwMZRfAAAAG0lEQVQ4jWMICgraQClmGDVk1JBRQ0YNCdoAAHYawHDC5WlcAAAAAElFTkSuQmCC)}.xnr_op .tr{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAARElEQVR42o3KoREAIAwEMJbi2KNLdBE8pjPUlg3Lo8BwvIhLEZEAB4MOCi0zy23H+TCg/uNR2TjYuDU2Khs7G42NzsZYRf6sL6b2F1EAAAAASUVORK5CYII%3D)}.xnr_op .bl{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQY02MICgpaD8QbCGEGILGMWIVTiFXYQqzCdGIVmhOl8P///yDF/cQqNCVKIZLifoIKkTSYQz3YAg06UDivBwBLtawvNrYbVAAAAABJRU5ErkJggg%3D%3D)}.xnr_op .br{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQ0lEQVQYlY3KoRUAIAhFUZbyuMdbgkXoFmaw6oaYyP5w2zXgCo6Jcasx1RhqdDVOJa6qMiWOX1ydOh5gAwkE4MDs0B5TPqwv1+d6zQAAAABJRU5ErkJggg%3D%3D)}.xnr_op .border{height:10px;overflow:hidden;width:10px;}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op .c{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .pages{width:310px}.xnr_op .category li{cursor:pointer;height:30px;line-height:30px}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{padding-left:10px;font-size:14px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%;table-layout:fixed}.xnr_op .pages>div>div>table{width:100%;table-layout:fixed;margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
-			html+='<table><tbody><tr><td class="border tl"></td><td class="border m" style="width:430px"></td><td class="border tr"></td></tr><tr><td class="border m"></td><td class="c"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>';
+			html+='<style type="text/css">.xnr_op{width:450px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op .c{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .pages{width:310px}.xnr_op .category li{cursor:pointer;height:30px;line-height:30px}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{padding-left:10px;font-size:14px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%;table-layout:fixed}.xnr_op .pages>div>div>table{width:100%;table-layout:fixed;margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
+			html+='<table><tbody><tr><td class="border tl"></td><td class="border" style="width:430px"></td><td class="border tr"></td></tr><tr><td class="border"></td><td class="c"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>';
 			html+=categoryHTML;
 			html+='</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>人人网改造器</h1><p><b class="ver"></b></p><p><b>2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p></td></tr></tbody></table></div>';
 			html+=detailHTML;
-			html+='</td></tr></tbody></table></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border m"></td></tr><tr><td class="border bl"></td><td class="border m"></td><td class="border br"></td></tr></tbody></table>';
+			html+='</td></tr></tbody></table></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border"></td></tr><tr><td class="border bl"></td><td class="border"></td><td class="border br"></td></tr></tbody></table>';
 			menu.inner(html).appendTo(document.body);
 			// 设置选项的值
 			for(var option in options) {
@@ -2986,19 +3052,17 @@ function updatedNotify(lastVer) {
 			menu.find("input.cancel").listen("click",function() {
 				$("body>.xnr_op").hide();
 			});
-			var nav=$(".nav-body .nav-other");
-			if(nav.size()==1) {
-				nav.prepend($node("div","<div class=\"menu-title\"><a onclick=\"return false\" href=\"#nogo\">改造</a></div>").attr("class","menu"));
-				nav.first().find("a").listen("click",function(evt) {
-					try {
-						var menu=$("body>.xnr_op");
-						menu.show();
-						menu.style("top",parseInt(window.innerHeight-menu.prop("offsetHeight"))/2+"px");
-					} catch (err) {
-						$error("menu:show",err);
-					}
-				});
-			}
+
+			nav.prepend($node("div","<div class=\"menu-title\"><a onclick=\"return false\" href=\"#nogo\">改造</a></div>").attr("class","menu"));
+			nav.first().find("a").listen("click",function(evt) {
+				try {
+					var menu=$("body>.xnr_op");
+					menu.show();
+					menu.style("top",parseInt(window.innerHeight-menu.prop("offsetHeight"))/2+"px");
+				} catch (err) {
+					$error("menu:show",err);
+				}
+			});
 		};
 
 		// 建立图片缓存
