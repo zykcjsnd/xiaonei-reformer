@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.3.20100324
-// @miniver        237
+// @version        2.3.3.20100325
+// @miniver        239
 // @author         xz
 // ==/UserScript==
 
@@ -47,8 +47,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.3.20100324",
-	miniver:237,
+	version:"2.3.3.20100325",
+	miniver:239,
 
 	// 选项列表
 	options:{
@@ -169,6 +169,12 @@ XNR.prototype={
 					fn1:removeLeftAlbum,
 					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
+				removeLeftBlog:{
+					text:"去除个人主页左侧日志栏",
+					value:false,
+					fn1:removeLeftBlog,
+					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+				},
 				removeLeftShare:{
 					text:"去除个人主页左侧分享栏",
 					value:false,
@@ -179,24 +185,6 @@ XNR.prototype={
 					text:"去除个人主页左侧礼物栏",
 					value:false,
 					fn1:removeLeftGift,
-					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
-				},
-				removeLeftTree:{
-					text:"去除个人主页左侧◯◯树栏",
-					value:false,
-					fn1:removeLeftTree,
-					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
-				},
-				removeMidAlbum:{
-					text:"去除个人主页中间个人相册栏",
-					value:false,
-					fn1:removeMidAlbum,
-					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
-				},
-				removeMidBlog:{
-					text:"去除个人主页中间个人日志栏",
-					value:false,
-					fn1:removeMidBlog,
 					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
 				removeRightSpecialFriends:{
@@ -517,6 +505,12 @@ XNR.prototype={
 					value:false,
 					fn2:disableOrangeName,
 				},
+				moveMessageBoardToBottom:{
+					text:"将个人个人主页留言版移动至新鲜事下方",
+					value:false,
+					fn1:moveMessageBoardToBottom,
+					page:"renren\\.com/[Pp]rofile\\.do|[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+				},
 				GROUP1:{
 					text:"修正界面错误",
 					columns:1,
@@ -619,6 +613,12 @@ XNR.prototype={
 					info:"鼠标经过人名链接时，显示对方相册/日志/留言板等的链接，不会在对方的最近来访中留下记录",
 					value:false,
 					fn3:enableStealthMenu,
+				},
+				enableYoukuFullscreen:{
+					text:"允许全屏观看优酷视频分享",
+					value:true,
+					fn1:enableYoukuFullscreen,
+					page:"/share\\.renren\\.com/",
 				},
 			}
 		},
@@ -1473,57 +1473,47 @@ function removePaintReminder() {
 
 //移除个人主页左侧相册框
 function removeLeftAlbum() {
-	$(".profile-albumlist.box").purge();
+	$(".col-left #album").purge();
+};
+
+//移除个人主页左侧日志栏
+function removeLeftBlog() {
+	$(".col-left #blog").purge();
 };
 
 //移除个人主页左侧分享框
 function removeLeftShare() {
-	$(".profile-share.box").purge();
+	$(".col-left #share").purge();
 };
 
 //去除个人主页左侧礼物框
 function removeLeftGift() {
-	$(".profile-gift.box").purge();
-};
-
-//移除◯◯树框
-function removeLeftTree() {
-	$(".profile-film.box").purge();
-};
-
-//去除个人主页中间个人相册框
-function removeMidAlbum() {
-	$(".profile-album.box").purge();
-};
-
-//去除个人主页中间个人相册框
-function removeMidBlog() {
-	$(".profile-blog.box").purge();
+	$(".col-left #gift").purge();
 };
 
 //移除个人主页右侧特别好友框
 function removeRightSpecialFriends() {
-	$(".profile-spfriends.box").purge();
+	$(".col-right #spFriends").purge();
 };
 
 //移除个人主页右侧最近来访框
 function removeRightFootprint() {
-	$(".profile-footprint.box").purge();
+	$(".col-right #visitors").purge();
 };
 
 //移除个人主页右侧好友框
 function removeRightFriends() {
-	$(".profile-friends.box").purge();
+	$(".col-right #friends").purge();
 };
 
 //移除个人主页右侧共同好友框
 function removeRightMutualFriends() {
-	$(".profile-page.box").purge();
+	$(".col-right #cmFriends").purge();
 };
 
 //移除人人网等级栏
 function removeRenRenPoint() {
-	$(".side-item.point",".profile-point").remove();
+	$(".side-item.point","#userPoint").remove();
 };
 
 //移除人人网调查
@@ -1864,11 +1854,6 @@ function removeFontRestriction() {
 	$patchCSS("*{font-family:none !important}");
 };
 
-// 不显示橙名
-function disableOrangeName() {
-	$(".lively-user").removeClass("lively-user");
-};
-
 //限制头像列表中的头像数量
 function limitHeadAmount(amount) {
 	if(amount==0) {
@@ -1880,6 +1865,16 @@ function limitHeadAmount(amount) {
 			$(elem).child(amount).remove();
 		}
 	});
+};
+
+// 不显示橙名
+function disableOrangeName() {
+	$(".lively-user").removeClass("lively-user");
+};
+
+// 将留言版移动至新鲜事下方
+function moveMessageBoardToBottom() {
+	$(".talk-box").append($(".talk-box>.box"));
 };
 
 //隐藏新鲜事内容
@@ -1904,7 +1899,7 @@ function flodFeedComment() {
 		}
 	});
 	if(code) {
-		setTimeout($node("script",code).appendTo(document.body),50);
+		setTimeout(function(){$node("script").text(code).appendTo(document.body)},50);
 	}
 	// 修改loadJSON方法，loadJSON原方法最后会调用show强制显示
 	location.href="javascript:(function(){if(!XN.app.status)return;var code=XN.app.status.replyEditor.prototype.loadJSON.toString().replace(/function *\\(json\\) *{/,'').replace(/}$/,'').replace(/this.show\\([^\\)]*\\)/,'this.hide()');XN.app.status.replyEditor.prototype.loadJSON=new Function('json',code);})()";
@@ -2567,6 +2562,25 @@ function enableStealthMenu() {
 			$error("enableStealth::mouseover",err);
 		}
 	});
+};
+
+// 全屏观看优酷
+function enableYoukuFullscreen() {
+	if(agent==FIREFOX) {
+		$("embed").each(function(index,elem) {
+			elem.src=elem.src.replace(/(http:\/\/player\.youku\.com[^"]*)(\/v.swf)/,"$1&winType=interior$2");
+			elem.src=elem.src.replace(/(http:\/\/static\.youku\.com[^"]*)/,'$1&winType=interior');
+		});
+	} else if(agent==CHROME) {
+		// 单纯更改embed的src不会导致重新加载。。
+		$("#sharevideo").each(function(index,elem) {
+			var html=elem.innerHTML.replace(/(http:\/\/player\.youku\.com[^"]*)(\/v.swf)/,"$1&winType=interior$2");
+			html.src=html.replace(/(http:\/\/static\.youku\.com[^"]*)/,'$1&winType=interior');
+			if(html!=elem.innerHTML) {
+				elem.innerHTML=html;
+			}
+		});
+	}
 };
 
 //自动检查新鲜事更新
