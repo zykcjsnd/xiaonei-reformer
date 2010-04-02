@@ -6,10 +6,30 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.4.20100401
-// @miniver        243
+// @version        2.3.4.20100402
+// @miniver        244
 // @author         xz
 // ==/UserScript==
+//
+// Copyright (C) 2008-2010 Xu Zhen
+//
+// This program is free software; you can redistribute it
+// and/or modify it under the terms of the GNU General Public
+// License as published by the Free Software Foundation; either
+// version 2 of the License, or (at your option) any later
+// version.
+//
+// This program is distributed in the hope that it will be
+// useful, but WITHOUT ANY WARRANTY; without even the implied
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+// PURPOSE.  See the GNU General Public License for more
+// details.
+//
+// You should have received a copy of the GNU General Public
+// License along with this program; if not, write to the Free
+// Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+// Boston, MA 02110-1301 USA
+
 
 // 运行环境 1:firefox 2:chrome/chromium extension -1:unknown
 const UNKNOWN=-1,FIREFOX=1,CHROME=2;
@@ -47,8 +67,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.4.20100401",
-	miniver:243,
+	version:"2.3.4.20100402",
+	miniver:244,
 
 	// 选项列表
 	options:{
@@ -127,6 +147,12 @@ XNR.prototype={
 					fn1:removeRenRenPoint,
 					page:"/www\\.renren\\.com|/renren\\.com|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
 				},
+				removeActivityNotice:{
+					text:"去除活动通知栏",
+					value:false,
+					fn1:removeActivityNotice,
+					page:"renren\\.com/[hH]ome\\.do",
+				},
 				removeRenRenSurvey:{
 					text:"去除首页右侧人人网调查栏",
 					value:false,
@@ -155,6 +181,12 @@ XNR.prototype={
 					text:"去除首页右侧赞助商内容栏",
 					value:true,
 					fn1:removeSponsorsWidget,
+					page:"renren\\.com/[hH]ome\\.do",
+				},
+				removeWebFunction:{
+					text:"去除首页右侧站内功能栏",
+					value:false,
+					fn1:removeWebFunction,
 					page:"renren\\.com/[hH]ome\\.do",
 				},
 				removePaintReminder:{
@@ -1535,6 +1567,11 @@ function removeRenRenPoint() {
 	$(".side-item.point","#userPoint").remove();
 };
 
+//移除活动通知栏
+function removeActivityNotice() {
+	$("#activity-notice").remove();
+};
+
 //移除人人网调查
 function removeRenRenSurvey() {
 	$(".side-item.sales-poll").remove();
@@ -1563,6 +1600,11 @@ function removeMayKnow() {
 // 移除赞助商内容
 function removeSponsorsWidget() {
 	$("#sponsorsWidget").remove();
+};
+
+// 移除站内功能
+function removeWebFunction() {
+	$("div.side-item").filter(".web-function").remove();
 };
 
 //隐藏请求
@@ -1749,7 +1791,7 @@ function recoverOriginalTheme() {
 	css+=".input-button,.input-submit,.inputsubmit,.subbutton{background-color:"+XCOLOR+"}";
 
 	// 分页项的鼠标移过时的背景色
-	css+=".pagerpro li a:hover,#pager a:hover,.page a:hover{background-color:"+BCOLOR+"}";
+	css+=".pagerpro li a:hover,#pager a:hover,.page:not(.panel) a:hover{background-color:"+BCOLOR+"}";
 
 	// 弹出框提交按钮背景色
 	if($("head > link[href*='/csspro/base/layout.css']").size()>0) {
@@ -1960,6 +2002,7 @@ function addExtraEmotions() {
 		{e:"(害羞)",	t:"害羞",			s:"/imgpro/icons/statusface/15.gif"},
 		{e:"(大笑)",	t:"大笑",			s:"/imgpro/icons/statusface/16.gif"},
 	//	{e:":d",		t:"大笑",			s:"/imgpro/icons/statusface/16.gif"},
+		{e:"(口罩)",	t:"防流感",			s:"/imgpro/icons/statusface/17.gif"},
 	//	{e:"(奸笑)",	t:"奸笑",			s:"/imgpro/emotions/tie/2.gif"},
 		{e:"(谄笑)",	t:"谄笑",			s:"/imgpro/emotions/tie/2.gif"},
 		{e:"(吃饭)",	t:"吃饭",			s:"/imgpro/emotions/tie/3.gif"},
@@ -1976,9 +2019,11 @@ function addExtraEmotions() {
 		{e:"(色)",		t:"色迷迷",			s:"/imgpro/emotions/tie/13.gif"},
 	//	{e:"(病)",		t:"生病",			s:"/imgpro/emotions/tie/14.gif"},
 		{e:"(生病)",	t:"生病",			s:"/imgpro/emotions/tie/14.gif"},
-		{e:"(口罩)",	t:"防流感",			s:"/imgpro/emotions/tie/17.gif"},
+		{e:"(淘气)",	t:"淘气",			s:"/imgpro/emotions/tie/16.gif"},
 		{e:"(吐)",		t:"呕吐",			s:"/imgpro/emotions/tie/19.gif"},
+		{e:"(吻)",		t:"吻",				s:"/imgpro/emotions/tie/20.gif"},
 		{e:"(晕)",		t:"晕",				s:"/imgpro/emotions/tie/21.gif"},
+		{e:"(住嘴)",	t:"住嘴",			s:"/imgpro/emotions/tie/23.gif"},
 		{e:"(s)",		t:"大兵",			s:"/imgpro/icons/statusface/soldier.gif"},
 		{e:"(NBA)",		t:"篮球",			s:"/imgpro/icons/statusface/basketball4.gif"},
 		{e:"(蜜蜂)",	t:"小蜜蜂",			s:"/imgpro/icons/statusface/bee.gif"},
@@ -2026,6 +2071,8 @@ function addExtraEmotions() {
 		{e:"(nrj)",		t:"女人节",			s:"/imgpro/icons/statusface/lipstick.gif"},
 		{e:"(zsj)",		t:"植树节",			s:"/imgpro/icons/statusface/trees.gif"},
 		{e:"(zg)",		t:"整蛊作战",		s:"/imgpro/icons/statusface/tomato.png"},
+		{e:"(rainy)",	t:"雨",				s:"/imgpro/icons/statusface/rainy.gif"},
+	//	{e:"(rain)",	t:"雨",				s:"/imgpro/icons/statusface/rainy.gif"},
 		{e:"(^)",		t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
 		{e:"(h)",		t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		{e:"(r)",		t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
@@ -2570,10 +2617,16 @@ function enableStealthMenu() {
 			}
 			$("#stealthMenu").remove();
 			$._stealth=null;
+			if(t.tagName=="SPAN" && t.childElementCount==0 && !t.nextSibling && !t.previousSibling && t.parentNode.tagName=="A") {
+				t=t.parentNode;
+			}
 			if(t.tagName!="A" || !/\/profile\.do/.test(t.href)) {
 				return;
 			}
 			if(t.id || /#|&v=/.test(t.href) || t.style.backgroundImage) {
+				return;
+			}
+			if($(t).text().replace(/[ \t\n\r]/g,"")=="") {
 				return;
 			}
 			var id=/[&?]id=([0-9]+)/.exec(t.href)[1];
@@ -2599,7 +2652,8 @@ function enableStealthMenu() {
 				html+=pages[i].url.replace("@@",id);
 				html+="'>"+pages[i].name+"</a><br/>"
 			}
-			var node=$node("div",html).attr("id","stealthMenu").style({position:"fixed",left:parseInt(rect.left)+"px",top:parseInt(rect.bottom)+"px",backgroundColor:"#EEEEEE",opacity:0.88,padding:"5px",border:"1px solid #5C75AA",zIndex:99999}).appendTo(document.body);
+			// absolute在放大页面的情况下会出现文字被错误截断导致宽度极小的问题
+			var node=$node("div",html).attr("id","stealthMenu").style({position:"absolute",left:parseInt(rect.left+window.scrollX)+"px",top:parseInt(rect.bottom+window.scrollY)+"px",backgroundColor:"#EEEEEE",opacity:0.88,padding:"5px",border:"1px solid #5C75AA",zIndex:99999}).appendTo(document.body);
 			$._stealth=t;
 		} catch(err) {
 			$error("enableStealth::mouseover",err);
@@ -3022,7 +3076,7 @@ function updatedNotify(lastVer) {
 			html+='<style type="text/css">.xnr_op{width:450px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op .c{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .pages{width:310px}.xnr_op .category li{cursor:pointer;height:30px;line-height:30px}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{padding-left:10px;font-size:14px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%;table-layout:fixed}.xnr_op .pages>div>div>table{width:100%;table-layout:fixed;margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
 			html+='<table><tbody><tr><td class="border tl"></td><td class="border" style="width:430px"></td><td class="border tr"></td></tr><tr><td class="border"></td><td class="c"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>';
 			html+=categoryHTML;
-			html+='</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>人人网改造器</h1><p><b class="ver"></b></p><p><b>2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p></td></tr></tbody></table></div>';
+			html+='</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>人人网改造器</h1><p><b class="ver"></b></p><p><b>Copyright © 2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p></td></tr></tbody></table></div>';
 			html+=detailHTML;
 			html+='</td></tr></tbody></table></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border"></td></tr><tr><td class="border bl"></td><td class="border"></td><td class="border br"></td></tr></tbody></table>';
 			menu.inner(html).appendTo(document.body);
