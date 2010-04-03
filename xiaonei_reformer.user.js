@@ -6,30 +6,26 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.4.20100402
-// @miniver        244
+// @version        2.3.4.20100403
+// @miniver        245
 // @author         xz
 // ==/UserScript==
 //
 // Copyright (C) 2008-2010 Xu Zhen
 //
-// This program is free software; you can redistribute it
-// and/or modify it under the terms of the GNU General Public
-// License as published by the Free Software Foundation; either
-// version 2 of the License, or (at your option) any later
-// version.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-// This program is distributed in the hope that it will be
-// useful, but WITHOUT ANY WARRANTY; without even the implied
-// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-// PURPOSE.  See the GNU General Public License for more
-// details.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public
-// License along with this program; if not, write to the Free
-// Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-// Boston, MA 02110-1301 USA
-
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 
 // 运行环境 1:firefox 2:chrome/chromium extension -1:unknown
 const UNKNOWN=-1,FIREFOX=1,CHROME=2;
@@ -67,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.4.20100402",
-	miniver:244,
+	version:"2.3.4.20100403",
+	miniver:245,
 
 	// 选项列表
 	options:{
@@ -1430,7 +1426,7 @@ function removeAds() {
 	$("ul#feedHome > li").filter("a.dark[href^='http://post.renren.com/click.do?']").remove(); // 新鲜事2010.03改版后是否还有效？
 	$("ul#feedHome > li").filter("a[href^='http://edm.renren.com/link.do?']").remove();
 	// 人人桌面
-	$("ul#feedHome > li").filter("a[href^='http://im.renren.com/']").remove();
+	$("ul#feedHome > li").filter("a[href^='http://im.renren.com/'][href*='.exe']").remove();
 };
 
 //删除成为星级用户提示
@@ -1626,9 +1622,9 @@ function getFeedType(feed,feedType) {
 		"blog":		["^发表日志"],
 		"poll":		[null,"<a [^>]*href=\"http://abc.renren.com/"],
 		"app":		[null,"<a [^>]*href=\"http://apps?.renren.com/"],
-		"status":	["^: ",null,false],
+		"status":	["^:",null,false],	// 如果是纯表情状态，:后面的空格会被去除
 		"gift":		["^收到","<a [^>]*href=\"http://gift.renren.com/"],
-		"photo":	["^上传了\\d+张照片至|^的照片|美化了一张照片$|^: ",null,true],
+		"photo":	["^上传了\\d+张照片至|^的照片|美化了一张照片$|^:",null,true],
 		"tag":		["照片中被圈出来了$"],
 		"profile":	["^修改了头像"],
 		"share":	["^分享"],
