@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.4.20100403
-// @miniver        245
+// @version        2.3.4.20100407
+// @miniver        247
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.4.20100403",
-	miniver:245,
+	version:"2.3.4.20100407",
+	miniver:247,
 
 	// 选项列表
 	options:{
@@ -444,7 +444,7 @@ XNR.prototype={
 					value:true,
 					ctrl:{option:"checkFeedInterval",value:60,verify:"^[3-9][0-9]$|^[1-9][0-9]{2,}$",failInfo:"为防止占用太多资源，新鲜事检查间隔时间至少为30秒。",style:"width:30px;"},
 					fn3:autoRefreshFeeds,
-					argus3:[["@checkFeedInterval",{"blog":"@removeBlogFeed","poll":"@removePollFeed","app":"@removeAppFeed","status":"@removeStatusFeed","gift":"@removeGiftFeed","photo":"@removeImageFeed","tag":"@removeImageTagFeed","profile":"@removeProfileFeed","share":"@removeShareFeed","movie":"@removeFilmFeed","music":"@removeMusicFeed","connect":"@removeConnectFeed","vip":"@removeVipFeed","group":"@removeGroupFeed","page":"@removePublicPageFeed"}]],
+					argus3:[["@checkFeedInterval",{"blog":"@removeBlogFeed","poll":"@removePollFeed","app":"@removeAppFeed","status":"@removeStatusFeed","gift":"@removeGiftFeed","photo":"@removeImageFeed","tag":"@removeImageTagFeed","profile":"@removeProfileFeed","share":"@removeShareFeed","movie":"@removeFilmFeed","music":"@removeMusicFeed","connect":"@removeConnectFeed","vip":"@removeVipFeed","group":"@removeGroupFeed","page":"@removePublicPageFeed","contact":"@removeContactFeed"}]],
 				},
 				autoReloadFeeds:{
 					text:"自动更新首页新鲜事列表，每隔@@秒",
@@ -532,8 +532,8 @@ XNR.prototype={
 				removeFontRestriction:{
 					text:"去除页面的字体限制",
 					value:false,
-				info:"使页面字体采用浏览器的设定",
-					fn2:removeFontRestriction,
+					info:"使页面字体采用浏览器的设定",
+					fn1:removeFontRestriction,
 				},
 				limitHeadAmount:{
 					text:"限制头像列表中头像数量最多@@个",
@@ -662,7 +662,7 @@ XNR.prototype={
 					text:"允许全屏观看优酷视频分享",
 					value:true,
 					fn1:enableYoukuFullscreen,
-					page:"/share\\.renren\\.com/",
+					page:"/share\\.renren\\.com/|blog\\.renren\\.com/",
 				},
 			}
 		},
@@ -2231,6 +2231,7 @@ function showImageOnMouseOver() {
 			if(viewer.size()==0) {
 				return;
 			}
+			viewer.style("overflowY","auto");
 			if(mouseX!=null && viewer.style("display")=="none") {
 				if(mouseX>document.body.clientWidth/2) {
 					viewer.style({left:"2px",right:""});
@@ -2241,14 +2242,12 @@ function showImageOnMouseOver() {
 			}
 			var image=viewer.find('#xnr_image');
 			if(!src) {
-				image.attr("src","").style("display","").style("display","none");
-				viewer.style({backgroundImage:"url('http://s.xnimg.cn/imgpro/bg/bg_line_loading.gif')",height:"13px",width:"200px"});
+				image.attr("src","http://s.xnimg.cn/imgpro/bg/bg_line_loading.gif");
 			} else if(src=="error") {
-				image.attr("src","").style("display","none");
-				viewer.style({backgroundImage:'url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDACgcHiMeGSgjISMtKygwPGRBPDc3PHtYXUlkkYCZlo+AjIqgtObDoKrarYqMyP/L2u71////m8H////6/+b9//j/2wBDASstLTw1PHZBQXb4pYyl+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj/wAARCACMAMgDASIAAhEBAxEB/8QAGgABAAMBAQEAAAAAAAAAAAAAAAEDBAIFBv/EADMQAAICAQIEAwcDBAMBAAAAAAECAAMRBDESIUFRBRNhFCIyQnGBkSMzoUNSYnIVU8HR/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFhEBAQEAAAAAAAAAAAAAAAAAABEB/9oADAMBAAIRAxEAPwDzYiICIiAiTGD2gREnEYJBODgbmBEScEgkA4G5kQESSpABIODse8iAiJPCQoYg4OxgREnhbAODg7HEiAiSFJBIBIG57SICIkgE7An6QIiIgIiICIiAiIgIiIG3Ru6aXUGtuFsoM9uZm5CzohF9jKAeOxWAAP0Inn6Zimj1DLjIZDz59TNFF3mqOK/is7cRQr9OhgV+e92l1YaxnQcPDxb44pxpVD6PUhnCDKcz95K2vbptUbCCwCjIA/u9JFDCnQu7oHFjgBW64gdVpQmnur9qTLlcHB6faZrK662XFosU78I2/M0ae2m7UJWdLWAxweZ/+zI4AdgNswPR4NNZRpU/WCu7BeYzuN5VYy6bT1hK62JZwS6AnkZ1jhu0NPVcMfucyL6rLtPUakZvffOB6wObhWuvJPl1qFBwUyuw6CabLKhTWpegbsM0nGD2GJRcSniYPvjAXPAOfwibH822kur3qSx+XHLHYnb1gU+6tFBW9MEOvwEhgTz5TJpK1882Mc1U+8T37TRpiU8PFpU8aMRX6k4EyVO9LsnlI7E44WXPOBrrfTPVqnxd7wBbJHfpMdvs/D+iLQ2fnIxieiLa6VFNyUrZZuAgwvbMx6l7E4qrNPShPVUx+DAupLLo6+AqvuuxJUHOJYwWu/U3sp4BWq4XluBK9P7+iwvMqrJ2yWIwJ0tr261qMMamGHXGMcgCf4gZdVXTXXU1QcFxxYY55TNNXiGRqeHhwqKFX1EywEREBERAREQEREC6jU2adXWsgceMnHPlO/b9V/2/wJmiBpfW32VPW7BlbG42lVlrWIitjhQYAEriB3VYarVsUAlTkZkByLA+ATnODtOYgaV1tiu1nChdjniK8x9JT5tnAqcR4VzgTiIFhutNnmcbB8YyDgyXvd6RWxyA3Fk7yqIF9Ortq2IYAYCtzEV6q2oPwYDOcl8c/wAyiIEkkkknJPUy0aq0UmokMhGAGGcfSUxAse53rRCfdTYAY+87OruNbqW+P4mxzPpmURAte+x6UqY5VNs7yqIgIiICIiAiIgIiICIndSeZYFJwOsDlVZjhQSewE6et0+NGX6jE9jTulSBawFE0m1WXBAIO4MzVj5wAscAEnsJrq8N1FmCVCD/IyzU1rpr+Kg8PENu0qzY/MFjLSNa+Drj3rjn0WSfB0xyub8TJi5TyLD7ztb9So5O+PzIR23g9nyWqfqMSizw7Up/T4h/iczSniVq/EFb+Jpr8Rqb4gVi6R4jKyHDKVPYjE5n0vFTenPgdex5zLd4Zp7BlM1n05iWkeJE13+H3U5Iw6jqsySoREQEREBERAREQEREBERAS2rIyRKpbQ4V/e2O8DQlpHeWi/HWR5XLIwZwyYmWh28ywHfAxAdi5GTgdJCDnIUe+31gUaj90ysHG07v/AHmlcrLsWuOufrznQtB+JceolUSjSjHOa25+m801a61OTniHrvPNmlSXrBO/eTcVo1Gta4YXKjrPPO5mgCZzuYw1EREqEREBERAREQETUmlzvNNekHaB5wRjsJ2tDnpPWTSAdJcunUdIHjrpHMsXQMe89gVqOk6wBtA82rSWIMKxA7Sw6R2+IzfiMQPHasV2FB0M5OBZylt/77/7GUE+/MtNtWkS2sOdzO/YElui56cfUzRiaZYvYEnP/Hp2E34jEDzj4cvYSi+gUEJ957GJ5/iH7q/6/wDsmrjBiWNoGHecge+BPbIjDXgnRuJWdO46T6E1qegnDUKekqPnijDcSMYnuPpQekzvox2geVE2vpOwlLadhtAoidFGG4iB7yUjtLgoEnaTAREmBTdqFqOMEt2lB1jnZVE1PUlnxDJ7ys6OvuwgUe1W9x+J0ursG6qR6S0aOvu35h6K6kLLWXPaBgtbidm2ycyhlYsSAfsJfYrlieHGTnG06rXhXBmWl2lvNVXCU653mgatOqtMkSo2jVVnfI+0kaio/NMMSkegLazs6/mYfECDYpBzy6TiV27yaKf6o6T0F1hOMgTEFQ7jJl9FNDA8ZYducivRyv8AcI5dxMwqqHMWv+ZPlr0tMVI0cu4kEA7kSjyxy/W/iR5bdLV/EVY7esHkCCZRZT6SxW8qz9RwQR0lzLkS4zrzbKfSJsdIlGiJyrTqBMmcyYEyZzJzAmTOYgdTk1od1U/aMxmByaKj8gnJ01Z6EfeW5jMCg6ROjMJydGej/wATTmMwMZ0lndZw+ktPQH6Gb8xmB5Z0lo+UzpNLcefDj74npZkZkhWHyLB8p+xnJrcbhx9p6GYzEWvNOQfi/iQSx2fM9Izkoh3UfiIVj05QMRdgk44czbOPJqzngHKSzYlRy8ThmiBwry1XmJSc4likwNgcTrImVWM7UmBfJlXEROgeUDuJyDJgTEiIExIiBMSIgTEiIE5jMiDAmRIJxOSxzA7kFgJUSZwWMC0vK2eVkmcEmB0zRKSekQP/2Q%3D%3D")',width:"200px",height:"120px"});
+				image.attr("src","data:image/jpeg;base64,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%3D%3D");
 			} else {
-				image.attr({src:src,rsrc:src}).style("display","");
-				viewer.style({backgroundImage:"",width:"",height:""});
+				image.attr({src:src,onload:"if(parseInt(this.height)>parseInt(window.innerHeight)-10)this.parentNode.style.overflowY='scroll'"});	// 如果不设为scroll会出现横向滚动条
+				viewer.style({maxHeight:(parseInt(window.innerHeight)-10)+"px",maxWidth:(parseInt(window.innerWidth)-20)+"px"});	// 边距2，边框宽度3
 			}
 		} catch (err) {
 			$error("showViewer",err);
@@ -2413,7 +2412,7 @@ function showImageOnMouseOver() {
 			}
 			// 如果图片显示框还没有创建，则先创建它
 			if($("#xnr_viewer").size()==0) {
-				$node("div",'<img id="xnr_image" src=""/>').attr("id","xnr_viewer").style({border:"3px double rgb(102,102,102)",display:"none",backgroundColor:"rgb(246,246,246)",top:"2px",zIndex:"199999",right:"2px",position:"fixed"}).appendTo(document.body);
+				$node("div",'<img id="xnr_image" src=""/>').attr("id","xnr_viewer").style({border:"3px double rgb(102,102,102)",display:"none",backgroundColor:"rgb(246,246,246)",top:"2px",zIndex:"199999",right:"2px",position:"fixed",overflowX:"auto"}).appendTo(document.body);
 			}
 			var t = evt.target;
 			var imgId,cache,pageURL;
@@ -2440,7 +2439,8 @@ function showImageOnMouseOver() {
 					}
 					break;
 			}
-			if(imgSrc!="" && !imgSrc.match(/\/large|_large|large_|\/photos\/0\/0\//)) {
+			if(imgSrc!="" && !imgSrc.match(/\/large|_large|large_|\/photos\/0\/0\/|\/page_pic\/|\/homeAd\//)) {
+				// 不能为大图和公共主页封面图
 				imgId=imgSrc.substring(imgSrc.lastIndexOf("_"));
 				//一种非常古老的图片（http://fm071.img.renren.com/pic001/20070201/2002/H[0-9]+[A-Z]+.jpg），改imgId
 				if(imgSrc.match(/http:\/\/.*?\.img\.renren\.com\/pic\d+\/\d{8}\/\d+\/H.*?\.jpg/)) {
@@ -2536,17 +2536,14 @@ function showImageOnMouseOver() {
 					getImage(pageURL,imgId);
 					return;
 				}
+			} else {
+				if(t.id=="xnr_viewer" || t.id=="xnr_image") {
+					return;
+				}
+				$('#xnr_viewer').style("display","none").find("#xnr_image").attr({src:"",orig:""});
 			}
 		} catch(err) {
 			$error("showImageOnMouseOver::onmouseover",err);
-		}
-	}).listen('mouseout',function(evt) {
-		try {
-			if (!evt.shiftKey && !evt.ctrlKey && !evt.altKey) {
-				$('#xnr_viewer').style("display","none").find("#xnr_image").attr({src:"",orig:"",rsrc:""});
-			}
-		} catch(err) {
-			$error("showImageOnMouseOver::onmouseout",err);
 		}
 	});
 };
@@ -2603,10 +2600,10 @@ function enableStealthMenu() {
 				return;
 			}
 			if(agent==CHROME) {
-				// bypass BUG：http://code.google.com/p/chromium/issues/detail?id=39978
+				// bypass the BUG：http://code.google.com/p/chromium/issues/detail?id=39978
 				if($._stealth) {
 					var rect=$._stealth.getBoundingClientRect();
-					if(evt.clientX>=rect.left && evt.clientX<=rect.right && evt.clientY>=rect.top && rect.bottom) {
+					if(evt.clientX>=rect.left && evt.clientX<=rect.right && evt.clientY>=rect.top && evt.clientY<=rect.bottom) {
 						return;
 					}
 				}
@@ -2632,6 +2629,7 @@ function enableStealthMenu() {
 			var rect=t.getBoundingClientRect();
 			var pages=[
 				{name:"Ta的相册",url:"http://photo.renren.com/getalbumlist.do?id=@@"},
+				{name:"圈Ta的照片",url:"http://photo.renren.com/someonetagphoto.do?id=@@"}, // http://photo.renren.com/photo/@@/relatives/hasTags
 				{name:"Ta的日志",url:"http://blog.renren.com/GetBlog.do?id=@@"},	// http://blog.renren.com/blog/@@/friends
 				{name:"与Ta相关的日志",url:"http://blog.renren.com/SomeoneRelativeBlog.do?id=@@"}, // http://blog.renren.com/blog/@@/friendsRelatives
 				{name:"Ta的分享",url:"http://share.renren.com/share/ShareList.do?id=@@"},
@@ -2660,18 +2658,16 @@ function enableStealthMenu() {
 // 全屏观看优酷
 function enableYoukuFullscreen() {
 	if(agent==FIREFOX) {
-		$("embed").each(function(index,elem) {
-			elem.src=elem.src.replace(/(http:\/\/player\.youku\.com[^"]*)(\/v.swf)/,"$1&winType=interior$2");
-			elem.src=elem.src.replace(/(http:\/\/static\.youku\.com[^"]*)/,'$1&winType=interior');
+		$("embed[src*='youku.com']").each(function(index,elem) {
+			elem.src=elem.src.replace(/(http:\/\/player\.youku\.com[^"]*)(\/v.swf)/,"$1&winType=interior&showAd=0$2");
+			elem.src=elem.src.replace(/(http:\/\/static\.youku\.com[^"]*)/,'$1&winType=interior&showAd=0');
 		});
 	} else if(agent==CHROME) {
 		// 单纯更改embed的src不会导致重新加载。。
-		$("#sharevideo").each(function(index,elem) {
-			var html=elem.innerHTML.replace(/(http:\/\/player\.youku\.com[^"]*)(\/v.swf)/,"$1&winType=interior$2");
-			html.src=html.replace(/(http:\/\/static\.youku\.com[^"]*)/,'$1&winType=interior');
-			if(html!=elem.innerHTML) {
-				elem.innerHTML=html;
-			}
+		$("embed[src*='youku.com']").each(function(index,elem) {
+			elem.src=elem.src.replace(/(http:\/\/player\.youku\.com[^"]*)(\/v.swf)/,"$1&winType=interior&showAd=0$2");
+			elem.src=elem.src.replace(/(http:\/\/static\.youku\.com[^"]*)/,'$1&winType=interior&showAd=0');
+			$(elem).switchTo(elem);
 		});
 	}
 };
