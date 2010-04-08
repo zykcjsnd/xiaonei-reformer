@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.4.20100407
-// @miniver        247
+// @version        2.3.4.20100408
+// @miniver        248
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.4.20100407",
-	miniver:247,
+	version:"2.3.4.20100408",
+	miniver:248,
 
 	// 选项列表
 	options:{
@@ -2412,7 +2412,7 @@ function showImageOnMouseOver() {
 			}
 			// 如果图片显示框还没有创建，则先创建它
 			if($("#xnr_viewer").size()==0) {
-				$node("div",'<img id="xnr_image" src=""/>').attr("id","xnr_viewer").style({border:"3px double rgb(102,102,102)",display:"none",backgroundColor:"rgb(246,246,246)",top:"2px",zIndex:"199999",right:"2px",position:"fixed",overflowX:"auto"}).appendTo(document.body);
+				$node("div").attr("id","xnr_viewer").style({border:"3px double rgb(102,102,102)",display:"none",backgroundColor:"rgb(246,246,246)",top:"2px",zIndex:"199999",right:"2px",position:"fixed",overflowX:"auto"}).append($node("img").attr("id","xnr_image")).appendTo(document.body);
 			}
 			var t = evt.target;
 			var imgId,cache,pageURL;
