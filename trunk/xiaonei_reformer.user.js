@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.4.20100408
-// @miniver        249
+// @version        2.3.4.20100409
+// @miniver        250
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.4.20100408",
-	miniver:249,
+	version:"2.3.4.20100409",
+	miniver:250,
 
 	// 选项列表
 	options:{
@@ -1486,6 +1486,10 @@ function removeBlogTheme() {
 function removeBlogLinks() {
 	$("#blogContent a").each(function(index,elem) {
 		var o=$(elem);
+		// 链接到其他日志，放过好了
+		if(elem.href.match("blog.renren.com")) {
+			return;
+		}
 		// 只处理链接到个人主页或外部链接中非ASCII文字大于20个的。
 		if(elem.href.match("/[Pp]rofile.do") || elem.href.match("/[a-zA-Z0-9_]{5,}\\.renren.com/\\?") || elem.href.match(/renren.com\/[a-z0-9]+$/) || o.text().match(/[\u0100-\uffff]{20,}/)) {
 			o.switchTo("span");
