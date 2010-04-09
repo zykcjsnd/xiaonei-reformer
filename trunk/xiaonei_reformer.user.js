@@ -7,7 +7,7 @@
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
 // @version        2.3.4.20100408
-// @miniver        248
+// @miniver        249
 // @author         xz
 // ==/UserScript==
 //
@@ -64,7 +64,7 @@ function XNR(o) {
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
 	version:"2.3.4.20100408",
-	miniver:248,
+	miniver:249,
 
 	// 选项列表
 	options:{
@@ -2069,6 +2069,7 @@ function addExtraEmotions() {
 		{e:"(zg)",		t:"整蛊作战",		s:"/imgpro/icons/statusface/tomato.png"},
 		{e:"(rainy)",	t:"雨",				s:"/imgpro/icons/statusface/rainy.gif"},
 	//	{e:"(rain)",	t:"雨",				s:"/imgpro/icons/statusface/rainy.gif"},
+		{e:"(abao)",	t:"功夫熊猫",		s:"/imgpro/icons/statusface/panda.gif"},
 		{e:"(^)",		t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
 		{e:"(h)",		t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		{e:"(r)",		t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
@@ -2619,7 +2620,8 @@ function enableStealthMenu() {
 			if(t.id || /#|&v=/.test(t.href) || t.style.backgroundImage) {
 				return;
 			}
-			if($(t).text().replace(/[ \t\n\r]/g,"")=="") {
+			var text=$(t).text().replace(/[ \t\n\r]/g,"");
+			if(text=="" || text.length>=15) {	// 名字长度<=12
 				return;
 			}
 			var id=/[&?]id=([0-9]+)/.exec(t.href)[1];
