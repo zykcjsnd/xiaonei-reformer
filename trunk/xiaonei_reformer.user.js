@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.4.20100409
-// @miniver        250
+// @version        2.3.4.20100411
+// @miniver        251
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.4.20100409",
-	miniver:250,
+	version:"2.3.4.20100411",
+	miniver:251,
 
 	// 选项列表
 	options:{
@@ -2604,13 +2604,12 @@ function enableStealthMenu() {
 			if(t.id=="stealthMenu" || t.parentNode.id=="stealthMenu") {
 				return;
 			}
-			if(agent==CHROME) {
-				// bypass the BUG：http://code.google.com/p/chromium/issues/detail?id=39978
-				if($._stealth) {
-					var rect=$._stealth.getBoundingClientRect();
-					if(evt.clientX>=rect.left && evt.clientX<=rect.right && evt.clientY>=rect.top && evt.clientY<=rect.bottom) {
-						return;
-					}
+			// bypass the BUG：http://code.google.com/p/chromium/issues/detail?id=39978
+			// 当Firefox限制了最小字体>=14时也会出现相似问题
+			if($._stealth) {
+				var rect=$._stealth.getBoundingClientRect();
+				if(evt.clientX>=rect.left && evt.clientX<=rect.right && evt.clientY>=rect.top && evt.clientY<=rect.bottom) {
+					return;
 				}
 			}
 			$("#stealthMenu").remove();
@@ -2633,24 +2632,24 @@ function enableStealthMenu() {
 				return;
 			}
 			var rect=t.getBoundingClientRect();
-			var pages=[
-				{name:"Ta的相册",url:"http://photo.renren.com/getalbumlist.do?id=@@"},
-				{name:"圈Ta的照片",url:"http://photo.renren.com/someonetagphoto.do?id=@@"}, // http://photo.renren.com/photo/@@/relatives/hasTags
-				{name:"Ta的日志",url:"http://blog.renren.com/GetBlog.do?id=@@"},	// http://blog.renren.com/blog/@@/friends
-				{name:"与Ta相关的日志",url:"http://blog.renren.com/SomeoneRelativeBlog.do?id=@@"}, // http://blog.renren.com/blog/@@/friendsRelatives
-				{name:"Ta的分享",url:"http://share.renren.com/share/ShareList.do?id=@@"},
-				{name:"Ta的留言板",url:"http://gossip.renren.com/getgossiplist.do?id=@@"},
-				{name:"Ta的好友",url:"http://friend.renren.com/GetFriendList.do?id=@@"},
-				{name:"Ta的状态",url:"http://status.renren.com/status/@@"},
-				{name:"Ta的礼物",url:"http://gift.renren.com/show/box/otherbox?userId=@@"},
-				{name:"Ta的游戏徽章",url:"http://game.renren.com/medal?uid=@@"},
-				{name:"Ta的公共主页",url:"http://page.renren.com/home/friendspages/view?uid=@@"},
-			];
+			var pages={
+				"Ta的相册":"http://photo.renren.com/getalbumlist.do?id=@@",
+				"圈Ta的照片":"http://photo.renren.com/someonetagphoto.do?id=@@", // http://photo.renren.com/photo/@@/relatives/hasTags
+				"Ta的日志":"http://blog.renren.com/GetBlog.do?id=@@",	// http://blog.renren.com/blog/@@/friends
+				"与Ta相关的日志":"http://blog.renren.com/SomeoneRelativeBlog.do?id=@@", // http://blog.renren.com/blog/@@/friendsRelatives
+				"Ta的分享":"http://share.renren.com/share/ShareList.do?id=@@",
+				"Ta的留言板":"http://gossip.renren.com/getgossiplist.do?id=@@",
+				"Ta的好友":"http://friend.renren.com/GetFriendList.do?id=@@",
+				"Ta的状态":"http://status.renren.com/status/@@",
+				"Ta的礼物":"http://gift.renren.com/show/box/otherbox?userId=@@",
+				"Ta的游戏徽章":"http://game.renren.com/medal?uid=@@",
+				"Ta的公共主页":"http://page.renren.com/home/friendspages/view?uid=@@",
+			};
 			var html="";
 			for(var i in pages) {
 				html+="<a target='_blank' href='";
-				html+=pages[i].url.replace("@@",id);
-				html+="'>"+pages[i].name+"</a><br/>"
+				html+=pages[i].replace("@@",id);
+				html+="'>"+i+"</a><br/>"
 			}
 			// absolute在放大页面的情况下会出现文字被错误截断导致宽度极小的问题
 			var node=$node("div",html).attr("id","stealthMenu").style({position:"absolute",left:parseInt(rect.left+window.scrollX)+"px",top:parseInt(rect.bottom+window.scrollY)+"px",backgroundColor:"#EEEEEE",opacity:0.88,padding:"5px",border:"1px solid #5C75AA",zIndex:99999}).appendTo(document.body);
@@ -3071,7 +3070,7 @@ function updatedNotify(lastVer) {
 			var menu=$node("div").attr("class","xnr_op").style("display","none");
 			var html="";
 			// 选项菜单的样式
-			html+='<style type="text/css">.xnr_op{width:450px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op .c{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .pages{width:310px}.xnr_op .category li{cursor:pointer;height:30px;line-height:30px}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{padding-left:10px;font-size:14px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%;table-layout:fixed}.xnr_op .pages>div>div>table{width:100%;table-layout:fixed;margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
+			html+='<style type="text/css">.xnr_op{width:500px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op>table{width:100%}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op .c{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .pages{width:360px}.xnr_op .category li{cursor:pointer;height:30px;line-height:30px}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{padding-left:10px;font-size:14px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%;table-layout:fixed}.xnr_op .pages>div>div>table{width:100%;table-layout:fixed;margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
 			html+='<table><tbody><tr><td class="border tl"></td><td class="border" style="width:430px"></td><td class="border tr"></td></tr><tr><td class="border"></td><td class="c"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>';
 			html+=categoryHTML;
 			html+='</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>人人网改造器</h1><p><b class="ver"></b></p><p><b>Copyright © 2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p></td></tr></tbody></table></div>';
