@@ -15,8 +15,13 @@
 //
 (function(){
 	if(location.host=="wpi.renren.com") {
-		var script=document.createElement("script");
-		script.innerHTML="var nav=new Object;for(i in navigator){nav[i]=navigator[i]};nav.userAgent=nav.userAgent.replace(/Chrome/ig,'Chro-me Version');window.navigator=nav;";
-		document.documentElement.insertBefore(script);
+		var ver=/Chrome\/([0-9]+)/i.exec(navigator.userAgent);
+		if(ver && parseInt(ver[1])>=5) {
+			alert("人人网聊天栏修复器检测到您正在使用 "+ver[1]+".x 版的Google Chrome/Chromium浏览器。目前人人网聊天栏已经可以直接支持您所用的浏览器，无须再使用人人网聊天栏修复器。建议您将其卸载或禁用。");
+		} else {
+			var script=document.createElement("script");
+			script.innerHTML="var nav=new Object;for(i in navigator){nav[i]=navigator[i]};nav.userAgent=nav.userAgent.replace(/Chrome\\/[0-9]+/ig,'Chrome/5');window.navigator=nav;";
+			document.documentElement.insertBefore(script);
+		}
 	}
 })();
