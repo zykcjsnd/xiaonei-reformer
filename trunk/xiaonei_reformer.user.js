@@ -2654,6 +2654,7 @@ function enableStealthMenu() {
 				"Ta的礼物":"http://gift.renren.com/show/box/otherbox?userId=@@",
 				"Ta的游戏徽章":"http://game.renren.com/medal?uid=@@",
 				"Ta的公共主页":"http://page.renren.com/home/friendspages/view?uid=@@",
+				"Ta的公开资料":"http://browse.renren.com/searchEx.do?ajax=1&q=@@",
 			};
 			var html="";
 			for(var i in pages) {
