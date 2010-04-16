@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.4.20100411
-// @miniver        251
+// @version        2.3.4.20100416
+// @miniver        253
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.4.20100411",
-	miniver:251,
+	version:"2.3.4.20100416",
+	miniver:253,
 
 	// 选项列表
 	options:{
@@ -548,6 +548,7 @@ XNR.prototype={
 					info:"要禁止自己的橙名显示，请到隐私设置页面",
 					value:false,
 					fn2:disableOrangeName,
+					argus2:[["@recoverOriginalTheme"]],
 				},
 				moveMessageBoardToBottom:{
 					text:"将个人个人主页留言版移动至新鲜事下方",
@@ -1564,7 +1565,7 @@ function removeRightMutualFriends() {
 
 //移除人人网等级栏
 function removeRenRenPoint() {
-	$(".side-item.point","#userPoint").remove();
+	$("#sidebar .user-data","#userPoint").remove();
 };
 
 //移除活动通知栏
@@ -1778,7 +1779,7 @@ function recoverOriginalTheme() {
 
 	// 首页左侧应用栏的背景色，回复的背景色
 	if(location.pathname=="/Home.do") {
-		css+=".statuscmtitem,.panel.bookmarks{background-color:"+SCOLOR+"}";
+		css+=".statuscmtitem,.panel.bookmarks,.user-data{background-color:"+SCOLOR+"}";
 	}
 
 	// 主页上头像下方操作栏
@@ -1933,8 +1934,16 @@ function limitHeadAmount(amount) {
 };
 
 // 不显示橙名
-function disableOrangeName() {
+function disableOrangeName(theme) {
+	if(theme) {
+		// TODO:颜色常量
+		$patchCSS(".lively-user, a.lively-user:link, a.lively-user:visited{color:#3B5888}");
+	} else {
+		$patchCSS(".lively-user, a.lively-user:link, a.lively-user:visited{color:#005EAC}");
+	}
+	// 非链接的文字不是蓝色
 	$(".lively-user").removeClass("lively-user");
+	
 };
 
 // 将留言版移动至新鲜事下方
@@ -2074,6 +2083,7 @@ function addExtraEmotions() {
 		{e:"(rainy)",	t:"雨",				s:"/imgpro/icons/statusface/rainy.gif"},
 	//	{e:"(rain)",	t:"雨",				s:"/imgpro/icons/statusface/rainy.gif"},
 		{e:"(abao)",	t:"功夫熊猫",		s:"/imgpro/icons/statusface/panda.gif"},
+		{e:"(jq)",		t:"坚强",			s:"/imgpro/icons/statusface/quake.gif"},
 		{e:"(^)",		t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
 		{e:"(h)",		t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		{e:"(r)",		t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
