@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.4.20100418
-// @miniver        254
+// @version        2.3.4.20100419
+// @miniver        255
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.4.20100418",
-	miniver:254,
+	version:"2.3.4.20100419",
+	miniver:255,
 
 	// 选项列表
 	options:{
@@ -1727,7 +1727,7 @@ function addNavBarItem(content) {
 
 //加宽导航栏
 function widenNavBar() {
-	$patchCSS(".navigation-wrapper{width:auto} .navigation{width:auto}");
+	$patchCSS(".navigation-wrapper,.navigation{width:auto} .navigation .nav-body{width:auto;float:none}");
 };
 
 //恢复早期深蓝色主题
