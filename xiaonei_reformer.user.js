@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.4.20100419
-// @miniver        255
+// @version        2.3.5.20100426
+// @miniver        256
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.4.20100419",
-	miniver:255,
+	version:"2.3.5.20100426",
+	miniver:256,
 
 	// 选项列表
 	options:{
@@ -568,12 +568,6 @@ XNR.prototype={
 							argus2:[["#articlehome #comments .content,#articlehome #comments .signature{float:left;clear:both}"]],
 							page:"club\\.renren\\.com",
 						},
-						fixPeopleList:{
-							text:"修正头像列表排版错误",
-							value:false,
-							info:"如果您将浏览器字体的最小大小设成大于12，首页的“最近来访”列表可能会出现头像错位的问题。如果您遇到这个问题，请启用此功能。",
-							argus2:[[".profile .extra-column .people-list li.online span img{margin-right:0px}.profile .extra-column .people-list li span.olname a{max-width:42px}.home .footprint .people-list li span.olname a{display:block}"]],
-						},
 						fixNavItem:{
 							text:"修正导航栏项目高度",
 							value:false,
@@ -665,6 +659,13 @@ XNR.prototype={
 					fn1:enableYoukuFullscreen,
 					page:"/share\\.renren\\.com/|blog\\.renren\\.com/",
 				},
+				addDownloadAlbumLink:{
+					text:"在相册中添加“下载当前页图片”链接",
+					info:"如果想下载整个相册的内容，请配合“相册所有图片在一页中显示”功能使用",
+					value:true,
+					fn3:addDownloadAlbumLink,
+					page:"/photo\\.renren\\.com/.*/album|/getalbum",
+				},
 			}
 		},
 		update:{
@@ -732,7 +733,7 @@ XNR.prototype={
 			}
 		},
 	},
-	// 遍历对象的DOM节点，参数为一回调函数，function(index,elem){}，返回false终止遍历;
+	// 遍历对象的DOM节点，参数为一回调函数，function(index,elem){}，返回false中止遍历;
 	each:function(func) {
 		if(typeof func == "function") {
 			for(var i in this.domNodes) {
@@ -2084,13 +2085,15 @@ function addExtraEmotions() {
 	//	{e:"(rain)",	t:"雨",				s:"/imgpro/icons/statusface/rainy.gif"},
 		{e:"(abao)",	t:"功夫熊猫",		s:"/imgpro/icons/statusface/panda.gif"},
 		{e:"(jq)",		t:"坚强",			s:"/imgpro/icons/statusface/quake.gif"},
+		{e:"(smlq)",	t:"萨马兰奇",		s:"/imgpro/icons/statusface/samaranch2.gif"},
+		{e:"(read)",	t:"读书日",			s:"/imgpro/icons/statusface/reading.gif"},
 		{e:"(^)",		t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
 		{e:"(h)",		t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		{e:"(r)",		t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
 		{e:"(w)",		t:"宇航员",			s:"/imgpro/icons/ico_spacewalker.gif"},
 		{e:"(LG)",		t:"LG棒棒糖",		s:"/imgpro/activity/lg-lolipop/faceicon_2.gif"},
 		{e:"(i)",		t:"电灯泡",			s:"/img/ems/bulb.gif"},
-		{e:"(zg)",		t:"烛光",			s:"/img/ems/candle.gif"},
+		{e:"(lz)",		t:"蜡烛",			s:"/img/ems/candle.gif"},
 		{e:"(gsilk)",	t:"绿丝带",			s:"/img/ems/gsilk.gif"},
 		{e:"(yeah)",	t:"哦耶",			s:"/img/ems/yeah.gif"},
 		{e:"(good)",	t:"牛",				s:"/img/ems/good.gif"},
@@ -2687,6 +2690,83 @@ function enableYoukuFullscreen() {
 			$(elem).switchTo(elem);
 		});
 	}
+};
+
+// 在相册中添加生成下载页链接
+function addDownloadAlbumLink() {
+	$(".function-nav.photolist-pager ul.nav-btn").append($node("li").attr("class","pipe").text("|")).append($node("li").append($node("a").attr({"class":"downpage","style":'background-image:none;padding-left:10px',"href":'#nogo'}).text("下载当前页图片")));
+	$(".function-nav.photolist-pager ul.nav-btn a.downpage").listen("click",function(evt) {
+		if($("ul.nav-btn a.downpage").text().match("处理中")) {
+			if(confirm("要中止吗？")) {
+				finish();
+			}
+			return;
+		}
+		$._albumImages=[];
+		var links=$(".photo-list span.img a");
+		var totalImage=links.size();
+		var cur=0;
+		links.attr("down","down")
+		$(".function-nav.photolist-pager ul.nav-btn a.downpage").text("处理中...(0/"+totalImage+")");
+		links.each(function(index,elem) {
+			if(!$("ul.nav-btn a.downpage").text().match("处理中")) {
+				return false;
+			}
+			$get(elem.href,function(url,html) {
+				try {
+					if(!$("ul.nav-btn a.downpage").text().match("处理中")) {
+						return;
+					}
+					if(html.search("<body id=\"errorPage\">")!=-1) {
+						return;
+					}
+					var src=/var photo *= *({.*});?/.exec(html);
+					if(src) {
+						src=JSON.parse(src[1]);
+						if(src.photo && src.photo.large) {
+							$._albumImages.push("<img src=\""+src.photo.large+"\" style=\"display:none\"/><a href=\""+src.photo.large+"\">"+src.photo.large+"</a>");
+							$(".photo-list span.img a[href='"+url+"']").attr({down:null});
+							return;
+						}
+					}
+				} catch(err) {
+					$error("addDownloadAlbumLink::$get",err);
+				} finally {
+					cur++;
+					if(cur==totalImage) {
+						if($("ul.nav-btn a.downpage").text().match("处理中")) {
+							finish();
+						}
+					} else {
+						$(".function-nav.photolist-pager ul.nav-btn a.downpage").text("处理中...("+cur+"/"+totalImage+")");
+					}
+				}
+			});
+		});
+		function finish() {
+			if($._albumImages.length>0) {
+				var data="";
+				var failedImages=$(".photo-list span.img a[down]");
+				if(failedImages.size()>0) {
+					var failedImagesList=[];
+					failedImages.each(function(index,elem) {
+						failedImagesList.push("<a href=\""+elem.href+"\">"+elem.href+"</a>");
+					});
+					data="未能取得以下页面的图片地址：<br/>"+failedImagesList.join("<br/>")+"<br/><br/>";
+				}
+				data+="完整保存本页面即可在与页面文件同名的文件夹下得到"+(failedImages.size()>0?"剩余的":"")+$._albumImages.length+"张图片<br/>"+$._albumImages.join("<br/>");
+				var title=$(".ablum-Information .Information h1").text();
+				if(agent==FIREFOX) {
+					window.open("javascript:'<meta content=\"text/html; charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+title+"</title>"+data+"'");
+				} else if(agent==CHROME) {
+					chrome.extension.sendRequest({action:"dlAlbum",data:data,title:title});
+				}
+				$._albumImages=null;
+				$(".function-nav.photolist-pager ul.nav-btn a.downpage").text("下载当前页图片");
+				$(".photo-list span.img a").attr({down:null})
+			}
+		};
+	});
 };
 
 //自动检查新鲜事更新
