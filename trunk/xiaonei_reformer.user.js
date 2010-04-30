@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.5.20100426
-// @miniver        256
+// @version        2.3.5.20100430
+// @miniver        258
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.5.20100426",
-	miniver:256,
+	version:"2.3.5.20100430",
+	miniver:258,
 
 	// 选项列表
 	options:{
@@ -664,7 +664,13 @@ XNR.prototype={
 					info:"如果想下载整个相册的内容，请配合“相册所有图片在一页中显示”功能使用",
 					value:true,
 					fn3:addDownloadAlbumLink,
+					argus3:[["@showImageLinkOnly"]],
 					page:"/photo\\.renren\\.com/.*/album|/getalbum",
+				},
+				showImageLinkOnly:{
+					text:"仅生成链接",
+					type:"subcheck",
+					value:false,
 				},
 			}
 		},
@@ -2051,7 +2057,7 @@ function addExtraEmotions() {
 		{e:"(td)",		t:"狂派",			s:"/imgpro/icons/statusface/Transformers-Decepticon.gif"},
 		{e:"(qx)",		t:"七夕",			s:"/imgpro/icons/statusface/qixi.gif"},
 		{e:"(qx2)",		t:"七夕",			s:"/imgpro/icons/statusface/qixi2.gif"},
-		{e:"(bl)",		t:"教师节",			s:"/imgpro/icons/statusface/blackboard.gif"},
+		{e:"(bl)",		t:"冰露",			s:"/imgpro/icons/statusface/ice.gif"},
 		{e:"(gs)",		t:"园丁",			s:"/imgpro/icons/statusface/growing-sapling.gif"},
 		{e:"(gq1)",		t:"国庆六十周年",	s:"/imgpro/icons/statusface/national-day-60-firework.gif"},
 		{e:"(gq2)",		t:"国庆快乐",		s:"/imgpro/icons/statusface/national-day-balloon.gif"},
@@ -2087,6 +2093,7 @@ function addExtraEmotions() {
 		{e:"(jq)",		t:"坚强",			s:"/imgpro/icons/statusface/quake.gif"},
 		{e:"(smlq)",	t:"萨马兰奇",		s:"/imgpro/icons/statusface/samaranch2.gif"},
 		{e:"(read)",	t:"读书日",			s:"/imgpro/icons/statusface/reading.gif"},
+		{e:"(ct)",		t:"锄头",			s:"/imgpro/icons/statusface/chutou.gif"},
 		{e:"(^)",		t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
 		{e:"(h)",		t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		{e:"(r)",		t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
@@ -2693,7 +2700,7 @@ function enableYoukuFullscreen() {
 };
 
 // 在相册中添加生成下载页链接
-function addDownloadAlbumLink() {
+function addDownloadAlbumLink(linkOnly) {
 	$(".function-nav.photolist-pager ul.nav-btn").append($node("li").attr("class","pipe").text("|")).append($node("li").append($node("a").attr({"class":"downpage","style":'background-image:none;padding-left:10px',"href":'#nogo'}).text("下载当前页图片")));
 	$(".function-nav.photolist-pager ul.nav-btn a.downpage").listen("click",function(evt) {
 		if($("ul.nav-btn a.downpage").text().match("处理中")) {
@@ -2713,10 +2720,10 @@ function addDownloadAlbumLink() {
 				return false;
 			}
 			$get(elem.href,function(url,html) {
+				if(!$("ul.nav-btn a.downpage").text().match("处理中")) {
+					return;
+				}
 				try {
-					if(!$("ul.nav-btn a.downpage").text().match("处理中")) {
-						return;
-					}
 					if(html.search("<body id=\"errorPage\">")!=-1) {
 						return;
 					}
@@ -2724,7 +2731,7 @@ function addDownloadAlbumLink() {
 					if(src) {
 						src=JSON.parse(src[1]);
 						if(src.photo && src.photo.large) {
-							$._albumImages.push("<img src=\""+src.photo.large+"\" style=\"display:none\"/><a href=\""+src.photo.large+"\">"+src.photo.large+"</a>");
+							$._albumImages.push((!linkOnly?"<img src=\""+src.photo.large+"\" style=\"display:none\"/>":"")+"<a href=\""+src.photo.large+"\">"+src.photo.large+"</a>");
 							$(".photo-list span.img a[href='"+url+"']").attr({down:null});
 							return;
 						}
@@ -2750,11 +2757,20 @@ function addDownloadAlbumLink() {
 				if(failedImages.size()>0) {
 					var failedImagesList=[];
 					failedImages.each(function(index,elem) {
-						failedImagesList.push("<a href=\""+elem.href+"\">"+elem.href+"</a>");
+						if(linkOnly) {
+							failedImagesList.push("<span>"+elem.href+"</span>");
+						} else {
+							failedImagesList.push("<a href=\""+elem.href+"\">"+elem.href+"</a>");
+						}
 					});
 					data="未能取得以下页面的图片地址：<br/>"+failedImagesList.join("<br/>")+"<br/><br/>";
 				}
-				data+="完整保存本页面即可在与页面文件同名的文件夹下得到"+(failedImages.size()>0?"剩余的":"")+$._albumImages.length+"张图片<br/>"+$._albumImages.join("<br/>");
+				if(linkOnly) {
+					data+="使用下载工具"+(agent==FIREFOX?"（推荐使用Flashgot或Downthemall扩展）":"")+"下载本页全部链接即可得到";
+				} else {
+					data+="完整保存本页面即可在与页面文件同名的文件夹下得到";
+				}
+				data+=(failedImages.size()>0?"其余的":"下列")+$._albumImages.length+"张图片<br/>"+$._albumImages.join("<br/>");
 				var title=$(".ablum-Information .Information h1").text();
 				if(agent==FIREFOX) {
 					window.open("javascript:'<meta content=\"text/html; charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+title+"</title>"+data+"'");
@@ -3037,6 +3053,9 @@ function updatedNotify(lastVer) {
 						case "button":
 							detailHTML+="<div title=\""+(o[op].info || "")+"\"><input type=\"button\" info=\""+(o[op].info || "")+"\" id=\""+op+"\" value=\""+o[op].text+"\"/></div>";
 							break;
+						case "subcheck":
+							detailHTML+="<div style=\"padding-left:16px;display:table-cell\"><input style=\""+o[op].style+"\" type=\"checkbox\" title=\""+(o[op].info || "")+"\" id=\""+op+"\"/><label title=\""+(o[op].info || "")+"\" for=\""+op+"\">"+o[op].text+"</label></div>";
+							break;
 					}
 					if(p) {
 						detailHTML+="</td>";
@@ -3162,7 +3181,7 @@ function updatedNotify(lastVer) {
 			var menu=$node("div").attr("class","xnr_op").style("display","none");
 			var html="";
 			// 选项菜单的样式
-			html+='<style type="text/css">.xnr_op{width:500px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op>table{width:100%}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op .c{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .pages{width:360px}.xnr_op .category li{cursor:pointer;height:30px;line-height:30px}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{padding-left:10px;font-size:14px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%;table-layout:fixed}.xnr_op .pages>div>div>table{width:100%;table-layout:fixed;margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
+			html+='<style type="text/css">.xnr_op{width:500px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op>table{width:100%}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op .c{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .pages{width:360px}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%;table-layout:fixed}.xnr_op .pages>div>div>table{width:100%;table-layout:fixed;margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
 			html+='<table><tbody><tr><td class="border tl"></td><td class="border" style="width:430px"></td><td class="border tr"></td></tr><tr><td class="border"></td><td class="c"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>';
 			html+=categoryHTML;
 			html+='</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>人人网改造器</h1><p><b class="ver"></b></p><p><b>Copyright © 2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p></td></tr></tbody></table></div>';
