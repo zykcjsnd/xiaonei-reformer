@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.5.20100430
-// @miniver        258
+// @version        2.3.5.20100501
+// @miniver        259
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.5.20100430",
-	miniver:258,
+	version:"2.3.5.20100501",
+	miniver:259,
 
 	// 选项列表
 	options:{
@@ -147,6 +147,12 @@ XNR.prototype={
 					text:"去除活动通知栏",
 					value:false,
 					fn1:removeActivityNotice,
+					page:"renren\\.com/[hH]ome\\.do",
+				},
+				removeVipExpireNotice:{
+					text:"去除VIP过期提醒",
+					value:false,
+					fn1:removeVipExpireNotice,
 					page:"renren\\.com/[hH]ome\\.do",
 				},
 				removeRenRenSurvey:{
@@ -486,6 +492,11 @@ XNR.prototype={
 							value:false,
 							argus1:[["i.renren.com/pay"]],
 						},
+						removeNavVIPCenter:{
+							text:"VIP中心",
+							value:false,
+							argus1:[["i.renren.com/index"]],
+						},
 						removeNavPay:{
 							text:"充值",
 							value:false,
@@ -551,7 +562,7 @@ XNR.prototype={
 					argus2:[["@recoverOriginalTheme"]],
 				},
 				moveMessageBoardToBottom:{
-					text:"将个人个人主页留言版移动至新鲜事下方",
+					text:"将个人主页留言版移动至新鲜事下方",
 					value:false,
 					fn1:moveMessageBoardToBottom,
 					page:"renren\\.com/[Pp]rofile\\.do|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
@@ -1518,6 +1529,11 @@ function removePageTopNotice() {
 //移除状态发布框下的活动标签
 function removeActivityLabel() {
 	$(".status-publisher div.footer").remove();
+};
+
+//移除VIP过期提醒
+function removeVipExpireNotice() {
+	$("#vipExpireTooltip").remove();
 };
 
 //移除人气之星/新人栏
@@ -2684,17 +2700,17 @@ function enableStealthMenu() {
 
 // 全屏观看优酷
 function enableYoukuFullscreen() {
-	if(agent==FIREFOX) {
+	if($("#sharevideo img.videoimg").size()>0) {
+		$("#sharevideo").listen("DOMNodeInserted",reloadYoukuVideo);
+	} else {
+		reloadYoukuVideo();
+	};
+	function reloadYoukuVideo() {
+		$("#sharevideo").get().removeEventListener("DOMNodeInserted",reloadYoukuVideo,false);
 		$("embed[src*='youku.com']").each(function(index,elem) {
-			elem.src=elem.src.replace(/(http:\/\/player\.youku\.com[^"]*)(\/v.swf)/,"$1&winType=interior&showAd=0$2");
-			elem.src=elem.src.replace(/(http:\/\/static\.youku\.com[^"]*)/,'$1&winType=interior&showAd=0');
-		});
-	} else if(agent==CHROME) {
-		// 单纯更改embed的src不会导致重新加载。。
-		$("embed[src*='youku.com']").each(function(index,elem) {
-			elem.src=elem.src.replace(/(http:\/\/player\.youku\.com[^"]*)(\/v.swf)/,"$1&winType=interior&showAd=0$2");
-			elem.src=elem.src.replace(/(http:\/\/static\.youku\.com[^"]*)/,'$1&winType=interior&showAd=0');
-			$(elem).switchTo(elem);
+			elem.src=elem.src.replace(/(http:\/\/player\.youku\.com[^"]*)(\/v.swf)/,"$1&winType=interior$2");
+			elem.src=elem.src.replace(/(http:\/\/static\.youku\.com[^"]*)/,'$1&winType=interior');
+			$(elem).attr("flashvars","winType=interior").switchTo(elem);
 		});
 	}
 };
