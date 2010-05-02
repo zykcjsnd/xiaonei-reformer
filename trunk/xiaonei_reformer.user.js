@@ -7,7 +7,7 @@
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
 // @version        2.3.6.20100502
-// @miniver        260
+// @miniver        261
 // @author         xz
 // ==/UserScript==
 //
@@ -64,7 +64,7 @@ function XNR(o) {
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
 	version:"2.3.6.20100502",
-	miniver:260,
+	miniver:261,
 
 	// 选项列表
 	options:{
@@ -135,13 +135,13 @@ XNR.prototype={
 					text:"去除寻找/邀请朋友栏",
 					value:false,
 					fn1:removeFriendGuide,
-					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeRenRenPoint:{
 					text:"去除等级栏",
 					value:false,
 					fn1:removeRenRenPoint,
-					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeActivityNotice:{
 					text:"去除活动通知栏",
@@ -195,55 +195,55 @@ XNR.prototype={
 					text:"去除个人主页右上角装扮主页提示",
 					value:true,
 					fn1:removePaintReminder,
-					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeLeftAlbum:{
 					text:"去除个人主页左侧相册栏",
 					value:false,
 					fn1:removeLeftAlbum,
-					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeLeftBlog:{
 					text:"去除个人主页左侧日志栏",
 					value:false,
 					fn1:removeLeftBlog,
-					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeLeftShare:{
 					text:"去除个人主页左侧分享栏",
 					value:false,
 					fn1:removeLeftShare,
-					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeLeftGift:{
 					text:"去除个人主页左侧礼物栏",
 					value:false,
 					fn1:removeLeftGift,
-					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeRightSpecialFriends:{
 					text:"去除个人主页右侧特别好友栏",
 					value:false,
 					fn1:removeRightSpecialFriends,
-					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeRightFootprint:{
 					text:"去除个人主页右侧最近来访栏",
 					value:false,
 					fn1:removeRightFootprint,
-					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeRightFriends:{
 					text:"去除个人主页右侧好友栏",
 					value:false,
 					fn1:removeRightFriends,
-					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeRightMutualFriends:{
 					text:"去除个人主页右侧共同好友栏",
 					value:false,
 					fn1:removeRightMutualFriends,
-					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 			},
 		},
@@ -312,7 +312,7 @@ XNR.prototype={
 					text:"屏蔽以下类型的新鲜事",
 					columns:4,
 					fn1:removeFeeds,
-					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 					list:{
 						removeBlogFeed:{
 							text:"日志",
@@ -430,19 +430,19 @@ XNR.prototype={
 					text:"隐藏新鲜事具体内容",
 					value:false,
 					fn2:hideFeedContent,
-					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeStatusFeedLink:{
 					text:"去除状态新鲜事的链接",
 					value:false,
 					fn2:removeStatusFeedLink,
-					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				flodStatusComment:{
 					text:"默认收起新鲜事回复",
 					value:false,
 					fn3:flodFeedComment,
-					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=|/page\\.renren\\.com",
+					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=|/page\\.renren\\.com",
 				},
 				autoRefreshFeeds:{
 					text:"自动提醒新鲜事更新，每隔@@秒",
@@ -538,7 +538,7 @@ XNR.prototype={
 					value:false,
 					fn2:$patchCSS,
 					argus2:[["ul.richlist.feeds li a.delete{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -115px 0 transparent;height:18px;width:18px}ul.richlist.feeds li a.delete:hover{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -133px 0 transparent;height:18px;width:18px}"]],
-					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeFontRestriction:{
 					text:"去除页面的字体限制",
@@ -565,7 +565,7 @@ XNR.prototype={
 					text:"将个人主页留言版移动至新鲜事下方",
 					value:false,
 					fn1:moveMessageBoardToBottom,
-					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				GROUP1:{
 					text:"修正界面错误",
@@ -645,7 +645,7 @@ XNR.prototype={
 					info:"允许非星级用户修改个人信息中的昵称",
 					value:true,
 					fn3:removeNicknameRestriction,
-					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				showLoginInfo:{
 					text:"登录时提示登录信息",
@@ -679,7 +679,7 @@ XNR.prototype={
 					page:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|photo\\.renren\\.com/photo/ap/",
 				},
 				showImageLinkOnly:{
-					text:"仅生成链接",
+					text:"仅生成图片链接",
 					type:"subcheck",
 					value:false,
 				},
@@ -2644,9 +2644,7 @@ function showLoginInfo(lastSid) {
 // 快速通道功能
 function enableStealthMenu() {
 	var myid=$cookie("id");
-	if(!myid) {
-		return;
-	}
+	// 如果未登录，仍然显示菜单。实际只有公开资料一项可用
 	$("body").listen('mouseover', function(evt) {
 		try {
 			var t=evt.target;
