@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.5.20100501
-// @miniver        259
+// @version        2.3.6.20100502
+// @miniver        260
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.5.20100501",
-	miniver:259,
+	version:"2.3.6.20100502",
+	miniver:260,
 
 	// 选项列表
 	options:{
@@ -117,133 +117,133 @@ XNR.prototype={
 					text:"去除首页顶部通知",
 					value:false,
 					fn1:removePageTopNotice,
-					page:"renren\\.com/[hH]ome.do",
+					page:"/[Hh]ome.do",
 				},
 				removeNewStar:{
 					text:"去除首页发布框下的活动标签",
 					value:false,
 					fn1:removeActivityLabel,
-					page:"renren\\.com/[hH]ome.do",
+					page:"/[Hh]ome.do",
 				},
 				removeNewStar:{
 					text:"去除人气之星/新人栏",
 					value:false,
 					fn1:removeNewStar,
-					page:"renren\\.com/[hH]ome.do",
+					page:"/[Hh]ome.do",
 				},
 				removeFriendGuide:{
 					text:"去除寻找/邀请朋友栏",
 					value:false,
 					fn1:removeFriendGuide,
-					page:"/www\\.renren\\.com|/renren\\.com|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeRenRenPoint:{
 					text:"去除等级栏",
 					value:false,
 					fn1:removeRenRenPoint,
-					page:"/www\\.renren\\.com|/renren\\.com|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeActivityNotice:{
 					text:"去除活动通知栏",
 					value:false,
 					fn1:removeActivityNotice,
-					page:"renren\\.com/[hH]ome\\.do",
+					page:"/[Hh]ome\\.do",
 				},
 				removeVipExpireNotice:{
 					text:"去除VIP过期提醒",
 					value:false,
 					fn1:removeVipExpireNotice,
-					page:"renren\\.com/[hH]ome\\.do",
+					page:"/[Hh]ome\\.do",
 				},
 				removeRenRenSurvey:{
 					text:"去除首页右侧人人网调查栏",
 					value:false,
 					fn1:removeRenRenSurvey,
-					page:"renren\\.com/[hH]ome\\.do",
+					page:"/[Hh]ome\\.do",
 				},
 				removeCommonPage:{
 					text:"去除首页右侧公共主页推荐栏",
 					value:false,
 					fn1:removeCommonPage,
-					page:"renren\\.com/[hH]ome\\.do",
+					page:"/[Hh]ome\\.do",
 				},
 				removeCommendation:{
 					text:"去除首页右侧人人网推荐/礼物栏",
 					value:false,
 					fn1:removeCommendation,
-					page:"renren\\.com/[hH]ome\\.do",
+					page:"/[Hh]ome\\.do",
 				},
 				removeMayKnow:{
 					text:"去除首页右侧好友推荐栏",
 					value:false,
 					fn1:removeMayKnow,
-					page:"renren\\.com/[hH]ome\\.do",
+					page:"/[Hh]ome\\.do",
 				},
 				removeSponsorsWidget:{
 					text:"去除首页右侧赞助商内容栏",
 					value:true,
 					fn1:removeSponsorsWidget,
-					page:"renren\\.com/[hH]ome\\.do",
+					page:"/[Hh]ome\\.do",
 				},
 				removeWebFunction:{
 					text:"去除首页右侧站内功能栏",
 					value:false,
 					fn1:removeWebFunction,
-					page:"renren\\.com/[hH]ome\\.do",
+					page:"/[Hh]ome\\.do",
 				},
 				removePaintReminder:{
 					text:"去除个人主页右上角装扮主页提示",
 					value:true,
 					fn1:removePaintReminder,
-					page:"renren\\.com/[Pp]rofile\\.do|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeLeftAlbum:{
 					text:"去除个人主页左侧相册栏",
 					value:false,
 					fn1:removeLeftAlbum,
-					page:"renren\\.com/[Pp]rofile\\.do|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeLeftBlog:{
 					text:"去除个人主页左侧日志栏",
 					value:false,
 					fn1:removeLeftBlog,
-					page:"renren\\.com/[Pp]rofile\\.do|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeLeftShare:{
 					text:"去除个人主页左侧分享栏",
 					value:false,
 					fn1:removeLeftShare,
-					page:"renren\\.com/[Pp]rofile\\.do|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeLeftGift:{
 					text:"去除个人主页左侧礼物栏",
 					value:false,
 					fn1:removeLeftGift,
-					page:"renren\\.com/[Pp]rofile\\.do|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeRightSpecialFriends:{
 					text:"去除个人主页右侧特别好友栏",
 					value:false,
 					fn1:removeRightSpecialFriends,
-					page:"renren\\.com/[Pp]rofile\\.do|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeRightFootprint:{
 					text:"去除个人主页右侧最近来访栏",
 					value:false,
 					fn1:removeRightFootprint,
-					page:"renren\\.com/[Pp]rofile\\.do|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeRightFriends:{
 					text:"去除个人主页右侧好友栏",
 					value:false,
 					fn1:removeRightFriends,
-					page:"renren\\.com/[Pp]rofile\\.do|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeRightMutualFriends:{
 					text:"去除个人主页右侧共同好友栏",
 					value:false,
 					fn1:removeRightMutualFriends,
-					page:"renren\\.com/[Pp]rofile\\.do|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 			},
 		},
@@ -254,7 +254,7 @@ XNR.prototype={
 					text:"屏蔽以下类型的请求",
 					columns:2,
 					fn1:hideRequest,
-					page:"renren\\.com/[hH]ome\\.do",
+					page:"/[Hh]ome\\.do",
 					list:{
 						removeAppRequest:{
 							text:"应用请求",
@@ -312,7 +312,7 @@ XNR.prototype={
 					text:"屏蔽以下类型的新鲜事",
 					columns:4,
 					fn1:removeFeeds,
-					page:"/www\\.renren\\.com|/renren\\.com|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 					list:{
 						removeBlogFeed:{
 							text:"日志",
@@ -424,25 +424,25 @@ XNR.prototype={
 					ctrl:{option:"loadFeedPage",value:2,verify:"^[2-9]$",failInfo:"新鲜事页数只能为2~9",style:"width:15px;"},
 					fn3:loadMoreFeeds,
 					argus3:[["@loadFeedPage"]],
-					page:"renren\\.com/[hH]ome\\.do",
+					page:"/[Hh]ome\\.do",
 				},
 				hideFeedContent:{
 					text:"隐藏新鲜事具体内容",
 					value:false,
 					fn2:hideFeedContent,
-					page:"/www\\.renren\\.com|/renren\\.com|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeStatusFeedLink:{
 					text:"去除状态新鲜事的链接",
 					value:false,
 					fn2:removeStatusFeedLink,
-					page:"/www\\.renren\\.com|/renren\\.com|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				flodStatusComment:{
 					text:"默认收起新鲜事回复",
 					value:false,
 					fn3:flodFeedComment,
-					page:"/www\\.renren\\.com|/renren\\.com|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/page\\.renren\\.com",
+					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=|/page\\.renren\\.com",
 				},
 				autoRefreshFeeds:{
 					text:"自动提醒新鲜事更新，每隔@@秒",
@@ -460,7 +460,7 @@ XNR.prototype={
 					ctrl:{option:"reloadFeedInterval",value:60,verify:"^[6-9][0-9]$|^[1-9][0-9]{2,}$",failInfo:"为防止占用太多资源，更新新鲜事列表间隔时间至少为60秒。",style:"width:30px;"},
 					fn3:autoReloadFeeds,
 					argus3:[["@reloadFeedInterval"]],
-					page:"/[Hh]ome.do",
+					page:"/[Hh]ome\\.do",
 				},
 			},
 		},
@@ -538,7 +538,7 @@ XNR.prototype={
 					value:false,
 					fn2:$patchCSS,
 					argus2:[["ul.richlist.feeds li a.delete{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -115px 0 transparent;height:18px;width:18px}ul.richlist.feeds li a.delete:hover{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -133px 0 transparent;height:18px;width:18px}"]],
-					page:"/www\\.renren\\.com|/renren\\.com|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Hh]ome\\.do|/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeFontRestriction:{
 					text:"去除页面的字体限制",
@@ -565,7 +565,7 @@ XNR.prototype={
 					text:"将个人主页留言版移动至新鲜事下方",
 					value:false,
 					fn1:moveMessageBoardToBottom,
-					page:"renren\\.com/[Pp]rofile\\.do|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				GROUP1:{
 					text:"修正界面错误",
@@ -614,7 +614,7 @@ XNR.prototype={
 					text:"相册所有图片在一页中显示",
 					value:false,
 					fn3:showImagesInOnePage,
-					page:"photo\\.renren\\.com",
+					page:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|photo\\.renren\\.com/photo/ap/",
 				},
 				hideImageTagOnMouseOver:{
 					text:"当鼠标在照片上时隐藏圈人框",
@@ -645,7 +645,7 @@ XNR.prototype={
 					info:"允许非星级用户修改个人信息中的昵称",
 					value:true,
 					fn3:removeNicknameRestriction,
-					page:"renren\\.com/[Pp]rofile\\.do|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=",
+					page:"/[Pp]rofile\\.do|renren\\.com/$|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				showLoginInfo:{
 					text:"登录时提示登录信息",
@@ -676,7 +676,7 @@ XNR.prototype={
 					value:true,
 					fn3:addDownloadAlbumLink,
 					argus3:[["@showImageLinkOnly"]],
-					page:"/photo\\.renren\\.com/.*/album|/getalbum",
+					page:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|photo\\.renren\\.com/photo/ap/",
 				},
 				showImageLinkOnly:{
 					text:"仅生成链接",
@@ -1862,16 +1862,24 @@ function recoverOriginalTheme() {
 };
 
 //将相册内的所有相片在一页中全部显示
+//压力测试：http://photo.renren.com/photo/242786354/album-236660334
 function showImagesInOnePage() {
-	if(location.host!="photo.renren.com" || (location.pathname!="/getalbum.do" && location.pathname!="/getalbumprofile.do" && !location.pathname.match(/\/album-[0-9]+/i))) {
-		return;
+	if($("#single-column table.photoList").size()>0) {
+		var baseURL="http://page.renren.com/photo/album";
+		var album=$("#single-column");
+		var items=$(".pager-top>span");
+		// images/page
+		var ipp=album.find(".photoPan").size();
+	} else { 
+		var baseURL="http://photo.renren.com"+location.pathname;
+		var album=$("div.photo-list");
+		var items=$(".number-photo");
+		// images/page
+		var ipp=album.first().heirs();
 	}
-	var baseURL="http://photo.renren.com"+location.pathname;
-	var album=$("div.photo-list");
 	if(album.size()==0) {
 		return;
 	}
-	var items=$(".number-photo");
 	if(items.size()==0) {
 		return;
 	}
@@ -1892,7 +1900,7 @@ function showImagesInOnePage() {
 	var photoAmount=parseInt(/共 *([0-9]+) *张/.exec(items.text())[1]);
 	items.text("共"+photoAmount+"张");
 	// 总页数
-	var maxPage=((photoAmount-1)/album.first().heirs());
+	var maxPage=(photoAmount-1)/ipp;
 	// 当前页数
 	var curPage=/[?&]curpage=([0-9]+)/i.exec(location.href);
 	if(curPage==null) {
@@ -1907,7 +1915,11 @@ function showImagesInOnePage() {
 		}
 		$get(baseURL+"?id="+albumId+"&owner="+ownerId+"&curpage="+i,function(url,res,page) {
 			try {
-				var photoList=/<div .*? class="photo-list clearfix".*?>([\d\D]+?)<\/div>/.exec(res)[1];
+				if($("#single-column table.photoList").size()>0) {
+					var photoList=/(<table .*?class="photoList".*?>[\d\D]+?<\/table>)/.exec(res)[1];
+				} else {
+					var photoList=/<div .*? class="photo-list clearfix".*?>([\d\D]+?)<\/div>/.exec(res)[1];
+				}
 				var pos;
 				if(page>parseInt(album.last().attr("page"))) {
 					pos=album.heirs();
@@ -2261,10 +2273,6 @@ function addBlogLinkProtocolsSupport() {
 
 //在鼠标移过时显示照片大图
 function showImageOnMouseOver() {
-	if(!$cookie("id")) {
-		// 尚未登录
-		return;
-	};
 	//显示大图DIV
 	var showViewer=function(mouseX,src) {
 		try {
@@ -2307,19 +2315,23 @@ function showImageOnMouseOver() {
 				if(src) {
 					src=JSON.parse(src[1]);
 					if(src.photo && src.photo.large) {
+						imageCache(imgId,src.photo.large);
 						if($("#xnr_image").attr("orig")==imgId) {
-							imageCache(imgId,src.photo.large);
 							showViewer(null,src.photo.large);
 						}
 						return;
 					}
 				}
-				if(src=/<img (.*?id="photo" .*?)>/.exec(html)) {
-					src=(/src="(.*?)"/.exec(src[1]))[1];
-					imageCache(imgId,src);
-					if($("#xnr_image").attr("orig")==imgId) {
-						showViewer(null,src);
-					} 
+				// 公共主页相册
+				var src=/XN.PAGE.albumPhoto.init\((.*?)\);/.exec(html);
+				if(src) {
+					src=JSON.parse("["+src[1].replace(/'.*?'/g,"0")+"]")[10];
+					if(src && src.photo && src.photo.large) {
+						imageCache(imgId,src.photo.large);
+						if($("#xnr_image").attr("orig")==imgId) {
+							showViewer(null,src.photo.large);
+						}
+					}
 					return;
 				}
 				if($("#xnr_image").attr("orig")==imgId) {
@@ -2573,7 +2585,7 @@ function showImageOnMouseOver() {
 				}
 					
 				// 一般图片或被圈相片或公共主页上的图片
-				if(pageURL.contains("getphoto.do") || pageURL.contains("gettagphoto.do") || pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/photo-[0-9]+/) || pageURL.match(/page\.renren\.com\/.*\/photo\//)) {
+				if(pageURL.contains("getphoto.do") || pageURL.contains("gettagphoto.do") || pageURL.match(/photo\.renren\.com\/photo\/[0-9]+\/photo-[0-9]+/) || pageURL.match(/page\.renren\.com\/.*\/photo\//) || pageURL.contains("photo.renren.com/photo/sp/")) {
 					showViewer(evt.pageX);
 					getImage(pageURL,imgId);
 					return;
@@ -2705,8 +2717,10 @@ function enableYoukuFullscreen() {
 	} else {
 		reloadYoukuVideo();
 	};
-	function reloadYoukuVideo() {
-		$("#sharevideo").get().removeEventListener("DOMNodeInserted",reloadYoukuVideo,false);
+	function reloadYoukuVideo(evt) {
+		if(evt) {
+			$("#sharevideo").get().removeEventListener("DOMNodeInserted",reloadYoukuVideo,false);
+		}
 		$("embed[src*='youku.com']").each(function(index,elem) {
 			elem.src=elem.src.replace(/(http:\/\/player\.youku\.com[^"]*)(\/v.swf)/,"$1&winType=interior$2");
 			elem.src=elem.src.replace(/(http:\/\/static\.youku\.com[^"]*)/,'$1&winType=interior');
@@ -2717,26 +2731,34 @@ function enableYoukuFullscreen() {
 
 // 在相册中添加生成下载页链接
 function addDownloadAlbumLink(linkOnly) {
-	$(".function-nav.photolist-pager ul.nav-btn").append($node("li").attr("class","pipe").text("|")).append($node("li").append($node("a").attr({"class":"downpage","style":'background-image:none;padding-left:10px',"href":'#nogo'}).text("下载当前页图片")));
-	$(".function-nav.photolist-pager ul.nav-btn a.downpage").listen("click",function(evt) {
-		if($("ul.nav-btn a.downpage").text().match("处理中")) {
+	var downLink=$node("a").attr({"style":'background-image:none;padding-left:10px',"href":'#nogo'}).text("下载当前页图片");
+	if($(".function-nav.photolist-pager ul.nav-btn").size()>0) {
+		$(".function-nav.photolist-pager ul.nav-btn").append($node("li").attr("class","pipe").text("|")).append($node("li").append(downLink));
+	} else {
+		$(".pager-bottom").prepend(downLink);
+	}
+	downLink.listen("click",function(evt) {
+		if(downLink.text().match("处理中")) {
 			if(confirm("要中止吗？")) {
 				finish();
 			}
 			return;
 		}
 		$._albumImages=[];
-		var links=$(".photo-list span.img a");
+		var links=$(".photo-list span.img a, table.photoList td.photoPan>a");
 		var totalImage=links.size();
+		if(totalImage==0) {
+			return;
+		}
 		var cur=0;
 		links.attr("down","down")
-		$(".function-nav.photolist-pager ul.nav-btn a.downpage").text("处理中...(0/"+totalImage+")");
+		downLink.text("处理中...(0/"+totalImage+")");
 		links.each(function(index,elem) {
-			if(!$("ul.nav-btn a.downpage").text().match("处理中")) {
+			if(!downLink.text().match("处理中")) {
 				return false;
 			}
 			$get(elem.href,function(url,html) {
-				if(!$("ul.nav-btn a.downpage").text().match("处理中")) {
+				if(!downLink.text().match("处理中")) {
 					return;
 				}
 				try {
@@ -2748,7 +2770,17 @@ function addDownloadAlbumLink(linkOnly) {
 						src=JSON.parse(src[1]);
 						if(src.photo && src.photo.large) {
 							$._albumImages.push((!linkOnly?"<img src=\""+src.photo.large+"\" style=\"display:none\"/>":"")+"<a href=\""+src.photo.large+"\">"+src.photo.large+"</a>");
-							$(".photo-list span.img a[href='"+url+"']").attr({down:null});
+							$(".photo-list span.img a[href='"+url+"'],table.photoList td.photoPan>a[href='"+url+"']").attr({down:null});
+							return;
+						}
+					}
+					// 公共主页相册
+					var src=/XN.PAGE.albumPhoto.init\((.*?)\);/.exec(html);
+					if(src) {
+						src=JSON.parse("["+src[1].replace(/'.*?'/g,"0")+"]")[10];
+						if(src && src.photo && src.photo.large) {
+							$._albumImages.push((!linkOnly?"<img src=\""+src.photo.large+"\" style=\"display:none\"/>":"")+"<a href=\""+src.photo.large+"\">"+src.photo.large+"</a>");
+							$(".photo-list span.img a[href='"+url+"'],table.photoList td.photoPan>a[href='"+url+"']").attr({down:null});
 							return;
 						}
 					}
@@ -2757,11 +2789,11 @@ function addDownloadAlbumLink(linkOnly) {
 				} finally {
 					cur++;
 					if(cur==totalImage) {
-						if($("ul.nav-btn a.downpage").text().match("处理中")) {
+						if(downLink.text().match("处理中")) {
 							finish();
 						}
 					} else {
-						$(".function-nav.photolist-pager ul.nav-btn a.downpage").text("处理中...("+cur+"/"+totalImage+")");
+						downLink.text("处理中...("+cur+"/"+totalImage+")");
 					}
 				}
 			});
@@ -2769,7 +2801,7 @@ function addDownloadAlbumLink(linkOnly) {
 		function finish() {
 			if($._albumImages.length>0) {
 				var data="";
-				var failedImages=$(".photo-list span.img a[down]");
+				var failedImages=$(".photo-list span.img a[down],table.photoList td.photoPan>a[down]");
 				if(failedImages.size()>0) {
 					var failedImagesList=[];
 					failedImages.each(function(index,elem) {
@@ -2793,10 +2825,10 @@ function addDownloadAlbumLink(linkOnly) {
 				} else if(agent==CHROME) {
 					chrome.extension.sendRequest({action:"dlAlbum",data:data,title:title});
 				}
-				$._albumImages=null;
-				$(".function-nav.photolist-pager ul.nav-btn a.downpage").text("下载当前页图片");
-				$(".photo-list span.img a").attr({down:null})
 			}
+			$._albumImages=null;
+			downLink.text("下载当前页图片");
+			$(".photo-list span.img a,table.photoList td.photoPan>a").attr({down:null})
 		};
 	});
 };
@@ -2963,7 +2995,7 @@ function updatedNotify(lastVer) {
 		$save("lastVersion",XNR.prototype.miniver);
 	} else if(lastVer<XNR.prototype.miniver) {
 		setTimeout(function() {
-			$popup("updated",null,'<div style="color:black">人人网改造器已经自动更新到:<br/>'+XNR.prototype.version+' ('+XNR.prototype.miniver+')</div><div><a href="http://code.google.com/p/xiaonei-reformer/source/browse/trunk/Changelog.txt" style="padding-top:5px;padding-bottom:5px;float:right" target="_blank">查看更新内容</a></div>',null,15,5);
+			$popup("updated",null,'<div style="color:black">人人网改造器已经更新到:<br/>'+XNR.prototype.version+' ('+XNR.prototype.miniver+')</div><div><a href="http://code.google.com/p/xiaonei-reformer/source/browse/trunk/Release.txt" style="padding-top:5px;padding-bottom:5px;float:right" target="_blank">查看更新内容</a></div>',null,15,5);
 		},0);
 		$save("lastVersion",XNR.prototype.miniver);
 	}
