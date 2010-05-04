@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.6.20100502
-// @miniver        261
+// @version        2.3.6.20100504
+// @miniver        263
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.6.20100502",
-	miniver:261,
+	version:"2.3.6.20100504",
+	miniver:263,
 
 	// 选项列表
 	options:{
@@ -626,6 +626,7 @@ XNR.prototype={
 				showImageOnMouseOver:{
 					text:"在鼠标经过图片时显示大图",
 					value:true,
+					info:"要在鼠标移动时保持大图显示，按住Shift/Alt/Ctrl键不放",
 					fn3:showImageOnMouseOver,
 				},
 				useWhisper:{
@@ -1317,7 +1318,7 @@ function $get(url,func,userData) {
 		if(agent==FIREFOX) {
 			GM_xmlhttpRequest({method:"GET",url:url,onload:function(o){if(o.status==200){func(url,o.responseText,userData);}}});
 		} else if(agent==CHROME) {
-			chrome.extension.sendRequest({action:"httpGet",url:url,userData:userData,data:true},function(response) {
+			chrome.extension.sendRequest({action:"httpGet",url:url},function(response) {
 				func(url,response.data,userData);
 			});
 		}
@@ -2728,6 +2729,7 @@ function enableYoukuFullscreen() {
 };
 
 // 在相册中添加生成下载页链接
+// 压力测试：http://photo.renren.com/photo/242786354/album-236660334
 function addDownloadAlbumLink(linkOnly) {
 	var downLink=$node("a").attr({"style":'background-image:none;padding-left:10px',"href":'#nogo'}).text("下载当前页图片");
 	if($(".function-nav.photolist-pager ul.nav-btn").size()>0) {
@@ -2755,7 +2757,7 @@ function addDownloadAlbumLink(linkOnly) {
 			if(!downLink.text().match("处理中")) {
 				return false;
 			}
-			$get(elem.href,function(url,html) {
+			$get(elem.href,function(url,html,target) {
 				if(!downLink.text().match("处理中")) {
 					return;
 				}
@@ -2768,7 +2770,7 @@ function addDownloadAlbumLink(linkOnly) {
 						src=JSON.parse(src[1]);
 						if(src.photo && src.photo.large) {
 							$._albumImages.push((!linkOnly?"<img src=\""+src.photo.large+"\" style=\"display:none\"/>":"")+"<a href=\""+src.photo.large+"\">"+src.photo.large+"</a>");
-							$(".photo-list span.img a[href='"+url+"'],table.photoList td.photoPan>a[href='"+url+"']").attr({down:null});
+							$(target).attr({down:null});
 							return;
 						}
 					}
@@ -2778,7 +2780,7 @@ function addDownloadAlbumLink(linkOnly) {
 						src=JSON.parse("["+src[1].replace(/'.*?'/g,"0")+"]")[10];
 						if(src && src.photo && src.photo.large) {
 							$._albumImages.push((!linkOnly?"<img src=\""+src.photo.large+"\" style=\"display:none\"/>":"")+"<a href=\""+src.photo.large+"\">"+src.photo.large+"</a>");
-							$(".photo-list span.img a[href='"+url+"'],table.photoList td.photoPan>a[href='"+url+"']").attr({down:null});
+							$(target).attr({down:null});
 							return;
 						}
 					}
@@ -2794,7 +2796,7 @@ function addDownloadAlbumLink(linkOnly) {
 						downLink.text("处理中...("+cur+"/"+totalImage+")");
 					}
 				}
-			});
+			},elem);
 		});
 		function finish() {
 			if($._albumImages.length>0) {
