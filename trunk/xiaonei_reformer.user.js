@@ -2824,7 +2824,7 @@ function addDownloadAlbumLink(linkOnly) {
 					// 外链相册
 					var t=$(".album-meta .detail>.name").clone();
 					t.find("strong").remove();
-					title=t.text();
+					title=t.text().replace(/^ - /,"");
 				}
 				if(!title) {
 					// 公共主页
