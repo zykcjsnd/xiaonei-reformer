@@ -1188,10 +1188,10 @@ XNR.prototype={
 		return this;
 	},
 	// 执行自身事件
-	invoke:function(evt) {
+	invoke:function(attr) {
 		this.each(function(index,elem) {
 			try {
-				var e=elem.getAttribute(evt);
+				var e=elem.getAttribute(attr);
 				if(!e) {
 					return;
 				}
@@ -1206,7 +1206,7 @@ XNR.prototype={
 		return this;
 	},
 	// 复制所有DOM节点到新对象
-	clone:function(evt) {
+	clone:function() {
 		var domNodes=[];
 		this.each(function(index,elem) {
 			domNodes.push(elem.cloneNode(true));
@@ -2820,6 +2820,16 @@ function addDownloadAlbumLink(linkOnly) {
 				}
 				data+=(failedImages.size()>0?"其余的":"下列")+$._albumImages.length+"张图片<br/>"+$._albumImages.join("<br/>");
 				var title=$(".ablum-Information .Information h1").text();
+				if(!title) {
+					// 外链相册
+					var t=$(".album-meta .detail>.name").clone();
+					t.find("strong").remove();
+					title=t.text();
+				}
+				if(!title) {
+					// 公共主页
+					title=$(".compatible>#content>.pager-top>span>h3").text();
+				}
 				if(agent==FIREFOX) {
 					window.open("javascript:'<meta content=\"text/html; charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+title+"</title>"+data+"'");
 				} else if(agent==CHROME) {
