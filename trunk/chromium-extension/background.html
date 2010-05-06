@@ -35,8 +35,8 @@ function(request, sender, sendResponse) {
 			//httpReq.setRequestHeader("Cache-Control","no-cache");
 			httpReq.send();
 			break;
-		case "dlAlbum":
-			chrome.tabs.create({url:chrome.extension.getURL("dlAlbum.html")+"?d='"+request.data+"'&t='"+request.title+"'"});
+		case "album":
+			chrome.tabs.create({url:chrome.extension.getURL("album.html")+"#d='"+escape(request.data)+"'&t='"+escape(request.title)+"'"});
 			break;
 	}
 });
