@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.6.20100504
-// @miniver        263
+// @version        2.3.6.20100506
+// @miniver        264
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.6.20100504",
-	miniver:263,
+	version:"2.3.6.20100506",
+	miniver:264,
 
 	// 选项列表
 	options:{
@@ -2332,8 +2332,20 @@ function showImageOnMouseOver() {
 						if($("#xnr_image").attr("orig")==imgId) {
 							showViewer(null,src.photo.large);
 						}
+						return;
 					}
-					return;
+				}
+				// 其他照片，如圈人的 http://photo.renren.com/gettagphoto.do?id=XXXX
+				var src=/<img[^>]+id="photo".*?>/.exec(html);
+				if(src) {
+					src=/src=\"(.*?)\"/.exec(src);
+					if(src && src[1] && src[1].indexOf("/a.gif")==-1) {
+						imageCache(imgId,src[1]);
+						if($("#xnr_image").attr("orig")==imgId) {
+							showViewer(null,src[1]);
+						}
+						return;
+					}
 				}
 				if($("#xnr_image").attr("orig")==imgId) {
 					imageCache(imgId,"error");
@@ -2769,7 +2781,11 @@ function addDownloadAlbumLink(linkOnly) {
 					if(src) {
 						src=JSON.parse(src[1]);
 						if(src.photo && src.photo.large) {
-							$._albumImages.push((!linkOnly?"<img src=\""+src.photo.large+"\" style=\"display:none\"/>":"")+"<a href=\""+src.photo.large+"\">"+src.photo.large+"</a>");
+							if(linkOnly) {
+								$._albumImages.push("<a href=\""+src.photo.large+"\">"+src.photo.large+"</a>");
+							} else {
+								$._albumImages.push("<img src=\""+src.photo.large+"\"/>");
+							}
 							$(target).attr({down:null});
 							return;
 						}
@@ -2779,7 +2795,25 @@ function addDownloadAlbumLink(linkOnly) {
 					if(src) {
 						src=JSON.parse("["+src[1].replace(/'.*?'/g,"0")+"]")[10];
 						if(src && src.photo && src.photo.large) {
-							$._albumImages.push((!linkOnly?"<img src=\""+src.photo.large+"\" style=\"display:none\"/>":"")+"<a href=\""+src.photo.large+"\">"+src.photo.large+"</a>");
+							if(linkOnly) {
+								$._albumImages.push("<a href=\""+src.photo.large+"\">"+src.photo.large+"</a>");
+							} else {
+								$._albumImages.push("<img src=\""+src.photo.large+"\"/>");
+							}
+							$(target).attr({down:null});
+							return;
+						}
+					}
+					// 其他的照片 ？？？
+					var src=/<img[^>]+id="photo".*?>/.exec(html);
+					if(src) {
+						src=/src=\"(.*?)\"/.exec(src);
+						if(src && src[1] && src[1].indexOf("/a.gif")==-1) {
+							if(linkOnly) {
+								$._albumImages.push("<a href=\""+src[1]+"\">"+src[1]+"</a>");
+							} else {
+								$._albumImages.push("<img src=\""+src[1]+"\"/>");
+							}
 							$(target).attr({down:null});
 							return;
 						}
@@ -2800,7 +2834,7 @@ function addDownloadAlbumLink(linkOnly) {
 		});
 		function finish() {
 			if($._albumImages.length>0) {
-				var data="";
+				var data="来源："+location.href+"<br/><br/>";
 				var failedImages=$(".photo-list span.img a[down],table.photoList td.photoPan>a[down]");
 				if(failedImages.size()>0) {
 					var failedImagesList=[];
@@ -2811,14 +2845,14 @@ function addDownloadAlbumLink(linkOnly) {
 							failedImagesList.push("<a href=\""+elem.href+"\">"+elem.href+"</a>");
 						}
 					});
-					data="未能取得以下页面的图片地址：<br/>"+failedImagesList.join("<br/>")+"<br/><br/>";
+					data+="未能取得以下页面的图片：<br/>"+failedImagesList.join("<br/>")+"<br/><br/>";
 				}
 				if(linkOnly) {
 					data+="使用下载工具"+(agent==FIREFOX?"（推荐使用Flashgot或Downthemall扩展）":"")+"下载本页全部链接即可得到";
 				} else {
-					data+="完整保存本页面即可在与页面文件同名的文件夹下得到";
+					data+="完整保存本页面（最好等待本页图片全部显示完毕后再保存）即可在与页面文件同名的文件夹下得到";
 				}
-				data+=(failedImages.size()>0?"其余的":"下列")+$._albumImages.length+"张图片<br/>"+$._albumImages.join("<br/>");
+				data+=(failedImages.size()>0?"其余的":"下列")+$._albumImages.length+"张图片<br/>"+$._albumImages.join(linkOnly?"<br/>":"");
 				var title=$(".ablum-Information .Information h1").text();
 				if(!title) {
 					// 外链相册
@@ -2831,9 +2865,9 @@ function addDownloadAlbumLink(linkOnly) {
 					title=$(".compatible>#content>.pager-top>span>h3").text();
 				}
 				if(agent==FIREFOX) {
-					window.open("javascript:'<meta content=\"text/html; charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+title+"</title>"+data+"'");
+					window.open("javascript:'<meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+title+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style>"+data+"'");
 				} else if(agent==CHROME) {
-					chrome.extension.sendRequest({action:"dlAlbum",data:data,title:title});
+					chrome.extension.sendRequest({action:"album",data:data,title:title});
 				}
 			}
 			$._albumImages=null;
