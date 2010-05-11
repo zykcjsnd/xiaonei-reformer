@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.6.20100506
-// @miniver        264
+// @version        2.3.6.20100511
+// @miniver        266
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.6.20100506",
-	miniver:264,
+	version:"2.3.6.20100511",
+	miniver:266,
 
 	// 选项列表
 	options:{
@@ -2123,6 +2123,7 @@ function addExtraEmotions() {
 		{e:"(smlq)",	t:"萨马兰奇",		s:"/imgpro/icons/statusface/samaranch2.gif"},
 		{e:"(read)",	t:"读书日",			s:"/imgpro/icons/statusface/reading.gif"},
 		{e:"(ct)",		t:"锄头",			s:"/imgpro/icons/statusface/chutou.gif"},
+		{e:"(jz)",		t:"捐建小学",		s:"/imgpro/icons/statusface/grass.gif"},
 		{e:"(^)",		t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
 		{e:"(h)",		t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		{e:"(r)",		t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
@@ -2713,7 +2714,7 @@ function enableStealthMenu() {
 				html+="'>"+i+"</a><br/>"
 			}
 			// absolute在放大页面的情况下会出现文字被错误截断导致宽度极小的问题
-			var node=$node("div",html).attr("id","stealthMenu").style({position:"absolute",left:parseInt(rect.left+window.scrollX)+"px",top:parseInt(rect.bottom+window.scrollY)+"px",backgroundColor:"#EEEEEE",opacity:0.88,padding:"5px",border:"1px solid #5C75AA",zIndex:99999}).appendTo(document.body);
+			var node=$node("div",html).attr("id","stealthMenu").style({position:"absolute",left:parseInt(rect.left+window.scrollX)+"px",top:parseInt(rect.bottom+window.scrollY)+"px",backgroundColor:"#EBF3F7",opacity:0.88,padding:"5px",border:"1px solid #5C75AA",zIndex:99999}).appendTo(document.body);
 			$._stealth=t;
 		} catch(err) {
 			$error("enableStealth::mouseover",err);
