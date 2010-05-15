@@ -12,12 +12,15 @@
 	</style>
 	<script>
 		function getPhotos() {
-			var data=unescape(/d='(.*?)'/.exec(location.href)[1]);
-			var title=unescape(/t='(.*?)'/.exec(location.href)[1]);
-			if(title) {
-				document.title=title;
+			try {
+				var data=unescape(/d='(.*?)'/.exec(location.href)[1]);
+				var title=unescape(/t='(.*?)'/.exec(location.href)[1]);
+				if(title) {
+					document.title=title;
+				}
+				document.body.innerHTML=data;
+			} catch(err) {
 			}
-			document.body.innerHTML=data;
 		};
 	</script>
 </head>

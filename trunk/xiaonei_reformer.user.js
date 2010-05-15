@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.6.20100511
-// @miniver        266
+// @version        2.3.6.20100515
+// @miniver        268
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.6.20100511",
-	miniver:266,
+	version:"2.3.6.20100515",
+	miniver:268,
 
 	// 选项列表
 	options:{
@@ -155,6 +155,13 @@ XNR.prototype={
 					fn1:removeVipExpireNotice,
 					page:"/[Hh]ome\\.do",
 				},
+				removeHomeRightFootprint:{
+					text:"去除首页右侧最近来访栏",
+					value:false,
+					fn1:removeRightFootprint,
+					argus1:[[true]],
+					page:"/[Hh]ome\\.do",
+				},
 				removeRenRenSurvey:{
 					text:"去除首页右侧人人网调查栏",
 					value:false,
@@ -231,6 +238,7 @@ XNR.prototype={
 					text:"去除个人主页右侧最近来访栏",
 					value:false,
 					fn1:removeRightFootprint,
+					argus1:[[false]],
 					page:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren\\.com/\\?id=",
 				},
 				removeRightFriends:{
@@ -1572,9 +1580,13 @@ function removeRightSpecialFriends() {
 	$(".col-right #spFriends").purge();
 };
 
-//移除个人主页右侧最近来访框
-function removeRightFootprint() {
-	$(".col-right #visitors").purge();
+//移除首页/个人主页右侧最近来访框
+function removeRightFootprint(frontPage) {
+	if(frontPage) {
+		$(".home-sidebar #footPrint").purge();
+	} else {
+		$(".col-right #visitors").purge();
+	}
 };
 
 //移除个人主页右侧好友框
@@ -2751,7 +2763,7 @@ function addDownloadAlbumLink(linkOnly) {
 		$(".pager-bottom").prepend(downLink);
 	}
 	downLink.listen("click",function(evt) {
-		if(downLink.text().match("处理中")) {
+		if(downLink.text().match("分析中")) {
 			if(confirm("要中止吗？")) {
 				finish();
 			}
@@ -2765,15 +2777,16 @@ function addDownloadAlbumLink(linkOnly) {
 		}
 		var cur=0;
 		links.attr("down","down")
-		downLink.text("处理中...(0/"+totalImage+")");
+		downLink.text("分析中...(0/"+totalImage+")");
 		links.each(function(index,elem) {
-			if(!downLink.text().match("处理中")) {
+			if(!downLink.text().match("分析中")) {
 				return false;
 			}
 			$get(elem.href,function(url,html,target) {
-				if(!downLink.text().match("处理中")) {
+				if(!downLink.text().match("分析中")) {
 					return;
 				}
+				var imageSrc="";
 				try {
 					if(html.search("<body id=\"errorPage\">")!=-1) {
 						return;
@@ -2782,12 +2795,7 @@ function addDownloadAlbumLink(linkOnly) {
 					if(src) {
 						src=JSON.parse(src[1]);
 						if(src.photo && src.photo.large) {
-							if(linkOnly) {
-								$._albumImages.push("<a href=\""+src.photo.large+"\">"+src.photo.large+"</a>");
-							} else {
-								$._albumImages.push("<img src=\""+src.photo.large+"\"/>");
-							}
-							$(target).attr({down:null});
+							imageSrc=src.photo.large;
 							return;
 						}
 					}
@@ -2796,12 +2804,7 @@ function addDownloadAlbumLink(linkOnly) {
 					if(src) {
 						src=JSON.parse("["+src[1].replace(/'.*?'/g,"0")+"]")[10];
 						if(src && src.photo && src.photo.large) {
-							if(linkOnly) {
-								$._albumImages.push("<a href=\""+src.photo.large+"\">"+src.photo.large+"</a>");
-							} else {
-								$._albumImages.push("<img src=\""+src.photo.large+"\"/>");
-							}
-							$(target).attr({down:null});
+							imageSrc=src.photo.large;
 							return;
 						}
 					}
@@ -2810,25 +2813,28 @@ function addDownloadAlbumLink(linkOnly) {
 					if(src) {
 						src=/src=\"(.*?)\"/.exec(src);
 						if(src && src[1] && src[1].indexOf("/a.gif")==-1) {
-							if(linkOnly) {
-								$._albumImages.push("<a href=\""+src[1]+"\">"+src[1]+"</a>");
-							} else {
-								$._albumImages.push("<img src=\""+src[1]+"\"/>");
-							}
-							$(target).attr({down:null});
+							imageSrc=src[1];
 							return;
 						}
 					}
 				} catch(err) {
 					$error("addDownloadAlbumLink::$get",err);
 				} finally {
+					if(imageSrc) {
+						if(linkOnly) {
+							$._albumImages.push("<a href=\""+imageSrc+"\">"+imageSrc+"</a>");
+						} else {
+							$._albumImages.push("<img src=\""+imageSrc+"\"/>");
+						}
+						$(target).attr({down:null});
+					}
 					cur++;
 					if(cur==totalImage) {
-						if(downLink.text().match("处理中")) {
+						if(downLink.text().match("分析中")) {
 							finish();
 						}
 					} else {
-						downLink.text("处理中...("+cur+"/"+totalImage+")");
+						downLink.text("分析中...("+cur+"/"+totalImage+")");
 					}
 				}
 			},elem);
