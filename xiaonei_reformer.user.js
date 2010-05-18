@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.6.20100515
-// @miniver        268
+// @version        2.3.6.20100518
+// @miniver        269
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.6.20100515",
-	miniver:268,
+	version:"2.3.6.20100518",
+	miniver:269,
 
 	// 选项列表
 	options:{
@@ -75,6 +75,7 @@ XNR.prototype={
 					text:"清除各类广告",
 					value:true,
 					fn0:removeAds,
+					trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeAds,}],
 				},
 				removeStarReminder:{
 					text:"去除升级星级用户提示",
@@ -1447,9 +1448,11 @@ var imgCache;
 var $=XNR;
 
 //清除广告
-function removeAds() {
-	$(".ad-bar", ".banner", ".adimgr", ".blank-holder", ".blank-bar", ".renrenAdPanel", ".side-item.template", ".rrdesk").remove();
-	$("#sd_ad", "#showAD", "#huge-ad", "#rrtvcSearchTip", "#top-ads", "#bottom-ads", "#main-ads", "#n-cAD").remove();
+function removeAds(evt) {
+	if(!evt) {
+		$(".ad-bar", ".banner", ".adimgr", ".blank-holder", ".blank-bar", ".renrenAdPanel", ".side-item.template", ".rrdesk").remove();
+		$("#sd_ad", "#showAD", "#huge-ad", "#rrtvcSearchTip", "#top-ads", "#bottom-ads", "#main-ads", "#n-cAD").remove();
+	}
 	// 混迹于新鲜事中的广告
 	$("ul#feedHome > li").filter("a.dark[href^='http://post.renren.com/click.do?']").remove(); // 新鲜事2010.03改版后是否还有效？
 	$("ul#feedHome > li").filter("a[href^='http://edm.renren.com/link.do?']").remove();
@@ -1672,7 +1675,7 @@ function getFeedType(feed,feedType) {
 		"movie":	[null,"<a [^>]*href=\"http://movie.xiaonei.com/|<a [^>]*href=\"http://movie.renren.com/"],
 		"music":	["^上传了音乐"],
 		"connect":	[null,null,null,"<a [^>]*href=\"http://www.connect.renren.com/"],
-		"vip":		["^更换了主页模板皮肤|^成为了人人网.*VIP会员特权|^开启了人人网VIP个性域名"],
+		"vip":		["^更换了主页模板皮肤|^更换了主页装扮|^成为了人人网[\\d\\D]*VIP会员特权|^收到好友赠送的[\\d\\D]*VIP会员特权|^开启了人人网VIP个性域名"],
 		"group":	[null,"<a [^>]*href=\"http://group.renren.com/"],
 		"page":		[null,"<a [^>]*href=\"http://page.renren.com/"],
 		"contact":	["^你和.*和好朋友保持联络$"],
@@ -1690,7 +1693,7 @@ function getFeedType(feed,feedType) {
 		var feedHTML=types[feedType][1];
 		var feedContent=types[feedType][2];
 		var feedFooterHTML=types[feedType][3];
-		if ((!feedText || new RegExp(feedText).test(feedTitleText.text().replace(/^[ \t]+|[ \t]+$/g,""))) && (!feedHTML || new RegExp(feedHTML).test(feedTitle.inner())) && (feedContent==null || feedHasContent==feedContent) && (!feedFooterHTML || new RegExp(feedFooterHTML).test(feedFooter.inner()))) {
+		if ((!feedText || new RegExp(feedText).test(feedTitleText.text().replace(/^[ \t\n\r]+|[ \t\n\r]+$/g,""))) && (!feedHTML || new RegExp(feedHTML).test(feedTitle.inner())) && (feedContent==null || feedHasContent==feedContent) && (!feedFooterHTML || new RegExp(feedFooterHTML).test(feedFooter.inner()))) {
 			return feedType;
 		}
 	} else {
@@ -1699,7 +1702,7 @@ function getFeedType(feed,feedType) {
 			var feedHTML=types[i][1];
 			var feedContent=types[i][2];
 			var feedFooterHTML=types[i][3];
-			if ((!feedText || new RegExp(feedText).test(feedTitleText.text().replace(/^[ \t]+|[ \t]+$/g,""))) && (!feedHTML || new RegExp(feedHTML).test(feedTitle.inner())) && (feedContent==null || feedHasContent==feedContent) && (!feedFooterHTML || new RegExp(feedFooterHTML).test(feedFooter.inner()))) {
+			if ((!feedText || new RegExp(feedText).test(feedTitleText.text().replace(/^[ \t\n\r]+|[ \t\n\r]+$/g,""))) && (!feedHTML || new RegExp(feedHTML).test(feedTitle.inner())) && (feedContent==null || feedHasContent==feedContent) && (!feedFooterHTML || new RegExp(feedFooterHTML).test(feedFooter.inner()))) {
 				return i;
 			}
 		}
