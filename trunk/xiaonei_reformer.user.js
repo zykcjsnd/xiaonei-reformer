@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.6.20100518
-// @miniver        269
+// @version        2.3.6.20100520
+// @miniver        271
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.6.20100518",
-	miniver:269,
+	version:"2.3.6.20100520",
+	miniver:271,
 
 	// 选项列表
 	options:{
@@ -1450,7 +1450,7 @@ var $=XNR;
 //清除广告
 function removeAds(evt) {
 	if(!evt) {
-		$(".ad-bar", ".banner", ".adimgr", ".blank-holder", ".blank-bar", ".renrenAdPanel", ".side-item.template", ".rrdesk").remove();
+		$(".ad-bar", ".banner", ".adimgr", ".blank-holder", ".blank-bar", ".renrenAdPanel", ".side-item.template", ".rrdesk", ".video:not([style])").remove();
 		$("#sd_ad", "#showAD", "#huge-ad", "#rrtvcSearchTip", "#top-ads", "#bottom-ads", "#main-ads", "#n-cAD").remove();
 	}
 	// 混迹于新鲜事中的广告
@@ -1530,7 +1530,7 @@ function removeBlogLinks() {
 
 //移除校内通栏
 function removeXntBar() {
-	$("#wpiroot","#imengine").remove();
+	$("#bottombar","#imengine").remove();
 };
 
 //移除页面顶部通知
@@ -3058,7 +3058,7 @@ function updatedNotify(lastVer) {
 (function() {
 	try {
 		// 不在内容可以编辑的frame中运行，也不在body无id无class的frame中运行
-		if (self != window.top && (document.designMode=="on" || (!document.body.id && !document.body.className) || document.body.className=="pages")) {
+		if (self != top && (document.designMode=="on" || (!document.body.id && !document.body.className) || document.body.className=="pages")) {
 			return;
 		}
 		// 各种选项
@@ -3280,15 +3280,17 @@ function updatedNotify(lastVer) {
 				return;
 			}
 
+			// 保证linux下的Chromium不被flash遮挡
+			var iframe=$node("iframe").attr({"class":"xnr_op",frameborder:0,scrolling:"no",allowtransparency:true}).style("backgroundColor","transparent").appendTo(document.body);
 			var menu=$node("div").attr("class","xnr_op").style("display","none");
 			var html="";
 			// 选项菜单的样式
-			html+='<style type="text/css">.xnr_op{width:500px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op>table{width:100%}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op .c{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .pages{width:360px}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%;table-layout:fixed}.xnr_op .pages>div>div>table{width:100%;table-layout:fixed;margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
-			html+='<table><tbody><tr><td class="border tl"></td><td class="border" style="width:430px"></td><td class="border tr"></td></tr><tr><td class="border"></td><td class="c"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>';
+			html+='<style type="text/css">.xnr_op{width:500px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black;blackground:black}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op table{width:100%;table-layout:fixed}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .m{width:100%}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op>table table{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%}.xnr_op .pages>div>div>table{margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
+			html+='<table><tbody><tr><td class="border tl"></td><td class="border m"></td><td class="border tr"></td></tr><tr><td class="border"></td><td class="c m"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>';
 			html+=categoryHTML;
 			html+='</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>人人网改造器</h1><p><b class="ver"></b></p><p><b>Copyright © 2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p></td></tr></tbody></table></div>';
 			html+=detailHTML;
-			html+='</td></tr></tbody></table></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border"></td></tr><tr><td class="border bl"></td><td class="border"></td><td class="border br"></td></tr></tbody></table>';
+			html+='</td></tr></tbody></table></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border"></td></tr><tr><td class="border bl"></td><td class="border m"></td><td class="border br"></td></tr></tbody></table>';
 			menu.inner(html).appendTo(document.body);
 			// 设置选项的值
 			for(var option in options) {
@@ -3386,9 +3388,10 @@ function updatedNotify(lastVer) {
 			nav.prepend($node("div","<div class=\"menu-title\"><a onclick=\"return false\" href=\"#nogo\">改造</a></div>").attr("class","menu"));
 			nav.first().find("a").listen("click",function(evt) {
 				try {
-					var menu=$("body>.xnr_op");
-					menu.show();
+					var menu=$("body>div.xnr_op").show();
 					menu.style("top",parseInt(window.innerHeight-menu.prop("offsetHeight"))/2+"px");
+					var rect=menu.get().getBoundingClientRect();
+					$("body>iframe.xnr_op").style({height:rect.height+"px",top:rect.top+"px"}).show();
 				} catch (err) {
 					$error("menu:show",err);
 				}
