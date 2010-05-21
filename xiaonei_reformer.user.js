@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.6.20100520
-// @miniver        271
+// @version        2.3.6.20100521
+// @miniver        272
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.6.20100520",
-	miniver:271,
+	version:"2.3.6.20100521",
+	miniver:272,
 
 	// 选项列表
 	options:{
@@ -528,7 +528,7 @@ XNR.prototype={
 					type:"checkedit",
 					value:false,
 					info:"导航栏上新增项的内容。每两行表示一项，第一行为名称，第二行为地址。",
-					ctrl:{option:"navExtraContent",value:"论坛\nhttp://club.renren.com/",style:"width:280px;height:80px;overflow:auto;word-wrap:normal"},
+					ctrl:{option:"navExtraContent",value:"论坛\nhttp://club.renren.com/",style:"width:330px;height:80px;overflow:auto;word-wrap:normal"},
 					fn2:addNavBarItem,
 					argus2:[["@navExtraContent"]],
 				},
@@ -722,7 +722,7 @@ XNR.prototype={
 					text:"检查更新地址：@@",
 					type:"text",
 					value:"http://userscripts.org/scripts/source/45836.meta.js",
-					style:"width:270px;",
+					style:"width:330px;",
 					verify:"[A-Za-z]+://[^/]+\.[^/]+/.*",
 					failInfo:"请输入正确的检查更新地址",
 					agent:FIREFOX,
@@ -731,7 +731,7 @@ XNR.prototype={
 					text:"脚本主页地址：@@",
 					type:"text",
 					value:"http://userscripts.org/scripts/show/45836",
-					style:"width:270px;",
+					style:"width:330px;",
 					verify:"[A-Za-z]+://[^/]+\.[^/]+/.*",
 					failInfo:"请输入正确的脚本主页地址",
 					agent:FIREFOX,
@@ -740,7 +740,7 @@ XNR.prototype={
 					text:"脚本下载地址：@@",
 					type:"text",
 					value:"http://userscripts.org/scripts/source/45836.user.js",
-					style:"width:270px;",
+					style:"width:330px;",
 					verify:"[A-Za-z]+://[^/]+\.[^/]+/.*",
 					failInfo:"请输入正确的脚本下载地址",
 					agent:FIREFOX,
@@ -3280,7 +3280,8 @@ function updatedNotify(lastVer) {
 				return;
 			}
 
-			// 保证linux下的Chromium不被flash遮挡
+			// 保证linux下的Chromium，菜单不被flash遮挡。
+			// TODO: 2010/5/21：6.0.411.0(47760) 已经不会遮挡了，保留观察一段时间
 			var iframe=$node("iframe").attr({"class":"xnr_op",frameborder:0,scrolling:"no",allowtransparency:true}).style("backgroundColor","transparent").appendTo(document.body);
 			var menu=$node("div").attr("class","xnr_op").style("display","none");
 			var html="";
