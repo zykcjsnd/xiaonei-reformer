@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.6.20100521
-// @miniver        272
+// @version        2.3.7.20100523
+// @miniver        273
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.6.20100521",
-	miniver:272,
+	version:"2.3.7.20100523",
+	miniver:273,
 
 	// 选项列表
 	options:{
@@ -470,6 +470,13 @@ XNR.prototype={
 					fn3:autoReloadFeeds,
 					argus3:[["@reloadFeedInterval"]],
 					page:"/[Hh]ome\\.do",
+				},
+				showOnlineMark:{
+					text:"在新鲜事中标记在线好友",
+					value:false,
+					fn3:showOnlineMark,
+					page:"/[Hh]ome\\.do",
+					trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:showOnlineMark}],
 				},
 			},
 		},
@@ -1515,7 +1522,7 @@ function removeBlogTheme() {
 
 // 删除日志中整段的链接
 function removeBlogLinks() {
-	$("#blogContent a").each(function(index,elem) {
+	$("#blogContent a,#shareBody a").each(function(index,elem) {
 		var o=$(elem);
 		// 链接到其他日志，放过好了
 		if(elem.href.match("blog.renren.com")) {
@@ -3002,6 +3009,42 @@ function autoReloadFeeds(interval) {
 	$node("script",'setInterval(function(){XN.page.home.feedFilter.load(XN.page.home.feedFilter.currentFeed)},'+interval*1000+')').appendTo(document.body);
 };
 
+// 在新鲜事中标记在线好友
+function showOnlineMark() {
+	if($._online) {
+		markOnlineFriends();
+		return;
+	}
+	$get("http://wpi.renren.com/getonlinefriends.do?ran="+Math.random(),function(url,o) {
+		if(!o) {
+			return;
+		}
+		var online=$parse(o).friends;
+		if(!online) {
+			return;
+		}
+		var onlineFriends={};
+		for(var i in online) {
+			onlineFriends[online[i].id]=online[i].name;
+		}
+		$._online=onlineFriends;
+		markOnlineFriends();
+	});
+	function markOnlineFriends() {
+		$("#feedHome li h3").each(function(index,elem) {
+			$(elem).find("a[href*='profile.do?']").each(function(index,link) {
+				var id=/id=([0-9]+)&/.exec(link.href)[1];
+				if(id && $._online[id]) {
+					if($(link).previous()==null || $(link).previous().prop("tagName")!="IMG") {
+						// 还没标记过
+						elem.insertBefore($node("img").attr({"class":"on-line",height:"12",width:"13",onclick:"javascript:talkto("+id+",'"+$._online[id]+"');return false;",title:"点此和"+$._online[id]+"聊天",src:"http://xnimg.cn/imgpro/icons/online_1.gif?ver=$revxxx$",style:"vertical-align:baseline;cursor:pointer"}).get(),link);
+					}
+				}
+			});
+		});
+	}
+};
+
 //检查更新
 function checkUpdate(manualCheck,checkLink,pageLink,scriptLink,last) {
 	//last="2000-1-1";
@@ -3058,7 +3101,7 @@ function updatedNotify(lastVer) {
 (function() {
 	try {
 		// 不在内容可以编辑的frame中运行，也不在body无id无class的frame中运行
-		if (self != top && (document.designMode=="on" || (!document.body.id && !document.body.className) || document.body.className=="pages")) {
+		if (self != top && (document.designMode=="on" || !document.body || (!document.body.id && !document.body.className) || document.body.className=="pages")) {
 			return;
 		}
 		// 各种选项
