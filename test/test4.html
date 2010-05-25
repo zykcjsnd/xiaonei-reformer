@@ -1,0 +1,32 @@
+<html>
+<head>
+	<title>Title</title>
+	<script>
+	function thisisatestfunction() {
+			return 1+1;
+	}
+	function test() {
+		var f=thisisatestfunction;
+		for(var c=0;c<5;c++) {
+			var t1=new Date();
+			for(var i=0;i<500000;i++) {
+				f();
+			}
+			var time1=(new Date()-t1);
+
+			var t1=new Date();
+			for(var i=0;i<500000;i++) {
+				f.call();
+			}
+			var time2=(new Date()-t1);
+			document.getElementById("result").innerHTML+=time1+" : "+time2+"</br>"
+		}
+	}
+	</script>
+</head>
+<body onload="test()">
+	<span id="result">
+	</span>
+</body>
+
+</html>

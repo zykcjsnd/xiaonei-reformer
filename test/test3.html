@@ -1,0 +1,18 @@
+<html>
+<head>
+	<title>Title</title>
+	<script>
+		function state() {
+			alert(document.readyState);
+		}
+		state();
+		document.addEventListener("DOMContentLoaded",state,false);
+
+	</script>
+</head>
+
+<body onload="state()">
+
+</body>
+
+</html>
