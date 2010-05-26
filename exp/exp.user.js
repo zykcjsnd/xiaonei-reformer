@@ -30,7 +30,7 @@
 (function(){
 
 // 不在内容可以编辑的frame中运行
-if (self != top && document.designMode=="on") {
+if (window.self != window.top && document.designMode=="on") {
 	return;
 }
 
@@ -61,30 +61,60 @@ const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4;
 XNR.agent=UNKNOWN;
 if(window.chrome) {
 	XNR.agent=CHROME;
-} else if (window.jetpack) {
-	XNR.agent=FIREFOX;
 } else if (typeof GM_setValue=="function") {
 	XNR.agent=USERSCRIPT;
 }
 
 /* 以下开始所有功能 */
 
-//清除广告
+// 清除广告
 function removeAds(evt) {
 	if(!evt) {
-		var ads=[".ad-bar", ".banner", ".adimgr", ".blank-bar", ".renrenAdPanel", ".side-item.template", ".rrdesk", ".video:not([style])","#sd_ad", "#showAD", "#huge-ad", "#rrtvcSearchTip", "#top-ads", "#bottom-ads", "#main-ads", "#n-cAD"];
-		$patchCSS(ads.join(",")+"{display:none !important}");
-		$ready(function() {
-			$(ads.join(",")).remove();
+		var ads=".ad-bar, .banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .video:not([style]), #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD";
+		$patchCSS(ads+"{display:none !important}");
+		$wait(1,function() {
+			$(ads).remove();
 			// .blank-holder在游戏大厅game.renren.com不能删
 			$(".blank-holder").remove(true);
 		});
 	}
-	$ready(function() {
+	$wait(1,function() {
 		// 混迹于新鲜事中的广告
 		$("ul#feedHome > li").filter("a[href^='http://edm.renren.com/link.do?']").remove();
 		// 人人桌面
 		$("ul#feedHome > li").filter("a[href^='http://im.renren.com/'][href*='.exe']").remove();
+	});
+};
+
+// 去除页面模板
+function removePageTheme() {
+	var themes=["head link[rel='stylesheet'][href*='/csspro/themes/'][href*='.css']", //节日模板
+				"#hometpl_style",	// 首页特定事件
+				"head link[rel='stylesheet'][href*='zidou_nav.css']",	// 紫豆导航栏
+				"#domain_wrapper",	// 个人域名提示栏
+				"#themeLink"];		// 公共主页模板
+	$(themes.join(",")).remove();
+	// 删除紫豆模板
+	$("head style").each(function(elem) {
+		var theme=$(elem);
+		if(theme.text().contains("url(http://i.static.renren.com")) {
+			theme.remove();
+			return true;
+		}
+	});
+	// 修复Logo
+	var logo=$("img[src*='viplogo-renren.png']").attr({height:null,width:null});
+	if(logo.size()>0) {
+		logo.attr("src",logo.attr("src").replace("viplogo-renren.png","logo-renren.png"));
+	}
+};
+
+// 去除升级星级用户提醒
+function removeStarReminder() {
+	var target="#tobestar, #realheadbulletin, #noStarNotice, #nostar, #home_nostar";
+	$patchCSS(target+"{display:none !important}");
+	$wait(1,function() {
+		$(target).remove();
 	});
 };
 
@@ -192,10 +222,11 @@ function main(savedOptions) {
 	// [
 	//   {
 	//     [Function]name:函数名。
-	//     [String/Object]fire:函数执行时机。可以为控件的某一个事件。例如"click"。或者是{prop:控件属性,value:期望值}。可选。未指定事件为初始化后立即执行。
-	//     [Number]ring:优先级（0～4）。就是ring，不是priority。仅当fire非事件触发才有效。0级在DOM生成前执行，故仅用于预先修改样式或处理页面预定义对象。
-	//     [Object]trigger:设定其他控件的触发事件。{CSS选择器:事件名,...}。可选。
+	//     [String/Object]fire:函数执行条件。可以为控件的某一个事件。例如"click"。或者是{prop:控件属性,value:期望值}。可选。未指定事件为初始化后立即执行。
+	//     [Number]stage:执行时机/优先级（0～3）。参考$wait()。
+	//     [Object]trigger:设定其他控件的触发事件。{CSS选择器:事件名,...}。可选。如果stage为0，则trigger的执行时机为1，否则与stage相同。
 	//     [Array]args:函数参数列表。如果参数为另一选项/选项组，名称前加@。参数数量不得多于4个。利用选项组处理过多参数
+	//     [String]page:适用页面。“页面类别1,页面类别2,...”，参考$page()。TODO
 	//   },
 	// ]
 	//
@@ -211,25 +242,45 @@ function main(savedOptions) {
 		"清理页面":[
 			{
 				text:"##清除各类广告",
-				ctrl:[
-					{
-						id:"removeAds",
-						type:"check",
-						value:true,
-						fn:[
-							{
-								name:removeAds,
-								ring:0,
-								fire:{prop:"checked",value:true},
-								trigger:{"ul#feedHome":"DOMNodeInserted"},
-							}
-						],
-					}
-				],
-			},
+				ctrl:[{
+					id:"removeAds",
+					type:"check",
+					value:true,
+					fn:[{
+						name:removeAds,
+						stage:0,
+						fire:{prop:"checked",value:true},
+						trigger:{"ul#feedHome":"DOMNodeInserted"},
+					}],
+				}],
+			},{
+				text:"##去除页面主题模板",
+				ctrl:[{
+					id:"removePageTheme",
+					type:"check",
+					value:false,
+					fn:[{
+						name:removePageTheme,
+						stage:1,
+						fire:{prop:"checked",value:true},
+					}],
+				}],
+			},{
+				text:"##去除升级星级用户提示",
+				ctrl:[{
+					id:"removeStarReminder",
+					type:"check",
+					value:true,
+					fn:[{
+						name:removeStarReminder,
+						stage:0,
+						fire:{prop:"checked",value:true},
+					}],
+				}],
+			}
 		],
 	};
-	// 函数执行队列。对应4个优先级，每一个优先级数组中的函数对象为{name:函数,args:函数参数}
+	// 函数执行队列。对应4个优先级，每一个优先级数组中的函数对象为{name:函数,args:函数参数,[trigger:{CSS选择器:事件名,...}]}
 	var fnQueue=[[],[],[],[]];
 
 	var categoryHTML="";
@@ -268,24 +319,25 @@ function main(savedOptions) {
 					var node=null;
 					switch(control.type) {
 						case "check":
-							node=$node("input").attr("type","checkbox").prop("checked",control.value);
+							node=$node("input").attr("type","checkbox");
 							break;
 						case "hidden":
 							break;
 						case "input":
-							node=$node("input").prop("value",control.value);
+							node=$node("input");
 							break;
 						case "edit":
-							node=$node("textarea").prop("value",control.value);
+							node=$node("textarea");
 							break;
 						case "button":
-							node=$node("input").attr("type","button").prop("value",control.value);
+							node=$node("input").attr("type","button");
 							break;
 						case "label":
 							node=$node("span");
 							break;
 					}
 					if(node) {
+						node.value(control.value);
 						node.attr({id:control.id,style:(control.style || "")});
 						node.appendTo(block);
 					}
@@ -300,7 +352,7 @@ function main(savedOptions) {
 							}
 							if(!fn.fire || (typeof fn.fire=="object" && node.prop(fn.fire.prop)==fn.fire.value)) {
 								// 符合要求，放入执行序列
-								fnQueue[fn.ring].push({name:fn.name,args:fn.args});
+								fnQueue[fn.stage].push({name:fn.name,args:fn.args});
 							} else if(typeof fn.fire=="string") {
 								node.hook(fn.fire,function(evt) {
 									fn.name(evt,fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
@@ -308,14 +360,8 @@ function main(savedOptions) {
 							}
 							// 其他节点触发事件
 							if(fn.trigger) {
-								for(var t in fn.trigger) {
-									// 只有等到DOM建立后页面节点才能保证可访问。所以优先级视为1。
-									fnQueue[1].push({name:function(arg1,arg2,arg3,arg4) {
-										$(t).hook(fn.trigger[t],function(evt) {
-											fn.name(evt,arg1,arg2,arg3,arg4);
-										});
-									},args:fn.args});
-								}
+								// 只有等到DOM建立后页面节点才能保证可访问。所以优先级最小为1
+								fnQueue[(fn.stage==0?1:fn.stage)].push({name:fn.name,args:fn.args,trigger:fn.trigger});
 							}
 						}
 					}
@@ -338,11 +384,10 @@ function main(savedOptions) {
 	
 
 	// 生成选项菜单
-	var menuHTML='<style type="text/css">.xnr_op{width:500px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black;blackground:black}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op table{width:100%;table-layout:fixed}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .m{width:100%}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op>table table{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%}.xnr_op .pages>div>div>table{margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op input[type="checkbox"]{margin-right:4px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
+	var menuHTML='<style type="text/css">.xnr_op{width:500px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black;blackground:black;font-size:12px}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op a{color:#3B5990}.xnr_op table{width:100%;table-layout:fixed}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .m{width:100%}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op>table table{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%}.xnr_op .pages>div>div>table{margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op input[type="checkbox"]{margin-right:4px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
 		menuHTML+='<table><tbody><tr><td class="border tl"></td><td class="border m"></td><td class="border tr"></td></tr><tr><td class="border"></td><td class="c m"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>'+categoryHTML+'</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>人人网改造器</h1><p><b>'+XNR.version+' ('+XNR.miniver+')</b></p><p><b>Copyright © 2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p></td></tr></tbody></table></div></td></tr></tbody></table></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border"></td></tr><tr><td class="border bl"></td><td class="border m"></td><td class="border br"></td></tr></tbody></table>';
 
-	// TODO 去掉top style,增加display:none
-	var menu=$node("div").attr("class","xnr_op").code(menuHTML).appendTo(document.documentElement).style("top","2px");
+	var menu=$node("div").attr("class","xnr_op").style("display","none").code(menuHTML).appendTo(document.documentElement);
 	menu.find("td.pages").append($(categoryPages));
 
 	// 点击分类切换事件
@@ -359,39 +404,84 @@ function main(savedOptions) {
 
 	// 点击取消按钮事件
 	menu.find(".cancel").hook("click",function(evt) {
-		// TODO : reset all options
-		$(".xnr_op").hide();
+		menu.hide();
+		// 重置选项
+		for(op in XNR.options) {
+			var c=menu.find("#"+op);
+			if(c.empty()) {
+				continue;
+			} else {
+				c.value(XNR.options[op]);
+			}
+		}
 	});
 
-	// 剩余的部分在页面DOM构建完毕后再执行
-	$ready(function () {
-		for(var p=1;p<4;p++) {
+	// 点击保存按钮事件
+	menu.find(".ok").hook("click",function(evt) {
+		// TODO: verify
+		for(op in XNR.options) {
+			var c=menu.find("#"+op);
+			if(c.empty()) {
+				continue;
+			} else {
+				var newValue=c.value();
+				// 只保存修改了的
+				if(XNR.options[op]!=newValue) {
+					$save(op,newValue);
+				}
+			}
+		}
+		location.reload();
+	});
+
+	// 菜单在导航栏上的入口
+	var entry=$node("div").attr("class","menu").append($node("div").attr("class","menu-title").append($node("a").attr({href:"#nogo",onclick:"return false"}).text("改造")));
+	entry.find("a").hook("click",function() {
+		menu.show().style("top",parseInt(window.innerHeight-menu.prop("offsetHeight"))/2+"px");
+	});
+
+	// 优先级为1&2在页面DOM构建完毕后执行，添加菜单入口项也是
+	$wait(1,function () {
+		entry.prependTo($(".nav-body .nav-other"));
+
+		for(var p=1;p<3;p++) {
 			for(var i=0;i<fnQueue[p].length;i++) {
 				var fn=fnQueue[p][i];
+				if(fn.trigger) {
+					// 触发器
+					for(var t in fn.trigger) {
+						$(t).hook(fn.trigger[t],function(evt) {
+							fn.name(evt,fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+						});
+					}
+				} else {
+					// 一般功能
+					fn.name(fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+				}
+			}
+		}
+	});
+	// 优先级为3在页面加载完毕后执行
+	$wait(3,function () {
+		for(var i=0;i<fnQueue[3].length;i++) {
+			var fn=fnQueue[3][i];
+			if(fn.trigger) {
+				// 触发器
+				for(var t in fn.trigger) {
+					$(t).hook(fn.trigger[t],function(evt) {
+						fn.name(evt,fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+					});
+				}
+			} else {
+				// 一般功能
 				fn.name(fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
 			}
 		}
 	});
+
 };
 
 /* 以下是基本辅助函数，所有函数以$开头 */
-
-/*
- * 删除页面节点
- * 参数
- *   [String/Object]selector:CSS选择器，也可以是选项集合
- * 返回值
- *   无
- */
-function $removal(selector) {
-	if(typeof selector=="object") {
-		for(var i in selector) {
-			PageKit(selector[i]).remove();
-		}
-	} else {
-		PageKit(selector).remove();
-	}
-};
 
 /*
  * 读取cookie
@@ -552,22 +642,38 @@ function $popup(title,content,geometry,stayTime,popSpeed) {
 };
 
 /*
- * 在DOM创建完毕后执行
+ * 尽量在特定的时机执行
  * 参数
+ *   [Number]stage：目标时机。0：DOM创建前。1&2：DOM创建后（DOMContentLoaded）。3：页面加载完毕后（load）
  *   [Function]func：执行的函数
  * 返回值
  *   无
  */
-function $ready(func) {
+function $wait(stage,func) {
 	/*
 	 * 页面加载阶段测试：test3.html
 	 * Firefox 3.6.3/3.7a5pre：loading -> interactive -> completed
 	 * Chromium 6.0.411.0 (47760)：loading -> loaded -> completed
 	 * Opera 10.54：interactive -> completed -> completed
+	 * 目前不支持Opera。
 	 */
+	var curStage=2;
 	if(document.readyState=="loading") {
-		document.addEventListener("DOMContentLoaded",func,false);
+		curStage=0;
+	} else if(document.readyState=="completed") {
+		curStage=3;
+	} else if(stage==1 || stage==2) {
+		curStage=stage;
+	}
+	if(stage>curStage) {
+		// stage>curStage>=0 -> stage>0
+		if(stage<3) {
+			document.addEventListener("DOMContentLoaded",func,false);
+		} else if(stage==3) {
+			document.addEventListener("load",func,false);
+		}
 	} else {
+		// 已经错过了/正赶上，立即执行
 		func();
 	}
 };
@@ -579,8 +685,25 @@ function $ready(func) {
  * 返回值
  *   [PageKit]:创建的style节点
  */
-function $patchCSS(style) {
+function $patchCSS(style,prepatch) {
 	return $node("style").attr("type","text/css").text(style).appendTo(document.documentElement);
+};
+
+/*
+ * 保存选项。实际是保存XNR.options
+ * 参数
+ *   [String]name:选项名或选项值集合
+ *   [String/Number/Boolean]value:值
+ * 返回值
+ *   无
+ */
+function $save(name,value) {
+	XNR.options[name]=value;
+	if(XNR.agent==USERSCRIPT) {
+		GM_setValue("xnr_options",JSON.stringify(XNR.options));
+	} else if(XNR.agent==CHROME) {
+		chrome.extension.sendRequest({action:"save",data:JSON.stringify(XNR.options)});
+	}
 };
 
 /* 基本辅助函数完 */
@@ -1046,6 +1169,48 @@ PageKit.prototype={
 				return this.get().innerHTML;
 			} catch(err) {
 				return "";
+			}
+		}
+	},
+	// 获取/设置对象的值。可输入控件为其输入值，其余为其内部文本
+	value:function(v) {
+		if(v) {
+			// 设置
+			this.each(function(elem) {
+				switch(elem.tagName) {
+					case "INPUT":
+						switch($(elem).attr("type").toLowerCase()) {
+							case "checkbox":
+								elem.checked=v;
+								break;
+							default:
+								elem.value=v;
+								break;
+						}
+						break;
+					case "TEXTAREA":
+						elem.value=v;
+						break;
+					default:
+						$(elem).text(v);
+						break;
+				}
+			});
+		} else {
+			// 读取
+			var elem=this.get();
+			switch(elem.tagName) {
+				case "INPUT":
+					switch($(elem).attr("type").toLowerCase()) {
+						case "checkbox":
+							return elem.checked;
+						default:
+							return elem.value;
+					}
+				case "TEXTAREA":
+					return elem.value;
+				default:
+					return $(elem).text();
 			}
 		}
 	},

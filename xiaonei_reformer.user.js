@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.7.20100523
-// @miniver        273
+// @version        2.3.7.20100526
+// @miniver        274
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.7.20100523",
-	miniver:273,
+	version:"2.3.7.20100526",
+	miniver:274,
 
 	// 选项列表
 	options:{
@@ -395,6 +395,12 @@ XNR.prototype={
 							argus1:[["@markFeedAsRead","connect"]],
 							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","connect"]]}],
 						},
+						removeFriendFeed:{
+							text:"交友",
+							value:false,
+							argus1:[["@markFeedAsRead","friend"]],
+							trigger:[{target:"ul#feedHome",evt:"DOMNodeInserted",fn:removeFeeds,argus:[["@markFeedAsRead","friend"]]}],
+						},
 						removeVipFeed:{
 							text:"VIP相关",
 							value:false,
@@ -459,7 +465,7 @@ XNR.prototype={
 					value:true,
 					ctrl:{option:"checkFeedInterval",value:60,verify:"^[3-9][0-9]$|^[1-9][0-9]{2,}$",failInfo:"为防止占用太多资源，新鲜事检查间隔时间至少为30秒。",style:"width:30px;"},
 					fn3:autoRefreshFeeds,
-					argus3:[["@checkFeedInterval",{"blog":"@removeBlogFeed","poll":"@removePollFeed","app":"@removeAppFeed","status":"@removeStatusFeed","gift":"@removeGiftFeed","photo":"@removeImageFeed","tag":"@removeImageTagFeed","profile":"@removeProfileFeed","share":"@removeShareFeed","movie":"@removeFilmFeed","music":"@removeMusicFeed","connect":"@removeConnectFeed","vip":"@removeVipFeed","group":"@removeGroupFeed","page":"@removePublicPageFeed","contact":"@removeContactFeed"}]],
+					argus3:[["@checkFeedInterval",{"blog":"@removeBlogFeed","poll":"@removePollFeed","app":"@removeAppFeed","status":"@removeStatusFeed","gift":"@removeGiftFeed","photo":"@removeImageFeed","tag":"@removeImageTagFeed","profile":"@removeProfileFeed","share":"@removeShareFeed","movie":"@removeFilmFeed","music":"@removeMusicFeed","connect":"@removeConnectFeed","friend":"@removeFriendFeed","vip":"@removeVipFeed","group":"@removeGroupFeed","page":"@removePublicPageFeed","contact":"@removeContactFeed"}]],
 				},
 				autoReloadFeeds:{
 					text:"自动更新首页新鲜事列表，每隔@@秒",
@@ -1682,6 +1688,7 @@ function getFeedType(feed,feedType) {
 		"movie":	[null,"<a [^>]*href=\"http://movie.xiaonei.com/|<a [^>]*href=\"http://movie.renren.com/"],
 		"music":	["^上传了音乐"],
 		"connect":	[null,null,null,"<a [^>]*href=\"http://www.connect.renren.com/"],
+		"friend":	["^和[\\s\\S]+成为了好友。"],
 		"vip":		["^更换了主页模板皮肤|^更换了主页装扮|^成为了人人网[\\d\\D]*VIP会员特权|^收到好友赠送的[\\d\\D]*VIP会员特权|^开启了人人网VIP个性域名"],
 		"group":	[null,"<a [^>]*href=\"http://group.renren.com/"],
 		"page":		[null,"<a [^>]*href=\"http://page.renren.com/"],
