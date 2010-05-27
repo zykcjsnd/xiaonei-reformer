@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.7.20100526
-// @miniver        274
+// @version        2.3.7.20100527
+// @miniver        275
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.7.20100526",
-	miniver:274,
+	version:"2.3.7.20100527",
+	miniver:275,
 
 	// 选项列表
 	options:{
@@ -285,11 +285,6 @@ XNR.prototype={
 							value:false,
 							argus1:[["l-poll"]],
 						},
-						removeGameRequest:{
-							text:"游戏邀请",
-							value:false,
-							argus1:[["l-game"],["l-restaurants"],["l-paopaoyu"]],
-						},
 						removePokeRequest:{
 							text:"招呼",
 							value:false,
@@ -309,6 +304,11 @@ XNR.prototype={
 							text:"圈人",
 							value:false,
 							argus1:[["l-tag"]],
+						},
+						removeOtherRequest:{
+							text:"其他请求",
+							value:false,
+							argus1:[["iOther"]],
 						},
 					},
 				},
@@ -1666,10 +1666,8 @@ function hideRequest(reqClass) {
 		$(".side-item.newrequests li img."+reqClass).parent().remove();
 	} catch(err) {
 	}
-	// 如果请求框没有项目了，删掉
-	if($(".side-item.newrequests ul.icon").heirs()==0) {
-		$(".side-item.newrequests").remove();
-	}
+	// 如果请求框没有项目了，一路向上删掉
+	$(".side-item.newrequests ul.icon").purge();
 };
 
 // 判断新鲜事类型，feed为li经XNR包装，可以指定判断是否为某一类型
@@ -2159,8 +2157,6 @@ function addExtraEmotions() {
 		{e:"(w)",		t:"宇航员",			s:"/imgpro/icons/ico_spacewalker.gif"},
 		{e:"(LG)",		t:"LG棒棒糖",		s:"/imgpro/activity/lg-lolipop/faceicon_2.gif"},
 		{e:"(i)",		t:"电灯泡",			s:"/img/ems/bulb.gif"},
-		{e:"(lz)",		t:"蜡烛",			s:"/img/ems/candle.gif"},
-		{e:"(gsilk)",	t:"绿丝带",			s:"/img/ems/gsilk.gif"},
 		{e:"(yeah)",	t:"哦耶",			s:"/img/ems/yeah.gif"},
 		{e:"(good)",	t:"牛",				s:"/img/ems/good.gif"},
 		{e:"(f)",		t:"拳头",			s:"/img/ems/fist.gif"},
