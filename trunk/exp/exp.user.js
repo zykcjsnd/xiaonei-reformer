@@ -59,12 +59,13 @@ XNR.debug=false;
 // 选项
 XNR.options={};
 
+
 // 当前运行环境（浏览器）
 const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4;
 XNR.agent=UNKNOWN;
 if(window.chrome) {
 	XNR.agent=CHROME;
-} else if (typeof gBrowser!="undefined") {
+} else if (typeof Components=="object") {
 	XNR.agent=FIREFOX;
 } else if (typeof GM_setValue=="function") {
 	XNR.agent=USERSCRIPT;
@@ -724,10 +725,17 @@ function $patchCSS(style,prepatch) {
  */
 function $save(name,value) {
 	XNR.options[name]=value;
-	if(XNR.agent==USERSCRIPT) {
-		GM_setValue("xnr_options",JSON.stringify(XNR.options));
-	} else if(XNR.agent==CHROME) {
-		chrome.extension.sendRequest({action:"save",data:JSON.stringify(XNR.options)});
+	var opts=JSON.stringify(XNR.options);
+	switch(XNR.agent) {
+		case USERSCRIPT:
+			GM_setValue("xnr_options",opts);
+			break;
+		case FIREFOX:
+			Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.xiaonei_reformer.").setCharPref("xnr_options",opts);
+			break;
+		case CHROME:
+			chrome.extension.sendRequest({action:"save",data:opts});
+			break;
 	}
 };
 
@@ -1285,7 +1293,12 @@ switch(XNR.agent) {
 		});
 		break;
 	case FIREFOX:
-		main({});	// TODO
+		try {
+			main(JSON.parse(Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.xiaonei_reformer.").getCharPref("xnr_options")));
+		} catch(err) {
+			main({});
+		}
+		break;
 	default:
 		throw "unsupported browser";
 };
