@@ -7,7 +7,7 @@
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
 // @version        2.3.7.20100527
-// @miniver        275
+// @miniver        276
 // @author         xz
 // ==/UserScript==
 //
@@ -64,7 +64,7 @@ function XNR(o) {
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
 	version:"2.3.7.20100527",
-	miniver:275,
+	miniver:276,
 
 	// 选项列表
 	options:{
@@ -3036,12 +3036,17 @@ function showOnlineMark() {
 	function markOnlineFriends() {
 		$("#feedHome li h3").each(function(index,elem) {
 			$(elem).find("a[href*='profile.do?']").each(function(index,link) {
-				var id=/id=([0-9]+)&/.exec(link.href)[1];
-				if(id && $._online[id]) {
-					if($(link).previous()==null || $(link).previous().prop("tagName")!="IMG") {
-						// 还没标记过
-						elem.insertBefore($node("img").attr({"class":"on-line",height:"12",width:"13",onclick:"javascript:talkto("+id+",'"+$._online[id]+"');return false;",title:"点此和"+$._online[id]+"聊天",src:"http://xnimg.cn/imgpro/icons/online_1.gif?ver=$revxxx$",style:"vertical-align:baseline;cursor:pointer"}).get(),link);
+				try {
+					var id=/id=([0-9]+)/.exec(link.href)[1];
+				
+					if(id && $._online[id]) {
+						if($(link).previous()==null || $(link).previous().prop("tagName")!="IMG") {
+							// 还没标记过
+							elem.insertBefore($node("img").attr({"class":"on-line",height:"12",width:"13",onclick:"javascript:talkto("+id+",'"+$._online[id]+"');return false;",title:"点此和"+$._online[id]+"聊天",src:"http://xnimg.cn/imgpro/icons/online_1.gif?ver=$revxxx$",style:"vertical-align:baseline;cursor:pointer"}).get(),link);
+						}
 					}
+				} catch(err) {
+					$error("markOnlineFriends",err);
 				}
 			});
 		});
