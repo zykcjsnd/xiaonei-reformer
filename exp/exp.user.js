@@ -6,7 +6,7 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        3.0.0.20100525
+// @version        3.0.0.20100527
 // @miniver        300
 // @author         xz
 // ==/UserScript==
@@ -27,7 +27,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-(function(){
+(function(_window){
+
+var window=_window;
+var document=_window.document;
 
 // 不在内容可以编辑的frame中运行
 if (window.self != window.top && document.designMode=="on") {
@@ -41,7 +44,7 @@ var $=PageKit;
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.0.20100525";
+XNR.version="3.0.0.20100527";
 XNR.miniver=300;
 
 // 存储空间，用于保存全局性变量
@@ -61,6 +64,8 @@ const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4;
 XNR.agent=UNKNOWN;
 if(window.chrome) {
 	XNR.agent=CHROME;
+} else if (typeof gBrowser!="undefined") {
+	XNR.agent=FIREFOX;
 } else if (typeof GM_setValue=="function") {
 	XNR.agent=USERSCRIPT;
 }
@@ -210,13 +215,14 @@ function main(savedOptions) {
 	//     [String]id:控件ID
 	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）
 	//     [Any]value:默认值
-	//     [Object]verify:{验证规则:失败信息}。可选。TODO
+	//     [Object]verify:{验证规则:失败信息,...}。验证规则为正则字串。可选。TODO
 	//     [String]style:样式。可选
 	//     [Array]fn:处理函数。可选
 	//   },
-	//   控件名2:{
-	//     ...
-	//   }
+	//   {
+	//   	控件2描述...
+	//   },
+	//   ...
 	// ]
 	// fn的格式是：
 	// [
@@ -225,9 +231,13 @@ function main(savedOptions) {
 	//     [String/Object]fire:函数执行条件。可以为控件的某一个事件。例如"click"。或者是{prop:控件属性,value:期望值}。可选。未指定事件为初始化后立即执行。
 	//     [Number]stage:执行时机/优先级（0～3）。参考$wait()。
 	//     [Object]trigger:设定其他控件的触发事件。{CSS选择器:事件名,...}。可选。如果stage为0，则trigger的执行时机为1，否则与stage相同。
-	//     [Array]args:函数参数列表。如果参数为另一选项/选项组，名称前加@。参数数量不得多于4个。利用选项组处理过多参数
+	//     [Array]args:函数参数列表。如果参数为另一控件值/选项组，名称前加@。参数数量不得多于4个。利用选项组处理过多参数
 	//     [String]page:适用页面。“页面类别1,页面类别2,...”，参考$page()。TODO
 	//   },
+	//   {
+	//   	函数2描述...
+	//   },
+	//   ...
 	// ]
 	//
 	//
@@ -369,11 +379,26 @@ function main(savedOptions) {
 				page.append(block);
 
 			} else {
-				// 选项组
+				// 选项组 TODO
 			}
 		}
 		// 将生成的页面div放入optionPages数组，方便后面加入到菜单
 		categoryPages.push(page.style("display","none").get());
+	}
+
+	// 检查执行队列中的参数，如果是@开头就替换成对应选项值
+	for(var iStage=0;iStage<4;iStage++) {
+		for(var i=0;i<fnQueue[iStage].length;i++) {
+			var fn=fnQueue[iStage][i];
+			if(!fn.args) {
+				continue;
+			}
+			for(var iArg=0;iArg<4;iArg++) {
+				if(typeof fn.args[iArg]=="string" && fn.args[iArg].charAt(0)=="@") {
+					fn.args[iArg]=XNR.options[fn.args[iArg].substring(1)];
+				}
+			}
+		}
 	}
 
 	// 执行优先级为0的函数
@@ -431,7 +456,7 @@ function main(savedOptions) {
 				}
 			}
 		}
-		location.reload();
+		window.location.reload();
 	});
 
 	// 菜单在导航栏上的入口
@@ -533,7 +558,7 @@ function $page(category,url) {
 		blog:"blog\\.renren\\.com",	// 日志
 	};
 	if(!url) {
-		url=location.href;
+		url=window.location.href;
 	}
 	return !pages[category] || url.match(pages[category]);
 };
@@ -1232,7 +1257,7 @@ PageKit.prototype={
 				if(e.toLowerCase().indexOf("javascript:")!=0) {
 					e="javascript:"+e;
 				}
-				location.href=e;
+				window.location.href=e;
 			} catch(err) {
 				$error("invoke",err);
 			}
@@ -1260,9 +1285,10 @@ switch(XNR.agent) {
 		});
 		break;
 	case FIREFOX:
-		break;
+		main({});	// TODO
 	default:
 		throw "unsupported browser";
 };
 
-})();
+// docWindow是Firefox扩展中的
+})(typeof docWindow=="undefined"?window:docWindow);

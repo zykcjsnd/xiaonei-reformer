@@ -1,0 +1,3 @@
+content	xnr	content/
+overlay	chrome://browser/content/browser.xul	chrome://xnr/content/xnr.xul
+
