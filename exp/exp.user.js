@@ -35,7 +35,10 @@ var document=_window.document;
 // 不在内容可以编辑的frame中运行
 if (window.self != window.top && document.designMode=="on") {
 	return;
+} else if(document.body && !document.body.id && !document.body.className) {
+	return;
 }
+
 
 // 页面工具的简写
 var $=PageKit;
@@ -51,7 +54,7 @@ XNR.miniver=300;
 XNR.storage={};
 
 // 当前用户ID
-XNR.userId="0";
+XNR.userId=$cookie("id","0");
 
 // 调试模式
 XNR.debug=false;
@@ -59,16 +62,15 @@ XNR.debug=false;
 // 选项
 XNR.options={};
 
-
 // 当前运行环境（浏览器）
 const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4;
 XNR.agent=UNKNOWN;
 if(window.chrome) {
 	XNR.agent=CHROME;
-} else if (typeof Components=="object") {
-	XNR.agent=FIREFOX;
 } else if (typeof GM_setValue=="function") {
 	XNR.agent=USERSCRIPT;
+} else if (typeof Components=="object") {
+	XNR.agent=FIREFOX;
 }
 
 /* 以下开始所有功能 */
@@ -157,7 +159,7 @@ function extendPrototype() {
 			return a;
 		};
 	}
-	// 为Date类型增加格式化文本方法
+	// 为Date对象增加格式化文本方法
 	if(!Date.prototype.format) {
 		Date.prototype.format=function(fmt) {
     		var o={
@@ -176,11 +178,19 @@ function extendPrototype() {
 	    	return fmt;
 		};
 	}
+	// 为Function对象增加获取函数名称方法
+	if(!Function.prototype.getName) {
+		Function.prototype.getName=function() {
+			return /function (.*?)\(/.exec(this.toString())[1];
+		};
+	}
 };
 
 // 主执行函数。
 function main(savedOptions) {
+	/* 一些初始化工作 */
 	extendPrototype();
+	/* 初始化完 */
 
 	// 选项菜单，定义选项菜单中各个项目
 	// 基本格式：
@@ -365,8 +375,13 @@ function main(savedOptions) {
 								// 符合要求，放入执行序列
 								fnQueue[fn.stage].push({name:fn.name,args:fn.args});
 							} else if(typeof fn.fire=="string") {
+								// 直接添加事件监听
 								node.hook(fn.fire,function(evt) {
-									fn.name(evt,fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+									try {
+										fn.name(evt,fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+									} catch(err) {
+										$error(fn.name,err);
+									}
 								});
 							}
 							// 其他节点触发事件
@@ -405,7 +420,11 @@ function main(savedOptions) {
 	// 执行优先级为0的函数
 	for(var i=0;i<fnQueue[0].length;i++) {
 		var fn=fnQueue[0][i];
-		fn.name(fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+		try {
+			fn.name(fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+		} catch(err) {
+			$error(fn.name,err);
+		}
 	}
 	
 
@@ -477,12 +496,20 @@ function main(savedOptions) {
 					// 触发器
 					for(var t in fn.trigger) {
 						$(t).hook(fn.trigger[t],function(evt) {
-							fn.name(evt,fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+							try {
+								fn.name(evt,fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+							} catch(err) {
+								$error(fn.name,err);
+							}
 						});
 					}
 				} else {
 					// 一般功能
-					fn.name(fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+					try {
+						fn.name(fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+					} catch(err) {
+						$error(fn.name,err);
+					}
 				}
 			}
 		}
@@ -494,13 +521,21 @@ function main(savedOptions) {
 			if(fn.trigger) {
 				// 触发器
 				for(var t in fn.trigger) {
-					$(t).hook(fn.trigger[t],function(evt) {
-						fn.name(evt,fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+					$(t).hook(fn.trigger[t],function(evt) {	
+						try {
+							fn.name(evt,fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+						} catch(err) {
+							$error(fn.name,err);
+						}
 					});
 				}
 			} else {
 				// 一般功能
-				fn.name(fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+				try {
+					fn.name(fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+				} catch(err) {
+					$error(fn.name,err);
+				}
 			}
 		}
 	});
@@ -736,6 +771,69 @@ function $save(name,value) {
 		case CHROME:
 			chrome.extension.sendRequest({action:"save",data:opts});
 			break;
+	}
+};
+
+/*
+ * 发送GET请求。支持跨域。Chrome跨域还需要在manifest.json配置权限。
+ * 参数
+ *   [String]url:页面地址
+ *   [Function]func:回调函数。function(pageText,url,data){}。如果发生错误，pageText为null
+ *   [Any]userData:额外的用户数据。可选。
+ * 返回值
+ *   无
+ */
+function $get(url,func,userData) {
+	switch(XNR.agent) {
+		case FIREFOX:
+			var httpReq= new XMLHttpRequest();
+			httpReq.onload=function() {
+				func((httpReq.status==200?httpReq.responseText:null),url,userData);
+			};
+			httpReq.onerror=function() {
+				func(null,url,userData);
+			};
+		    httpReq.open("GET",url,true);
+			httpReq.send();
+			break;
+		case USERSCRIPT:
+			GM_xmlhttpRequest({method:"GET",url:url,onload:function(o) {
+				func((o.status==200?o.responseText:null),url,userData);
+			},onerror:function(o) {
+				func(null,url,userData);
+			}});
+			break;
+		case CHROME:
+			chrome.extension.sendRequest({action:"get",url:url},function(response) {
+				func(response.data,url,userData);
+			});
+			break;
+	} 
+};
+
+/*
+ * 记录错误信息
+ * 参数
+ *   [String/Function]func:发生错误的函数(名)
+ *   [Error]error:异常对象
+ * 返回值
+ *   无
+ */
+function $error(func,error) {
+	if(typeof func=="function") {
+		func=func.getName();
+	}
+	if(typeof error=="object" && error.name && error.message) {
+		var msg="在 "+func+"() 中发生了一个错误。\n错误名称："+error.name+"\n错误信息："+error.message;
+		if(XNR.agent!=USERSCRIPT) {
+			msg="人人网改造器："+msg;
+		}
+		if(XNR.agent==FIREFOX) {
+			Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService).logStringMessage(msg);
+		} else {
+			console.log(msg);
+		}
+		//TODO : 调试信息到选项菜单
 	}
 };
 

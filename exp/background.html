@@ -16,12 +16,13 @@ function(request, sender, sendResponse) {
 				sendResponse({options:JSON.parse(options)});
 			}
 			break;
-		case "httpGet":
+		case "get":
 			var httpReq= new XMLHttpRequest();
-			httpReq.onreadystatechange=function() {
-				if(httpReq.readyState==4 && httpReq.status==200) {
-					sendResponse({data:httpReq.responseText});
-				}
+			httpReq.onload=function() {
+				sendResponse({data:(httpReq.status==200?httpReq.responseText:null)});
+			};
+			httpReq.onerror=function(e) {
+				sendResponse({data:null});
 			};
 		    httpReq.open("GET",request.url,true);
 			//httpReq.setRequestHeader("Cache-Control","no-cache");

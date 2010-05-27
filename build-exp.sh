@@ -3,14 +3,9 @@
 INPUT=exp/exp.user.js
 OUTPUT=exp/exp.min.user.js
 
-sed -n '1,29p' "$INPUT" > "$OUTPUT"
-yui-compressor --nomunge "$INPUT"  >> "$OUTPUT"
+yui-compressor --nomunge "$INPUT"  > "$OUTPUT"
 
 #######################################
-
-cd exp
-./pack.sh
-cd ..
 
 #######################################
 
