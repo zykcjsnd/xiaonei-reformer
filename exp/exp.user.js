@@ -126,6 +126,28 @@ function removeStarReminder() {
 	});
 };
 
+// 隐藏请求
+function hideRequest(req) {
+	var table={
+		"appRequest":"l-app",
+		"nodifyRequest":"l-request",
+		"pokeRequest":"l-poke",
+		"recommendRequest":"l-recommend",
+		"friendRequest":"l-friend",
+		"tagRequest":"l-tag",
+		"pollRequest":"l-poll",
+		"eventRequest":"l-event",
+		"otherRequest":"iOther"
+	};
+	var box=$(".side-item.newrequests ul.icon");
+	for(var r in req) {
+		if(req[r] && table[r]) {
+			box.find("li img."+table[r]).superior().purge();
+		}
+	}
+};
+
+
 /* 所有功能完毕 */
 
 function extendPrototype() {
@@ -213,20 +235,20 @@ function main(savedOptions) {
 	//	 ...
 	// }
 	// 其中，功能分为两类，第一种是具体的功能，格式为：
-	// 功能名:{
+	// {
 	//   [String]text:文字+HTML控件描述。例："##选项 数量：##"，表示前后各有一个HTML控件。
 	//   [Array]ctrl:如果text中存在控件描述，在这里具体定义。
 	//   [Number]agent:执行环境限制。可选。为XNR.agnet可定义值的组合
 	//   [String]info:辅助性描述信息。可选。TODO
 	//   [String]warn:警告信息。可选。TODO
 	// }
-	// ctrl的格式是：
+	// 功能中ctrl的格式是：
 	// [
 	//   {
 	//     [String]id:控件ID
-	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）
+	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）。默认为check
 	//     [Any]value:默认值
-	//     [Object]verify:{验证规则:失败信息,...}。验证规则为正则字串。可选。TODO
+	//     [Object]verify:{验证规则:失败信息,...}。验证规则为正则字串。可选
 	//     [String]style:样式。可选
 	//     [Array]fn:处理函数。可选
 	//   },
@@ -235,7 +257,7 @@ function main(savedOptions) {
 	//   },
 	//   ...
 	// ]
-	// fn的格式是：
+	// 功能中fn的格式是：
 	// [
 	//   {
 	//     [Function]name:函数名。
@@ -253,19 +275,34 @@ function main(savedOptions) {
 	//
 	//
 	// 第二种是选项组，为被多个功能共用的选项集合，格式为：
-	// 选项组名:{
+	// {
+	//   [String]id:选项组id。
 	//   [String]text:文字描述。可选。文字后将换行列出各选项。
-	//   [Array]ctrl:各选项描述。格式同前，但忽略fn。
+	//   [Array]ctrl:各选项描述。
 	//   [Number]column:列数
 	// }
-	//
+	// 选项组中ctrl的格式是
+	// [
+	//   {
+	//     [String]id:控件ID
+	//     [String]text:文字+HTML控件描述。例："##选项"。仅能有一个##
+	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）。默认为check
+	//     [Any]value:默认值
+	//     [Object]verify:{验证规则:失败信息,...}。验证规则为正则字串。可选
+	//     [String]style:样式。可选
+	//   },
+	//   {
+	//   	控件2描述...
+	//   },
+	//   ...
+	// ]
+
 	var optionMenu={
 		"清理页面":[
 			{
 				text:"##清除各类广告",
 				ctrl:[{
 					id:"removeAds",
-					type:"check",
 					value:true,
 					fn:[{
 						name:removeAds,
@@ -278,7 +315,6 @@ function main(savedOptions) {
 				text:"##去除页面主题模板",
 				ctrl:[{
 					id:"removePageTheme",
-					type:"check",
 					value:false,
 					fn:[{
 						name:removePageTheme,
@@ -290,7 +326,6 @@ function main(savedOptions) {
 				text:"##去除升级星级用户提示",
 				ctrl:[{
 					id:"removeStarReminder",
-					type:"check",
 					value:true,
 					fn:[{
 						name:removeStarReminder,
@@ -298,6 +333,64 @@ function main(savedOptions) {
 						fire:{prop:"checked",value:true},
 					}],
 				}],
+			}
+		],
+		"处理请求":[
+			{
+				text:"##",	// 屏蔽请求
+				ctrl:[{
+					id:"hideRequest",
+					type:"hidden",
+					value:true,
+					fn:[{
+						name:hideRequest,
+						stage:1,
+						args:["@requestGroup"]
+					}],
+				}],
+			},{
+				id:"requestGroup",
+				text:"屏蔽以下类型的请求",
+				column:3,
+				ctrl:[
+					{
+						id:"appRequest",
+						text:"##应用请求",
+						value:false,
+					},{
+						id:"nodifyRequest",
+						text:"##通知",
+						value:false,
+					},{
+						id:"pokeRequest",
+						text:"##招呼",
+						value:false,
+					},{
+						id:"recommendRequest",
+						text:"##好友推荐",
+						value:false,
+					},{
+						id:"friendRequest",
+						text:"##好友申请",
+						value:false,
+					},{
+						id:"tagRequest",
+						text:"##圈人",
+						value:false,
+					},{
+						id:"pollRequest",
+						text:"##投票邀请",
+						value:false,
+					},{
+						id:"eventRequest",
+						text:"##活动邀请",
+						value:false,
+					},{
+						id:"otherRequest",
+						text:"##其他请求",
+						value:false,
+					},
+				],
 			}
 		],
 	};
@@ -311,16 +404,16 @@ function main(savedOptions) {
 		// 添加分类
 		categoryHTML+="<li class=\""+(categoryPages.length%2!=0?"even":"odd")+"\"><span>"+category+"</span></li>";
 		var page=$node("div");
-		for(iFunc=0;iFunc<optionMenu[category].length;iFunc++) {
+		for(var iFunc=0;iFunc<optionMenu[category].length;iFunc++) {
 			var o=optionMenu[category][iFunc];
 			// 不适用于当前浏览器
 			if(o.agent && (o.agent & XNR.agent)==0) {
 				return;
 			}
-			if(!o.column) {
+			// 放在一块中
+			var block=$node("div");
+			if(!o.id) {
 				// 功能
-				// 放在一块中
-				var block=$node("div");
 				var text=o.text.split("##");
 				for(var iText=0;iText<text.length;iText++) {
 					// 文本节点
@@ -338,7 +431,7 @@ function main(savedOptions) {
 					}
 					// 生成控件节点
 					var node=null;
-					switch(control.type) {
+					switch(control.type || "check") {
 						case "check":
 							node=$node("input").attr("type","checkbox");
 							break;
@@ -361,6 +454,10 @@ function main(savedOptions) {
 						node.value(control.value);
 						node.attr({id:control.id,style:(control.style || "")});
 						node.appendTo(block);
+					}
+					// 输入验证
+					if(control.verify) {
+						node.attr("verify",JSON.stringify(control.verify));
 					}
 					XNR.options[control.id]=control.value;
 					// 相关函数
@@ -392,11 +489,64 @@ function main(savedOptions) {
 						}
 					}
 				}
-				page.append(block);
 
 			} else {
-				// 选项组 TODO
+				// 选项组
+				if(o.text) {
+					$node("div").text(o.text).appendTo(block);
+				}
+				var group={};
+				var table=$node("tbody").appendTo($node("table").appendTo(block));
+				for(var i=0;i<o.ctrl.length;) {
+					var tr=$node("tr").appendTo(table);
+					for(var j=0;j<o.column;j++,i++) {
+						var item=o.ctrl[i];
+						var td=$node("td").appendTo(tr);
+						if(i<o.ctrl.length) {
+							// 如果控件值已保存，用保存的值替代默认值
+							if(savedOptions[o.id]!=null && savedOptions[o.id][item.id]!=null) {
+								item.value=savedOptions[o.id][item.id];
+							}
+							group[item.id]=item.value;
+							var text=item.text.split("##");
+							$node().text(text[0]).appendTo(td);
+							// 生成控件节点
+							var node=null;
+							switch(item.type || "check") {
+								case "check":
+									node=$node("input").attr("type","checkbox");
+									break;
+								case "hidden":
+									break;
+								case "input":
+									node=$node("input");
+									break;
+								case "edit":
+									node=$node("textarea");
+									break;
+								case "button":
+									node=$node("input").attr("type","button");
+									break;
+								case "label":
+									node=$node("span");
+									break;
+							}
+							if(node) {
+								node.value(item.value);
+								node.attr({id:item.id,style:(item.style || "")});
+								node.appendTo(td);
+							}
+							// 输入验证
+							if(item.verify) {
+								node.attr("verify",JSON.stringify(control.verify));
+							}
+							$node().text(text[1]).appendTo(td);
+						}
+					}
+				}
+				XNR.options[o.id]=group;
 			}
+			page.append(block);
 		}
 		// 将生成的页面div放入optionPages数组，方便后面加入到菜单
 		categoryPages.push(page.style("display","none").get());
@@ -441,9 +591,9 @@ function main(savedOptions) {
 		if(t.prop("tagName")=="SPAN") {
 			t=t.superior();
 		}
-		$(".xnr_op .pages>div").hide();
-		$(".xnr_op .pages>div").pick(t.index()+1).show();
-		$(".xnr_op .category li.selected").removeClass("selected");
+		menu.find(".pages>div").hide();
+		menu.find(".pages>div").pick(t.index()+1).show();
+		menu.find(".category li.selected").removeClass("selected");
 		t.addClass("selected");
 	});
 
@@ -451,7 +601,7 @@ function main(savedOptions) {
 	menu.find(".cancel").hook("click",function(evt) {
 		menu.hide();
 		// 重置选项
-		for(op in XNR.options) {
+		for(var op in XNR.options) {
 			var c=menu.find("#"+op);
 			if(c.empty()) {
 				continue;
@@ -463,16 +613,63 @@ function main(savedOptions) {
 
 	// 点击保存按钮事件
 	menu.find(".ok").hook("click",function(evt) {
-		// TODO: verify
-		for(op in XNR.options) {
-			var c=menu.find("#"+op);
-			if(c.empty()) {
-				continue;
+		// 先进行验证
+		var pass=true;
+		menu.find("*[verify]:not([disabled])").each(function(elem) {
+			var node=$(elem);
+			var rules=JSON.parse(node.attr("verify"));
+			for(var rule in rules) {
+				if(!node.value().match(new RegExp(rule))) {
+					// 转到对应的页面
+					var page=node;
+					while(page.superior().prop("className")!="pages") {
+						page=page.superior();
+					}
+					var index=page.index()
+					menu.find(".pages>div").hide().pick(index).show();
+					menu.find(".category li").removeClass("selected").pick(index-1).addClass("selected");
+
+					alert(rules[rule]);
+					elem.focus();
+					pass=false;
+					return false;
+				}
+			}
+		});
+		if(!pass) {
+			return;
+		}
+
+		for(var op in XNR.options) {
+			if(typeof XNR.options[op]=="object") {
+				// 选项组
+				var group=XNR.options[op];
+				var changed=false;
+				for(var item in group) {
+					var c=menu.find("#"+item);
+					if(c.empty()) {
+						continue;
+					} else {
+						var newValue=c.value();
+						if(group[item]!=newValue) {
+							changed=true;
+							group[item]=newValue;
+						}
+					}
+				}
+				if(changed) {
+					$save(op,group);
+				}
 			} else {
-				var newValue=c.value();
-				// 只保存修改了的
-				if(XNR.options[op]!=newValue) {
-					$save(op,newValue);
+				var c=menu.find("#"+op);
+				if(c.empty()) {
+					continue;
+				} else {
+					var newValue=c.value();
+					// 只保存修改了的
+					if(XNR.options[op]!=newValue) {
+						$save(op,newValue);
+					}
 				}
 			}
 		}
@@ -1247,6 +1444,7 @@ PageKit.prototype={
 				xnr.attr("class",c+" "+str);
 			}
 		});
+		return this;
 	},
 	// 去除一个类
 	removeClass:function(str) {
@@ -1257,6 +1455,7 @@ PageKit.prototype={
 				xnr.attr("class",c.replace(new RegExp("\\b"+str+"\\b"),"").replace(/^ +| +$/g,""));
 			}
 		});
+		return this;
 	},
 	// 获取/设置文本内容
 	text:function(txt) {
@@ -1310,7 +1509,7 @@ PageKit.prototype={
 			this.each(function(elem) {
 				switch(elem.tagName) {
 					case "INPUT":
-						switch($(elem).attr("type").toLowerCase()) {
+						switch(($(elem).attr("type") || "").toLowerCase()) {
 							case "checkbox":
 								elem.checked=v;
 								break;
@@ -1332,7 +1531,7 @@ PageKit.prototype={
 			var elem=this.get();
 			switch(elem.tagName) {
 				case "INPUT":
-					switch($(elem).attr("type").toLowerCase()) {
+					switch(($(elem).attr("type") || "").toLowerCase()) {
 						case "checkbox":
 							return elem.checked;
 						default:
