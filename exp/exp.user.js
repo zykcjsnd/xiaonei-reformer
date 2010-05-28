@@ -417,7 +417,7 @@ function main(savedOptions) {
 					},{
 						id:"diagnosisInfo",
 						type:"edit",
-						style:"width:99%;height:230px;margin-top:5px",
+						style:"width:99%;height:230px;margin-top:5px;resize:none",
 						readonly:true,
 					}
 				],
@@ -432,7 +432,7 @@ function main(savedOptions) {
 	// 解析选项
 	for(var category in optionMenu) {
 		// 添加分类
-		categoryHTML+="<li class=\""+(categoryPages.length%2!=0?"even":"odd")+"\"><span>"+category+"</span></li>";
+		categoryHTML+="<li><span>"+category+"</span></li>";
 		var page=$node("div");
 		for(var iFunc=0;iFunc<optionMenu[category].length;iFunc++) {
 			var o=optionMenu[category][iFunc];
@@ -625,7 +625,7 @@ function main(savedOptions) {
 	
 
 	// 生成选项菜单
-	var menuHTML='<style type="text/css">.xnr_op{width:500px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black;blackground:black;font-size:12px}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op a{color:#3B5990}.xnr_op table{width:100%;table-layout:fixed}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .m{width:100%}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op>table table{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%}.xnr_op table.group{margin-left:5px;margin-top:3px}.xnr_op .pages tr{line-height:20px}.xnr_op input[type="checkbox"]{margin-right:4px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
+	var menuHTML='<style type="text/css">.xnr_op{width:500px;position:fixed;z-index:200000;color:black;blackground:black;font-size:12px}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op a{color:#3B5990}.xnr_op table{width:100%;table-layout:fixed}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .m{width:100%}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op>table table{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%}.xnr_op table.group{margin-left:5px;margin-top:3px}.xnr_op .pages tr{line-height:20px}.xnr_op input[type="checkbox"]{margin-right:4px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
 		menuHTML+='<table><tbody><tr><td class="border tl"></td><td class="border m"></td><td class="border tr"></td></tr><tr><td class="border"></td><td class="c m"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>'+categoryHTML+'</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>人人网改造器</h1><p><b>'+XNR.version+' ('+XNR.miniver+')</b></p><p><b>Copyright © 2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p></td></tr></tbody></table></div></td></tr></tbody></table></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border"></td></tr><tr><td class="border bl"></td><td class="border m"></td><td class="border br"></td></tr></tbody></table>';
 
 	var menu=$node("div").attr("class","xnr_op").style("display","none").code(menuHTML).appendTo(document.documentElement);
@@ -648,11 +648,24 @@ function main(savedOptions) {
 		menu.hide();
 		// 重置选项
 		for(var op in XNR.options) {
-			var c=menu.find("#"+op);
-			if(c.empty()) {
-				continue;
-			} else {
-				c.value(XNR.options[op]);
+			if(typeof XNR.options[op]=="object") {
+				// 选项组
+				var group=XNR.options[op];
+				for(var item in group) {
+					var c=menu.find("#"+item);
+					if(c.empty()) {
+						continue;
+					} else {
+						c.value(group[item]);
+					}
+				}
+			} else { 
+				var c=menu.find("#"+op);
+				if(c.empty()) {
+					continue;
+				} else {
+					c.value(XNR.options[op]);
+				}
 			}
 		}
 	});
@@ -722,10 +735,36 @@ function main(savedOptions) {
 		window.location.reload();
 	});
 
+	// 增加拖动效果。。。（有意思吗？）
+	menu.find("div.title").hook("mousedown",function(evt) {
+		// 只准左键拖
+		if(evt.button!=0) {
+			return;
+		}
+		window.captureEvents(Event.MOUSEMOVE | Event.MOUSEUP);
+		var move=$alloc("drag_optionMenu");
+		var menuRect=menu.get().getBoundingClientRect();
+		move.x=evt.clientX-menuRect.left;
+		move.y=evt.clientY-menuRect.top;
+		evt.target.style.cursor="move";
+	}).hook("mouseup",function(evt) {
+		if($allocated("drag_optionMenu")) {
+			$dealloc("drag_optionMenu");
+			window.releaseEvents(Event.MOUSEMOVE | Event.MOUSEUP);
+			evt.target.style.cursor="default";
+		}
+	});
+	$(document.documentElement).hook("mousemove",function(evt) {
+		if($allocated("drag_optionMenu")) {
+			var move=$alloc("drag_optionMenu");
+			menu.style({left:(evt.clientX-move.x)+"px",top:(evt.clientY-move.y)+"px"});
+		}
+	});
+
 	// 菜单在导航栏上的入口
 	var entry=$node("div").attr("class","menu").append($node("div").attr("class","menu-title").append($node("a").attr({href:"#nogo",onclick:"return false"}).text("改造")));
 	entry.find("a").hook("click",function() {
-		menu.show().style("top",parseInt(window.innerHeight-menu.prop("offsetHeight"))/2+"px");
+		menu.show().style({"top":parseInt(window.innerHeight-menu.prop("offsetHeight"))/2+"px","left":parseInt(window.innerWidth-menu.prop("offsetWidth"))/2+"px"});
 	});
 
 	// 优先级为1&2在页面DOM构建完毕后执行，添加菜单入口项也是
@@ -845,28 +884,35 @@ function $page(category,url) {
 /*
  * 申请一个全局对象
  * 参数
- *   [String]name:对象名称，可以为空
- *   [Boolean]monopoly:如果相同名称的对象已被申请，则返回空
+ *   [String]name:对象名称，可以为空。如果同名对象已经被分配，则返回那个对象
  * 返回值
  *   [Object]:对象
  */
-function $alloc(name,monopoly) {
+function $alloc(name) {
 	if(!name) {
 		do {
 			name="r"+Math.random();
 		} while(!XNR.storage[name]);
 	}
-	if(storage[name]) {
-		if(monopoly) {
-			return null;
-		} else {
-			return XNR.storage[name];
-		}
+	if(XNR.storage[name]) {
+		return XNR.storage[name];
 	} else {
  		XNR.storage[name]=new Object();
 		return XNR.storage[name];
 	}
 };
+
+/*
+ * 判断是否已经分配了同名对象
+ * 参数
+ *   [String]name:对象名称，可以为空
+ * 返回值
+ *   [Boolean]:是否已经分配
+ */
+function $allocated(name) {
+	return XNR.storage[name]!=null;
+};
+
 
 /*
  * 解除全局对象分配
@@ -1486,7 +1532,7 @@ PageKit.prototype={
 		this.each(function(elem) {
 			var xnr=$(elem);
 			var c=xnr.attr("class");
-			if(!c.match(new RegExp("\\b"+str+"\\b"))) {
+			if(!c || !c.match(new RegExp("\\b"+str+"\\b"))) {
 				xnr.attr("class",c+" "+str);
 			}
 		});
@@ -1497,7 +1543,7 @@ PageKit.prototype={
 		this.each(function(elem) {
 			var xnr=$(elem);
 			var c=xnr.attr("class");
-			if(c.match(new RegExp("\\b"+str+"\\b"))) {
+			if(c && c.match(new RegExp("\\b"+str+"\\b"))) {
 				xnr.attr("class",c.replace(new RegExp("\\b"+str+"\\b"),"").replace(/^ +| +$/g,""));
 			}
 		});
@@ -1550,7 +1596,7 @@ PageKit.prototype={
 	},
 	// 获取/设置对象的值。可输入控件为其输入值，其余为其内部文本
 	value:function(v) {
-		if(v) {
+		if(v!=null) {
 			// 设置
 			this.each(function(elem) {
 				switch(elem.tagName) {
@@ -1590,10 +1636,13 @@ PageKit.prototype={
 			}
 		}
 	},
-	// 添加事件监听函数
+	// 添加事件监听函数。可以有多个事件。由逗号分隔
 	hook:function(evt,func) {
+		var e=evt.split(",");
 		this.each(function(elem) {
-			elem.addEventListener(evt,func,false);
+			for(var i=0;i<e.length;i++) {
+				elem.addEventListener(e[i],func,false);
+			}
 		});
 		return this;
 	},
