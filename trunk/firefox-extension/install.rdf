@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 
@@ -8,11 +8,9 @@
     <em:version>3.0.0.300</em:version>
     <em:description>为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能……</em:description>
     <em:creator>xz</em:creator>
-	<em:homepageURL>xiaonei-reformer.googlecode.com</em:homepageURL>
+	<em:homepageURL>http://xiaonei-reformer.googlecode.com</em:homepageURL>
 	<em:iconURL>chrome://xnr/content/image/icon48.png</em:iconURL>
 
-    <!-- Target Application this extension can install into, 
-        with minimum and maximum supported versions. -->
     <em:targetApplication>
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
@@ -21,6 +19,5 @@
       </Description>
     </em:targetApplication>
 
-    <!-- Front End MetaData -->
   </Description>      
 </RDF>

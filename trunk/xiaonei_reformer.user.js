@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        2.3.7.20100527
-// @miniver        276
+// @version        2.3.7.20100528
+// @miniver        277
 // @author         xz
 // ==/UserScript==
 //
@@ -63,8 +63,8 @@ function XNR(o) {
 };
 XNR.prototype={
 	// 脚本版本，主要供更新用，对应header中的@version和@miniver
-	version:"2.3.7.20100527",
-	miniver:276,
+	version:"2.3.7.20100528",
+	miniver:277,
 
 	// 选项列表
 	options:{
@@ -1662,12 +1662,7 @@ function removeWebFunction() {
 
 //隐藏请求
 function hideRequest(reqClass) {
-	try {
-		$(".side-item.newrequests li img."+reqClass).parent().remove();
-	} catch(err) {
-	}
-	// 如果请求框没有项目了，一路向上删掉
-	$(".side-item.newrequests ul.icon").purge();
+	$(".side-item.newrequests ul.icon").find("li img."+reqClass).parent().purge();
 };
 
 // 判断新鲜事类型，feed为li经XNR包装，可以指定判断是否为某一类型
