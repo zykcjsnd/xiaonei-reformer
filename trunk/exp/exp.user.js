@@ -29,6 +29,7 @@
 
 (function(_window){
 
+// 主要是为了Firefox扩展。需要覆盖window。为了减少修改也把document覆盖了
 var window=_window;
 var document=_window.document;
 
@@ -38,10 +39,6 @@ if (window.self != window.top && document.designMode=="on") {
 } else if(document.body && !document.body.id && !document.body.className) {
 	return;
 }
-
-
-// 页面工具的简写
-var $=PageKit;
 
 // 基本参数
 var XNR={};
@@ -73,6 +70,9 @@ if(window.chrome) {
 	XNR.agent=FIREFOX;
 }
 
+// 页面工具的简写
+var $=PageKit;
+
 /* 以下开始所有功能 */
 
 // 清除广告
@@ -96,7 +96,7 @@ function removeAds(evt) {
 
 // 去除页面模板
 function removePageTheme() {
-	var themes=["head link[rel='stylesheet'][href*='/csspro/themes/'][href*='.css']", //节日模板
+	const themes=["head link[rel='stylesheet'][href*='/csspro/themes/'][href*='.css']", //节日模板
 				"#hometpl_style",	// 首页特定事件
 				"head link[rel='stylesheet'][href*='zidou_nav.css']",	// 紫豆导航栏
 				"#domain_wrapper",	// 个人域名提示栏
@@ -128,7 +128,7 @@ function removeStarReminder() {
 
 // 隐藏请求
 function hideRequest(req) {
-	var table={
+	const table={
 		"appRequest":"l-app",
 		"nodifyRequest":"l-request",
 		"pokeRequest":"l-poke",
@@ -140,6 +140,9 @@ function hideRequest(req) {
 		"otherRequest":"iOther"
 	};
 	var box=$(".side-item.newrequests ul.icon");
+	if(box.empty()) {
+		return;
+	}
 	for(var r in req) {
 		if(req[r] && table[r]) {
 			box.find("li img."+table[r]).superior().purge();
@@ -147,6 +150,15 @@ function hideRequest(req) {
 	}
 };
 
+// 生成诊断信息
+function diagnose() {
+	var str="";
+	str+="运行环境："+navigator.userAgent+"\n";
+	str+="当前页面："+window.location.href+"\n";
+	str+="程序版本："+XNR.version+"("+XNR.miniver+") - "+XNR.agent+"\n";
+	str+="功能："+JSON.stringify(XNR.options)+"\n\n\n";
+	$("div.xnr_op #diagnosisInfo").value(str);
+};
 
 /* 所有功能完毕 */
 
@@ -245,11 +257,12 @@ function main(savedOptions) {
 	// 功能中ctrl的格式是：
 	// [
 	//   {
-	//     [String]id:控件ID
+	//     [String]id:控件ID。type为hidden时没有id
 	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）。默认为check
-	//     [Any]value:默认值
+	//     [Any]value:默认值。type为hidden或readonly为真时没有value
 	//     [Object]verify:{验证规则:失败信息,...}。验证规则为正则字串。可选
 	//     [String]style:样式。可选
+	//     [Boolean]:readonly:只读。可选
 	//     [Array]fn:处理函数。可选
 	//   },
 	//   {
@@ -284,10 +297,10 @@ function main(savedOptions) {
 	// 选项组中ctrl的格式是
 	// [
 	//   {
-	//     [String]id:控件ID
+	//     [String]id:控件ID。type为hidden时没有id
 	//     [String]text:文字+HTML控件描述。例："##选项"。仅能有一个##
 	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）。默认为check
-	//     [Any]value:默认值
+	//     [Any]value:默认值。type为hidden时没有value
 	//     [Object]verify:{验证规则:失败信息,...}。验证规则为正则字串。可选
 	//     [String]style:样式。可选
 	//   },
@@ -339,9 +352,7 @@ function main(savedOptions) {
 			{
 				text:"##",	// 屏蔽请求
 				ctrl:[{
-					id:"hideRequest",
 					type:"hidden",
-					value:true,
 					fn:[{
 						name:hideRequest,
 						stage:1,
@@ -393,6 +404,25 @@ function main(savedOptions) {
 				],
 			}
 		],
+		"诊断信息":[
+			{
+				text:"##如果您遇到功能出错，请在报告问题时附带上出错页面中的以下信息：##",
+				ctrl:[
+					{
+						type:"hidden",
+						fn:[{
+							name:diagnose,
+							stage:1,
+						}],
+					},{
+						id:"diagnosisInfo",
+						type:"edit",
+						style:"width:99%;height:230px;margin-top:5px",
+						readonly:true,
+					}
+				],
+			}
+		]
 	};
 	// 函数执行队列。对应4个优先级，每一个优先级数组中的函数对象为{name:函数,args:函数参数,[trigger:{CSS选择器:事件名,...}]}
 	var fnQueue=[[],[],[],[]];
@@ -426,7 +456,7 @@ function main(savedOptions) {
 						continue;
 					}
 					// 如果控件值已保存，用保存的值替代默认值
-					if(savedOptions[control.id]!=null) {
+					if(control.id && savedOptions[control.id]!=null && !control.readonly) {
 						control.value=savedOptions[control.id];
 					}
 					// 生成控件节点
@@ -436,6 +466,7 @@ function main(savedOptions) {
 							node=$node("input").attr("type","checkbox");
 							break;
 						case "hidden":
+							control.value=null;
 							break;
 						case "input":
 							node=$node("input");
@@ -455,11 +486,17 @@ function main(savedOptions) {
 						node.attr({id:control.id,style:(control.style || "")});
 						node.appendTo(block);
 					}
+					if(control.readonly) {
+						node.attr("readonly","true");
+						control.value=null;
+					}
 					// 输入验证
 					if(control.verify) {
 						node.attr("verify",JSON.stringify(control.verify));
 					}
-					XNR.options[control.id]=control.value;
+					if(control.value!=null) {
+						XNR.options[control.id]=control.value;
+					}
 					// 相关函数
 					if(control.fn) {
 						for(var iFn=0;iFn<control.fn.length;iFn++) {
@@ -496,7 +533,7 @@ function main(savedOptions) {
 					$node("div").text(o.text).appendTo(block);
 				}
 				var group={};
-				var table=$node("tbody").appendTo($node("table").appendTo(block));
+				var table=$node("tbody").appendTo($node("table").attr("class","group").appendTo(block));
 				for(var i=0;i<o.ctrl.length;) {
 					var tr=$node("tr").appendTo(table);
 					for(var j=0;j<o.column;j++,i++) {
@@ -504,12 +541,13 @@ function main(savedOptions) {
 						var td=$node("td").appendTo(tr);
 						if(i<o.ctrl.length) {
 							// 如果控件值已保存，用保存的值替代默认值
-							if(savedOptions[o.id]!=null && savedOptions[o.id][item.id]!=null) {
+							if(o.id && savedOptions[o.id]!=null && savedOptions[o.id][item.id]!=null) {
 								item.value=savedOptions[o.id][item.id];
 							}
-							group[item.id]=item.value;
 							var text=item.text.split("##");
-							$node().text(text[0]).appendTo(td);
+							if(text[0]) {
+								$node().text(text[0]).appendTo(td);
+							}
 							// 生成控件节点
 							var node=null;
 							switch(item.type || "check") {
@@ -517,6 +555,7 @@ function main(savedOptions) {
 									node=$node("input").attr("type","checkbox");
 									break;
 								case "hidden":
+									item.value=null;
 									break;
 								case "input":
 									node=$node("input");
@@ -540,13 +579,20 @@ function main(savedOptions) {
 							if(item.verify) {
 								node.attr("verify",JSON.stringify(control.verify));
 							}
-							$node().text(text[1]).appendTo(td);
+							if(item.value!=null) {
+								group[item.id]=item.value;
+							}
+							if(text[1]) {
+								$node().text(text[1]).appendTo(td);
+							}
 						}
 					}
 				}
 				XNR.options[o.id]=group;
 			}
-			page.append(block);
+			if(block.heirs()!=0) {
+				page.append(block);
+			}
 		}
 		// 将生成的页面div放入optionPages数组，方便后面加入到菜单
 		categoryPages.push(page.style("display","none").get());
@@ -579,7 +625,7 @@ function main(savedOptions) {
 	
 
 	// 生成选项菜单
-	var menuHTML='<style type="text/css">.xnr_op{width:500px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black;blackground:black;font-size:12px}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op a{color:#3B5990}.xnr_op table{width:100%;table-layout:fixed}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .m{width:100%}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op>table table{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%}.xnr_op .pages>div>div>table{margin-left:5px}.xnr_op .pages tr{line-height:20px}.xnr_op input[type="checkbox"]{margin-right:4px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
+	var menuHTML='<style type="text/css">.xnr_op{width:500px;left:50%;margin-left:-225px;position:fixed;z-index:200000;color:black;blackground:black;font-size:12px}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op a{color:#3B5990}.xnr_op table{width:100%;table-layout:fixed}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .m{width:100%}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op>table table{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li.even{background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%}.xnr_op table.group{margin-left:5px;margin-top:3px}.xnr_op .pages tr{line-height:20px}.xnr_op input[type="checkbox"]{margin-right:4px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
 		menuHTML+='<table><tbody><tr><td class="border tl"></td><td class="border m"></td><td class="border tr"></td></tr><tr><td class="border"></td><td class="c m"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>'+categoryHTML+'</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>人人网改造器</h1><p><b>'+XNR.version+' ('+XNR.miniver+')</b></p><p><b>Copyright © 2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p></td></tr></tbody></table></div></td></tr></tbody></table></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border"></td></tr><tr><td class="border bl"></td><td class="border m"></td><td class="border br"></td></tr></tbody></table>';
 
 	var menu=$node("div").attr("class","xnr_op").style("display","none").code(menuHTML).appendTo(document.documentElement);
