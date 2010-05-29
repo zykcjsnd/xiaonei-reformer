@@ -3,8 +3,12 @@
 	<title>Title</title>
 	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
 	<script>
+		var str="";
 		function state() {
-			alert(document.readyState);
+			if(str) {
+				str+=" -> ";
+			}
+			str+=document.readyState;
 		}
 		state();
 		document.addEventListener("DOMContentLoaded",state,false);
@@ -12,7 +16,8 @@
 	</script>
 </head>
 
-<body onload="state()">
+<body onload="state();document.getElementById('result').innerHTML=str;">
+<span id="result"></span>
 
 </body>
 
