@@ -1,0 +1,53 @@
+<html>
+<head>
+	<title>Title</title>
+	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+	<script>
+	function test() {
+		var a={};
+		var b;
+		for(var c=0;c<5;c++) {
+			var t1=new Date();
+			for(var i=0;i<50000;i++) {
+				try {
+					a.a.a="d";
+				} catch (e) {
+					b="s";
+				};
+			}
+			var time1=(new Date()-t1);
+
+			var t1=new Date();
+			for(var i=0;i<50000;i++) {
+				if(a.a) {
+					a.a.a="d";
+				} else {
+					b="s";
+				}
+			}
+			var time2=(new Date()-t1);
+
+			var t1=new Date();
+			for(var i=0;i<50000;i++) {
+				try {
+					if(a.a) {
+						a.a.a="d";
+					} else {
+						b="s";
+					}
+				} catch(e) {
+				}
+			}
+			var time3=(new Date()-t1);
+			document.getElementById("result").innerHTML+=time1+" : "+time2+" : "+time3+"</br>"
+		}
+	}
+	</script>
+</head>
+<body onload="test()">
+	<p>try : if : try+if</p>
+	<span id="result">
+	</span>
+</body>
+
+</html>
