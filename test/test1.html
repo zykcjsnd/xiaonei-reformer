@@ -1,6 +1,7 @@
 <html>
 <head>
 	<title>Title</title>
+	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
 	<script>
 	function test() {
 		String.prototype.repeat=function(times) {
@@ -20,14 +21,14 @@
 
 		for(var c=0;c<5;c++) {
 			var t1=new Date();
-			for(var i=0;i<5000;i++) {
-				"this is a test string".repeat(1000);
+			for(var i=0;i<2000;i++) {
+				"this is a test string".repeat(500);
 			}
 			var time1=(new Date()-t1);
 
 			var t1=new Date();
-			for(var i=0;i<5000;i++) {
-				"this is a test string".repeat2(1000);
+			for(var i=0;i<2000;i++) {
+				"this is a test string".repeat2(500);
 			}
 			var time2=(new Date()-t1);
 			document.getElementById("result").innerHTML+=time1+" : "+time2+"</br>"
@@ -36,6 +37,7 @@
 	</script>
 </head>
 <body onload="test()">
+	<p>[].push("") : ""+""</p>
 	<span id="result">
 	</span>
 </body>
