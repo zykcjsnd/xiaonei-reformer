@@ -78,10 +78,9 @@ var $=PageKit;
 // 清除广告
 function removeAds(evt) {
 	if(!evt) {
-		var ads=".ad-bar, .banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .video:not([style]), #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD";
-		$patchCSS(ads+"{display:none !important}");
+		var ads=".ad-bar, .banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .video:not([style]), #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel";
+		$ban(ads);
 		$wait(1,function() {
-			$(ads).remove();
 			// .blank-holder在游戏大厅game.renren.com不能删
 			$(".blank-holder").remove(true);
 		});
@@ -119,22 +118,122 @@ function removePageTheme() {
 
 // 去除升级星级用户提醒
 function removeStarReminder() {
-	var target="#tobestar, #realheadbulletin, #noStarNotice, #nostar, #home_nostar";
-	$patchCSS(target+"{display:none !important}");
-	$wait(1,function() {
-		$(target).remove();
-	});
+	const target="#tobestar, #realheadbulletin, #noStarNotice, #nostar, #home_nostar";
+	$ban(target);
 };
 
 // 删除音乐播放器，包括紫豆音乐播放器和日志里的附加音乐
 function removeMusicPlayer() {
-	var target="#zidou_music, #ZDMusicPlayer, .mplayer, embed[src*='player.swf'] , embed[src*='Player.swf'], div.mod.music";
-	$patchCSS(target+"{display:none !important}");
-	$wait(1,function() {
-		$(target).remove();
+	const target="#zidou_music, #ZDMusicPlayer, .mplayer, embed[src*='player.swf'] , embed[src*='Player.swf'], div.mod.music";
+	$ban(target);
+};
+
+// 去除页面漂浮物
+function removeFloatObject() {
+	const target="#floatBox";
+	$ban(target);
+};
+
+// 去除页面自定义鼠标指针
+function removeMouseCursor() {
+	$patchCSS("#opi{cursor:auto !important}");
+};
+
+// 去除日志信纸
+function removeBlogTheme() {
+	$("head style").each(function(elem) {
+		var s=$(elem);
+		if(s.text().contains(".text-article")) {
+			s.remove();
+			return true;
+		}
 	});
 };
 
+// 删除日志中整段的链接
+function removeBlogLinks() {
+	$("#blogContent a,#shareBody a").each(function(elem) {
+		var o=$(elem);
+		// 链接到其他日志，放过好了
+		if($page("blog",elem.href)) {
+			return;
+		}
+		// 只处理链接到个人主页或外部链接中非ASCII文字大于20个的。
+		if($page("profile",elem.href) || o.text().match(/[\u0100-\uffff]{20,}/)) {
+			o.switchTo("span");
+		}
+	});
+};
+
+// 移除底部工具栏
+function removeBottomBar() {
+	const target="#bottombar, #imengine";
+	$ban(target);
+};
+
+// 去除首页部件
+function removeHomeGadgets(gadgetOpt) {
+	const gadgets={
+		"topNotice":".notice-holder, #notice_system",		// 顶部通知
+		"levelBar":".user-data",	// 个人等级
+		"footprint":"#footPrint",	// 最近来访
+		"newFriends":".side-item.pymk",	// 好友推荐
+		"sponsors":"#sponsorsWidget",	// 赞助商内容
+		"publicPage":".side-item.commend-page",	// 公共主页推荐
+		"publicPageAdmin":"#pageAdmin",	// 公共主页管理
+		"birthday":"#homeBirthdayPart",	// 好友生日
+		"webFunction":".side-item",	// 站内功能
+		"survey":".side-item.sales-poll",	// 人人网调查
+		"newStar":".star-new"	// 人气之星/新人
+	};
+	const filters={
+		"webFunction":".web-function"
+	};
+
+	var patch=""
+	for(var g in gadgetOpt) {
+		if(!gadgetOpt[g]) {
+			continue;
+		}
+		if(!filters[g]) {
+			patch+=gadgets[g]+",";
+		} else {
+			$wait(1,function() {
+				$(gadgets[g]).filter(filters[g]).remove();
+			});
+		}
+	}
+	if(patch) {
+		$ban(patch.substring(0,patch.length-1));
+	}
+};
+
+// 去除个人主页组件
+function removeProfileGadgets(gadgetOpt) {
+	const gadgets={
+		"levelBar":"#userPoint.mod",
+		"album":"#album.mod",
+		"blog":"#blog.mod",
+		"share":"#share.mod",
+		"gift":"#gift.mod",
+		"fav":"#kuAi.mod",
+		"specialFriends":"#spFriends.mod",
+		"mutualFriends":"#cmFriends.mod",
+		"visitors":"#visitors.mod",
+		"friends":"#friends.mod",
+		"theme":".enter-paints,#paintother,#paintself"
+	};
+	var patch="";
+	for(var g in gadgetOpt) {
+		if(!gadgetOpt[g]) {
+			continue;
+		}
+		patch+=gadgets[g]+",";
+	}
+	if(patch) {
+		$ban(patch.substring(0,patch.length-1));
+	}
+};
 
 // 隐藏请求
 function hideRequest(req) {
@@ -189,13 +288,6 @@ function extendPrototype() {
 		 * Chromium 6.0.411.0：字符串快450%
 		 * Opera 10.54：字符串快100%
 		 */
-		/*
-			var a=[];
-			for(;times>0;times--) {
-				a.push(this);
-			}
-			return a.join();
-		*/
 			var a=""
 			for(;times>0;times--) {
 				a+=this;
@@ -241,12 +333,12 @@ function main(savedOptions) {
 	// {
 	//	 类别名称1:[
 	//	   {
-	//	     // 功能1
+	//	     // 交互区域1
 	//	     参数1:...,
 	//	     参数2:...,
 	//	   },
 	//	   {
-	//	     // 功能2
+	//	     // 交互区域2
 	//	     ...
 	//	   },
 	//	   ...
@@ -256,7 +348,7 @@ function main(savedOptions) {
 	//	 ],
 	//	 ...
 	// }
-	// 其中，功能分为两类，第一种是具体的功能，格式为：
+	// 其中，交互区域分为两类，第一种是具体的功能，格式为：
 	// {
 	//   [String]text:文字+HTML控件描述。例："##选项 数量：##"，表示前后各有一个HTML控件。
 	//   [Array]ctrl:如果text中存在控件描述，在这里具体定义。
@@ -368,11 +460,194 @@ function main(savedOptions) {
 						fire:true,
 					}],
 				}],
+			},{
+				text:"##去除页面飘浮物",
+				ctrl:[{
+					id:"removeFloatObject",
+					value:false,
+					fn:[{
+						name:removeFloatObject,
+						stage:0,
+						fire:true,
+					}],
+				}],
+				page:"profile",
+			},{
+				text:"##去除页面自定义鼠标指针",
+				ctrl:[{
+					id:"removeMouseCursor",
+					value:false,
+					fn:[{
+						name:removeMouseCursor,
+						stage:0,
+						fire:true,
+					}],
+				}],
+				page:"profile",
+			},{
+				text:"##去除日志信纸",
+				ctrl:[{
+					id:"removeBlogTheme",
+					value:false,
+					fn:[{
+						name:removeBlogTheme,
+						stage:1,
+						fire:true,
+					}],
+				}],
+				page:"blog",
+			},{
+				text:"##去除日志中整段链接",
+				ctrl:[{
+					id:"removeBlogLinks",
+					value:false,
+					fn:[{
+						name:removeBlogLinks,
+						stage:1,
+						fire:true,
+					}],
+				}],
+				page:"blog",
+			},{
+				text:"##去除底部工具栏",
+				ctrl:[{
+					id:"removeBottomBar",
+					value:false,
+					fn:[{
+						name:removeBottomBar,
+						stage:0,
+						fire:true,
+					}],
+				}],
+			},{
+				text:"##",
+				ctrl:[{
+					type:"hidden",
+					fn:[{
+						name:removeHomeGadgets,
+						stage:0,
+						args:["@homeGadgets"]
+					}],
+				}],
+				page:"home"
+			},{
+				id:"homeGadgets",
+				text:"去除首页上以下部件",
+				column:2,
+				ctrl:[
+					{
+						id:"topNotice",
+						text:"##顶部通知栏",
+						value:false,
+					},{
+						id:"levelBar",
+						text:"##个人等级栏",
+						value:false,
+					},{
+						id:"footprint",
+						text:"##最近来访",
+						value:false,
+					},{
+						id:"newFriends",
+						text:"##好友推荐",
+						value:false,
+					},{
+						id:"sponsors",
+						text:"##赞助商内容",
+						value:false,
+					},{
+						id:"publicPage",
+						text:"##公共主页推荐",
+						value:false,
+					},{
+						id:"publicPageAdmin",
+						text:"##公共主页管理",
+						value:false,
+					},{
+						id:"birthday",
+						text:"##好友生日",
+						value:false,
+					},{
+						id:"webFunction",
+						text:"##站内功能",
+						value:false,
+					},{
+						id:"survey",
+						text:"##人人网调查",
+						value:false,
+					},{
+						id:"newStar",
+						text:"##人气之星/新人栏",
+						value:false,
+					}
+				],
+			},{
+				text:"##",
+				ctrl:[{
+					type:"hidden",
+					fn:[{
+						name:removeProfileGadgets,
+						stage:0,
+						args:["@profileGadgets"]
+					}],
+				}],
+				page:"profile"
+			},{
+				id:"profileGadgets",
+				text:"去除个人主页上以下部件",
+				column:2,
+				ctrl:[
+					{
+						id:"levelBar",
+						text:"##等级栏",
+						value:false,
+					},{
+						id:"album",
+						text:"##相册",
+						value:false,
+					},{
+						id:"blog",
+						text:"##日志",
+						value:false,
+					},{
+						id:"share",
+						text:"##分享",
+						value:false,
+					},{
+						id:"gift",
+						text:"##礼物",
+						value:false,
+					},{
+						id:"fav",
+						text:"##酷爱",
+						value:false,
+					},{
+						id:"theme",
+						text:"##装扮主页",
+						value:false,
+					},{
+						id:"specialFriends",
+						text:"##特别好友",
+						value:false,
+					},{
+						id:"mutualFriends",
+						text:"##共同好友",
+						value:false,
+					},{
+						id:"visitors",
+						text:"##最近来访",
+						value:false,
+					},{
+						id:"friends",
+						text:"##好友",
+						value:false,
+					}
+				]
 			}
 		],
 		"处理请求":[
 			{
-				text:"##",	// 屏蔽请求
+				text:"##",
 				ctrl:[{
 					type:"hidden",
 					fn:[{
@@ -463,12 +738,16 @@ function main(savedOptions) {
 			if(o.agent && (o.agent & XNR.agent)==0) {
 				continue;
 			}
+			// 不执行函数，仅生成选项
+			var noexec=false;
+			// 检查执行功能页面限制
 			if(o.page) {
 				var p=o.page.split(",");
 				for(var iPage=0;iPage<p.length;iPage++) {
 					// 不适用于当前页面
-					if($page(p[iPage],window.location.href)==false) {
-						continue;
+					if($page(p[iPage])==false) {
+						noexec=true;
+						break;
 					}
 				}
 			}
@@ -537,8 +816,9 @@ function main(savedOptions) {
 					if(control.value!=null) {
 						XNR.options[control.id]=control.value;
 					}
+
 					// 相关函数
-					if(control.fn) {
+					if(!noexec && control.fn) {
 						for(var iFn=0;iFn<control.fn.length;iFn++) {
 							var fn=control.fn[iFn];
 							// 没有设置参数的话，设置一个空的参数集，方便后面处理
@@ -586,7 +866,7 @@ function main(savedOptions) {
 							}
 							var text=item.text.split("##");
 							if(text[0]) {
-								$node("label").attr("for",item.id).text(text[0]).appendTo(td);
+								$node("label").attr("for",o.id+"_"+item.id).text(text[0]).appendTo(td);
 							}
 							// 生成控件节点
 							var node=null;
@@ -612,7 +892,7 @@ function main(savedOptions) {
 							}
 							if(node) {
 								node.value(item.value);
-								node.attr({id:item.id,style:(item.style || "")});
+								node.attr({id:o.id+"_"+item.id,style:(item.style || "")});
 								node.appendTo(td);
 							}
 							// 输入验证
@@ -623,7 +903,7 @@ function main(savedOptions) {
 								group[item.id]=item.value;
 							}
 							if(text[1]) {
-								$node("label").attr("for",item.id).text(text[1]).appendTo(td);
+								$node("label").attr("for",o.id+"_"+item.id).text(text[1]).appendTo(td);
 							}
 						}
 					}
@@ -745,7 +1025,7 @@ function main(savedOptions) {
 				var group=XNR.options[op];
 				var changed=false;
 				for(var item in group) {
-					var c=menu.find("#"+item);
+					var c=menu.find("#"+op+"_"+item);
 					if(c.empty()) {
 						continue;
 					} else {
@@ -904,21 +1184,25 @@ function $node(name) {
 /*
  * 判断URL是否属于某一类页面 TODO:完善页面类别
  * 参数
- *   [String]category:页面类别，可能的值参考函数内pages变量
+ *   [String]category:页面类别，可能的值参考函数内pages常量
  *   [String]url:默认为当前页面地址
  * 返回值
  *   [Boolean]:属于返回true，否则false。如果category非法，返回true。
  */
 function $page(category,url) {
-	var pages={
+	const pages={
 		home:"/[hH]ome\\.do",	// 首页
-		profile:"/[Pp]rofile\\.do|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=", // 个人主页
-		blog:"blog\\.renren\\.com",	// 日志
+		profile:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=", // 个人主页
+		blog:"/blog\\.renren\\.com/",	// 日志
 	};
 	if(!url) {
 		url=window.location.href;
 	}
-	return !pages[category] || url.match(pages[category]);
+	// 把锚点去掉
+	if(url.contains("#")) {
+		url=url.replace(/#[\s\S]*$/,"");
+	}
+	return pages[category]==null || url.match(pages[category])!=null;
 };
 
 /*
@@ -1044,7 +1328,7 @@ function $wait(stage,func) {
 	 * 页面加载阶段测试：test3.html
 	 * Firefox 3.6.3/3.7a5pre：loading -> interactive -> completed
 	 * Chromium 6.0.411.0 (47760)：loading -> loaded -> completed
-	 * Opera 10.54：interactive -> completed -> completed
+	 * Opera 10.54：interactive -> interactive/completed -> completed
 	 * 目前不支持Opera。
 	 */
 	var curStage=2;
@@ -1075,8 +1359,22 @@ function $wait(stage,func) {
  * 返回值
  *   [PageKit]:创建的style节点
  */
-function $patchCSS(style,prepatch) {
+function $patchCSS(style) {
 	return $node("style").attr("type","text/css").text(style).appendTo(document.documentElement);
+};
+
+/*
+ * 删除对象，并禁止显示
+ * 参数
+ *   [String]style:CSS选择语句
+ * 返回值
+ *   无
+ */
+function $ban(style) {
+	$patchCSS(style+"{display:none !important}");
+	$wait(1,function() {
+		$(style).remove();
+	});
 };
 
 /*
@@ -1203,9 +1501,12 @@ PageKit.prototype={
 	// 遍历对象的DOM节点，参数为一回调函数，function(elem,index){}，当有返回非undefined/null值时终止遍历;
 	each:function(func) {
 		if(typeof func == "function") {
-			for(var i in this.nodes) {
-				if(!(func(this.nodes[i],i)==null)) {
-					break;
+			for(var i=0;i<this.nodes.length;i++) {
+				try {
+					if(!(func(this.nodes[i],i)==null)) {
+						break;
+					}
+				} catch(err) {
 				}
 			}
 		}
@@ -1231,20 +1532,17 @@ PageKit.prototype={
 	// 删除对象所有的DOM节点。如果safe为true，只有当其无子节点时才删除
 	remove:function(safe) {
 		this.each(function(elem) {
-			try {
-				if(!safe || elem.childElementCount==0) {
-					elem.parentNode.removeChild(elem);
-				}
-			} catch(err) {
+			if(!safe || elem.childElementCount==0) {
+				elem.parentNode.removeChild(elem);
 			}
 		});
 		this.nodes=[];
 		return this;
 	},
-	// 删除对象所有DOM节点，如果删除后父节点无其他子节点，一并删除
-	purge:function() {
+	// 删除对象所有DOM节点。如果safe为true，只有当其无子节点时才删除，如果删除后父节点无其他子节点，一并删除
+	purge:function(safe) {
 		this.each(function(elem) {
-			try {
+			if(!safe || elem.childElementCount==0) {
 				var p=elem.parentNode;
 				p.removeChild(elem);
 				while (p.childElementCount==0) {
@@ -1252,7 +1550,6 @@ PageKit.prototype={
 					q.removeChild(p);
 					p=q;
 				}
-			} catch(err) {
 			}
 		});
 		this.nodes=[];
@@ -1261,21 +1558,15 @@ PageKit.prototype={
 	// 隐藏对象所有的DOM节点
 	hide:function() {
 		this.each(function(elem) {
-			try {
-				elem.style.display="none";
-			} catch(err) {
-			}
+			elem.style.display="none";
 		});
 		return this;
 	},
 	// 显示对象所有的DOM节点
 	show:function() {
 		this.each(function(elem) {
-			try {
-				elem.style.display=null;
-				elem.style.visibility=null;
-			} catch(err) {
-			}
+			elem.style.display=null;
+			elem.style.visibility=null;
 		});
 		return this;
 	},
@@ -1462,6 +1753,9 @@ PageKit.prototype={
 	// 过滤出有符合条件子节点的节点
 	// o可以为字符串，作为CSS选择器。也可为函数，function(elem)，返回false或等价物时滤除
 	filter:function(o) {
+		if(!o) {
+			return this;
+		}
 		var res=new Array();
 		if(typeof o=="string") {
 			this.each(function(elem) {
@@ -1541,20 +1835,14 @@ PageKit.prototype={
 			case "object":
 				for(var n in o) {
 					this.each(function(elem) {
-						try {
-							elem.style[n]=o[n];
-						} catch (err) {
-						}
+						elem.style[n]=o[n];
 					});
 				};
 				return this;
 			case "string":
 				if(v!=null) {
 					this.each(function(elem) {
-						try {
-							elem.style[o]=v;
-						} catch (err) {
-						}
+						elem.style[o]=v;
 					});
 					return this;
 				} else {
@@ -1593,46 +1881,33 @@ PageKit.prototype={
 	},
 	// 获取/设置文本内容
 	text:function(txt) {
-		if(!(txt==null)) {
+		if(txt!=null) {
 			this.each(function(elem) {
-				try {
-					elem.textContent=txt;
-				} catch(err) {
-					try {
-						elem.innerText=txt;
-					} catch(err) {
-					}
-				}
+				elem.textContent=txt;
 			});
 			return this;
 		} else {
-			var res;
-			try {
-				res=this.get().textContent;
-			} catch(err) {
-				try {
-					res=this.get().innerText;
-				} catch(err) {
-				}
+			var elem=this.get();
+			if(elem==null) {
+				return "";
+			} else {
+				return elem.textContent || "";
 			}
-			return res || "";
 		}
 	},
 	// 获取/设置内部HTML代码
 	code:function(html) {
-		if(!(html==null)) {
+		if(html!=null) {
 			this.each(function(elem) {
-				try {
-					elem.innerHTML=html;
-				} catch(err) {
-				}
+				elem.innerHTML=html;
 			});
 			return this;
 		} else {
-			try {
-				return this.get().innerHTML;
-			} catch(err) {
+			var elem=this.get();
+			if(elem==null) {
 				return "";
+			} else {
+				return elem.innerHTML || "";
 			}
 		}
 	},
