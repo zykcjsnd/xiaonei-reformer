@@ -6,7 +6,7 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        3.0.0.20100527
+// @version        3.0.0.20100529
 // @miniver        300
 // @author         xz
 // ==/UserScript==
@@ -44,7 +44,7 @@ if (window.self != window.top && document.designMode=="on") {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.0.20100527";
+XNR.version="3.0.0.20100529";
 XNR.miniver=300;
 
 // 存储空间，用于保存全局性变量
@@ -125,6 +125,16 @@ function removeStarReminder() {
 		$(target).remove();
 	});
 };
+
+// 删除音乐播放器，包括紫豆音乐播放器和日志里的附加音乐
+function removeMusicPlayer() {
+	var target="#zidou_music, #ZDMusicPlayer, .mplayer, embed[src*='player.swf'] , embed[src*='Player.swf'], div.mod.music";
+	$patchCSS(target+"{display:none !important}");
+	$wait(1,function() {
+		$(target).remove();
+	});
+};
+
 
 // 隐藏请求
 function hideRequest(req) {
@@ -250,9 +260,11 @@ function main(savedOptions) {
 	// {
 	//   [String]text:文字+HTML控件描述。例："##选项 数量：##"，表示前后各有一个HTML控件。
 	//   [Array]ctrl:如果text中存在控件描述，在这里具体定义。
-	//   [Number]agent:执行环境限制。可选。为XNR.agnet可定义值的组合
+	//   [Number]agent:执行环境限制。可选。为XNR.agent可定义值的组合
 	//   [String]info:辅助性描述信息。可选。TODO
 	//   [String]warn:警告信息。可选。TODO
+	//   [String]page:适用页面。页面名参考$page()，多个名称之间用逗号分隔
+	//   [Number]master:主控件序号。功能中的文字描述将会和主控件关联（<label for=masterID/>），当主控件的值为假时，其余控件将被禁用。如果ctrl数组中只有一项，则自动指定为主控件。可选
 	// }
 	// 功能中ctrl的格式是：
 	// [
@@ -262,7 +274,7 @@ function main(savedOptions) {
 	//     [Any]value:默认值。type为hidden或readonly为真时没有value
 	//     [Object]verify:{验证规则:失败信息,...}。验证规则为正则字串。可选
 	//     [String]style:样式。可选
-	//     [Boolean]:readonly:只读。可选
+	//     [Boolean]readonly:控件只读。可选
 	//     [Array]fn:处理函数。可选
 	//   },
 	//   {
@@ -274,11 +286,10 @@ function main(savedOptions) {
 	// [
 	//   {
 	//     [Function]name:函数名。
-	//     [String/Object]fire:函数执行条件。可以为控件的某一个事件。例如"click"。或者是{prop:控件属性,value:期望值}。可选。未指定事件为初始化后立即执行。
+	//     [String/Boolean]fire:函数执行条件。如果为string，则为控件的某一个事件。否则是控件的期望值。可选。未指定事件为初始化后立即执行。
 	//     [Number]stage:执行时机/优先级（0～3）。参考$wait()。
 	//     [Object]trigger:设定其他控件的触发事件。{CSS选择器:事件名,...}。可选。如果stage为0，则trigger的执行时机为1，否则与stage相同。
 	//     [Array]args:函数参数列表。如果参数为另一控件值/选项组，名称前加@。参数数量不得多于4个。利用选项组处理过多参数
-	//     [String]page:适用页面。“页面类别1,页面类别2,...”，参考$page()。TODO
 	//   },
 	//   {
 	//   	函数2描述...
@@ -320,7 +331,7 @@ function main(savedOptions) {
 					fn:[{
 						name:removeAds,
 						stage:0,
-						fire:{prop:"checked",value:true},
+						fire:true,
 						trigger:{"ul#feedHome":"DOMNodeInserted"},
 					}],
 				}],
@@ -332,7 +343,7 @@ function main(savedOptions) {
 					fn:[{
 						name:removePageTheme,
 						stage:1,
-						fire:{prop:"checked",value:true},
+						fire:true,
 					}],
 				}],
 			},{
@@ -343,7 +354,18 @@ function main(savedOptions) {
 					fn:[{
 						name:removeStarReminder,
 						stage:0,
-						fire:{prop:"checked",value:true},
+						fire:true,
+					}],
+				}],
+			},{
+				text:"##去除音乐播放器",
+				ctrl:[{
+					id:"removeMusicPlayer",
+					value:false,
+					fn:[{
+						name:removeMusicPlayer,
+						stage:0,
+						fire:true,
 					}],
 				}],
 			}
@@ -359,6 +381,7 @@ function main(savedOptions) {
 						args:["@requestGroup"]
 					}],
 				}],
+				page:"home",
 			},{
 				id:"requestGroup",
 				text:"屏蔽以下类型的请求",
@@ -438,7 +461,16 @@ function main(savedOptions) {
 			var o=optionMenu[category][iFunc];
 			// 不适用于当前浏览器
 			if(o.agent && (o.agent & XNR.agent)==0) {
-				return;
+				continue;
+			}
+			if(o.page) {
+				var p=o.page.split(",");
+				for(var iPage=0;iPage<p.length;iPage++) {
+					// 不适用于当前页面
+					if($page(p[iPage],window.location.href)==false) {
+						continue;
+					}
+				}
 			}
 			// 放在一块中
 			var block=$node("div");
@@ -448,10 +480,18 @@ function main(savedOptions) {
 				for(var iText=0;iText<text.length;iText++) {
 					// 文本节点
 					if(text[iText]) {
-						$node("label").text(text[iText]).appendTo(block);
+						var masterID="";
+						if(o.master==null && o.ctrl.length==1) {
+							o.master=0;
+						}
+						if(o.master!=null) {
+							masterID=o.ctrl[o.master].id;
+						}
+						$node("label").attr("for",masterID).text(text[iText]).appendTo(block);
 					}
 					// 控件节点
 					var control=o.ctrl[iText];
+					// split分割的文本节点总比控件节点多1。
 					if(!control) {
 						continue;
 					}
@@ -505,7 +545,7 @@ function main(savedOptions) {
 							if(!fn.args) {
 								fn.args=[];
 							}
-							if(!fn.fire || (typeof fn.fire=="object" && node.prop(fn.fire.prop)==fn.fire.value)) {
+							if(fn.fire==null || (typeof fn.fire=="boolean" && node.value()==fn.fire)) {
 								// 符合要求，放入执行序列
 								fnQueue[fn.stage].push({name:fn.name,args:fn.args});
 							} else if(typeof fn.fire=="string") {
@@ -546,7 +586,7 @@ function main(savedOptions) {
 							}
 							var text=item.text.split("##");
 							if(text[0]) {
-								$node().text(text[0]).appendTo(td);
+								$node("label").attr("for",item.id).text(text[0]).appendTo(td);
 							}
 							// 生成控件节点
 							var node=null;
@@ -583,7 +623,7 @@ function main(savedOptions) {
 								group[item.id]=item.value;
 							}
 							if(text[1]) {
-								$node().text(text[1]).appendTo(td);
+								$node("label").attr("for",item.id).text(text[1]).appendTo(td);
 							}
 						}
 					}
@@ -625,7 +665,7 @@ function main(savedOptions) {
 	
 
 	// 生成选项菜单
-	var menuHTML='<style type="text/css">.xnr_op{width:500px;position:fixed;z-index:200000;color:black;blackground:black;font-size:12px}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op a{color:#3B5990}.xnr_op table{width:100%;table-layout:fixed}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .m{width:100%}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op>table table{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%}.xnr_op table.group{margin-left:5px;margin-top:3px}.xnr_op .pages tr{line-height:20px}.xnr_op input[type="checkbox"]{margin-right:4px}.xnr_op label{color:black;font-weight:normal}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
+	var menuHTML='<style type="text/css">.xnr_op{width:500px;position:fixed;z-index:200000;color:black;blackground:black;font-size:12px}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op a{color:#3B5990}.xnr_op table{width:100%;table-layout:fixed}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .m{width:100%}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none;cursor:default}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op>table table{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%}.xnr_op table.group{margin-left:5px;margin-top:3px}.xnr_op .pages tr{line-height:20px}.xnr_op input[type="checkbox"]{margin-right:4px}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
 		menuHTML+='<table><tbody><tr><td class="border tl"></td><td class="border m"></td><td class="border tr"></td></tr><tr><td class="border"></td><td class="c m"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>'+categoryHTML+'</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>人人网改造器</h1><p><b>'+XNR.version+' ('+XNR.miniver+')</b></p><p><b>Copyright © 2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p></td></tr></tbody></table></div></td></tr></tbody></table></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border"></td></tr><tr><td class="border bl"></td><td class="border m"></td><td class="border br"></td></tr></tbody></table>';
 
 	var menu=$node("div").attr("class","xnr_op").style("display","none").code(menuHTML).appendTo(document.documentElement);
@@ -751,7 +791,7 @@ function main(savedOptions) {
 		if($allocated("drag_optionMenu")) {
 			$dealloc("drag_optionMenu");
 			window.releaseEvents(Event.MOUSEMOVE | Event.MOUSEUP);
-			evt.target.style.cursor="default";
+			evt.target.style.cursor=null;
 		}
 	});
 	$(document.documentElement).hook("mousemove",function(evt) {
@@ -871,7 +911,7 @@ function $node(name) {
  */
 function $page(category,url) {
 	var pages={
-		home:"renren\\.com/[hH]ome\\.do",	// 首页
+		home:"/[hH]ome\\.do",	// 首页
 		profile:"/[Pp]rofile\\.do|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=", // 个人主页
 		blog:"blog\\.renren\\.com",	// 日志
 	};
@@ -1532,7 +1572,9 @@ PageKit.prototype={
 		this.each(function(elem) {
 			var xnr=$(elem);
 			var c=xnr.attr("class");
-			if(!c || !c.match(new RegExp("\\b"+str+"\\b"))) {
+			if(!c) {
+				xnr.attr("class",str);
+			} else if(!c.match(new RegExp("\\b"+str+"\\b"))) {
 				xnr.attr("class",c+" "+str);
 			}
 		});
