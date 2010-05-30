@@ -404,7 +404,7 @@ function main(savedOptions) {
 	//   [Array]ctrl:如果text中存在控件描述，在这里具体定义。
 	//   [Number]agent:执行环境限制。可选。为XNR.agent可定义值的组合
 	//   [String]page:适用页面。页面名参考$page()，多个名称之间用逗号分隔
-	//   [Number]master:主控件序号。功能中的文字描述将会和主控件关联（<label for=masterID/>），当主控件的值为假时，其余控件将被禁用。如果ctrl数组中只有一项，则自动指定为主控件。可选 TODO:连带禁用
+	//   [Number]master:主控件序号。功能中的文字描述将会和主控件关联（<label for=masterID/>），当主控件的值为假时，其余控件将被禁用。如果ctrl数组中只有一项，则自动指定为主控件。主控件的type只能为check/edit/input。可选
 	// }
 	// 功能中ctrl的格式是：
 	// [
@@ -557,7 +557,7 @@ function main(savedOptions) {
 				}],
 				page:"blog",
 			},{
-				text:"##去除底部工具栏####",
+				text:"##去除底部工具栏",
 				ctrl:[{
 					id:"removeBottomBar",
 					value:false,
@@ -903,9 +903,8 @@ function main(savedOptions) {
 					if(text[iText]) {
 						var masterID="";
 						if(o.master==null && o.ctrl.length==1) {
-							o.master=0;
-						}
-						if(o.master!=null) {
+							masterID=o.ctrl[0].id;
+						} else if(o.master!=null) {
 							masterID=o.ctrl[o.master].id;
 						}
 						$node("label").attr("for",masterID).text(text[iText]).appendTo(block);
@@ -1005,7 +1004,6 @@ function main(savedOptions) {
 						}
 					}
 				}
-
 			} else {
 				// 选项组
 				if(o.text) {
@@ -1069,6 +1067,19 @@ function main(savedOptions) {
 				}
 				XNR.options[o.id]=group;
 			}
+			// 为主控件（仅明确指定的）添加值切换相应事件
+			if(o.master!=null) {
+				// block下只有一层，滤掉所有的label就是所有控件，选出对应序号的即可
+				var target=block.find("*:not(label)").pick(o.master);
+				// 做个标记，用在点击选项菜单取消按钮重置选项时
+				target.attr("master","true");
+				$master(target);
+				// 主控件值改变只可能checkbox/input/textarea三种。click和keyup足够应付
+				target.hook("click,keyup",function(evt) {
+					$master($(evt.target));
+				});
+			}
+
 			if(block.heirs()!=0) {
 				page.append(block);
 			}
@@ -1144,6 +1155,10 @@ function main(savedOptions) {
 					continue;
 				} else {
 					c.value(XNR.options[op]);
+				}
+				// 主控件还要重置禁用效果
+				if(c.attr("master")) {
+					$master(c);
 				}
 			}
 		}
@@ -1622,6 +1637,26 @@ function $error(func,error) {
 		//TODO : 调试信息到选项菜单
 	}
 };
+
+/*
+ * 主控件值改变时的连带禁用效果
+ * 参数
+ *   [PageKit]master:主控件对象
+ * 返回值
+ *   无
+ */
+function $master(master) {
+	var p=master.superior();
+	if(!master.value()) {
+		// 写"*:not(#"+id+")"也可以。但为防止master忘了设置ID。。。
+		p.find("*:not([id='"+master.attr("id")+"'])").prop("disabled",true);
+		// warn和info不禁用
+		p.find("input[type='image']").prop("disabled",false);
+	} else {
+		p.find("*").prop("disabled",false);
+	}
+};
+
 
 /* 基本辅助函数完 */
 
