@@ -96,7 +96,7 @@ function removeAds(evt) {
 // 去除页面模板
 function removePageTheme() {
 	const themes=["head link[rel='stylesheet'][href*='/csspro/themes/'][href*='.css']", //节日模板
-				"#hometpl_style",	// 首页特定事件
+				"#hometpl_style",	// 首页模板
 				"head link[rel='stylesheet'][href*='zidou_nav.css']",	// 紫豆导航栏
 				"#domain_wrapper",	// 个人域名提示栏
 				"#themeLink"];		// 公共主页模板
@@ -182,30 +182,31 @@ function removeHomeGadgets(gadgetOpt) {
 		"publicPage":".side-item.commend-page",	// 公共主页推荐
 		"publicPageAdmin":"#pageAdmin",	// 公共主页管理
 		"birthday":"#homeBirthdayPart",	// 好友生日
-		"webFunction":".side-item",	// 站内功能
 		"survey":".side-item.sales-poll",	// 人人网调查
 		"newStar":".star-new"	// 人气之星/新人
 	};
 	const filters={
-		"webFunction":".web-function"
+		"webFunction":{t:".side-item",f:".web-function"},	// 站内功能
 	};
 
 	var patch=""
-	for(var g in gadgetOpt) {
+	for(var g in gadgets) {
 		if(!gadgetOpt[g]) {
 			continue;
 		}
-		if(!filters[g]) {
-			patch+=gadgets[g]+",";
-		} else {
-			$wait(1,function() {
-				$(gadgets[g]).filter(filters[g]).remove();
-			});
-		}
+		patch+=gadgets[g]+",";
 	}
 	if(patch) {
 		$ban(patch.substring(0,patch.length-1));
 	}
+	
+	$wait(1,function() {
+		for(var g in filters) {
+			if(gadgetOpt[g]) {
+				$(filters[g].t).filter(filters[g].f).remove();
+			}
+		}
+	});
 };
 
 // 去除个人主页组件
@@ -257,6 +258,55 @@ function hideRequest(req) {
 			box.find("li img."+table[r]).superior().purge();
 		}
 	}
+};
+
+// 去除导航栏项目
+function removeNavItems(navLinks) {
+	const links={
+		"theme":"i.renren.com/shop",
+		"app":"app.renren.com",
+		"game":"game.renren.com",
+		"vip":"i.renren.com/pay",
+		"vipCenter":"i.renren.com/index",
+		"pay":"pay.renren.com",
+		"invite":"invite.renren.com"
+	};
+	var style="";
+	for(var l in navLinks) {
+		if(navLinks[l]) {
+			style+="div.nav-body .menu .menu-title a[href*='"+links[l]+"'],";
+		}
+	}
+	if(style) {
+		style=style.substring(0,style.length-1);
+		$patchCSS(style+"{display:none !important}");
+		$wait(1,function() {
+			style=style.replace(/div.nav-body .menu /g,"");
+			$("div.nav-body .menu").filter(style).remove();
+		});
+	}
+};
+
+// 加宽导航栏
+function widenNavBar() {
+	$patchCSS(".navigation-wrapper,.navigation{width:auto} .navigation .nav-body{width:auto;float:none}");
+};
+
+// 增加导航栏项目
+function addNavItems(content) {
+	if(!content) {
+		return;
+	}
+	var nav=$("div.nav-main");
+	if(nav.empty()) {
+		return;
+	}
+	var items=content.split("\n");
+	for(var i=0;i<items.length;i+=2) {
+		$node("div").code('<div class="menu-title"><a href="'+items[i+1]+'" target="_blank">'+items[i]+'</a></div>').attr("class","menu").appendTo(nav);
+	}
+	//防止被自作主张改动链接
+	location.href="javascript:(function(){var e=document.body.querySelectorAll('.nav-main .menu-title > a');for(var i in e){e[i]._ad_rd=true;}})();";
 };
 
 // 生成诊断信息
@@ -353,16 +403,14 @@ function main(savedOptions) {
 	//   [String]text:文字+HTML控件描述。例："##选项 数量：##"，表示前后各有一个HTML控件。
 	//   [Array]ctrl:如果text中存在控件描述，在这里具体定义。
 	//   [Number]agent:执行环境限制。可选。为XNR.agent可定义值的组合
-	//   [String]info:辅助性描述信息。可选。TODO
-	//   [String]warn:警告信息。可选。TODO
 	//   [String]page:适用页面。页面名参考$page()，多个名称之间用逗号分隔
-	//   [Number]master:主控件序号。功能中的文字描述将会和主控件关联（<label for=masterID/>），当主控件的值为假时，其余控件将被禁用。如果ctrl数组中只有一项，则自动指定为主控件。可选
+	//   [Number]master:主控件序号。功能中的文字描述将会和主控件关联（<label for=masterID/>），当主控件的值为假时，其余控件将被禁用。如果ctrl数组中只有一项，则自动指定为主控件。可选 TODO:连带禁用
 	// }
 	// 功能中ctrl的格式是：
 	// [
 	//   {
-	//     [String]id:控件ID。type为hidden时没有id
-	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）。默认为check
+	//     [String]id:控件ID。type为hidden/warn/info时无需id
+	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）,"warn"（<input type="image"/>）,"info"（<input type="image"/>）。默认为check
 	//     [Any]value:默认值。type为hidden或readonly为真时没有value
 	//     [Object]verify:{验证规则:失败信息,...}。验证规则为正则字串。可选
 	//     [String]style:样式。可选
@@ -509,7 +557,7 @@ function main(savedOptions) {
 				}],
 				page:"blog",
 			},{
-				text:"##去除底部工具栏",
+				text:"##去除底部工具栏####",
 				ctrl:[{
 					id:"removeBottomBar",
 					value:false,
@@ -518,7 +566,7 @@ function main(savedOptions) {
 						stage:0,
 						fire:true,
 					}],
-				}],
+				}]
 			},{
 				text:"##",
 				ctrl:[{
@@ -659,7 +707,7 @@ function main(savedOptions) {
 				page:"home",
 			},{
 				id:"requestGroup",
-				text:"屏蔽以下类型的请求",
+				text:"隐藏以下类型的请求",
 				column:3,
 				ctrl:[
 					{
@@ -702,6 +750,85 @@ function main(savedOptions) {
 				],
 			}
 		],
+		"改造导航栏":[
+			{
+				text:"##",
+				ctrl:[{
+					type:"hidden",
+					fn:[{
+						name:removeNavItems,
+						stage:0,
+						args:["@navLinks"]
+					}],
+				}],
+			},{
+				id:"navLinks",
+				text:"去除以下链接",
+				column:3,
+				ctrl:[
+					{
+						id:"theme",
+						text:"##装扮",
+						value:false
+					},{
+						id:"app",
+						text:"##应用",
+						value:false
+					},{
+						id:"game",
+						text:"##游戏",
+						value:false
+					},{
+						id:"vip",
+						text:"##升级VIP",
+						value:false
+					},{
+						id:"vipCenter",
+						text:"##VIP中心",
+						value:false
+					},{
+						id:"pay",
+						text:"##充值",
+						value:false
+					},{
+						id:"invite",
+						text:"##邀请",
+						value:false
+					}
+				]
+			},{
+				text:"##加宽导航栏",
+				ctrl:[{
+					id:"widenNavBar",
+					value:false,
+					fn:[{
+						name:widenNavBar,
+						stage:0,
+						fire:true,
+					}],
+				}]
+			},{
+				text:"##增加导航栏项目##",
+				ctrl:[
+					{
+						id:"addNavItems",
+						value:false,
+						fn:[{
+							name:addNavItems,
+							stage:1,
+							args:["@navItemsContent"],
+							fire:true
+						}],
+					},{
+						id:"navItemsContent",
+						type:"edit",
+						style:"width:99%;height:80px;overflow:auto;word-wrap:normal;margin-top:5px",
+						value:"论坛\nhttp://club.renren.com/"
+					}
+				],
+				master:0
+			}
+		],
 		"诊断信息":[
 			{
 				text:"##如果您遇到功能出错，请在报告问题时附带上出错页面中的以下信息：##",
@@ -721,6 +848,21 @@ function main(savedOptions) {
 				],
 			}
 		]
+	};
+	// 信息和警告图片
+	const infoImage="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAuUlEQVQ4y2NgoDbQ9upiiK5eznD17sv/yDi2ajlYDi9wSZ+NoREdu2bNxa7ZJnkWXHPepH1YMUzeNnU6prPRNaMDdEOU3boRBoSWLWXApxmbIRHlyxAG4LIdFx+mHqcByBifNwgagE0zWQbgig24AWFogUgIgxNW7QpEIIKiBJsr8DlfxXMSalpwTpuJPyFN2ItIjXlzsKdGx9h2gknZLqYFf37gktJmCM2dhGFQaE4/A6eYKtUzLwMAfM0C2p5qSS4AAAAASUVORK5CYII%3D";
+	const warnImage="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA1ElEQVQ4y2NgoCVYz8BgsJyBwYQszUCNsv8ZGP6D8FIGBlWSDYBphmGSNC9jYNAGabqUkvL/cmYm2IAlDAympNsOA6S4YjUDgxVI8dX8fLj+6+XlYAPWsbB4kGQ7hMtAvCvWsrN7gxRdq6jAMOBWSwvYgE1sbJFE+x3FBUiuaGBgYMKp+Xpz839c4P7UqWA1QJfmomgGmYgR8thcgOSKmQwMrBi23+js/E8IPJ47FyNAudBTHbEY7gJjBgbdDgaG7k4GhqmEcDcDw2Qg7ogA5hWq5FgAlMwfVWL5pDoAAAAASUVORK5CYII%3D";
+	// 显示tooltip，替代title
+	const showTooltip=function(evt) {
+		var tip=$alloc("optionsMenu_tooltip");
+		var rect=evt.target.getBoundingClientRect();
+		tip.w=$node("div").style({maxWidth:"300px",background:"#FFFFBF",border:"1px solid #CFCF3D",position:"fixed",zIndex:"200001",padding:"6px 8px 6px 8px",fontSize:"13px",left:(rect.right+3)+"px","top":(rect.bottom+3)+"px"});
+		$node("span").text(evt.target.getAttribute("tooltip")).appendTo(tip.w);
+		tip.w.appendTo(document.documentElement)
+	};
+	const hideTooltip=function(evt) {
+		$alloc("optionsMenu_tooltip").w.remove();
+		$dealloc("optionsMenu_tooltip");
 	};
 	// 函数执行队列。对应4个优先级，每一个优先级数组中的函数对象为{name:函数,args:函数参数,[trigger:{CSS选择器:事件名,...}]}
 	var fnQueue=[[],[],[],[]];
@@ -799,19 +941,36 @@ function main(savedOptions) {
 						case "label":
 							node=$node("span");
 							break;
+						case "info":
+							node=$node("input").attr({type:"image",src:infoImage,tooltip:control.value,tabIndex:-1});
+							node.hook("mouseover",showTooltip).hook("mouseout",hideTooltip);
+							control.value=null;
+							break;
+						case "warn":
+							node=$node("input").attr({type:"image",src:warnImage,tooltip:control.value,tabIndex:-1});
+							node.hook("mouseover",showTooltip).hook("mouseout",hideTooltip);
+							control.value=null;
+							break;
 					}
 					if(node) {
-						node.value(control.value);
-						node.attr({id:control.id,style:(control.style || "")});
+						if(control.value!=null) {
+							node.value(control.value);
+						}
+						if(control.id) {
+							node.attr("id",control.id);
+						}
+						if(control.style) {
+							node.attr("style",control.style);
+						}
+						if(control.readonly) {
+							node.attr("readonly","true");
+							control.value=null;
+						}
+						// 输入验证
+						if(control.verify) {
+							node.attr("verify",JSON.stringify(control.verify));
+						}
 						node.appendTo(block);
-					}
-					if(control.readonly) {
-						node.attr("readonly","true");
-						control.value=null;
-					}
-					// 输入验证
-					if(control.verify) {
-						node.attr("verify",JSON.stringify(control.verify));
 					}
 					if(control.value!=null) {
 						XNR.options[control.id]=control.value;
@@ -945,7 +1104,7 @@ function main(savedOptions) {
 	
 
 	// 生成选项菜单
-	var menuHTML='<style type="text/css">.xnr_op{width:500px;position:fixed;z-index:200000;color:black;blackground:black;font-size:12px}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op a{color:#3B5990}.xnr_op table{width:100%;table-layout:fixed}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .m{width:100%}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none;cursor:default}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op>table table{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%}.xnr_op table.group{margin-left:5px;margin-top:3px}.xnr_op .pages tr{line-height:20px}.xnr_op input[type="checkbox"]{margin-right:4px}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
+	var menuHTML='<style type="text/css">.xnr_op{width:500px;position:fixed;z-index:200000;color:black;blackground:black;font-size:12px}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op a{color:#3B5990}.xnr_op table{width:100%;table-layout:fixed}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .m{width:100%}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none;cursor:default}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op>table table{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%}.xnr_op table.group{margin-left:5px;margin-top:3px}.xnr_op .pages tr{line-height:20px}.xnr_op input[type="checkbox"]{margin-right:4px}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op input[type="image"]{margin-left:2px;margin-right:2px}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
 		menuHTML+='<table><tbody><tr><td class="border tl"></td><td class="border m"></td><td class="border tr"></td></tr><tr><td class="border"></td><td class="c m"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>'+categoryHTML+'</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>人人网改造器</h1><p><b>'+XNR.version+' ('+XNR.miniver+')</b></p><p><b>Copyright © 2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p></td></tr></tbody></table></div></td></tr></tbody></table></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border"></td></tr><tr><td class="border bl"></td><td class="border m"></td><td class="border br"></td></tr></tbody></table>';
 
 	var menu=$node("div").attr("class","xnr_op").style("display","none").code(menuHTML).appendTo(document.documentElement);
@@ -1393,7 +1552,7 @@ function $save(name,value) {
 			GM_setValue("xnr_options",opts);
 			break;
 		case FIREFOX:
-			Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.xiaonei_reformer.").setCharPref("xnr_options",opts);
+			Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).setCharPref("extensions.xiaonei_reformer.xnr_options",escape(opts));
 			break;
 		case CHROME:
 			chrome.extension.sendRequest({action:"save",data:opts});
@@ -2003,7 +2162,7 @@ switch(XNR.agent) {
 		break;
 	case FIREFOX:
 		try {
-			main(JSON.parse(Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.xiaonei_reformer.").getCharPref("xnr_options")));
+			main(JSON.parse(unescape(Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getCharPref("extensions.xiaonei_reformer.xnr_options"))));
 		} catch(err) {
 			main({});
 		}
