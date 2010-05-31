@@ -33,11 +33,14 @@
 var window=_window;
 var document=_window.document;
 
-// 不在内容可以编辑的frame中运行
-if (window.self != window.top && document.designMode=="on") {
-	return;
-} else if(document.body && !document.body.id && !document.body.className) {
-	return;
+if (window.self != window.top) {
+	if(document.designMode=="on") {
+		// 不在内容可以编辑的frame中运行
+		return;
+	} else if(document.body && !document.body.id && !document.body.className) {
+		// 也不在body没有标记的frame中运行
+		return;
+	}
 }
 
 // 基本参数
@@ -171,6 +174,12 @@ function removeBottomBar() {
 	$ban(target);
 };
 
+// 去除右下角系统通知
+function removeSysNotification() {
+	const target="#system-notification-box";
+	$ban(target);
+};
+
 // 去除首页部件
 function removeHomeGadgets(gadgetOpt) {
 	const gadgets={
@@ -245,8 +254,6 @@ function hideRequest(req) {
 		"recommendRequest":"l-recommend",
 		"friendRequest":"l-friend",
 		"tagRequest":"l-tag",
-		"pollRequest":"l-poll",
-		"eventRequest":"l-event",
 		"otherRequest":"iOther"
 	};
 	var box=$(".side-item.newrequests ul.icon");
@@ -258,6 +265,71 @@ function hideRequest(req) {
 			box.find("li img."+table[r]).superior().purge();
 		}
 	}
+};
+
+// 自动拒绝请求
+function rejectRequest(req) {
+	// 好友申请
+	if(req["friendRequest"]) {
+		$get("http://www.renren.com/delallguestrequest.do?id="+XNR.userId);
+	}
+
+	// 招呼
+	if(req["pokeRequest"]) {
+		$get("http://www.renren.com/delallpoke.do");
+	}
+
+	// 没有其他选项被启用，退出。
+	if(req["appRequest"]==false && req["tagRequest"]==false && req["recommendRequest"]==false) {
+		return;
+	}
+
+	$get("http://req.renren.com/request/requestList.do",function(html) {
+		if(html==null) {
+			return;
+		}
+		// 应用请求
+		if(req["appRequest"]) {
+			// 一般应用
+			var command;
+			while(command=/ignoreAllAppRequest\((\d+),(\d+),(\d+),'(.*?)'\)/g.exec(html)) {
+				$get("http://req.renren.com/request/ignoreAllAppRequest.do?post="+encodeURIComponent(JSON.stringify({"type":command[1],"id":command[2],"appId":command[3],"name":command[4]})));
+			}
+
+			// 人人餐厅
+			while(command=/ignoreSpecialRequest\(101002,(\d+),(\d+),\d+,'.*?','.*?','.*?'\)/g.exec(html)) {
+				$get("http://app.renren.com/request/ignoreAppRequest.do?rid="+command[1]+"&appId="+command[2]+"&type=101002");
+			}
+		}
+		// 圈人请求
+		if(req["tagRequest"]) {
+			var command;
+			while(command=/refusePhotoRequest\((\d+),\d+,'.*?',\d+,\d+\)/g.exec(html)) {
+				$get("http://photo.renren.com/refuseptrequest.do?id="+command[1]);
+			}
+		}
+		// 好友推荐
+		if(req["recommendRequest"]) {
+			var command;
+			while(command=/rejectRecommend\((\d+),'.*?',\d+\)/g.exec(html)) {
+				$get("http://friend.renren.com/RejectRecFriend.do?id="+command[1]);
+			}
+		}
+	});
+};
+
+// 自动屏蔽应用通知
+function blockAppNotification() {
+	$get("http://msg.renren.com/notify/notifications.do",function(html) {
+		var blocked=[];
+		var command;
+		while(command=/showDialog\(this,(\d+)\)/.exec(html)) {
+			if(!blocked[command[1]]) {
+				$get("http://msg.renren.com/notify/notifications.do?action=block&app_id="+command[1]);
+				blocked[command[1]]=true;
+			}
+		}
+	});
 };
 
 // 去除导航栏项目
@@ -403,6 +475,7 @@ function main(savedOptions) {
 	//   [String]text:文字+HTML控件描述。例："##选项 数量：##"，表示前后各有一个HTML控件。
 	//   [Array]ctrl:如果text中存在控件描述，在这里具体定义。
 	//   [Number]agent:执行环境限制。可选。为XNR.agent可定义值的组合
+	//   [Boolean]login:用户登录后才执行。可选
 	//   [String]page:适用页面。页面名参考$page()，多个名称之间用逗号分隔
 	//   [Number]master:主控件序号。功能中的文字描述将会和主控件关联（<label for=masterID/>），当主控件的值为假时，其余控件将被禁用。如果ctrl数组中只有一项，则自动指定为主控件。主控件的type只能为check/edit/input。可选
 	// }
@@ -442,6 +515,8 @@ function main(savedOptions) {
 	// {
 	//   [String]id:选项组id。
 	//   [String]text:文字描述。可选。文字后将换行列出各选项。
+	//   [String]info:帮助信息。可选。
+	//   [String]warn:警告信息。可选。
 	//   [Array]ctrl:各选项描述。
 	//   [Number]column:列数
 	// }
@@ -566,6 +641,17 @@ function main(savedOptions) {
 						stage:0,
 						fire:true,
 					}],
+				}]
+			},{
+				text:"##去除右下角系统通知",
+				ctrl:[{
+					id:"removeSysNotification",
+					value:false,
+					fn:[{
+						name:removeSysNotification,
+						stage:0,
+						fire:true,
+					}]
 				}]
 			},{
 				text:"##",
@@ -701,13 +787,13 @@ function main(savedOptions) {
 					fn:[{
 						name:hideRequest,
 						stage:1,
-						args:["@requestGroup"]
+						args:["@hideRequestGroup"]
 					}],
 				}],
 				page:"home",
 			},{
-				id:"requestGroup",
-				text:"隐藏以下类型的请求",
+				id:"hideRequestGroup",
+				text:"隐藏首页上以下类型的请求",
 				column:3,
 				ctrl:[
 					{
@@ -735,19 +821,67 @@ function main(savedOptions) {
 						text:"##圈人",
 						value:false,
 					},{
-						id:"pollRequest",
-						text:"##投票邀请",
-						value:false,
-					},{
-						id:"eventRequest",
-						text:"##活动邀请",
-						value:false,
-					},{
 						id:"otherRequest",
 						text:"##其他请求",
 						value:false,
 					},
 				],
+			},{
+				text:"##",
+				login:true,
+				ctrl:[{
+					type:"hidden",
+					fn:[{
+						name:rejectRequest,
+						stage:0,
+						args:["@rejectRequestGroup"]
+					}],
+				}],
+			},{
+				id:"rejectRequestGroup",
+				text:"自动拒绝以下类型的请求",
+				info:"由于是在后台进行拒绝，首页上可能仍然会显示有请求待处理",
+				column:3,
+				ctrl:[
+					{
+						id:"appRequest",
+						text:"##应用请求",
+						value:false,
+					},{
+						id:"recommendRequest",
+						text:"##好友推荐",
+						value:false,
+					},{
+						id:"friendRequest",
+						text:"##好友申请",
+						value:false,
+					},{
+						id:"tagRequest",
+						text:"##圈人",
+						value:false,
+					},{
+						id:"pokeRequest",
+						text:"##招呼",
+						value:false,
+					}
+				],
+			},{
+				text:"##自动屏蔽应用通知##",
+				login:true,
+				ctrl:[
+					{
+						id:"blockAppNotification",
+						value:false,
+						fn:[{
+							name:blockAppNotification,
+							stage:0
+						}],
+					},{
+						type:"info",
+						value:"在“站内信”->“通知”处可以解除屏蔽",
+					}
+				],
+				master:0
 			}
 		],
 		"改造导航栏":[
@@ -842,7 +976,7 @@ function main(savedOptions) {
 					},{
 						id:"diagnosisInfo",
 						type:"edit",
-						style:"width:99%;height:230px;margin-top:5px;resize:none",
+						style:"width:99%;height:230px;margin-top:5px",
 						readonly:true,
 					}
 				],
@@ -892,6 +1026,10 @@ function main(savedOptions) {
 						break;
 					}
 				}
+			}
+			// 检查登录限制
+			if(o.login && XNR.userId=="0") {
+				noexec=true;
 			}
 			// 放在一块中
 			var block=$node("div");
@@ -1007,7 +1145,13 @@ function main(savedOptions) {
 			} else {
 				// 选项组
 				if(o.text) {
-					$node("div").text(o.text).appendTo(block);
+					var node=$node("div").text(o.text).appendTo(block);
+					if(o.info) {
+						$node("input").attr({type:"image",src:infoImage,tooltip:o.info,tabIndex:-1}).hook("mouseover",showTooltip).hook("mouseout",hideTooltip).appendTo(node);
+					}
+					if(o.warn) {
+						$node("input").attr({type:"image",src:warnImage,tooltip:o.info,tabIndex:-1}).hook("mouseover",showTooltip).hook("mouseout",hideTooltip).appendTo(node);
+					}
 				}
 				var group={};
 				var table=$node("tbody").appendTo($node("table").attr("class","group").appendTo(block));
@@ -1115,7 +1259,7 @@ function main(savedOptions) {
 	
 
 	// 生成选项菜单
-	var menuHTML='<style type="text/css">.xnr_op{width:500px;position:fixed;z-index:200000;color:black;blackground:black;font-size:12px}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op a{color:#3B5990}.xnr_op table{width:100%;table-layout:fixed}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .m{width:100%}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none;cursor:default}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op>table table{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%}.xnr_op table.group{margin-left:5px;margin-top:3px}.xnr_op .pages tr{line-height:20px}.xnr_op input[type="checkbox"]{margin-right:4px}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op input[type="image"]{margin-left:2px;margin-right:2px}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
+	var menuHTML='<style type="text/css">.xnr_op{width:500px;position:fixed;z-index:200000;color:black;blackground:black;font-size:12px}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op a{color:#3B5990}.xnr_op table{width:100%;table-layout:fixed}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .m{width:100%}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none;cursor:default}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op>table table{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%}.xnr_op table.group{margin-left:5px;margin-top:3px}.xnr_op .pages tr{line-height:20px}.xnr_op input[type="checkbox"]{margin-right:4px}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op input[type="image"]{margin-left:2px;margin-right:2px}.xnr_op textarea{resize:none}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}</style>';
 		menuHTML+='<table><tbody><tr><td class="border tl"></td><td class="border m"></td><td class="border tr"></td></tr><tr><td class="border"></td><td class="c m"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><ul>'+categoryHTML+'</ul></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>人人网改造器</h1><p><b>'+XNR.version+' ('+XNR.miniver+')</b></p><p><b>Copyright © 2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p></td></tr></tbody></table></div></td></tr></tbody></table></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border"></td></tr><tr><td class="border bl"></td><td class="border m"></td><td class="border br"></td></tr></tbody></table>';
 
 	var menu=$node("div").attr("class","xnr_op").style("display","none").code(menuHTML).appendTo(document.documentElement);
@@ -1588,24 +1732,30 @@ function $get(url,func,userData) {
 	switch(XNR.agent) {
 		case FIREFOX:
 			var httpReq= new XMLHttpRequest();
-			httpReq.onload=function() {
-				func((httpReq.status==200?httpReq.responseText:null),url,userData);
-			};
-			httpReq.onerror=function() {
-				func(null,url,userData);
-			};
+			if(func!=null) {
+				httpReq.onload=function() {
+					func((httpReq.status==200?httpReq.responseText:null),url,userData);
+				};
+				httpReq.onerror=function() {
+					func(null,url,userData);
+				};
+			}
 		    httpReq.open("GET",url,true);
 			httpReq.send();
 			break;
 		case USERSCRIPT:
-			GM_xmlhttpRequest({method:"GET",url:url,onload:function(o) {
-				func((o.status==200?o.responseText:null),url,userData);
-			},onerror:function(o) {
-				func(null,url,userData);
-			}});
+			if(func!=null) {
+				GM_xmlhttpRequest({method:"GET",url:url,onload:function(o) {
+					func((o.status==200?o.responseText:null),url,userData);
+				},onerror:function(o) {
+					func(null,url,userData);
+				}});
+			} else {
+				GM_xmlhttpRequest({method:"GET",url:url});
+			}
 			break;
 		case CHROME:
-			chrome.extension.sendRequest({action:"get",url:url},function(response) {
+			chrome.extension.sendRequest({action:"get",url:url},func==null?null:function(response) {
 				func(response.data,url,userData);
 			});
 			break;
