@@ -378,7 +378,172 @@ function addNavItems(content) {
 		$node("div").code('<div class="menu-title"><a href="'+items[i+1]+'" target="_blank">'+items[i]+'</a></div>').attr("class","menu").appendTo(nav);
 	}
 	//防止被自作主张改动链接
-	location.href="javascript:(function(){var e=document.body.querySelectorAll('.nav-main .menu-title > a');for(var i in e){e[i]._ad_rd=true;}})();";
+	location.href="javascript:(function(){try{var e=document.body.querySelectorAll('.nav-main .menu-title > a');for(var i in e){e[i]._ad_rd=true;}}catch(ex){}})();";
+};
+
+// 恢复深蓝主题
+function recoverOriginalTheme(ignoreTheme) {
+	var FCOLOR="#3B5998";	//Facebook的深蓝色
+	var XCOLOR="#3B5888";	//校内原来的深蓝色
+	var BCOLOR="#5C75AA";	//原来的菜单背景色
+	var SCOLOR="#EBF3F7";	//原来的应用栏&回复背景色
+
+	// stage0预先打补丁。stage1修正
+	var prepatch=$patchCSS("a,a:link,a:visited,a:hover{color:"+FCOLOR+"}.navigation .nav-body{background-color:"+XCOLOR+"}.user-data,.panel.bookmarks,.statuscmtitem,.new-user{background-color:"+SCOLOR+"}");
+	$wait(1,function() {
+		if(!ignoreTheme) {
+			// 开始检测有无模板存在
+			var theme=false;
+			// 紫豆导航栏
+			if(!$("head > link[ref='stylesheet'][herf*='zidou_nav.css']").empty()) {
+				theme=true;
+			} else if(!$("#themeLink:not([href*='sid=-1'])").empty()) {
+				// 公共主页模板
+				theme=true;
+			} else if(!$("#hometpl_style").empty() && $("#hometpl_style").text().contains("{")) {
+				// 首页模板 。。。
+				theme=true;
+			} else {
+				// 紫豆模板
+				$("head style").each(function(elem) {
+						if($(elem).text().contains("url(http://i.static.renren.com")) {
+						theme=true;
+						return true;
+					}
+				});
+			}
+			if(theme) {
+				prepatch.remove();
+				return;
+			}
+		}
+
+		var css="";
+	
+		const files={
+			"home-all.css":[
+				"a,a:link,a:visited,a:hover{color:"+FCOLOR+"}",
+				".navigation .nav-body{background-color:"+XCOLOR+"}",
+				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
+				".input-button, .input-submit{background-color:"+FCOLOR+"}",
+				".pop_content .dialog_body a,.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
+				".pop_content h2{background-color:"+XCOLOR+"}",
+				"ul.square_bullets{color:"+FCOLOR+"}",
+				".menu-dropdown .menu-item li.show-more a:hover{background-color:"+FCOLOR+"}",
+				".menu-dropdown .menu-item a:hover{background-color:"+FCOLOR+"}",
+				".menu-dropdown .optionmenu li a:hover{background-color:"+FCOLOR+"}",
+				".m-chat .chatnote a,.m-chat .chatnote em{color:"+FCOLOR+"}",
+				".publisher .status-publisher input.submit{background-color:"+FCOLOR+"}",
+				"ul.richlist.feeds li .details a.share:hover{color:"+FCOLOR+"}",
+				".app-box .common-app h1 .open{color:"+FCOLOR+"}",
+				".user-data,.panel.bookmarks,.statuscmtitem{background-color:"+SCOLOR+"}",
+			],
+			"webpager-std-min.css":[
+				".webpager ul.icon a:hover .tooltip{background-color:"+FCOLOR+"}",
+				".app-list dl.apps dd a:hover span.del-handle:hover{background-color:"+FCOLOR+"}",
+			],
+			"layout.css":[
+				"a,a:link,a:visited,a:hover{color:"+FCOLOR+"}",
+				"a.share:hover,a.mini-share:hover,a.action:hover{background-color:"+FCOLOR+"}",
+				".input-button,.input-submit{background-color:"+FCOLOR+"}",
+				"td.pop_content .dialog_buttons input{background-color:"+FCOLOR+" !important}",
+				"td.pop_content h2{background-color:"+XCOLOR+"}",
+				"ul.square_bullets{color:"+FCOLOR+"}",
+				".navigation{background-color:"+XCOLOR+"}",
+				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
+				".menu-dropdown .menu-item li.show-more a:hover{background-color:"+FCOLOR+"}",
+				".menu-dropdown .menu-item a:hover{background-color:"+FCOLOR+"}",
+				".menu-dropdown .optionmenu li a:hover{background-color:"+FCOLOR+"}",
+				"ol.pageclip li a:hover{background-color:"+FCOLOR+"}",
+				".pagerpro li a:hover{background-color:"+FCOLOR+"}",
+				".pagerpro li.current a, .pagerpro li.current a:hover{color:"+FCOLOR+"}",
+				"#pages-jump a{color:"+FCOLOR+"}",
+				"#pop-login h1{background-color:"+FCOLOR+"}",
+				".newpop .share_popup .toggle_tabs li a{color:"+FCOLOR+"}",
+			],
+			"news-feeds.css":[
+				"ul.richlist.feeds li div.details a.share:hover{color:"+FCOLOR+"}",
+			],
+			"profilepro.css":[
+				".imgbtn-1{background-color:"+FCOLOR+"}",
+			],
+			"profile-skin.css":[
+				".tabs-holder .tabpanel a:visited,.tabs-holder .tabpanel a{color:"+FCOLOR+"}",
+				".super-menu li a:hover{background-color:"+FCOLOR+"}",
+				".filter li.c a{background-color:"+BCOLOR+"}",
+			],
+			"msg.css":[
+				".page-titletabs a.add-msg{background-color:"+FCOLOR+"}",
+				".inputbutton,.inputsubmit,.subbutton,.canbutton,.button-group button{background-color:"+FCOLOR+"}",
+				".messages .next_message:hover,.messages .previous_message:hover{background-color:"+FCOLOR+"}",
+			],
+			"dialogpro.css":[
+				"ul.square_bullets{color:"+FCOLOR+"}",
+				"td.pop_content h2{background-color:"+XCOLOR+"}",
+			],
+			"page.css":[
+				".page-tabs .tabpanel a,.page-tabs .tabpanel a:visited{color:"+FCOLOR+"}",
+				".page-tabs .tabpanel li.select a,.page-tabs .tabpanel li.addtab a:hover{color:"+FCOLOR+"}",
+				".stabs a,.stabs a:hover,.stabs a:visited{color:"+FCOLOR+"}",
+				"form.editDesc input{color:"+FCOLOR+"}",
+				".theme-panel a,.theme-panel a:link,.theme-panel a:hover,.theme-panel a:visited{color:"+FCOLOR+"}",
+				".thmc-action .del:hover{background-color:"+FCOLOR+"}",
+				"td.pop_content .dialog_body .ordertabs a.s{background-color:"+FCOLOR+" !important}",
+				".info-item .photoes ul li .name{color:"+FCOLOR+"}",
+			],
+			"appspro.css":[
+				".sub-nav ul.main li.son-nav a.pre-select,.sub-nav ul.main li.son-nav a:hover.pre-select,.sub-nav ul.main li.allselect a{background-color:"+FCOLOR+"}",
+				".sub-nav li ul.sub li a{color:"+FCOLOR+"}",
+				".sub-nav ul.main li a.select,.sub-nav li ul.sub li a.select,.sub-nav li ul.sub li a.select:hover{background-color:"+FCOLOR+"}",
+				".sub-nav li ul.sub li a.select,.sub-nav li ul.sub li a.select:hover{background-color:"+FCOLOR+"}",
+				".sub-nav,.user-data,.panel.bookmarks,.section h2,.tab-switch{background-color:"+SCOLOR+"}",
+			],
+			"albumpro.css":[
+				".photo-comments #side-column ul.actions .rotate-left a:hover,.photo-comments #side-column ul.actions .rotate-right a:hover{background-color:"+FCOLOR+"}",
+				".share a:hover{background-color:"+FCOLOR+"}",
+				"h3.upload-step-1 .pick-more{color:"+FCOLOR+"}",
+				".pager-top a.current, .pager-top a.current:hover{color:"+FCOLOR+"}",
+				"a.act-btn{background-color:"+FCOLOR+"}",
+			],
+			"subscription.css":[
+				".ss-menu li.cur a{background-color:"+XCOLOR+"}",
+				".subs-search p .subbutton{background-color:"+FCOLOR+"}",
+				".subs-commend li .detail .add a{background-color:"+FCOLOR+"}",
+			],
+			"replies.css":[
+				".replies a.reply-report:hover{color:"+FCOLOR+"}",
+			],
+			"homepro.css":[
+				".new-user{background-color:"+SCOLOR+"}",
+				".home-nav .c a,.home-nav .c a:hover{background-color:"+FCOLOR+"}",
+	
+			],
+			"login-all.css":[
+				"a,a:link,a:visited,a:hover{color:"+FCOLOR+"}",
+				"a.action:hover,a.share:hover,a.mini-share:hover{background-color:"+FCOLOR+"}",
+				".input-button,.input-submit{background-color:"+FCOLOR+"}",
+				".navigation{background-color:"+XCOLOR+"}",
+				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
+			],
+			"login-unbuffered.css":[
+				"a,a:link,a:visited,a:hover{color:"+FCOLOR+"}",
+				"a.action:hover,a.share:hover,a.mini-share:hover{background-color:"+FCOLOR+"}",
+				".input-button,.input-submit{background-color:"+FCOLOR+"}",
+				".navigation{background-color:"+XCOLOR+"}",
+				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
+			],
+		};
+		var style="";
+		for(var f in files) {
+			if(!$("head link[rel='stylesheet'][href*='"+f+"']").empty()) {
+				style+=files[f].join("");
+			}
+		}
+		if(style) {
+			$patchCSS(style);
+		}
+		prepatch.remove();
+	});
 };
 
 // 生成诊断信息
@@ -949,7 +1114,7 @@ function main(savedOptions) {
 						value:false,
 						fn:[{
 							name:addNavItems,
-							stage:1,
+							stage:2,
 							args:["@navItemsContent"],
 							fire:true
 						}],
@@ -960,6 +1125,25 @@ function main(savedOptions) {
 						value:"论坛\nhttp://club.renren.com/"
 					}
 				],
+				master:0
+			}
+		],
+		"改造界面":[
+			{
+				text:"##使用深蓝色主题##",
+				ctrl:[{
+					id:"recoverOriginalTheme",
+					value:false,
+					fn:[{
+						name:recoverOriginalTheme,
+						stage:0,
+						fire:true,
+						args:["@removePageTheme"]
+					}],
+				},{
+					type:"info",
+					value:"使用早期的类Facebook配色。在有模板的页面不会修改其配色",
+				}],
 				master:0
 			}
 		],
