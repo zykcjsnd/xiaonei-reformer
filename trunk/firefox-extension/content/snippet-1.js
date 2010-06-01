@@ -1,7 +1,8 @@
-function loader(evt) {
-	var docWindow=content;
-	if(evt) {
-		docWindow=evt.target.defaultView.window;
+function loader(obj,direct) {
+	if(direct) {
+		var docWindow=obj
+	} else {
+		var docWindow=obj.target.defaultView.window;
 		if(docWindow==docWindow.parent) {
 			return;
 		}
