@@ -532,6 +532,16 @@ function recoverOriginalTheme(ignoreTheme) {
 				".navigation{background-color:"+XCOLOR+"}",
 				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
 			],
+			"club.css":[
+				"a,a:hover{color:"+FCOLOR+"}",
+			],
+			"header.css":[
+				"#navigation ul ul a{color:"+FCOLOR+"}",
+				"#self-nav li a{color:"+FCOLOR+"}",
+				"#self-nav .selected a,#self-nav .selected a:hover{background-color:"+FCOLOR+"}",
+				"#clubheader #navigation{background-color:"+XCOLOR+"}",
+				"#utility{background-color:"+XCOLOR+"}",
+			],
 		};
 		var style="";
 		for(var f in files) {
@@ -544,6 +554,48 @@ function recoverOriginalTheme(ignoreTheme) {
 		}
 		prepatch.remove();
 	});
+};
+
+// 使用大号新鲜事删除按钮
+function recoverBigDeleteBtn() {
+	$patchCSS("ul.richlist.feeds li a.delete{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -115px 0 transparent;height:18px;width:18px}ul.richlist.feeds li a.delete:hover{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -133px 0 transparent;height:18px;width:18px}");
+};
+
+// 去除页面字体限制
+function removeFontRestriction() {
+	$patchCSS("*{font-family:none !important}");
+};
+
+// 限制头像列表中的头像最大数量
+function limitHeadList(amountString) {
+	var amount=parseInt(amountString);
+	if(amount==0) {
+		return;
+	}
+	$("ul.people-list").each(function(elem) {
+		var list=$(elem);
+		while(list.heirs()>amount) {
+			list.child(amount).remove();
+		}
+	});
+};
+
+// 将留言板移动到新鲜事下方
+function moveMessageBoardToBottom() {
+	$(".talk-box").append($(".talk-box>.box"));
+};
+
+// 修正导航栏项目高度
+function fixNavItemHeight() {
+	$patchCSS(".navigation .menu-title a{max-height:35px}");
+};
+
+// 修正论坛帖子排版错误
+function fixClubTypesetting() {
+	// 帖子正文
+	$patchCSS(".content{overflow:visible}");
+	// 子导航栏
+	$patchCSS("#sub-nav{overflow:visible}#sub-nav>ul{clear:both}");
 };
 
 // 生成诊断信息
@@ -1145,6 +1197,105 @@ function main(savedOptions) {
 					value:"使用早期的类Facebook配色。在有模板的页面不会修改其配色",
 				}],
 				master:0
+			},{
+				text:"##使用大号新鲜事删除按钮",
+				ctrl:[{
+					id:"recoverBigDeleteBtn",
+					value:false,
+					fn:[{
+						name:recoverBigDeleteBtn,
+						stage:0,
+						fire:true,
+					}],
+				}],
+				page:"home,profile"
+			},{
+				text:"##去除页面字体限制##",
+				ctrl:[
+					{
+						id:"removeFontRestriction",
+						value:false,
+						fn:[{
+							name:removeFontRestriction,
+							stage:0,
+							fire:true
+						}]
+					},{
+						type:"info",
+						value:"使用浏览器本身设定的字体而非网站限制使用的字体"
+					}
+				],
+				master:0
+			},{
+				text:"##限制个人主页上头像列表中的头像数量最多为##个",
+				ctrl:[
+					{
+						id:"limitHeadList",
+						value:false,
+						fn:[{
+							name:limitHeadList,
+							stage:1,
+							fire:true,
+							args:["@headsAmount"]
+						}]
+					},{
+						id:"headsAmount",
+						value:"12",
+						type:"input",
+						style:"width:30px;margin-left:3px;margin-right:3px",
+						verify:{"^[0-9]{1,2}$":"请在头像最大数量处输入1～2位正整数"}
+					}
+				],
+				master:0,
+				page:"profile"
+			},{
+				text:"##将个人主页上留言板移至新鲜事下方",
+				ctrl:[{
+					id:"moveMessageBoardToBottom",
+					value:false,
+					fn:[{
+						name:moveMessageBoardToBottom,
+						stage:1,
+						fire:true
+					}]
+				}],
+				page:"profile"
+			},{
+				text:"##修正导航栏项目高度##",
+				ctrl:[
+					{
+						id:"fixNavItemHeight",
+						value:false,
+						fn:[{
+							name:fixNavItemHeight,
+							stage:0,
+							fire:true
+						}]
+					},{
+						type:"info",
+						value:"如果您将浏览器字体的最小大小设成大于12，可能会出现导航栏上的项目高度过大的错误。如果您遇到这个问题，请启用此功能。"
+					}
+				],
+				master:0
+			},{
+				text:"##修正论坛排版错误##",
+				agent:FIREFOX | USERSCRIPT,
+				ctrl:[
+					{
+						id:"fixClubTypesetting",
+						value:false,
+						fn:[{
+							name:fixClubTypesetting,
+							stage:0,
+							fire:true
+						}]
+					},{
+						type:"info",
+						value:"如果您将浏览器字体的最小大小设成大于12，可能会出现论坛的栏目导航栏和帖子正文偏右的错误。如果您遇到这个问题，请启用此功能。",
+					}
+				],
+				master:0,
+				page:"club"
 			}
 		],
 		"诊断信息":[
@@ -1203,10 +1354,11 @@ function main(savedOptions) {
 			// 检查执行功能页面限制
 			if(o.page) {
 				var p=o.page.split(",");
+				noexec=true;
 				for(var iPage=0;iPage<p.length;iPage++) {
 					// 不适用于当前页面
-					if($page(p[iPage])==false) {
-						noexec=true;
+					if($page(p[iPage])==true) {
+						noexec=false;
 						break;
 					}
 				}
@@ -1696,6 +1848,7 @@ function $page(category,url) {
 		home:"/[hH]ome\\.do",	// 首页
 		profile:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=", // 个人主页
 		blog:"/blog\\.renren\\.com/",	// 日志
+		club:"/club\\.renren\\.com/",	// 论坛
 	};
 	if(!url) {
 		url=window.location.href;
@@ -2145,6 +2298,15 @@ PageKit.prototype={
 			return c;
 		} catch(err) {
 			return 0;
+		}
+	},
+	// 获取对象第一个DOM节点的某个子节点，index为-1时取最后一个。经PageKit包装
+	child:function(index) {
+		try {
+			var node=this.get();
+			return $(node.children[index!=-1?index:node.childElementCount-1]);
+		} catch(err) {
+			return null;
 		}
 	},
 	// 获取对象第一个DOM节点的上级节点(经PageKit对象包装)
