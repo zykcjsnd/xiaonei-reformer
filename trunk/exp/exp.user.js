@@ -6,7 +6,7 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        3.0.0.20100529
+// @version        3.0.0.20100601
 // @miniver        300
 // @author         xz
 // ==/UserScript==
@@ -40,6 +40,9 @@ if (window.self != window.top) {
 	} else if(document.body && !document.body.id && !document.body.className) {
 		// 也不在body没有标记的frame中运行
 		return;
+	} else if(window.location.href.toLowerCase().indexOf("ajaxproxy")>0) {
+		// 也不在ajaxproxy.html中运行
+		return;
 	}
 }
 
@@ -47,7 +50,7 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.0.20100529";
+XNR.version="3.0.0.20100601";
 XNR.miniver=300;
 
 // 存储空间，用于保存全局性变量
@@ -330,6 +333,44 @@ function blockAppNotification() {
 			}
 		}
 	});
+};
+
+// 隐藏特定新鲜事类型
+function hideFeeds(evt,feeds,mark) {
+	$("ul#feedHome > li").filter(function(elem) {
+		var type=$getFeedType($(elem));
+		return (type=="" || feeds[type]==true);
+	}).each(function(elem) {
+		if(mark) {
+			//为防止javascript被禁用导致执行onclick出错，先将其隐藏
+			$(elem).hide().find("a.delete").invoke("onclick");
+		} else {
+			$(elem).remove();
+		}
+	});
+
+};
+
+// 加载更多页新鲜事
+function loadMoreFeeds(pages) {
+	// 先修改load函数，原来的load最后有个window.scrollTo会使页面滚动
+	// 只要当前页数比预定页数少，就不断加载下一页
+	var code="function dontscroll(){if((window.XN.page.home.feedFilter.oldLoad=window.XN.page.home.feedFilter.load)==null){throw 'x'};window.XN.page.home.feedFilter.load=function(a,b){var oldScrollTo=window.scrollTo;window.scrollTo=function(){};window.XN.page.home.feedFilter.oldLoad(a,b);window.scrollTo=oldScrollTo;}};function loadMoreFeeds(){if(window.XN.page.home.feedFilter.currentPage<"+(parseInt(pages)-1)+"){if(!window.XN.page.home.feedFilter.loading){XN.Page.home.feedFilter.loadMore()};setTimeout(loadMoreFeeds,1000);}else{window.XN.page.home.feedFilter.load=window.XN.page.home.feedFilter.oldLoad;window.XN.page.home.feedFilter.oldLoad=null}};(function(){try{dontscroll();loadMoreFeeds()}catch(e){setTimeout(arguments.callee,500)}})()";
+	if(XNR.agent!=CHROME) {
+		window.location.href="javascript:"+code;
+	} else {
+		$node("script").text(code).appendTo(document.body);
+	}
+};
+
+// 禁止在窗口滚动到底部时自动加载下一页新鲜事
+function disableAutoLoadFeeds() {
+	var code="(function(){if(window.feedLoads==null){setTimeout(arguments.callee,500)}else{window.feedLoads=2}})();";
+	if(XNR.agent!=CHROME) {
+		window.location.href="javascript:"+code;
+	} else {
+		$node("script").text(code).appendTo(document.body);
+	}
 };
 
 // 去除导航栏项目
@@ -719,7 +760,7 @@ function main(savedOptions) {
 	//     [String/Boolean]fire:函数执行条件。如果为string，则为控件的某一个事件。否则是控件的期望值。可选。未指定事件为初始化后立即执行。
 	//     [Number]stage:执行时机/优先级（0～3）。参考$wait()。
 	//     [Object]trigger:设定其他控件的触发事件。{CSS选择器:事件名,...}。可选。如果stage为0，则trigger的执行时机为1，否则与stage相同。
-	//     [Array]args:函数参数列表。如果参数为另一控件值/选项组，名称前加@。参数数量不得多于4个。利用选项组处理过多参数
+	//     [Array]args:函数参数列表。如果参数为另一控件值/选项组，名称前加@。如果指定了trigger，请将第一个参数设置为null，在事件触发时将用事件对象替代第一个参数
 	//   },
 	//   {
 	//   	函数2描述...
@@ -1007,6 +1048,7 @@ function main(savedOptions) {
 						args:["@hideRequestGroup"]
 					}],
 				}],
+				login:true,
 				page:"home",
 			},{
 				id:"hideRequestGroup",
@@ -1045,7 +1087,6 @@ function main(savedOptions) {
 				],
 			},{
 				text:"##",
-				login:true,
 				ctrl:[{
 					type:"hidden",
 					fn:[{
@@ -1054,6 +1095,7 @@ function main(savedOptions) {
 						args:["@rejectRequestGroup"]
 					}],
 				}],
+				login:true,
 			},{
 				id:"rejectRequestGroup",
 				text:"自动拒绝以下类型的请求",
@@ -1081,10 +1123,9 @@ function main(savedOptions) {
 						text:"##招呼",
 						value:false,
 					}
-				],
+				]
 			},{
 				text:"##自动屏蔽应用通知##",
-				login:true,
 				ctrl:[
 					{
 						id:"blockAppNotification",
@@ -1098,7 +1139,145 @@ function main(savedOptions) {
 						value:"在“站内信”->“通知”处可以解除屏蔽",
 					}
 				],
+				login:true,
 				master:0
+			}
+		],
+		"处理新鲜事":[
+			{
+				text:"##",
+				ctrl:[{
+					type:"hidden",
+					fn:[{
+						name:hideFeeds,
+						stage:1,
+						args:[null,"@feedGroup","@markFeedAsRead"],
+						trigger:{"ul#feedHome":"DOMNodeInserted"},
+					}],
+				}],
+				login:true,
+				page:"home,profile"
+			},{
+				id:"feedGroup",
+				text:"隐藏以下类型的新鲜事",
+				column:4,
+				ctrl:[
+					{
+						id:"blog",
+						text:"##日志",
+						value:false
+					},{
+						id:"poll",
+						text:"##投票",
+						value:false
+					},{
+						id:"app",
+						text:"##应用",
+						value:false
+					},{
+						id:"status",
+						text:"##状态",
+						value:false
+					},{
+						id:"gift",
+						text:"##礼物",
+						value:false
+					},{
+						id:"image",
+						text:"##照片",
+						value:false
+					},{
+						id:"tag",
+						text:"##圈人",
+						value:false
+					},{
+						id:"profile",
+						text:"##头像",
+						value:false
+					},{
+						id:"share",
+						text:"##分享",
+						value:false
+					},{
+						id:"film",
+						text:"##电影",
+						value:false
+					},{
+						id:"music",
+						text:"##音乐",
+						value:false
+					},{
+						id:"connect",
+						text:"##连接",
+						value:false
+					},{
+						id:"friend",
+						text:"##交友",
+						value:false
+					},{
+						id:"vip",
+						text:"##VIP相关",
+						value:false
+					},{
+						id:"group",
+						text:"##品牌专区",
+						value:false
+					},{
+						id:"page",
+						text:"##公共主页",
+						value:false
+					},{
+						id:"contact",
+						text:"##保持联络",
+						value:false
+					},{
+						id:"levelup",
+						text:"##等级提升",
+						value:false
+					}
+				]
+			},{
+				text:"##将隐藏的新鲜事设为已读",
+				ctrl:[{
+					id:"markFeedAsRead",
+					value:false
+				}],
+			},{
+				text:"##默认显示##页新鲜事",
+				ctrl:[
+					{
+						id:"loadMoreFeeds",
+						value:false,
+						fn:[{
+							name:loadMoreFeeds,
+							stage:2,
+							fire:true,
+							args:["@loadFeedPage"]
+						}]
+					},{
+						id:"loadFeedPage",
+						type:"input",
+						value:"2",
+						style:"width:15px;margin-left:3px;margin-right:3px",
+						verify:{"^[2-9]$":"新鲜事页数只能为2~9"}
+					}
+				],
+				master:0,
+				login:true,
+				page:"home"
+			},{
+				text:"##窗口滚动到底部时不加载下一页新鲜事",
+				ctrl:[{
+					id:"disableAutoLoadFeeds",
+					value:false,
+					fn:[{
+						name:disableAutoLoadFeeds,
+						stage:1,
+						fire:true
+					}]
+				}],
+				login:true,
+				page:"home"
 			}
 		],
 		"改造导航栏":[
@@ -1208,6 +1387,7 @@ function main(savedOptions) {
 						fire:true,
 					}],
 				}],
+				login:true,
 				page:"home,profile"
 			},{
 				text:"##去除页面字体限制##",
@@ -1259,9 +1439,11 @@ function main(savedOptions) {
 						fire:true
 					}]
 				}],
+				login:true,
 				page:"profile"
 			},{
 				text:"##修正导航栏项目高度##",
+				agent:FIREFOX | USERSCRIPT,
 				ctrl:[
 					{
 						id:"fixNavItemHeight",
@@ -1335,6 +1517,8 @@ function main(savedOptions) {
 	};
 	// 函数执行队列。对应4个优先级，每一个优先级数组中的函数对象为{name:函数,args:函数参数,[trigger:{CSS选择器:事件名,...}]}
 	var fnQueue=[[],[],[],[]];
+	// 本地触发器队列
+	var localTriggers=[];
 
 	var categoryHTML="";
 	var categoryPages=[];
@@ -1461,14 +1645,8 @@ function main(savedOptions) {
 								// 符合要求，放入执行序列
 								fnQueue[fn.stage].push({name:fn.name,args:fn.args});
 							} else if(typeof fn.fire=="string") {
-								// 直接添加事件监听
-								node.hook(fn.fire,function(evt) {
-									try {
-										fn.name(evt,fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
-									} catch(err) {
-										$error(fn.name,err);
-									}
-								});
+								// 参数中可能有本地参数@xxxx，需要转换。
+								localTriggers.push({fn:fn,target:node});
 							}
 							// 其他节点触发事件
 							if(fn.trigger) {
@@ -1575,7 +1753,7 @@ function main(savedOptions) {
 			if(!fn.args) {
 				continue;
 			}
-			for(var iArg=0;iArg<4;iArg++) {
+			for(var iArg=0;iArg<fn.args.length;iArg++) {
 				if(typeof fn.args[iArg]=="string" && fn.args[iArg].charAt(0)=="@") {
 					fn.args[iArg]=XNR.options[fn.args[iArg].substring(1)];
 				}
@@ -1587,10 +1765,29 @@ function main(savedOptions) {
 	for(var i=0;i<fnQueue[0].length;i++) {
 		var fn=fnQueue[0][i];
 		try {
-			fn.name(fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+			fn.name.apply(null,fn.args);
 		} catch(err) {
 			$error(fn.name,err);
 		}
+	}
+
+	// 设置本地触发
+	for(var i=0;i<localTriggers.length;i++) {
+		var t=localTriggers[i];
+		var fn=t.fn;
+		// fn.args[0]将会被事件对象占用，从1开始检查
+		for(var iArg=1;iArg<fn.args.length;iArg++) {
+			if(typeof fn.args[iArg]=="string" && fn.args[iArg].charAt(0)=="@") {
+				fn.args[iArg]=XNR.options[fn.args[iArg].substring(1)];
+			}
+		}
+		// 将fn包在一个匿名函数中确保事件触发时能得到对应的fn
+		(function(func) {
+			t.target.hook(func.fire,function(evt) {
+				func.args[0]=evt;
+				func.name.apply(null,func.args);
+			});
+		})(fn);
 	}
 	
 
@@ -1741,61 +1938,42 @@ function main(savedOptions) {
 		menu.show().style({"top":parseInt(window.innerHeight-menu.prop("offsetHeight"))/2+"px","left":parseInt(window.innerWidth-menu.prop("offsetWidth"))/2+"px"});
 	});
 
-	// 优先级为1&2在页面DOM构建完毕后执行，添加菜单入口项也是
-	$wait(1,function () {
-		entry.prependTo($(".nav-body .nav-other"));
+	// 执行剩下三个优先级的函数
+	for(var p=1;p<=3;p++) {
+		$wait(p,function (stage) {
+			if(stage==2) {
+				// 添加菜单入口项在页面DOM构建完毕后执行
+				entry.prependTo($(".nav-body .nav-other"));
+			}
 
-		for(var p=1;p<3;p++) {
-			for(var i=0;i<fnQueue[p].length;i++) {
-				var fn=fnQueue[p][i];
+			for(var i=0;i<fnQueue[stage].length;i++) {
+				var fn=fnQueue[stage][i];
 				if(fn.trigger) {
 					// 触发器
 					for(var t in fn.trigger) {
-						$(t).hook(fn.trigger[t],function(evt) {
-							try {
-								fn.name(evt,fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
-							} catch(err) {
-								$error(fn.name,err);
-							}
-						});
+						// 将fn包在一个匿名函数中确保事件触发时能得到对应的fn
+						(function(func) {
+							$(t).hook(func.trigger[t],function(evt) {	
+								try {
+									func.args[0]=evt;
+									func.name.apply(null,func.args);
+								} catch(err) {
+									$error(func.name,err);
+								}
+							});
+						})(fn);
 					}
 				} else {
 					// 一般功能
 					try {
-						fn.name(fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
+						fn.name.apply(null,fn.args);
 					} catch(err) {
 						$error(fn.name,err);
 					}
 				}
 			}
-		}
-	});
-	// 优先级为3在页面加载完毕后执行
-	$wait(3,function () {
-		for(var i=0;i<fnQueue[3].length;i++) {
-			var fn=fnQueue[3][i];
-			if(fn.trigger) {
-				// 触发器
-				for(var t in fn.trigger) {
-					$(t).hook(fn.trigger[t],function(evt) {	
-						try {
-							fn.name(evt,fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
-						} catch(err) {
-							$error(fn.name,err);
-						}
-					});
-				}
-			} else {
-				// 一般功能
-				try {
-					fn.name(fn.args[0],fn.args[1],fn.args[2],fn.args[3]);
-				} catch(err) {
-					$error(fn.name,err);
-				}
-			}
-		}
-	});
-
+		});
+	}
 };
 
 /* 以下是基本辅助函数，所有函数以$开头 */
@@ -1974,7 +2152,7 @@ function $popup(title,content,geometry,stayTime,popSpeed) {
  * 尽量在特定的时机执行
  * 参数
  *   [Number]stage：目标时机。0：DOM创建前。1&2：DOM创建后（DOMContentLoaded）。3：页面加载完毕后（load）
- *   [Function]func：执行的函数
+ *   [Function]func：执行的函数，执行时将被传入优先级作为参数
  * 返回值
  *   无
  */
@@ -1997,13 +2175,16 @@ function $wait(stage,func) {
 	if(stage>curStage) {
 		// stage>curStage>=0 -> stage>0
 		if(stage<3) {
-			document.addEventListener("DOMContentLoaded",func,false);
+			var evt="DOMContentLoaded";
 		} else if(stage==3) {
-			document.addEventListener("load",func,false);
+			var evt="load";
 		}
+		document.addEventListener(evt,function() {
+			func(stage);
+		},false);
 	} else {
 		// 已经错过了/正赶上，立即执行
-		func();
+		func(stage);
 	}
 };
 
@@ -2144,8 +2325,50 @@ function $master(master) {
 	}
 };
 
+// 判断新鲜事类型，feed为li经XNR包装
+function $getFeedType(feed) {
+	var types={
+		// 标题文本，标题HTML，有无content，footerHTML
+		"share":	["^分享"],
+		"status":	["^:",null,false],	// 如果是纯表情状态，:后面的空格会被去除
+		"blog":		["^发表日志"],
+		"photo":	["^上传了\\d+张照片至|^的照片|美化了一张照片$|^:",null,true],
+		"contact":	["^你和.*和好朋友保持联络$"],
+		"profile":	["^修改了头像"],
+		"app":		[null,"<a [^>]*href=\"http://apps?.renren.com/"],
+		"gift":		["^收到","<a [^>]*href=\"http://gift.renren.com/"],
+		"tag":		["照片中被圈出来了$"],
+		"movie":	[null,"<a [^>]*href=\"http://movie.xiaonei.com/|<a [^>]*href=\"http://movie.renren.com/"],
+		"connect":	[null,null,null,"<a [^>]*href=\"http://www.connect.renren.com/"],
+		"friend":	["^和[\\s\\S]+成为了好友。"],
+		"page":		[null,"<a [^>]*href=\"http://page.renren.com/"],
+		"vip":		["^更换了主页模板皮肤|^更换了主页装扮|^成为了人人网[\\d\\D]*VIP会员特权|^收到好友赠送的[\\d\\D]*VIP会员特权|^开启了人人网VIP个性域名"],
+		"music":	["^上传了音乐"],
+		"poll":		[null,"<a [^>]*href=\"http://abc.renren.com/"],
+		"group":	[null,"<a [^>]*href=\"http://group.renren.com/"],
+		"levelup":	["^等级升至"],
+	};
+
+	var feedTitle=feed.find("h3");
+	// 删除所有链接子节点，只留下文本节点
+	var feedTitleText=feedTitle.clone();
+	feedTitleText.find("a:not(.text)").remove();
+
+	for(i in types) {
+		var type=types[i];
+		var feedText=type[0];
+		var feedHTML=type[1];
+		var feedContent=type[2];
+		var feedFooterHTML=type[3];
+		if ((!feedText || new RegExp(feedText).test(feedTitleText.text().replace(/^[ \t\n\r]+|[ \t\n\r]+$/g,""))) && (!feedHTML || new RegExp(feedHTML).test(feedTitle.code())) && (feedContent==null || feed.find("div.content").empty()!=feedContent) && (!feedFooterHTML || new RegExp(feedFooterHTML).test(feed.find(".details .legend").code()))) {
+			return i;
+		}
+	}
+	return "";
+};
 
 /* 基本辅助函数完 */
+
 
 /*
  * PageKit，用于处理DOM节点
@@ -2188,6 +2411,7 @@ PageKit.prototype={
 						break;
 					}
 				} catch(err) {
+					$error("PageKit::each",err);
 				}
 			}
 		}
