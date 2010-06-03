@@ -553,11 +553,10 @@ function autoCheckFeeds(interval,feedFilter) {
 						// 内容
 						var content=$node("section").code("<p>"+feedInfo.find("h3").code()+"</p>").appendTo(article);
 						content.find("img").style("position","absolute");
-
-						// 计数
-						$("#feed_toread_num").text(feedCount+parseInt($("#feed_toread_num").text()));
-						$("#feed_toread_tip").show();
 					}
+					// 计数
+					$("#feed_toread_num").text(feedCount+parseInt($("#feed_toread_num").text()));
+					$("#feed_toread_tip").show();
 				} else {
 					// 底部工具栏靠不住，自己建立一个窗口
 					var root=$("#xnr_newfeeds");
@@ -1123,6 +1122,12 @@ function addFloorCounter(evt) {
 // 允许在日志中添加HTTPS/FTP协议的链接
 function addBlogLinkProtocolsSupport() {
 	const code='var f=window.tinyMCE.editors.editor.plugins.xnLink.update.toString().replace("/^http:/","/^https?:|^ftp:/").replace(/function \\(\\) *{/,"").replace(/}$/,"");window.tinyMCE.editors.editor.plugins.xnLink.update=new Function(f);';
+	$script(code);
+};
+
+// 阻止点击跟踪
+function preventClickTracking() {
+	const code="var count=0;(function(){if(!XN||!XN.json||!XN.json.build){if(count<10){setTimeout(arguments.callee,500)};return};XN.json.oldBuildFunc=XN.json.build;XN.json.build=function(a,b,c){if(typeof a=='object'&&b==null&&c==null){if(!(a.ID===undefined)&&!(a.R===undefined)&&!(a.T===undefined)&&!(a.X===undefined)&&!(a.Y===undefined)){if(decodeURIComponent(a.R)==location.href){throw 'click-tracking prevented';return;}}}XN.json.oldBuildFunc(a,b,c)}})()";
 	$script(code);
 };
 
@@ -2177,8 +2182,8 @@ function main(savedOptions) {
 						stage:2,
 						fire:true
 					}],
-					page:"home,profile,status",
 				}],
+				page:"home,profile,status",
 				login:true
 			},{
 				text:"##为评论增加楼层计数##",
@@ -2213,6 +2218,26 @@ function main(savedOptions) {
 				}],
 				login:true,
 				page:"blog"
+			},{
+				text:"##阻止点击跟踪####",
+				ctrl:[
+					{
+						id:"preventClickTracking",
+						value:false,
+						fn:[{
+							name:preventClickTracking,
+							stage:2,
+							fire:true
+						}]
+					},{
+						type:"info",
+						value:"可能是出于收集分析用户行为的目的，当你在人人网的绝大多数页面点击鼠标时，会在后台向网站发送你的ID/点击的位置/所在页面等相关信息。这个可以在Chrome开发者工具中的Resources项或者Firefox的Firebug扩展的Net项中看到，具体表现为向dj.renren.com发送了一个名为click的图像请求。如果你不想让网站搜集这些信息，可以启用本功能。启用本功能后每一次点击将会引发一次异常。"
+					},{
+						type:"warn",
+						value:"启用本功能有极小的潜在可能性导致一些网站功能失效。如果遇到这种问题，请报告作者"
+					}
+				],
+				master:0
 			},{
 				text:"##相册所有图片在一页中显示",
 				ctrl:[{
