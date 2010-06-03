@@ -339,7 +339,7 @@ function blockAppNotification() {
 // 隐藏特定新鲜事类型
 function hideFeeds(evt,feeds,mark) {
 	$("ul#feedHome > li").filter(function(elem) {
-		var type=$getFeedType($(elem));
+		var type=$feedType($(elem));
 		return (type=="" || feeds[type]==true);
 	}).each(function(elem) {
 		if(mark) {
@@ -349,8 +349,10 @@ function hideFeeds(evt,feeds,mark) {
 			} catch(err) {
 				$error("hideFeeds::get",err);
 			}
+			$(elem).remove();
+		} else {
+			$(elem).hide();
 		}
-		$(elem).remove();
 	});
 };
 
@@ -358,13 +360,13 @@ function hideFeeds(evt,feeds,mark) {
 function loadMoreFeeds(pages) {
 	// 先修改load函数，原来的load最后有个window.scrollTo会使页面滚动
 	// 只要当前页数比预定页数少，就不断加载下一页
-	var code="function dontscroll(){if((window.XN.page.home.feedFilter.oldLoad=window.XN.page.home.feedFilter.load)==null){throw 'x'};window.XN.page.home.feedFilter.load=function(a,b){var oldScrollTo=window.scrollTo;window.scrollTo=function(){};window.XN.page.home.feedFilter.oldLoad(a,b);window.scrollTo=oldScrollTo;}};function loadMoreFeeds(){if(window.XN.page.home.feedFilter.currentPage<"+(parseInt(pages)-1)+"){if(!window.XN.page.home.feedFilter.loading){XN.Page.home.feedFilter.loadMore()};setTimeout(loadMoreFeeds,1000);}else{window.XN.page.home.feedFilter.load=window.XN.page.home.feedFilter.oldLoad;window.XN.page.home.feedFilter.oldLoad=null}};(function(){try{dontscroll();loadMoreFeeds()}catch(e){setTimeout(arguments.callee,500)}})()";
+	var code="var count=0;function dontscroll(){if((window.XN.page.home.feedFilter.oldLoad=window.XN.page.home.feedFilter.load)==null){throw 'x'};window.XN.page.home.feedFilter.load=function(a,b){var oldScrollTo=window.scrollTo;window.scrollTo=function(){};window.XN.page.home.feedFilter.oldLoad(a,b);window.scrollTo=oldScrollTo;}};function loadMoreFeeds(){if(window.XN.page.home.feedFilter.currentPage<"+(parseInt(pages)-1)+"){if(!window.XN.page.home.feedFilter.loading){XN.Page.home.feedFilter.loadMore()};setTimeout(arguments.callee,1000);}else{window.XN.page.home.feedFilter.load=window.XN.page.home.feedFilter.oldLoad;window.XN.page.home.feedFilter.oldLoad=null}};(function(){try{dontscroll();loadMoreFeeds()}catch(e){if(count<5){count++;setTimeout(arguments.callee,500)}}})()";
 	$script(code);
 };
 
 // 禁止在窗口滚动到底部时自动加载下一页新鲜事
 function disableAutoLoadFeeds() {
-	var code="(function(){if(window.feedLoads==null){setTimeout(arguments.callee,500)}else{window.feedLoads=2}})();";
+	var code="var count=0;(function(){if(window.feedLoads==null && count<5){count++;setTimeout(arguments.callee,500)}else{window.feedLoads=2}})();";
 	$script(code);
 };
 
@@ -405,9 +407,9 @@ function markOnlineFriend(evt) {
 			$(elem).find("a[href*='profile.do?']").each(function(link) {
 				var id=/id=([0-9]+)/.exec(link.href)[1];
 				if(id && list[id]) {
-					if($(link).previous()==null || $(link).previous().prop("tagName")!="IMG") {
+					if($(link).superior().find("img.on-line[mark='"+id+"']").empty()) {
 						// 还没标记过
-						elem.insertBefore($node("img").attr({"class":"on-line",height:"12",width:"13",onclick:"javascript:talkto("+id+",'"+list[id]+"');return false;",title:"点此和"+list[id]+"聊天",src:"http://xnimg.cn/imgpro/icons/online_1.gif?ver=$revxxx$",style:"vertical-align:baseline;cursor:pointer"}).get(),link);
+						elem.insertBefore($node("img").attr({"class":"on-line",height:"12",width:"13",onclick:"javascript:talkto("+id+",'"+list[id]+"');return false;",title:"点此和"+list[id]+"聊天",src:"http://xnimg.cn/imgpro/icons/online_1.gif?ver=$revxxx$",style:"vertical-align:baseline;cursor:pointer","mark":id}).get(),link);
 					}
 				}
 			});
@@ -420,7 +422,7 @@ function flodFeedComment() {
 	// 先隐藏起来
 	var p=$patchCSS("#feedHome .details>.replies{display:none}");
 	// 修改loadJSON方法，loadJSON原方法最后会调用show强制显示
-	var code="(function(){try{var code=XN.app.status.replyEditor.prototype.loadJSON.toString().replace(/function *\\(json\\) *{/,'').replace(/}$/,'').replace(/this.show\\([^\\)]*\\)/,'this.hide()')}catch(e){setTimeout(arguments.callee,100);return;};XN.app.status.replyEditor.prototype.loadJSON=new Function('json',code);})()";
+	var code="var count=0;(function(){try{var code=XN.app.status.replyEditor.prototype.loadJSON.toString().replace(/function *\\(json\\) *{/,'').replace(/}$/,'').replace(/this.show\\([^\\)]*\\)/,'this.hide()')}catch(e){count++;if(count<5){setTimeout(arguments.callee,500)};return};XN.app.status.replyEditor.prototype.loadJSON=new Function('json',code)})()";
 	$script(code);
 	$wait(1,function() {
 		var list=[];
@@ -429,13 +431,154 @@ function flodFeedComment() {
 			list.push(elem.id.match("[0-9]+$")[0]);
 		});
 		if(list.length>0) {
-			var code="(function(){try{var list="+JSON.stringify(list)+";for(var i=0;i<list.length;i++){getReplyEditor(list[i],'f').hide()}}catch(e){setTimeout(arguments.callee,100)}})()";
+			var code="try{var list="+JSON.stringify(list)+";for(var i=0;i<list.length;i++){getReplyEditor(list[i],'f').hide()}}catch(e){}";
 			$script(code);
 		}
 		p.remove();
 	});
 };
 
+// 自动检查提醒新鲜事更新
+function autoCheckFeeds(interval,feedFilter) {
+	// 在bottombar上建立一个新的接收区域
+	if(!$("#webpager #notification-panel").empty()) {
+		var root=$node("div").attr("class","popupwindow notify-panel").appendTo($("#webpager #notification-panel"));
+		var Btn=$node("div").attr("class","panelbarbutton").appendTo(root);
+		$node("img").attr({"class":"icon",height:"16",width:"16",src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA4klEQVQ4y61TsQrCQAztp9lCO3dz82N0cXFydXIWP0LE3Q/QxVEoR0Fpz15P3sGlSWlpix6EvOSSl9ccDYJ/nNnyZBfro53iqRmJ3fnmbHW42O31PiomEgBcwHjhUEwE881eSPNxG7fv4UlBXddkxhiLw+Oq+ogYXnwCCjxR13SOfT0pAODMuATmk31sjXI5rXW3AhT1Teb4VWipQClFCvj0tiqPxQ7SNHWMY3cAjHr0iVcY2gHPP7J3oyAMQ5sX2eQdoM8RxHFsn3kp3rlvB1xVkiTN/wA2b1EUCevKieZfzxcMt3dNdxsqQQAAAABJRU5ErkJggg%3D%3D",alt:"新鲜事",title:"新鲜事"}).appendTo(Btn);
+		$node("div").attr({id:"feed_toread_tip","class":"buttontooltip",style:"display:none"}).append($node("strong").attr("id","feed_toread_num").text("0")).appendTo(Btn);
+		var list=$node("article").attr("class","window").code('<header><h4>新的新鲜事</h4><menu><command title="最小化" label="最小化" class="minimize"></command></menu></header><section><p style="padding:5px;">没有新的新鲜事</p></section>').appendTo(root);
+		Btn.hook("click",function(evt) {
+			if(root.attr("class").contains("actived")) {
+				list.hide();
+				root.removeClass("actived");
+			} else {
+				list.show();
+				root.addClass("actived");
+			}
+			root.find("#feed_toread_tip").hide();
+			root.find("#feed_toread_num").text("0");
+		});
+		list.find("command").hook("click",function(evt) {
+			list.hide();
+			root.removeClass("actived");
+		});
+	}
+
+	// 如果是在首页则记录下当前最新一条新鲜事的ID
+	if($page("home")) {
+		if($("#feedHome").heirs()>0) {
+			$alloc("xnr_feed").id=$("#feedHome > li").get().id;
+		}
+	}
+
+	// 定时检查
+	setInterval(function() {
+		// 应该用post，不过get也行
+		$get("http://www.renren.com/feedretrieve.do?p=0",function(html) {
+			if(html==null) {
+				return;
+			}
+			var r=html.split("##@L#");
+			if(r.length<4 || !/^\d+$/.test(r[1])) {
+				// 回复结构变了
+				$error("autoCheckFeeds",{name:"网站改版",message:"获取新鲜事的页面结构发生变化"});
+				return;
+			}
+			try {
+				// 获取新鲜事列表
+				var feedList=$node("ul").code(r[0].replace(/onload=".*?"/g,"").replace(/<script.*?<\/script>/g,"").replace(/src="http:\/\/s\.xnimg\.cn\/a\.gif"/g,"").replace(/lala=/g,"src="));
+				// 滤除被屏蔽的新鲜事类型
+				for(var i=feedList.heirs()-1;i>=0;i--) {
+					var feedType=$feedType(feedList.child(i));
+					if(feedType && feedFilter[feedType]) {
+						feedList.child(i).remove();
+					}
+				}
+				// 滤除部分广告
+				feedList.find("li").filter("a[href^='http://edm.renren.com/link.do?']").remove();
+				// 人人桌面
+				feedList.find("li").filter("a[href^='http://im.renren.com/'][href*='.exe']").remove();
+
+				if(feedList.heirs()==0) {
+					return;
+				}
+				// 已读的最新新鲜事ID
+				var feedId=$alloc("xnr_feed").id;
+				if(!feedId) {
+					// 如果为空，则认为所有新鲜事都读了。。。
+					feedId=feedList.child(0).attr("id");
+					$alloc("xnr_feed").id=feedId;
+				}
+
+				var feedCount=0;
+				// 判断有哪些新鲜事还没有读过
+				for(var i=0;i<feedList.heirs();i++) {
+					if(feedList.child(i).attr("id")==feedId) {
+						feedCount=i;
+						break;
+					}
+				}
+				if(feedCount<=0) {
+					return;
+				} else {
+					$alloc("xnr_feed").id=feedList.child(0).attr("id");
+				}
+
+				// 很好，可以直接加到工具栏中
+				if(!$("#webpager #feed_toread_tip").empty()) {
+					var root=$("#webpager #notification-panel .popupwindow.notify-panel").filter("#feed_toread_tip");
+					var section=root.find(".window>section");
+					if(section.child(0).prop("tagName")=="P") {
+						section.child(0).remove();
+						$node("div").attr("class","notification").appendTo(section);
+					}
+					var alist=section.child(0);
+
+					for(var i=feedCount-1;i>=0;i--) {
+						var feedInfo=feedList.child(i);
+						var article=$node("article").attr("class","iconpanel").prependTo(alist);
+						// 图标
+						var icon=feedInfo.find("a.avatar img").attr("src");
+						var header=$node("header").code("<img class='icon' height='16' width='16' src='"+icon+"'/><menu><command class='delete' closebtn='true' title='删除'/></menu>").appendTo(article);
+						// 删除按钮事件
+						header.find(".delete").hook("click",function(evt) {
+							var obj=$(evt.target).superior(3).remove();
+							if(alist.heirs()==0) {
+								$node("p").style("padding","5px").text("没有新的新鲜事").appendTo(alist);
+							}
+						});
+						// 内容
+						var content=$node("section").code("<p>"+feedInfo.find("h3").code()+"</p>").appendTo(article);
+						content.find("img").style("position","absolute");
+
+						// 计数
+						$("#feed_toread_num").text(alist.heirs());
+						$("#feed_toread_tip").show();
+					}
+				} else {
+					// 底部工具栏靠不住，自己建立一个窗口
+					var root=$("#xnr_newfeeds");
+					if(root.empty()) {
+						root=$node("div").attr({style:"position:fixed;bottom:10px;right:10px;width:250px;z-index:100000;background:#EBF3F7;border:#3B5888 solid 1px;",id:"xnr_newfeeds"}).append($node("div").style({padding:"3px",background:"#3B5998"}).code("<span style='color:white;font-weight:bold'>您有新的新鲜事</span><a style='float:right;cursor:pointer;color:white' onclick='document.body.removeChild(document.getElementById(\"xnr_feed\"));'>关闭</a>")).append($node("div").attr("style","max-height:200px;padding-left:5px;padding-right:5px;overflow-y:auto").append($node("ul"))).appendTo(document.body);
+					}
+					var feedInfo=feedList.child(i);
+					// 图标
+					var icon=feedInfo.find("a.avatar img").attr("src");
+					var list=root.find("ul");
+					if(list.heirs()>0) {
+						list.child(-1).style("borderBottom","1px solid");
+					}
+					for(var i=0;i<feedCount;i++) {
+						list.append($node("li").code("<img height='16' width='16' src='"+icon+"' style='float:left'/><div style='padding-left:20px'>"+feedInfo.find("h3").code().replace(/^ +| +$/,"")+"</div>").attr("style","padding-top:5px;padding-bottom:5px;border-bottom:1px solid #AAAAAA"));
+					}
+					list.child(-1).style("borderBottom","");
+				}
+			} catch(err) {
+				$error("autoCheckFeeds",err);
+			}
+		});
+	},parseInt(interval)*1000);
+};
 
 // 定时刷新新鲜事列表
 function autoReloadFeeds(interval) {
@@ -1409,6 +1552,28 @@ function main(savedOptions) {
 				}],
 				page:"home,profile,pages"
 			},{
+				text:"##自动检查并提醒新的新鲜事，每隔##秒检查一次",
+				ctrl:[
+					{
+						id:"autoCheckFeeds",
+						value:false,
+						fn:[{
+							name:autoCheckFeeds,
+							stage:3,
+							fire:true,
+							args:["@checkFeedInterval","@feedGroup"]
+						}]
+					},{
+						id:"checkFeedInterval",
+						type:"input",
+						value:"120",
+						verify:{"^[3-9][0-9]$|^[1-9][0-9]{2,}$":"检查新鲜事间隔时间不得小于30秒"},
+						style:"width:30px;margin-left:3px;margin-right:3px"
+					}
+				],
+				master:0,
+				login:true,
+			},{
 				text:"##定时刷新首页新鲜事列表，每隔##秒##",
 				ctrl:[
 					{
@@ -2180,7 +2345,7 @@ function $node(name) {
 function $page(category,url) {
 	const pages={
 		home:"/[hH]ome\\.do",	// 首页
-		profile:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=", // 个人主页
+		profile:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|renren.com/[a-zA-Z0-9_]{4,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personalLink.do
 		blog:"/blog\\.renren\\.com/",	// 日志
 		club:"/club\\.renren\\.com/",	// 论坛
 		pages:"/page\\.renren\\.com/",	// 公共主页
@@ -2509,7 +2674,7 @@ function $master(master) {
 };
 
 // 判断新鲜事类型，feed为li经XNR包装
-function $getFeedType(feed) {
+function $feedType(feed) {
 	var types={
 		// 标题文本，标题HTML，有无content，footerHTML
 		"share":	["^分享"],
@@ -2716,10 +2881,20 @@ PageKit.prototype={
 			return null;
 		}
 	},
-	// 获取对象第一个DOM节点的上级节点(经PageKit对象包装)
-	superior:function() {
+	// 获取对象第一个DOM节点的上级节点(经PageKit对象包装)。通过level指定向上几层
+	superior:function(level) {
 		try {
-			return PageKit(this.get().parentNode);
+			if(!level) {
+				level=1;
+			}
+			if(level<=0) {
+				return this;
+			}
+			var s=this.get();
+			for(;level>0;level--) {
+				s=s.parentNode;
+			}
+			return PageKit(s);
 		} catch(err) {
 			return null;
 		}
@@ -2980,7 +3155,7 @@ PageKit.prototype={
 	text:function(txt) {
 		if(txt!=null) {
 			this.each(function(elem) {
-				elem.textContent=txt;
+				elem.textContent=txt.toString();
 			});
 			return this;
 		} else {
