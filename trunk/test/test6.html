@@ -4,7 +4,7 @@
 	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
 	<script>
 	function test() {
-		var a={};
+		var a={a:"v"};
 		var b;
 		for(var c=0;c<5;c++) {
 			var t1=new Date();
@@ -19,7 +19,7 @@
 
 			var t1=new Date();
 			for(var i=0;i<50000;i++) {
-				if(a.a) {
+				if(a && a.a) {
 					a.a.a="d";
 				} else {
 					b="s";
@@ -30,7 +30,7 @@
 			var t1=new Date();
 			for(var i=0;i<50000;i++) {
 				try {
-					if(a.a) {
+					if(a && a.a) {
 						a.a.a="d";
 					} else {
 						b="s";

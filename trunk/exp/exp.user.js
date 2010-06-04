@@ -343,7 +343,7 @@ function blockAppNotification() {
 function hideFeeds(evt,feeds,mark) {
 	$("ul#feedHome > li").filter(function(elem) {
 		var type=$feedType($(elem));
-		return (type=="" || feeds[type]==true);
+		return (type!="" && feeds[type]==true);
 	}).each(function(elem) {
 		if(mark) {
 			try {
@@ -561,17 +561,17 @@ function autoCheckFeeds(interval,feedFilter) {
 					// 底部工具栏靠不住，自己建立一个窗口
 					var root=$("#xnr_newfeeds");
 					if(root.empty()) {
-						root=$node("div").attr({style:"position:fixed;bottom:10px;right:10px;width:250px;z-index:100000;background:#EBF3F7;border:#3B5888 solid 1px;",id:"xnr_newfeeds"}).append($node("div").style({padding:"3px",background:"#3B5998"}).code("<span style='color:white;font-weight:bold'>您有新的新鲜事</span><a style='float:right;cursor:pointer;color:white' onclick='document.body.removeChild(document.getElementById(\"xnr_feed\"));'>关闭</a>")).append($node("div").attr("style","max-height:200px;padding-left:5px;padding-right:5px;overflow-y:auto").append($node("ul"))).appendTo(document.body);
+						root=$node("div").attr({style:"position:fixed;bottom:10px;right:10px;width:250px;z-index:100000;background:#EBF3F7;border:#3B5888 solid 1px;",id:"xnr_newfeeds"}).append($node("div").style({padding:"3px",background:"#3B5998"}).code("<span style='color:white;font-weight:bold'>您有新的新鲜事</span><a style='float:right;cursor:pointer;color:white' onclick='document.body.removeChild(document.getElementById(\"xnr_newfeeds\"));'>关闭</a>")).append($node("div").attr("style","max-height:200px;padding-left:5px;padding-right:5px;overflow-y:auto").append($node("ul"))).appendTo(document.body);
 					}
 					var feedInfo=feedList.child(i);
 					// 图标
 					var icon=feedInfo.find("a.avatar img").attr("src");
 					var list=root.find("ul");
 					if(list.heirs()>0) {
-						list.child(-1).style("borderBottom","1px solid");
+						list.child(-1).style("borderBottom","1px solid #AAAAAA");
 					}
 					for(var i=0;i<feedCount;i++) {
-						list.append($node("li").code("<img height='16' width='16' src='"+icon+"' style='float:left'/><div style='padding-left:20px'>"+feedInfo.find("h3").code().replace(/^ +| +$/,"")+"</div>").attr("style","padding-top:5px;padding-bottom:5px;border-bottom:1px solid #AAAAAA"));
+						list.append($node("li").code("<img height='16' width='16' src='"+icon+"' style='float:left'/><div style='padding-left:20px'>"+feedInfo.find("h3").code().replace(/^ +| +$/,"")+"</div>").attr("style","padding-top:5px;padding-bottom:5px;border-bottom:1px solid #AAAAAA;"));
 					}
 					list.child(-1).style("borderBottom","");
 				}
@@ -806,6 +806,8 @@ function recoverOriginalTheme(ignoreTheme) {
 			"base.css":[
 				".pagerpro li a:hover{background-color:"+FCOLOR+"}",
 				".inputbutton,.inputsubmit,.subbutton,.canbutton,.button-group button{background-color:"+FCOLOR+"}",
+				"#self-nav .selected a{background-color:"+FCOLOR+"}",
+				"#self-nav li a {color:"+FCOLOR+"}",
 			],
 			"searchpro.css":[
 				".input-filter .subbutton{background-color:"+FCOLOR+"}",
@@ -814,6 +816,16 @@ function recoverOriginalTheme(ignoreTheme) {
 			"blog.css":[
 				"a.button{color:white;background-color:"+FCOLOR+"}",
 				".page-titletabs .act-btn a{background-color:"+FCOLOR+"}",
+			],
+			"global-std.min.css":[
+				"a:link,a:visited,a:hover{color:"+FCOLOR+"}",
+				"button,input[type=button]{background-color:"+FCOLOR+"}",
+				"td.pop_content .dialog_body a,td.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
+				"td.pop_content .dialog_buttons input{background-color:"+FCOLOR+" !important}",
+				".navigation{background-color:"+XCOLOR+"}",
+				".menu-dropdown .menu-item li.show-more a:hover{background-color:"+FCOLOR+"}",
+				".menu-dropdown .menu-item a:hover{background-color:"+FCOLOR+"}",
+				".menu-dropdown .search-menu li a:hover,.menu-dropdown .optionmenu li a:hover{background-color:"+FCOLOR+"}",
 			],
 		};
 		var style="";
@@ -1220,10 +1232,282 @@ function showImagesInOnePage() {
 	$("ol.pagerpro").hide();
 };
 
+// 在相册中添加生成下载页链接
+// 压力测试：http://photo.renren.com/photo/242786354/album-236660334
+function addDownloadAlbumLink(linkOnly) {
+	var downLink=$node("a").attr({"style":'background-image:none;padding-left:10px',"href":'#nogo'}).text("下载当前页图片");
+	if(!$(".function-nav.photolist-pager ul.nav-btn").empty()) {
+		$(".function-nav.photolist-pager ul.nav-btn").append($node("li").attr("class","pipe").text("|")).append($node("li").append(downLink));
+	} else {
+		$(".pager-bottom").prepend(downLink);
+	}
+	downLink.hook("click",function(evt) {
+		if(downLink.text().match("分析中")) {
+			if(confirm("要中止吗？")) {
+				finish();
+			}
+			return;
+		}
+		$alloc("download_album").images=[];
+		var links=$(".photo-list span.img a, table.photoList td.photoPan>a");
+		var totalImage=links.size();
+		if(totalImage==0) {
+			return;
+		}
+		var cur=0;
+		links.attr("down","down")
+		downLink.text("分析中...(0/"+totalImage+")");
+		links.each(function(elem) {
+			if(!downLink.text().match("分析中")) {
+				return false;
+			}
+			$get(elem.href,function(html,url,target) {
+				if(html==null) {
+					return;
+				}
+				if(!downLink.text().match("分析中")) {
+					return;
+				}
+				var imageSrc="";
+				try {
+					if(html.search("<body id=\"errorPage\">")!=-1) {
+						return;
+					}
+					var src=/var photo *= *({.*});?/.exec(html);
+					if(src) {
+						src=JSON.parse(src[1]);
+						if(src.photo && src.photo.large) {
+							imageSrc=src.photo.large;
+							return;
+						}
+					}
+					// 公共主页相册
+					var src=/XN.PAGE.albumPhoto.init\((.*?)\);/.exec(html);
+					if(src) {
+						src=JSON.parse("["+src[1].replace(/'.*?'/g,"0")+"]")[10];
+						if(src && src.photo && src.photo.large) {
+							imageSrc=src.photo.large;
+							return;
+						}
+					}
+					// 其他的照片 ？？？
+					var src=/<img[^>]+id="photo".*?>/.exec(html);
+					if(src) {
+						src=/src=\"(.*?)\"/.exec(src);
+						if(src && src[1] && src[1].indexOf("/a.gif")==-1) {
+							imageSrc=src[1];
+							return;
+						}
+					}
+				} catch(err) {
+					$error("addDownloadAlbumLink::$get",err);
+				} finally {
+					if(imageSrc) {
+						if(linkOnly) {
+							$alloc("download_album").images.push("<a href=\""+imageSrc+"\">"+imageSrc+"</a>");
+						} else {
+							$alloc("download_album").images.push("<img src=\""+imageSrc+"\"/>");
+						}
+						$(target).attr({down:null});
+					}
+					cur++;
+					if(cur==totalImage) {
+						if(downLink.text().match("分析中")) {
+							finish();
+						}
+					} else {
+						downLink.text("分析中...("+cur+"/"+totalImage+")");
+					}
+				}
+			},elem);
+		});
+		function finish() {
+			if($alloc("download_album").images.length>0) {
+				var data="来源："+XNR.url+"<br/><br/>";
+				var failedImages=$(".photo-list span.img a[down],table.photoList td.photoPan>a[down]");
+				if(failedImages.size()>0) {
+					var failedImagesList=[];
+					failedImages.each(function(elem) {
+						if(linkOnly) {
+							failedImagesList.push("<span>"+elem.href+"</span>");
+						} else {
+							failedImagesList.push("<a href=\""+elem.href+"\">"+elem.href+"</a>");
+						}
+					});
+					data+="未能取得以下页面的图片：<br/>"+failedImagesList.join("<br/>")+"<br/><br/>";
+				}
+				if(linkOnly) {
+					data+="使用下载工具"+(XNR.agent==FIREFOX?"（推荐使用Flashgot或Downthemall扩展）":"")+"下载本页全部链接即可得到";
+				} else {
+					data+="完整保存本页面（最好等待本页图片全部显示完毕后再保存）即可在与页面文件同名的文件夹下得到";
+				}
+				data+=(failedImages.size()>0?"其余的":"下列")+$alloc("download_album").images.length+"张图片<br/>"+$alloc("download_album").images.join(linkOnly?"<br/>":"");
+				var title=$(".ablum-Information .Information h1").text();
+				if(!title) {
+					// 外链相册
+					var t=$(".album-meta .detail>.name").clone();
+					t.find("strong").remove();
+					title=t.text().replace(/^ - /,"");
+				}
+				if(!title) {
+					// 公共主页
+					title=$(".compatible>#content>.pager-top>span>h3").text();
+				}
+
+				if(XNR.agent==USERSCRIPT) {
+					var url="javascript:'<meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+title+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style>"+data+"'";
+					window.open(url);
+				} else if(XNR.agent==FIREFOX) {
+					gBrowser.selectedTab=gBrowser.addTab("chrome://xiaonei-reformer/content/album.html#d&"+escape(data)+"&t&"+escape(title)+"&");
+				} else if(XNR.agent==CHROME) {
+					chrome.extension.sendRequest({action:"album",data:data,title:title});
+				}
+			}
+			$dealloc("download_album");
+			downLink.text("下载当前页图片");
+			$(".photo-list span.img a,table.photoList td.photoPan>a").attr({down:null})
+		};
+	});
+};
+
 // 当鼠标在照片上时隐藏圈人框
 function hideImageTagOnMouseOver() {
 	$("#photoContainer").attr({"onmouseover":"document.querySelector('.tagshowcon').style.visibility='hidden'","onmouseout":"document.querySelector('.tagshowcon').style.visibility=null"});
 };
+
+// 选中“悄悄话”选框
+function useWhisper() {
+	var chk=$('#whisper');
+	if(!chk.empty() && chk.prop("checked")==false) {
+		$script(chk.prop("checked",true).attr("onclick"));
+	}
+};
+
+// 去除只有星级用户才能修改特别好友的限制
+function removeBestFriendRestriction() {
+	// user.vip改了也没用，非VIP还是最多6个
+	const code="window.user.star=true";
+	$script(code);
+};
+
+// 允许修改昵称
+function removeNicknameRestriction() {
+	var code="window.XN.page.ProfileEdit.basicInfo.checkNkName=function(){}";
+	$script(code);
+	var input=$("#nkname");
+	if(input.empty()) {
+		if($("#basicInfo_form>p>#name").empty()) {
+			return;
+		}
+		var holder=$(".status-holder");
+		try {
+			var nkname=holder.get().childNodes[holder.find("h1.username").index()+1].textContent;
+			nkname=nkname.replace(/\n/g,"").replace(/^[ \t]+|[ \t]+$/,"").replace(/^\(/,"").replace(/\)$/,"");
+		} catch(err) {
+			var nkname="";
+		}
+		$node("p").code('<label for="nkname"><span>昵称:\n</span>\t</label><input type="text" class="input-text" id="nkname" value="" tabindex="1" maxlength="12" name="name"/>').insertTo($("#basicInfo_form"),$("#basicInfo_form>p").filter("#name").index()+1);
+		$("#nkname").value(nkname);
+	} else if(input.attr("readonly")) {
+		input.attr({readonly:null});
+		input.superior().find("span.hint.gray").remove();
+	} else {
+		return;
+	}
+	$("#feedInfoAjaxDiv").unhook("DOMNodeInserted",arguments.callee);
+};
+
+// 显示上一次登录信息
+function showLoginInfo(lastSid) {
+	var sid=$cookie("xnsid");
+	if(!sid || sid==lastSid) {
+		return;
+	}
+	$save("lastSid",sid);
+	$get("http://safe.renren.com/ajax.do?type=logInfo",function(data) {
+		if(data==null) {
+			return;
+		}
+		data=data.replace(/<(\/?)a[^>]*>/g,"<$1span>").replace("<dt>当前登录信息</dt>","");
+		data+="<div><a style='float:right;padding:5px' href='http://safe.renren.com/alarm.do' target='_blank'>更多信息<a></div>";
+		$popup("登录信息",data,"0x0-5-5",15,5);
+	});
+};
+
+// 快速通道菜单
+function enableShortcutMenu(evt) {
+	var t=evt.target;
+	if(t.id=="stealthMenu" || t.parentNode.id=="stealthMenu") {
+		return;
+	}
+	// bypass the BUG：http://code.google.com/p/chromium/issues/detail?id=39978
+	// 当Firefox限制了最小字体>=14时也会出现相似问题
+	if($allocated("shortcut_menu")) {
+		var rect=$alloc("shortcut_menu").menu.getBoundingClientRect();
+		if(evt.clientX>=rect.left && evt.clientX<=rect.right && evt.clientY>=rect.top && evt.clientY<=rect.bottom) {
+			return;
+		}
+	}
+	$("#stealthMenu").remove();
+	$dealloc("shortcut_menu");
+	if(t.tagName=="SPAN" && t.childElementCount==0 && !t.nextSibling && !t.previousSibling && t.parentNode.tagName=="A") {
+		t=t.parentNode;
+	}
+	if(t.tagName!="A" || !/\/profile\.do/.test(t.href)) {
+		return;
+	}
+	if(t.id || /#|&v=/.test(t.href) || t.style.backgroundImage) {
+		return;
+	}
+	var text=$(t).text().replace(/[ \t\n\r]/g,"");
+	if(text=="" || text.length>=15) {	// 名字长度<=12
+		return;
+	}
+	var id=/[&?]id=([0-9]+)/.exec(t.href)[1];
+	if(XNR.userId==id) {
+		return;
+	}
+	var pages={
+		"Ta的相册":"http://photo.renren.com/getalbumlist.do?id=@@",
+		"圈Ta的照片":"http://photo.renren.com/someonetagphoto.do?id=@@", // http://photo.renren.com/photo/@@/relatives/hasTags
+		"Ta的日志":"http://blog.renren.com/GetBlog.do?id=@@",	// http://blog.renren.com/blog/@@/friends
+		"与Ta相关的日志":"http://blog.renren.com/SomeoneRelativeBlog.do?id=@@", // http://blog.renren.com/blog/@@/friendsRelatives
+		"Ta的分享":"http://share.renren.com/share/ShareList.do?id=@@",
+		"Ta的留言板":"http://gossip.renren.com/getgossiplist.do?id=@@",
+		"Ta的好友":"http://friend.renren.com/GetFriendList.do?id=@@",
+		"Ta的状态":"http://status.renren.com/status/@@",
+		"Ta的礼物":"http://gift.renren.com/show/box/otherbox?userId=@@",
+		"Ta的游戏徽章":"http://game.renren.com/medal?uid=@@",
+		"Ta的公共主页":"http://page.renren.com/home/friendspages/view?uid=@@",
+		"Ta的公开资料":"http://browse.renren.com/searchEx.do?ajax=1&q=@@",
+	};
+	var html="";
+	for(var i in pages) {
+		html+="<a target='_blank' href='";
+		html+=pages[i].replace("@@",id);
+		html+="'>"+i+"</a><br/>"
+	}
+	var rect=t.getBoundingClientRect();
+	// absolute在放大页面的情况下会出现文字被错误截断导致宽度极小的问题
+	var node=$node("div").code(html).attr("id","stealthMenu").style({position:"absolute",left:parseInt(rect.left+window.scrollX)+"px",top:parseInt(rect.bottom+window.scrollY)+"px",backgroundColor:"#EBF3F7",opacity:0.88,padding:"5px",border:"1px solid #5C75AA",zIndex:99999}).appendTo(document.body);
+	$alloc("shortcut_menu").menu=t;
+};
+
+// 允许优酷全屏播放
+function enableYoukuFullscreen() {
+	if(!$("#sharevideo img.videoimg").empty()) {
+		$("#sharevideo").hook("DOMNodeInserted",arguments.callee);
+		return;
+	} else {
+		$("#sharevideo").unhook("DOMNodeInserted",arguments.callee);
+	}
+	$("embed[src*='youku.com']").each(function(elem) {
+		elem.src=elem.src.replace(/(http:\/\/player\.youku\.com[^"]*)(\/v.swf)/,"$1&winType=interior$2");
+		elem.src=elem.src.replace(/(http:\/\/static\.youku\.com[^"]*)/,'$1&winType=interior');
+		$(elem).attr("flashvars","winType=interior").switchTo(elem);
+	});
+};
+
 
 // 生成诊断信息
 function diagnose() {
@@ -1321,7 +1605,7 @@ function main(savedOptions) {
 	//   [Number]agent:执行环境限制。可选。为XNR.agent可定义值的组合
 	//   [Boolean]login:用户登录后才执行。可选
 	//   [String]page:适用页面。页面名参考$page()，多个名称之间用逗号分隔
-	//   [Number]master:主控件序号。功能中的文字描述将会和主控件关联（<label for=masterID/>），当主控件的值为假时，其余控件将被禁用。如果ctrl数组中只有一项，则自动指定为主控件。主控件的type只能为check/edit/input。可选
+	//   [Number]master:主控件序号。当主控件的值为假时，其余控件将被禁用。主控件的type只能为check/edit/input。可选
 	// }
 	// 功能中ctrl的格式是：
 	// [
@@ -1343,7 +1627,7 @@ function main(savedOptions) {
 	// [
 	//   {
 	//     [Function]name:函数名。
-	//     [String/Boolean]fire:函数执行条件。如果为string，则为控件的某一个事件。否则是控件的期望值。可选。未指定事件为初始化后立即执行。
+	//     [String/Boolean]fire:函数执行条件。如果为string，则为控件的某一个事件。如果为特殊的"trigger"，则只在trigger触发时执行。否则是控件的期望值。可选。未指定事件为初始化后立即执行。
 	//     [Number]stage:执行时机/优先级（0～3）。参考$wait()。
 	//     [Object]trigger:设定其他控件的触发事件。{CSS选择器:事件名,...}。可选。如果stage为0，则trigger的执行时机为1，否则与stage相同。
 	//     [Array]args:函数参数列表。如果参数为另一控件值/选项组，名称前加@。如果指定了trigger，请将第一个参数设置为null，在事件触发时将用事件对象替代第一个参数
@@ -1370,7 +1654,7 @@ function main(savedOptions) {
 	//     [String]id:控件ID。type为hidden时没有id
 	//     [String]text:文字+HTML控件描述。例："##选项"。仅能有一个##
 	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）。默认为check
-	//     [Any]value:默认值。type为hidden时没有value
+	//     [Any]value:默认值。
 	//     [Object]verify:{验证规则:失败信息,...}。验证规则为正则字串。可选
 	//     [String]style:样式。可选
 	//   },
@@ -1731,7 +2015,6 @@ function main(savedOptions) {
 					}
 				],
 				login:true,
-				master:0
 			}
 		],
 		"处理新鲜事":[
@@ -2029,7 +2312,7 @@ function main(savedOptions) {
 					}],
 				}]
 			},{
-				text:"##增加导航栏项目##",
+				text:"##增加导航栏项目####",
 				ctrl:[
 					{
 						id:"addNavItems",
@@ -2041,10 +2324,13 @@ function main(savedOptions) {
 							fire:true
 						}],
 					},{
+						type:"info",
+						value:"每两行描述一项。第一行为显示的名称，第二行为对应的链接地址"
+					},{
 						id:"navItemsContent",
 						type:"edit",
 						style:"width:99%;height:80px;overflow:auto;word-wrap:normal;margin-top:5px",
-						value:"论坛\nhttp://club.renren.com/"
+						value:"论坛\nhttp://club.renren.com/\n校园频道\nhttp://school.renren.com/"
 					}
 				],
 				master:0
@@ -2065,8 +2351,7 @@ function main(savedOptions) {
 				},{
 					type:"info",
 					value:"使用早期的类Facebook配色。在有模板的页面不会修改其配色",
-				}],
-				master:0
+				}]
 			},{
 				text:"##使用大号新鲜事删除按钮",
 				ctrl:[{
@@ -2095,8 +2380,7 @@ function main(savedOptions) {
 						type:"info",
 						value:"使用浏览器本身设定的字体而非网站限制使用的字体"
 					}
-				],
-				master:0
+				]
 			},{
 				text:"##限制个人主页上头像列表中的头像数量最多为##个",
 				ctrl:[
@@ -2148,8 +2432,7 @@ function main(savedOptions) {
 						type:"info",
 						value:"如果您将浏览器字体的最小大小设成大于12，可能会出现导航栏上的项目高度过大的错误。如果您遇到这个问题，请启用此功能。"
 					}
-				],
-				master:0
+				]
 			},{
 				text:"##修正论坛排版错误##",
 				agent:FIREFOX | USERSCRIPT,
@@ -2167,7 +2450,6 @@ function main(savedOptions) {
 						value:"如果您将浏览器字体的最小大小设成大于12，可能会出现论坛的栏目导航栏和帖子正文偏右的错误。如果您遇到这个问题，请启用此功能。",
 					}
 				],
-				master:0,
 				page:"club"
 			}
 		],
@@ -2202,7 +2484,6 @@ function main(savedOptions) {
 						value:"当有悄悄话存在时，人人网显示的评论数和实际能看到的评论数量会有差异，这会导致脚本的计数出现偏差"
 					}
 				],
-				master:0,
 				login:true,
 				page:"blog,photo"
 			},{
@@ -2236,8 +2517,7 @@ function main(savedOptions) {
 						type:"warn",
 						value:"启用本功能有极小的潜在可能性导致一些网站功能失效。如果遇到这种问题，请报告作者"
 					}
-				],
-				master:0
+				]
 			},{
 				text:"##相册所有图片在一页中显示",
 				ctrl:[{
@@ -2249,6 +2529,29 @@ function main(savedOptions) {
 						fire:true
 					}]
 				}],
+				login:true,
+				page:"album"
+			},{
+				text:"##允许下载相册图片##  ##仅生成图片链接",
+				ctrl:[
+					{
+						id:"addDownloadAlbumLink",
+						value:true,
+						fn:[{
+							name:addDownloadAlbumLink,
+							stage:2,
+							fire:true,
+							args:["@showImageLinkOnly"]
+						}]
+					},{
+						type:"info",
+						value:"在相册图片列表下方会生成一个”下载当前页图片“链接。如果点击链接后进度长期卡住，再点击一次链接选择中止，可以下载其他已分析完毕的图片。"+(XNR.agent==USERSCRIPT?"请注意允许弹出窗口，即将浏览器设置about:config中的browser.popups.showPopupBlocker设为true。":"")+"如果想下载整个相册的内容，请配合“相册所有图片在一页中显示”功能使用。",
+					},{
+						id:"showImageLinkOnly",
+						value:false,
+					}
+				],
+				master:0,
 				login:true,
 				page:"album"
 			},{
@@ -2267,8 +2570,99 @@ function main(savedOptions) {
 						value:"仍然可以在照片右侧的被圈人员列表中看到圈人情况"
 					}
 				],
-				master:0,
 				page:"photo"
+			},{
+				text:"##默认使用悄悄话",
+				ctrl:[{
+					id:"useWhisper",
+					value:false,
+					fn:[{
+						name:useWhisper,
+						stage:3,
+						fire:true
+					}]
+				}],
+				login:true
+			},{
+				text:"##允许非星级用户修改特别好友",
+				ctrl:[{
+		 			id:"removeBestFriendRestriction",
+					value:true,
+					fn:[{
+						name:removeBestFriendRestriction,
+						stage:1,
+						fire:true
+					}]
+				}],
+				page:"friend",
+				login:true
+			},{
+				text:"##允许修改个人昵称##",
+				ctrl:[
+					{
+						id:"removeNicknameRestriction",
+						value:false,
+						fn:[{
+							name:removeNicknameRestriction,
+							stage:3,
+							fire:"trigger",
+							trigger:{"#feedInfoAjaxDiv":"DOMNodeInserted"}
+						}]
+					},{
+						type:"info",
+						value:"启用本功能后，在“设置”->“资料编辑”->“基本信息”中编辑昵称"
+					}
+				],
+				page:"profile",
+				login:true
+			},{
+				text:"##登录时提示登录信息##",
+				ctrl:[
+					{
+						id:"showLoginInfo",
+						value:false,
+						fn:[{
+							name:showLoginInfo,
+							stage:1,
+							fire:true,
+							args:["@lastSid"]
+						}]
+					},{
+						id:"lastSid",
+						value:"0",
+						type:"hidden"
+					}
+				],
+				login:true
+			},{
+				text:"##启用快速通道菜单##",
+				ctrl:[
+					{
+						id:"enableShortcutMenu",
+						value:false,
+						fn:[{
+							name:enableShortcutMenu,
+							stage:2,
+							fire:"trigger",
+							trigger:{"body":"mouseover"}
+						}]
+					},{
+						type:"info",
+						value:"鼠标经过人名链接时，显示对方相册/日志/留言板等的链接"
+					}
+				]
+			},{
+				text:"##允许全屏观看优酷视频分享",
+				ctrl:[{
+					id:"enableYoukuFullscreen",
+					value:true,
+					fn:[{
+						name:enableYoukuFullscreen,
+						stage:1,
+						fire:true
+					}]
+				}],
+				page:"share,blog",
 			}
 		],
 		"诊断信息":[
@@ -2350,13 +2744,15 @@ function main(savedOptions) {
 				for(var iText=0;iText<text.length;iText++) {
 					// 文本节点
 					if(text[iText]) {
-						var masterID="";
-						if(o.master==null && o.ctrl.length==1) {
-							masterID=o.ctrl[0].id;
-						} else if(o.master!=null) {
-							masterID=o.ctrl[o.master].id;
+						// 寻找前一个check作为关联目标
+						var forCheck="";
+						for(var iCtrl=iText-1;iCtrl>=0;iCtrl--) {
+							if(!o.ctrl[iCtrl].type || o.ctrl[iCtrl].type=="check") {
+								forCheck=o.ctrl[iCtrl].id;
+								break;
+							}
 						}
-						$node("label").attr("for",masterID).text(text[iText]).appendTo(block);
+						$node("label").attr("for",forCheck).text(text[iText]).appendTo(block);
 					}
 					// 控件节点
 					var control=o.ctrl[iText];
@@ -2375,7 +2771,6 @@ function main(savedOptions) {
 							node=$node("input").attr("type","checkbox");
 							break;
 						case "hidden":
-							control.value=null;
 							break;
 						case "input":
 							node=$node("input");
@@ -2435,9 +2830,13 @@ function main(savedOptions) {
 							if(fn.fire==null || (typeof fn.fire=="boolean" && node.value()==fn.fire)) {
 								// 符合要求，放入执行序列
 								fnQueue[fn.stage].push({name:fn.name,args:fn.args});
-							} else if(typeof fn.fire=="string") {
+							} else if(fn.fire==="trigger" && node.value()) {
+								// 只在trigger指定的事件触发时执行
+							} else if(typeof fn.fire=="string" && fn.fire!="trigger") {
 								// 参数中可能有本地参数@xxxx，需要转换。
 								localTriggers.push({fn:fn,target:node});
+							} else {
+								continue;
 							}
 							// 其他节点触发事件
 							if(fn.trigger) {
@@ -2481,7 +2880,6 @@ function main(savedOptions) {
 									node=$node("input").attr("type","checkbox");
 									break;
 								case "hidden":
-									item.value=null;
 									break;
 								case "input":
 									node=$node("input");
@@ -2500,10 +2898,10 @@ function main(savedOptions) {
 								node.value(item.value);
 								node.attr({id:o.id+"_"+item.id,style:(item.style || "")});
 								node.appendTo(td);
-							}
-							// 输入验证
-							if(item.verify) {
-								node.attr("verify",JSON.stringify(control.verify));
+								// 输入验证
+								if(item.verify) {
+									node.attr("verify",JSON.stringify(control.verify));
+								}
 							}
 							if(item.value!=null) {
 								group[item.id]=item.value;
@@ -2821,7 +3219,9 @@ function $page(category,url) {
 		pages:"/page\\.renren\\.com/",	// 公共主页
 		status:"/status\\.renren\\.com/",	// 状态
 		photo:"/photo\\.renren\\.com/",	// 照片
-		album:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|photo\\.renren\\.com/photo/ap/"	// 相册
+		album:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|photo\\.renren\\.com/photo/ap/",	// 相册
+		friend:"friend\\.renren\\.com/",	// 好友
+		share:"share\\.renren\\.com/"	// 分享
 	};
 	if(!url) {
 		url=XNR.url;
@@ -2993,6 +3393,9 @@ function $wait(stage,func) {
  *   无
  */
 function $script(code) {
+	if(!code){
+		return;
+	}
 	// 让脚本以匿名函数方式执行
 	if(!/^\(function/.test(code)) {
 		code="(function(){try{"+code+"}catch(ex){}})();";
@@ -3161,7 +3564,7 @@ function $feedType(feed) {
 		"tag":		["照片中被圈出来了$"],
 		"movie":	[null,"<a [^>]*href=\"http://movie.xiaonei.com/|<a [^>]*href=\"http://movie.renren.com/"],
 		"connect":	[null,null,null,"<a [^>]*href=\"http://www.connect.renren.com/"],
-		"friend":	["^和[\\s\\S]+成为了好友。"],
+		"friend":	["^和[\\s\\S]+成为了好友。|^、[\\s\\S]+和[\\s\\S]+成为了好友。"],
 		"page":		[null,"<a [^>]*href=\"http://page.renren.com/"],
 		"vip":		["^更换了主页模板皮肤|^更换了主页装扮|^成为了人人网[\\d\\D]*VIP会员特权|^收到好友赠送的[\\d\\D]*VIP会员特权|^开启了人人网VIP个性域名"],
 		"music":	["^上传了音乐"],
@@ -3704,6 +4107,16 @@ PageKit.prototype={
 		this.each(function(elem) {
 			for(var i=0;i<e.length;i++) {
 				elem.addEventListener(e[i],func,false);
+			}
+		});
+		return this;
+	},
+	// 解除事件监听
+	unhook:function(evt,func) {
+		var e=evt.split(",");
+		this.each(function(elem) {
+			for(var i=0;i<e.length;i++) {
+				elem.removeEventListener(e[i],func,false);
 			}
 		});
 		return this;
