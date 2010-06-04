@@ -978,6 +978,7 @@ function addExtraEmotions() {
 		"(girl)":	{t:"女孩",			s:"/imgpro/icons/statusface/girl.gif"},
 		"(earth)":	{t:"地球",			s:"/imgpro/icons/statusface/wwf-earth.gif"},
 		"(earth1)":	{t:"地球",			s:"/imgpro/icons/statusface/earth.gif"},
+		"(hjr)":	{t:"世界环境日",	s:"/imgpro/icons/statusface/earthday.gif"},
 		"(ty)":		{t:"汤圆",			s:"/imgpro/icons/statusface/tang-yuan.gif"},
 		"(dl)":		{t:"灯笼",			s:"/imgpro/icons/statusface/lantern.gif"},
 		"(nrj)":	{t:"女人节",		s:"/imgpro/icons/statusface/lipstick.gif"},
@@ -1143,7 +1144,7 @@ function addBlogLinkProtocolsSupport() {
 
 // 阻止点击跟踪
 function preventClickTracking() {
-	const code="var count=0;(function(){if(!XN||!XN.json||!XN.json.build){if(count<10){setTimeout(arguments.callee,500)};return};XN.json.oldBuildFunc=XN.json.build;XN.json.build=function(a,b,c){if(typeof a=='object'&&b==null&&c==null){if(!(a.ID===undefined)&&!(a.R===undefined)&&!(a.T===undefined)&&!(a.X===undefined)&&!(a.Y===undefined)){if(decodeURIComponent(a.R)==location.href){throw 'click-tracking prevented';return;}}}return XN.json.oldBuildFunc(a,b,c)}})()";
+	const code="var count=0;(function(){if(!XN||!XN.json||!XN.json.build){if(count<10){setTimeout(arguments.callee,500)};count++;return};XN.json.oldBuildFunc=XN.json.build;XN.json.build=function(a,b,c){if(typeof a=='object'&&b==null&&c==null){if(!(a.ID===undefined)&&!(a.R===undefined)&&!(a.T===undefined)&&!(a.X===undefined)&&!(a.Y===undefined)){if(decodeURIComponent(a.R)==location.href){throw 'click-tracking prevented';return;}}}return XN.json.oldBuildFunc(a,b,c)}})()";
 	$script(code);
 };
 
@@ -2499,7 +2500,7 @@ function main(savedOptions) {
 					value:true,
 					fn:[{
 						name:addBlogLinkProtocolsSupport,
-						stage:2,
+						stage:3,
 						fire:true
 					}]
 				}],
