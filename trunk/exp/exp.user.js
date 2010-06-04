@@ -6,7 +6,7 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能。。。
-// @version        3.0.0.20100603
+// @version        3.0.0.20100604
 // @miniver        300
 // @author         xz
 // ==/UserScript==
@@ -50,7 +50,7 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.0.20100603";
+XNR.version="3.0.0.20100604";
 XNR.miniver=300;
 
 // 存储空间，用于保存全局性变量
@@ -113,7 +113,7 @@ function removePageTheme() {
 	// 删除紫豆模板
 	$("head style").each(function(elem) {
 		var theme=$(elem);
-		if(theme.text().contains("url(http://i.static.renren.com")) {
+		if(theme.text().indexOf("url(http://i.static.renren.com")!=-1) {
 			theme.remove();
 			return true;
 		}
@@ -152,7 +152,7 @@ function removeMouseCursor() {
 function removeBlogTheme() {
 	$("head style").each(function(elem) {
 		var s=$(elem);
-		if(s.text().contains(".text-article")) {
+		if(s.text().indexOf(".text-article")!=-1) {
 			s.remove();
 			return true;
 		}
@@ -451,7 +451,7 @@ function autoCheckFeeds(interval,feedFilter) {
 		$node("div").attr({id:"feed_toread_tip","class":"buttontooltip",style:"display:none"}).append($node("strong").attr("id","feed_toread_num").text("0")).appendTo(Btn);
 		var list=$node("article").attr("class","window").code('<header><h4>新的新鲜事</h4><menu><command title="最小化" label="最小化" class="minimize"></command></menu></header><section><p style="padding:5px;">没有新的新鲜事</p></section>').appendTo(root);
 		Btn.hook("click",function(evt) {
-			if(root.attr("class").contains("actived")) {
+			if(root.attr("class").indexOf("actived")!=-1) {
 				list.hide();
 				root.removeClass("actived");
 			} else {
@@ -512,6 +512,8 @@ function autoCheckFeeds(interval,feedFilter) {
 					feedId=feedList.child(0).attr("id");
 					$alloc("xnr_feed").id=feedId;
 				}
+
+				console.log(feedId);
 
 				var feedCount=0;
 				// 判断有哪些新鲜事还没有读过
@@ -656,13 +658,13 @@ function recoverOriginalTheme(ignoreTheme) {
 			} else if(!$("#themeLink:not([href*='sid=-1'])").empty()) {
 				// 公共主页模板
 				theme=true;
-			} else if(!$("#hometpl_style").empty() && $("#hometpl_style").text().contains("{")) {
+			} else if(!$("#hometpl_style").empty() && $("#hometpl_style").text().indexOf("{")!=-1) {
 				// 首页模板 。。。
 				theme=true;
 			} else {
 				// 紫豆模板
 				$("head style").each(function(elem) {
-						if($(elem).text().contains("url(http://i.static.renren.com")) {
+					if($(elem).text().indexOf("url(http://i.static.renren.com")!=-1) {
 						theme=true;
 						return true;
 					}
@@ -764,6 +766,7 @@ function recoverOriginalTheme(ignoreTheme) {
 				".share a:hover{background-color:"+FCOLOR+"}",
 				"h3.upload-step-1 .pick-more{color:"+FCOLOR+"}",
 				".pager-top a.current, .pager-top a.current:hover{color:"+FCOLOR+"}",
+				".pager-top a:hover{background-color:"+BCOLOR+"}",
 				"a.act-btn{background-color:"+FCOLOR+"}",
 			],
 			"subscription.css":[
@@ -785,6 +788,7 @@ function recoverOriginalTheme(ignoreTheme) {
 				".input-button,.input-submit{background-color:"+FCOLOR+"}",
 				".navigation{background-color:"+XCOLOR+"}",
 				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
+				".open-search.hover .description .find-friends{color:"+FCOLOR+"}",
 			],
 			"login-unbuffered.css":[
 				"a,a:link,a:visited,a:hover{color:"+FCOLOR+"}",
@@ -1139,7 +1143,7 @@ function addBlogLinkProtocolsSupport() {
 
 // 阻止点击跟踪
 function preventClickTracking() {
-	const code="var count=0;(function(){if(!XN||!XN.json||!XN.json.build){if(count<10){setTimeout(arguments.callee,500)};return};XN.json.oldBuildFunc=XN.json.build;XN.json.build=function(a,b,c){if(typeof a=='object'&&b==null&&c==null){if(!(a.ID===undefined)&&!(a.R===undefined)&&!(a.T===undefined)&&!(a.X===undefined)&&!(a.Y===undefined)){if(decodeURIComponent(a.R)==location.href){throw 'click-tracking prevented';return;}}}XN.json.oldBuildFunc(a,b,c)}})()";
+	const code="var count=0;(function(){if(!XN||!XN.json||!XN.json.build){if(count<10){setTimeout(arguments.callee,500)};return};XN.json.oldBuildFunc=XN.json.build;XN.json.build=function(a,b,c){if(typeof a=='object'&&b==null&&c==null){if(!(a.ID===undefined)&&!(a.R===undefined)&&!(a.T===undefined)&&!(a.X===undefined)&&!(a.Y===undefined)){if(decodeURIComponent(a.R)==location.href){throw 'click-tracking prevented';return;}}}return XN.json.oldBuildFunc(a,b,c)}})()";
 	$script(code);
 };
 
@@ -1508,6 +1512,61 @@ function enableYoukuFullscreen() {
 	});
 };
 
+// 检查更新
+function checkUpdate(manualCheck,checkLink,scriptLink,lastCheck) {
+	//lastCheck="2000-1-1";
+	var today=new Date();
+	if(lastCheck) {
+		lastCheck=new Date(lastCheck);
+	} else {
+		lastCheck=today;
+	}
+	//一天只检查一次
+	if(!manualCheck && (today-lastCheck)<3600000*24) {
+		return;
+	}
+	if(manualCheck) {
+		$(".xnr_op #manualCheck").attr({disabled:"disabled",value:"检查中..."});
+	}
+	$get(checkLink,function(html) {
+		try {
+			var miniver=(/@miniver[ \t]+(\d+)/.exec(html) || ["","0"])[1];
+			var ver=(/@version[ \t]+([0-9\.]+)/.exec(html) || ["","未知"])[1];
+			if(parseInt(miniver)>XNR.miniver) {
+				var pop=$popup(null,'<div style="color:black"><div>人人网改造器已有新版本：<br/>'+ver+' ('+miniver+')</div><div class="links" style="padding-top:5px;padding-bottom:5px;float:right"><a target="_blank" href="'+scriptLink+'">安装</a></div></div>',null,30,5);
+				pop.find(".links a").hook("click",function() {
+					pop.remove();
+				});
+			} else if(manualCheck) {
+				// 手动点击检查更新按钮时要弹出提示
+				alert("最新版本为："+ver+" ("+miniver+")\n当前版本为："+XNR.version+" ("+XNR.miniver+")\n\n无须更新");
+			}
+
+			$(".xnr_op #lastUpdate").text($formatDate(today));
+			$save("lastUpdate",today.toString());
+
+			if(manualCheck) {
+				$(".xnr_op #manualCheck").attr({disabled:null,value:"立即检查"});
+			}
+		} catch(err) {
+			$error("checkUpdate::$get",err);
+		}
+	});
+};
+
+// 升级后提示
+function updatedNotify(notify,lastVersion) {
+	if(notify) {
+		var lastVer=parseInt(lastVersion);
+		// 首次运行。。？
+		if(lastVer>0 && lastVer<XNR.miniver) {
+			$popup(null,'<div style="color:black">人人网改造器已经更新到:<br/>'+XNR.version+' ('+XNR.miniver+')</div><div><a href="http://code.google.com/p/xiaonei-reformer/source/browse/trunk/Release.txt" style="padding-top:5px;padding-bottom:5px;float:right" target="_blank">查看更新内容</a></div>',null,20,5);
+		}
+	}
+	$save("lastVersion",XNR.miniver);
+};
+
+
 
 // 生成诊断信息
 function diagnose() {
@@ -1521,63 +1580,9 @@ function diagnose() {
 
 /* 所有功能完毕 */
 
-function extendPrototype() {
-	// 为String对象增加contains方法。"1234".contains("23")->true
-	if(!String.prototype.contains) {
-		String.prototype.contains=function(str) {
-			return this.indexOf(str)!=-1;
-		};
-	}
-	// 为String对象增加repeat方法。"abc".repeat(3)->"abcabcabc"
-	if(!String.prototype.repeat) {
-		String.prototype.repeat=function(times) {
-		/*
-		 * 使用数组连接方法与字符串直接连接方法比较：test1.html
-		 * Firefox 3.6.3：数组快20%~30%
-		 * Firefox 3.7a5：数组快13%
-		 * Chromium 6.0.411.0：字符串快450%
-		 * Opera 10.54：字符串快100%
-		 */
-			var a=""
-			for(;times>0;times--) {
-				a+=this;
-			}
-			return a;
-		};
-	}
-	// 为Date对象增加格式化文本方法
-	if(!Date.prototype.format) {
-		Date.prototype.format=function(fmt) {
-    		var o={
-				"y+": this.getFullYear(),	// 年
-	        	"M+": this.getMonth()+1,	// 月
-	    	    "d+": this.getDate(),		// 日
-		        "H+": this.getHours(),		// 时
-    		    "m+": this.getMinutes(),	// 分
-        		"s+": this.getSeconds(),	// 秒
-	    	};
-    		for(var i in o) {
-        		if(new RegExp("("+i+")").test(fmt)) {
-	            	fmt=fmt.replace(RegExp.$1,"0".repeat(RegExp.$1.length-o[i].toString().length)+o[i]);
-		        }
-    		}
-	    	return fmt;
-		};
-	}
-	// 为Function对象增加获取函数名称方法
-	if(!Function.prototype.getName) {
-		Function.prototype.getName=function() {
-			return /function (.*?)\(/.exec(this.toString())[1];
-		};
-	}
-};
 
 // 主执行函数。
 function main(savedOptions) {
-	/* 一些初始化工作 */
-	extendPrototype();
-	/* 初始化完 */
-
 	// 选项菜单，定义选项菜单中各个项目
 	// 基本格式：
 	// {
@@ -1612,10 +1617,11 @@ function main(savedOptions) {
 	//   {
 	//     [String]id:控件ID。type为hidden/warn/info时无需id
 	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）,"warn"（<input type="image"/>）,"info"（<input type="image"/>）。默认为check
-	//     [Any]value:默认值。type为hidden或readonly为真时没有value
+	//     [Any]value:默认值。type为hidden或readonly为真时可以没有value
 	//     [Object]verify:{验证规则:失败信息,...}。验证规则为正则字串。可选
 	//     [String]style:样式。可选
 	//     [Boolean]readonly:控件只读。可选
+	//     [String]format:值格式。显示时会自动转换。目前只支持"date"。
 	//     [Array]fn:处理函数。可选
 	//   },
 	//   {
@@ -2665,6 +2671,86 @@ function main(savedOptions) {
 				page:"share,blog",
 			}
 		],
+		"自动更新":[
+			{
+				text:"##自动检查脚本更新##",
+				ctrl:[
+					{
+						id:"checkUpdate",
+						value:true,
+						fn:[{
+							name:checkUpdate,
+							stage:2,
+							fire:true,
+							args:[null,"@checkLink","@scriptLink","@lastUpdate"]
+						}]
+					},{
+						type:"info",
+						value:"24小时内最多检查一次"
+					}
+				],
+				agent:USERSCRIPT
+			},{
+				text:"最后一次检查更新时间：##",		// 最后一次更新时间
+				ctrl:[{
+					id:"lastUpdate",
+					type:"label",
+					value:"",
+					format:"date"
+				}],
+				agent:USERSCRIPT
+			},{
+				text:"##",
+				ctrl:[{
+					id:"manualCheck",
+					type:"button",
+					value:"立即检查",
+					fn:[{
+						name:checkUpdate,
+						fire:"click",
+						args:[null,"@checkLink","@scriptLink","@lastUpdate"]
+					}]
+				}],
+				agent:USERSCRIPT
+			},{
+				text:"检查更新地址：##",
+				ctrl:[{
+					id:"checkLink",
+					type:"input",
+					value:"http://userscripts.org/scripts/source/45836.meta.js",
+					style:"width:330px",
+					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的检查更新地址"}
+				}],
+				agent:USERSCRIPT
+			},{
+				text:"脚本下载地址：##",
+				ctrl:[{
+					id:"scriptLink",
+					type:"input",
+					value:"http://userscripts.org/scripts/source/45836.user.js",
+					style:"width:330px;",
+					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的脚本下载地址"},
+				}],
+				agent:USERSCRIPT
+			},{
+				text:"##升级后显示通知",
+				ctrl:[{
+					id:"updatedNotify",
+					value:true,
+					fn:[{
+						name:updatedNotify,		// 无条件执行，当未选中时不提示
+						stage:3,
+						args:["@updatedNotify","@lastVersion"]
+					}]
+				}]
+			},{
+				text:"##",
+				ctrl:[{
+					id:"lastVersion",
+					type:"hidden"
+				}]
+			}
+		],
 		"诊断信息":[
 			{
 				text:"##如果您遇到功能出错，请在报告问题时附带上出错页面中的以下信息：##",
@@ -2797,7 +2883,14 @@ function main(savedOptions) {
 					}
 					if(node) {
 						if(control.value!=null) {
-							node.value(control.value);
+							switch(control.format) {
+								case "date":
+									node.value($formatDate(control.value));
+									break;
+								default:
+									node.value(control.value);
+									break;
+							}
 						}
 						if(control.id) {
 							node.attr("id",control.id);
@@ -2808,6 +2901,9 @@ function main(savedOptions) {
 						if(control.readonly) {
 							node.attr("readonly","true");
 							control.value=null;
+						}
+						if(control.format) {
+							node.attr("fmt",control.format);
 						}
 						// 输入验证
 						if(control.verify) {
@@ -3020,7 +3116,14 @@ function main(savedOptions) {
 				if(c.empty()) {
 					continue;
 				} else {
-					c.value(XNR.options[op]);
+					switch(c.attr("fmt")) {
+						case "date":
+							c.value($formatDate(XNR.options[op]));
+							break;
+						default:
+							c.value(XNR.options[op]);
+							break;
+					}
 				}
 				// 主控件还要重置禁用效果
 				if(c.attr("master")) {
@@ -3227,9 +3330,8 @@ function $page(category,url) {
 		url=XNR.url;
 	}
 	// 把锚点去掉
-	if(url.contains("#")) {
-		url=url.replace(/#[\s\S]*$/,"");
-	}
+	url=url.replace(/#[\s\S]*$/,"");
+
 	return pages[category]==null || url.match(pages[category])!=null;
 };
 
@@ -3514,7 +3616,7 @@ function $get(url,func,userData) {
  */
 function $error(func,error) {
 	if(typeof func=="function") {
-		func=func.getName();
+		func=/function (.*?)\(/.exec(func.toString())[1];
 	}
 	if(typeof error=="object" && error.name && error.message) {
 		var msg="在 "+func+"() 中发生了一个错误。\n错误名称："+error.name+"\n错误信息："+error.message;
@@ -3549,7 +3651,13 @@ function $master(master) {
 	}
 };
 
-// 判断新鲜事类型，feed为li经XNR包装
+/*
+ * 判断新鲜事类型，feed为li经XNR包装
+ * 参数
+ *   [Node]feed:新鲜事li节点
+ * 返回值
+ *   [String]:新鲜事类型文本。无符合的返回""
+ */
 function $feedType(feed) {
 	var types={
 		// 标题文本，标题HTML，有无content，footerHTML
@@ -3589,6 +3697,41 @@ function $feedType(feed) {
 		}
 	}
 	return "";
+};
+
+/*
+ * 格式化日期。如果不是Firefox扩展的安全限制，可以直接作为Date的方法。。。
+ * 参数
+ *   [Date]d:日期对象
+ * 返回值
+ *   [String]:yyyy-MM-dd HH:mm:ss格式的文本，出错返回“未知”
+ */
+function $formatDate(d) {
+	if(!(d instanceof Date)) {
+		d=new Date(d);
+	}
+	if(isNaN(d.getYear())) {
+		return "未知";
+	}
+	var formats={
+		"y+": d.getFullYear(),	// 年
+		"M+": d.getMonth()+1,	// 月
+		"d+": d.getDate(),		// 日
+		"H+": d.getHours(),		// 时
+		"m+": d.getMinutes(),	// 分
+		"s+": d.getSeconds(),	// 秒
+	};
+	var fmt="yyyy-MM-dd HH:mm:ss";
+    for(var i in formats) {
+    	if(new RegExp("("+i+")").test(fmt)) {
+			prefix="";
+			for(var times=RegExp.$1.length-formats[i].toString().length;times>0;times--) {
+				prefix+="0";
+			}
+	       	fmt=fmt.replace(RegExp.$1,prefix+formats[i]);
+		}
+	}
+	return fmt;
 };
 
 /* 基本辅助函数完 */
