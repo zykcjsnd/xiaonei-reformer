@@ -13,8 +13,8 @@
 	<script>
 		function getPhotos() {
 			try {
-				var data=unescape(/d='(.*?)'/.exec(location.href)[1]);
-				var title=unescape(/t='(.*?)'/.exec(location.href)[1]);
+				var data=unescape(/d&(.*?)&/.exec(location.href)[1]);
+				var title=unescape(/t&(.*?)&/.exec(location.href)[1]);
 				if(title) {
 					document.title=title;
 				}
