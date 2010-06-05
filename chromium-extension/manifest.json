@@ -8,7 +8,7 @@
 	"permissions": ["tabs","http://renren.com/","http://*.renren.com/"],
 	"content_scripts": [{
 		"matches": ["http://renren.com/*", "http://*.renren.com/*", "https://renren.com/*", "https://*.renren.com/*"],
-		"js": ["exp.user.js"],
+		"js": ["xiaonei_reformer.user.js"],
 		"run_at": "document_start",
 		"all_frames": true
 	}]
