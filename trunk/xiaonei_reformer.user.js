@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.0.20100605
-// @miniver        300
+// @version        3.0.0.20100606
+// @miniver        301
 // @author         xz
 // ==/UserScript==
 //
@@ -50,8 +50,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.0.20100605";
-XNR.miniver=300;
+XNR.version="3.0.0.20100606";
+XNR.miniver=301;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -888,6 +888,11 @@ function fixClubTypesetting() {
 	$patchCSS("#sub-nav{overflow:visible}#sub-nav>ul{clear:both}");
 };
 
+// 自定义页面样式
+function customizePageStyle(style) {
+	$patchCSS(style);
+};
+
 // 增加更多表情
 function addExtraEmotions() {
 	// 状态表情列表
@@ -995,6 +1000,7 @@ function addExtraEmotions() {
 		"(jz)":		{t:"捐建小学",		s:"/imgpro/icons/statusface/grass.gif"},
 		"(bbt)":	{t:"棒棒糖",		s:"/imgpro/icons/statusface/bbt.gif"},
 		"(xr)":		{t:"儿时回忆",		s:"/imgpro/icons/statusface/sm.gif"},
+		"(gk)":		{t:"高考",			s:"/imgpro/icons/statusface/gaokao.gif"},
 		"(^)":		{t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
 		"(h)":		{t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		"(r)":		{t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
@@ -1343,7 +1349,7 @@ function addDownloadAlbumLink(linkOnly) {
 					data+="未能取得以下页面的图片：<br/>"+failedImagesList.join("<br/>")+"<br/><br/>";
 				}
 				if(linkOnly) {
-					data+="使用下载工具"+(XNR.agent==FIREFOX?"（推荐使用Flashgot或Downthemall扩展）":"")+"下载本页全部链接即可得到";
+					data+="使用下载工具"+(XNR.agent!=CHROME?"（推荐使用Flashgot或Downthemall扩展）":"")+"下载本页全部链接即可得到";
 				} else {
 					data+="完整保存本页面（最好等待本页图片全部显示完毕后再保存）即可在与页面文件同名的文件夹下得到";
 				}
@@ -1384,7 +1390,7 @@ function hideImageTagOnMouseOver() {
 // 显示大图的初始化工作
 function initFullSizeImage() {
 	// 建立图片缓存
-	var storage=localStorage.getItem("xnr_image_cache");
+	var storage=window.localStorage.getItem("xnr_image_cache");
 	if(!storage) {
 		storage="{}";
 	}
@@ -1565,12 +1571,12 @@ function showFullSizeImage(evt) {
 			// 设置
 			if(src!="error" && src.indexOf("a.gif")==-1) {
 				cache[imgId]={src:src,life:100};
-				localStorage.setItem("xnr_image_cache",JSON.stringify(cache));
+				window.localStorage.setItem("xnr_image_cache",JSON.stringify(cache));
 			}
 		} else {
 			if(cache[imgId]) {
 				cache[imgId].life=100;
-				localStorage.setItem("xnr_image_cache",JSON.stringify(cache));
+				window.localStorage.setItem("xnr_image_cache",JSON.stringify(cache));
 				return cache[imgId].src;
 			}
 			return "";
@@ -1739,7 +1745,7 @@ function cleanFullSizeImageCache() {
 	for(var o in cache) {
 		delete cache.o;
 	}
-	localStorage.setItem("xnr_image_cache","{}");
+	window.localStorage.setItem("xnr_image_cache","{}");
 	alert("缓存已经清空");
 };
 
@@ -1749,6 +1755,14 @@ function useWhisper() {
 	if(!chk.empty() && chk.prop("checked")==false) {
 		$script(chk.prop("checked",true).attr("onclick"));
 	}
+};
+
+// 隐藏橙名
+function hideOrangeName(evt) {
+	if(evt && evt.target.tagName!="DL") {
+		return;
+	}
+	$("a.lively-user").removeClass("lively-user").attr("title","");
 };
 
 // 去除只有星级用户才能修改特别好友的限制
@@ -2830,6 +2844,26 @@ function main(savedOptions) {
 					}
 				],
 				page:"club"
+			},{
+				text:"##自定义页面样式##",
+				ctrl:[
+					{
+						id:"customizePageStyle",
+						value:false,
+						fn:[{
+							name:customizePageStyle,
+							stage:0,
+							fire:true,
+							args:["@myPageStyle"]
+						}]
+					},{
+						id:"myPageStyle",
+						type:"edit",
+						value:"/* 例子:浅灰->白渐变背景 */\nbody{background:-moz-linear-gradient(left,lightgray,white);background:-webkit-gradient(linear,left center,right center,from(lightgray),to(white))}",
+						style:"width:99%;height:110px;margin-top:5px;"
+					}
+				],
+				master:0
 			}
 		],
 		"辅助功能":[
@@ -2978,7 +3012,7 @@ function main(savedOptions) {
 							name:cleanFullSizeImageCache,
 							fire:"click"
 						}],
-						style:"margin-left:5px"
+						style:"margin-left:5px;padding:1px"
 					}
 				]
 			},{
@@ -2993,6 +3027,23 @@ function main(savedOptions) {
 					}]
 				}],
 				login:true
+			},{
+				text:"##不显示橙名##",
+				ctrl:[
+					{
+						id:"hideOrangeName",
+						value:false,
+						fn:[{
+							name:hideOrangeName,
+							stage:1,
+							fire:true,
+							trigger:{"div.replies":"DOMNodeInserted"}
+						}]
+					},{
+						type:"info",
+						value:"要想让别人看不到自己的橙名，请到“设置”->“隐私设置”->“橙名显示”中进行设置"
+					}
+				]
 			},{
 				text:"##允许非星级用户修改特别好友",
 				ctrl:[{
@@ -3112,7 +3163,8 @@ function main(savedOptions) {
 						name:checkUpdate,
 						fire:"click",
 						args:[null,"@checkLink","@scriptLink","@lastUpdate"]
-					}]
+					}],
+					style:"padding:1px"
 				}],
 				agent:USERSCRIPT
 			},{
@@ -3485,7 +3537,7 @@ function main(savedOptions) {
 
 	// 生成选项菜单
 	var menuHTML='<style type="text/css">.xnr_op{width:500px;position:fixed;z-index:200000;color:black;blackground:black;font-size:12px}.xnr_op *{padding:0;margin:0;border-collapse:collapse}.xnr_op a{color:#3B5990}.xnr_op table{width:100%;table-layout:fixed}.xnr_op .tl{border-top-left-radius:8px;-moz-border-radius-topleft:8px}.xnr_op .tr{border-top-right-radius:8px;-moz-border-radius-topright:8px}.xnr_op .bl{border-bottom-left-radius:8px;-moz-border-radius-bottomleft:8px}.xnr_op .br{border-bottom-right-radius:8px;-moz-border-radius-bottomright:8px}.xnr_op .border{height:10px;overflow:hidden;width:10px;background-color:black;opacity:0.5}.xnr_op .m{width:100%}.xnr_op .title {padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none;cursor:default}.xnr_op .btns{background:#F0F5F8;text-align:right}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .cancel{background:#F0F0F0;border-color:#FFFFFF #848484 #848484 #FFFFFF}.xnr_op>table table{background:#FFFFF4}.xnr_op .options>table{height:280px;border-spacing:0}.xnr_op .c td{vertical-align:top}.xnr_op .category{width:119px;min-width:119px;border-right:1px solid #5C75AA}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category>div{overflow-x:hidden;overflow-y:auto;height:300px}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>div{min-height:18px}.xnr_op .pages>div>*{margin-bottom:5px;width:100%}.xnr_op table.group{margin-left:5px;margin-top:3px}.xnr_op .pages tr{line-height:20px}.xnr_op input[type="checkbox"]{margin-right:4px}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op input[type="image"]{margin-left:2px;margin-right:2px}.xnr_op textarea{resize:none}.xnr_op .pages .default{text-align:center}.xnr_op .pages .default table{height:95%}.xnr_op .pages .default td{vertical-align:middle}.xnr_op .pages .default td>*{padding:5px}.xnr_op .default .icons>a{margin:15px}</style>';
-	menuHTML+='<table><tbody><tr><td class="border tl"></td><td class="border m"></td><td class="border tr"></td></tr><tr><td class="border"></td><td class="c m"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><div><ul>'+categoryHTML+'</ul></div></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>人人网改造器</h1><p><b>'+XNR.version+' ('+XNR.miniver+')</b></p><p><b>Copyright © 2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p><p class="icons"><a href="http://userscripts.org/scripts/show/45836" target="_blank"><img src="'+icons_gm+'"/></a><a href="https://chrome.google.com/extensions/detail/bafellppfmjodafekndapfceggodmkfc" target="_blank"><img src="'+icons_chrome+'"/></a><a href="https://addons.mozilla.org/firefox/addon/162178" target="_blank"><img src="'+icons_fx+'"/></a></p></td></tr></tbody></table></div></td></tr></tbody></table></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border"></td></tr><tr><td class="border bl"></td><td class="border m"></td><td class="border br"></td></tr></tbody></table>';
+	menuHTML+='<table><tbody><tr><td class="border tl"></td><td class="border m"></td><td class="border tr"></td></tr><tr><td class="border"></td><td class="c m"><div class="title">改造选项</div><div class="options"><table><tbody><tr><td class="category"><div><ul>'+categoryHTML+'</ul></div></td><td class="pages"><div class="default"><table><tbody><tr><td><h1>人人网改造器</h1><p><b>'+XNR.version+' ('+XNR.miniver+')</b></p><p><b>Copyright © 2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p><p class="icons"><a href="http://userscripts.org/scripts/show/45836" title="GreaseMonkey脚本" target="_blank"><img src="'+icons_gm+'"/></a><a href="https://chrome.google.com/extensions/detail/bafellppfmjodafekndapfceggodmkfc" title="Chrome/Chromium扩展" target="_blank"><img src="'+icons_chrome+'"/></a><a href="https://addons.mozilla.org/firefox/addon/162178" title="Firefox扩展" target="_blank"><img src="'+icons_fx+'"/></a></p></td></tr></tbody></table></div></td></tr></tbody></table></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div></td><td class="border"></td></tr><tr><td class="border bl"></td><td class="border m"></td><td class="border br"></td></tr></tbody></table>';
 
 	var menu=$node("div").attr("class","xnr_op").style("display","none").code(menuHTML).appendTo(document.documentElement);
 	menu.find("td.pages").append($(categoryPages));
