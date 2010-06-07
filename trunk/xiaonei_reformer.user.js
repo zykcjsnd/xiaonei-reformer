@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.0.20100606
-// @miniver        301
+// @version        3.0.0.20100607
+// @miniver        302
 // @author         xz
 // ==/UserScript==
 //
@@ -50,8 +50,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.0.20100606";
-XNR.miniver=301;
+XNR.version="3.0.0.20100607";
+XNR.miniver=302;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -831,6 +831,9 @@ function recoverOriginalTheme(ignoreTheme) {
 				".menu-dropdown .menu-item li.show-more a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .menu-item a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .search-menu li a:hover,.menu-dropdown .optionmenu li a:hover{background-color:"+FCOLOR+"}",
+			],
+			"requests.css":[
+				"ul.figureslist.requests button.accept,ul.figureslist.requests button.ignore{background-color:"+FCOLOR+"}",
 			],
 		};
 		var style="";
