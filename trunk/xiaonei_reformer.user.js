@@ -99,6 +99,8 @@ function removeAds(evt) {
 		$("ul#feedHome > li").filter("a[href^='http://edm.renren.com/link.do?']").remove();
 		// 人人桌面
 		$("ul#feedHome > li").filter("a[href^='http://im.renren.com/'][href*='.exe']").remove();
+		// 手机人人网
+		$("ul#feedHome > li").filter("div.no-interact").remove();
 	});
 };
 
@@ -504,6 +506,8 @@ function autoCheckFeeds(interval,feedFilter) {
 				feedList.find("li").filter("a[href^='http://edm.renren.com/link.do?']").remove();
 				// 人人桌面
 				feedList.find("li").filter("a[href^='http://im.renren.com/'][href*='.exe']").remove();
+				// 手机人人网
+				feedList.find("li").filter("div.no-interact").remove();
 
 				if(feedList.heirs()==0) {
 					return;
@@ -2457,7 +2461,7 @@ function main(savedOptions) {
 						text:"##礼物",
 						value:false
 					},{
-						id:"image",
+						id:"photo",
 						text:"##照片",
 						value:false
 					},{
