@@ -835,6 +835,10 @@ function recoverOriginalTheme(ignoreTheme) {
 			"requests.css":[
 				"ul.figureslist.requests button.accept,ul.figureslist.requests button.ignore{background-color:"+FCOLOR+"}",
 			],
+			"share.css":[
+				"ul.share-hot-list li div.legend a{color:"+FCOLOR+"}",
+				"ul.share-hot-list li h3 a,ul.share-hot-list li h3 a:hover{color:"+FCOLOR+"}",
+			],
 		};
 		var style="";
 		for(var f in files) {
