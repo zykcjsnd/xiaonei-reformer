@@ -3,10 +3,12 @@
 INPUT=xiaonei_reformer.user.js
 OUTPUT=xiaonei_reformer.min.user.js
 
-yui-compressor --nomunge "$INPUT"  > min.js
+TEMPOUT=min.js
+
+yui-compressor --nomunge "$INPUT"  > "$TEMPOUT"
 
 head -n 29 "$INPUT" > "$OUTPUT"
-cat min.js >> "$OUTPUT"
+cat "$TEMPOUT" >> "$OUTPUT"
 
 #######################################
 
@@ -17,8 +19,12 @@ cd ..
 
 #######################################
 
-FIREFOXOUT=firefox-extension/content/overlay.js
-cat firefox-extension/content/snippet-1.js min.js firefox-extension/content/snippet-2.js > "$FIREFOXOUT"
+cat firefox-extension/content/snippet-1.js "$TEMPOUT" firefox-extension/content/snippet-2.js > firefox-extension/content/overlay.js
 cd firefox-extension
 ./pack.sh
 cd ..
+
+#######################################
+
+rm "$TEMPOUT"
+
