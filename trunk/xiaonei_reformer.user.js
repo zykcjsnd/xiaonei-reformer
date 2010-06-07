@@ -821,6 +821,7 @@ function recoverOriginalTheme(ignoreTheme) {
 			"searchpro.css":[
 				".input-filter .subbutton{background-color:"+FCOLOR+"}",
 				".condition-show,#filterForm{background-color:"+SCOLOR+"}",
+				".search-main-new .list li{color:"+FCOLOR+"}",
 			],
 			"blog.css":[
 				"a.button{color:white;background-color:"+FCOLOR+"}",
