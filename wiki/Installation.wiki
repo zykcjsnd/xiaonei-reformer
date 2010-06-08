@@ -12,22 +12,20 @@
 2、下载/安装扩展程序：<br/>
 安装完Chrome浏览器后，运行它，并到<a href="https://chrome.google.com/extensions/detail/bafellppfmjodafekndapfceggodmkfc">扩展下载页面</a>去安装扩展。<br/>
 点击“安装”后过一会儿会弹出下面的询问窗口，点击安装<br/>
-<img src="http://code.google.com/p/xiaonei-reformer/source/browse/trunk/wiki/installation_c1.jpg"/><br/>
+<img src="http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_c1.jpg"/><br/>
 安装成功后会有以下提示<br/>
-<img src="http://code.google.com/p/xiaonei-reformer/source/browse/trunk/wiki/installation_c2.jpg"/><br/>
+<img src="http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_c2.jpg"/><br/>
 这时到已安装扩展页面会看到<br/>
-<img src="http://code.google.com/p/xiaonei-reformer/source/browse/trunk/wiki/installation_c4.jpg"/>
+<img src="http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_c4.jpg"/>
 如果点击安装之后弹出类似下图中的出错信息，请自行google解决方法<br/>
-<img src="http://code.google.com/p/xiaonei-reformer/source/browse/trunk/wiki/installation_c3.jpg"/><br/>
+<img src="http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_c3.jpg"/><br/>
 如果点击“安装”后半天没反应，恭喜你不幸撞墙了。如果你听不懂我在说什么，请自行搜索“什么是G.F.W”。<br/>
 然后你可以试试直接访问我放在这里的<a href="http://xiaonei-reformer.googlecode.com/files/xiaonei_reformer.crx">镜像文件</a>，进行安装。如果你不幸到极点，连镜像文件都无法访问，请自行搜索“如何翻墙”并学习实践之。<br/>
 <br/>
 如果你通过其他方法获得了扩展文件（后缀名是crx），可以直接将其拖动到Chrome浏览器窗口上进行安装<br/>
-<img src="http://code.google.com/p/xiaonei-reformer/source/browse/trunk/wiki/installation_c5.jpg"/>
+<img src="http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_c5.jpg"/>
 会有以下提示
-<img src="http://code.google.com/p/xiaonei-reformer/source/browse/trunk/wiki/installation_c6.jpg"/>
+<img src="http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_c6.jpg"/>
 如果你觉得安全第一，就别继续了。
 </p>
-
-
 
