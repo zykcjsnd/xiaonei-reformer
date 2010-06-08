@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.0.20100607
-// @miniver        302
+// @version        3.0.0.20100608
+// @miniver        303
 // @author         xz
 // ==/UserScript==
 //
@@ -50,8 +50,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.0.20100607";
-XNR.miniver=302;
+XNR.version="3.0.0.20100608";
+XNR.miniver=303;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1436,7 +1436,9 @@ function showFullSizeImage(evt) {
 						thumbnail=t.style.backgroundImage.replace(/^url\("|"\);?$/g,"");
 					}
 				} else {
-					thumbnail=t.src;
+					if(t.className!="icon") {
+						thumbnail=t.src;
+					}
 				}
 				break;
 			case "SPAN":;	// 同DIV
@@ -1771,7 +1773,7 @@ function useWhisper() {
 
 // 隐藏橙名
 function hideOrangeName(evt) {
-	if(evt && evt.target.tagName!="DL") {
+	if(evt && evt.target.tagName!="DL" && evt.target.className.indexOf("comment")!=-1) {
 		return;
 	}
 	$("a.lively-user").removeClass("lively-user").attr("title","");
@@ -1836,20 +1838,22 @@ function showLoginInfo(lastSid) {
 function enableShortcutMenu(evt) {
 	try {
 		var t=evt.target;
-		if(t.id=="stealthMenu" || t.parentNode.id=="stealthMenu") {
-			return;
-		}
-		// BUG：http://code.google.com/p/chromium/issues/detail?id=39978
-		// 当Firefox限制了最小字体>=14时也会出现相似问题
 		if($allocated("shortcut_menu")) {
-			var rect=$alloc("shortcut_menu").getBoundingClientRect();
+			var menu=$alloc("shortcut_menu");
+			var menuNode=menu.m.get();
+			if(t==menuNode || t.parentNode==menuNode) {
+				return;
+			}
+			// BUG：http://code.google.com/p/chromium/issues/detail?id=39978
+			// 当Firefox限制了最小字体>=14时也会出现相似问题
+			var rect=menu.t.getBoundingClientRect();
 			if(evt.clientX>=rect.left && evt.clientX<=rect.right && evt.clientY>=rect.top && evt.clientY<=rect.bottom) {
 				return;
 			}
+			menu.m.remove();
+			$dealloc("shortcut_menu");
 		}
-		$("#stealthMenu").remove();
-		$dealloc("shortcut_menu");
-		if(t.tagName=="SPAN" && t.childElementCount==0 && !t.nextSibling && !t.previousSibling && t.parentNode.tagName=="A") {
+		if(t.tagName=="SPAN" && t.childElementCount==0 && !t.nextElementSibling && !t.previousElementSibling && t.parentNode.tagName=="A") {
 			t=t.parentNode;
 		}
 		if(t.tagName!="A" || !/\/profile\.do/.test(t.href)) {
@@ -1888,9 +1892,10 @@ function enableShortcutMenu(evt) {
 			html+="'>"+i+"</a><br/>"
 		}
 		var rect=t.getBoundingClientRect();
+		var menu=$alloc("shortcut_menu");
+		menu.t=t;
 		// absolute在放大页面的情况下会出现文字被错误截断导致宽度极小的问题
-		var node=$node("div").code(html).attr("id","stealthMenu").style({position:"absolute",left:parseInt(rect.left+window.scrollX)+"px",top:parseInt(rect.bottom+window.scrollY)+"px",backgroundColor:"#EBF3F7",opacity:0.88,padding:"5px",border:"1px solid #5C75AA",zIndex:99999}).appendTo(document.body);
-		$alloc("shortcut_menu",t);
+		menu.m=$node("div").code(html).style({position:"absolute",left:parseInt(rect.left+window.scrollX)+"px",top:parseInt(rect.bottom+window.scrollY)+"px",backgroundColor:"#EBF3F7",opacity:0.88,padding:"5px",border:"1px solid #5C75AA",zIndex:99999}).appendTo(document.body);
 	} catch(ex) {
 		$error("enableShortcutMenu",ex);
 	}
@@ -3049,7 +3054,7 @@ function main(savedOptions) {
 							name:hideOrangeName,
 							stage:1,
 							fire:true,
-							trigger:{"div.replies":"DOMNodeInserted"}
+							trigger:{"div.replies,div.cmt-list":"DOMNodeInserted"}
 						}]
 					},{
 						type:"info",
