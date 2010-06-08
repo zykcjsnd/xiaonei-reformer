@@ -54,8 +54,10 @@
 </p>
 <p>
 会有以下提示
+</p>
+<p>
 <img src="http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_c6.jpg"/>
 </p>
 <p>
-如果你觉得安全第一，就别继续了。
+如果你觉得安全第一，就直接放弃吧。如果你勇敢地选择了继续，就会弹出上面第一个图片所示的询问窗口。
 </p>
