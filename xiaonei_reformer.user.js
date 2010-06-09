@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.0.20100608
-// @miniver        303
+// @version        3.0.1.20100609
+// @miniver        304
 // @author         xz
 // ==/UserScript==
 //
@@ -50,8 +50,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.0.20100608";
-XNR.miniver=303;
+XNR.version="3.0.1.20100609";
+XNR.miniver=304;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -69,10 +69,12 @@ XNR.url=document.location.href;
 XNR.options={};
 
 // 当前运行环境（浏览器）
-const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4;
+const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4,SAFARI=8;
 XNR.agent=UNKNOWN;
 if(window.chrome) {
 	XNR.agent=CHROME;
+} else if (window.safari) {
+	XNR.agent=SAFARI;
 } else if (typeof GM_setValue=="function") {
 	XNR.agent=USERSCRIPT;
 } else if (typeof Components=="object") {
@@ -3978,8 +3980,8 @@ function $script(code) {
 	if(!/^\(function/.test(code)) {
 		code="(function(){try{"+code+"}catch(ex){}})();";
 	}
-	if(XNR.agent==CHROME) {
-		// 如果chrome用location方法，会发生各种各样奇怪的事。比如innerHTML失灵
+	if(XNR.agent==CHROME || XNR.agent==SAFARI) {
+		// 如果chrome/safari用location方法，会发生各种各样奇怪的事。比如innerHTML失灵。。。万恶的webkit
 		$node("script").text(code).appendTo(document.documentElement);
 	} else {
 		document.location.href="javascript:"+code;
@@ -4032,6 +4034,9 @@ function $save(name,value) {
 		case CHROME:
 			chrome.extension.sendRequest({action:"save",data:opts});
 			break;
+		case SAFARI:
+			safari.self.tab.dispatchMessage("xnr_save",opts);
+			break;
 	}
 };
 
@@ -4078,6 +4083,16 @@ function $get(url,func,userData) {
 					func(response.data,url,userData);
 				});
 			}
+			break;
+		case SAFARI:
+			if(func!=null) {
+				safari.self.addEventListener("message", function(msg) {
+					if(msg.name=="xnr_get_data") {
+						func(msg.message,url,userData);
+					}
+				}, false);
+			}
+	    	safari.self.tab.dispatchMessage("xnr_get",url);
 			break;
 	} 
 };
@@ -4772,6 +4787,14 @@ switch(XNR.agent) {
 		} catch(ex) {
 			main({});
 		}
+		break;
+	case SAFARI:
+		safari.self.addEventListener("message", function(msg) {
+			if(msg.name=="xnr_load_data") {
+				main(msg.message);
+			}
+		}, false);
+	    safari.self.tab.dispatchMessage("xnr_load");
 		break;
 	default:
 		throw "unsupported browser";
