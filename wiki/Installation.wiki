@@ -1,7 +1,7 @@
 #labels 安装指南
 鉴于有部分使用者（几乎都是Google Chrome用户）不知道如何安装，在此编写了这么一个安装向导。
 
-首先要声明的是，目前以及在将来可预见的一段时间内，本程序只会支持Google Chrome/Chromium/Firefox浏览器，所以不要指望它能够在别的浏览器上正差安装/使用。
+首先要声明的是，目前以及在将来可预见的一段时间内，本程序只会支持Google Chrome/Chromium/Firefox/Safari浏览器，所以不要指望它能够在别的浏览器上正差安装/使用。
 
 
 针对Google Chrome/Chromium用户：
