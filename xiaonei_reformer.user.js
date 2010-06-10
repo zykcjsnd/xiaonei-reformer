@@ -1921,7 +1921,7 @@ function enableYoukuFullscreen() {
 };
 
 // 检查更新
-function checkUpdate(evt,checkLink,scriptLink,lastCheck) {
+function checkUpdate(evt,checkLink,updateLink,lastCheck) {
 	//lastCheck="2000-1-1";
 	var today=new Date();
 	if(lastCheck) {
@@ -1941,7 +1941,7 @@ function checkUpdate(evt,checkLink,scriptLink,lastCheck) {
 			var miniver=(/@miniver[ \t]+(\d+)/.exec(html) || ["","0"])[1];
 			var ver=(/@version[ \t]+([0-9\.]+)/.exec(html) || ["","未知"])[1];
 			if(parseInt(miniver)>XNR.miniver) {
-				var pop=$popup(null,'<div style="color:black"><div>人人网改造器已有新版本：<br/>'+ver+' ('+miniver+')</div><div class="links" style="padding-top:5px;padding-bottom:5px;float:right"><a target="_blank" href="'+scriptLink+'">安装</a></div></div>',null,30,5);
+				var pop=$popup(null,'<div style="color:black"><div>人人网改造器已有新版本：<br/>'+ver+' ('+miniver+')</div><div class="links" style="padding-top:5px;padding-bottom:5px;float:right"><a target="_blank" href="'+updateLink+'">安装</a></div></div>',null,30,5);
 				pop.find(".links a").hook("click",function() {
 					pop.remove();
 				});
@@ -3149,7 +3149,7 @@ function main(savedOptions) {
 		],
 		"自动更新":[
 			{
-				text:"##自动检查脚本更新##",
+				text:"##自动检查程序更新##",
 				ctrl:[
 					{
 						id:"checkUpdate",
@@ -3158,23 +3158,23 @@ function main(savedOptions) {
 							name:checkUpdate,
 							stage:2,
 							fire:true,
-							args:[null,"@checkLink","@scriptLink","@lastUpdate"]
+							args:[null,"@checkLink","@updateLink","@lastUpdate"]
 						}]
 					},{
 						type:"info",
 						value:"24小时内最多检查一次"
 					}
 				],
-				agent:USERSCRIPT
+				agent:USERSCRIPT | FIREFOX
 			},{
-				text:"最后一次检查更新时间：##",		// 最后一次更新时间
+				text:"最后一次检查更新时间：##",
 				ctrl:[{
 					id:"lastUpdate",
 					type:"label",
 					value:"",
 					format:"date"
 				}],
-				agent:USERSCRIPT
+				agent:USERSCRIPT | FIREFOX
 			},{
 				text:"##",
 				ctrl:[{
@@ -3183,11 +3183,11 @@ function main(savedOptions) {
 					fn:[{
 						name:checkUpdate,
 						fire:"click",
-						args:[null,"@checkLink","@scriptLink","@lastUpdate"]
+						args:[null,"@checkLink","@updateLink","@lastUpdate"]
 					}],
 					style:"padding:1px"
 				}],
-				agent:USERSCRIPT
+				agent:USERSCRIPT | FIREFOX
 			},{
 				text:"检查更新地址：##",
 				ctrl:[{
@@ -3201,13 +3201,33 @@ function main(savedOptions) {
 			},{
 				text:"脚本下载地址：##",
 				ctrl:[{
-					id:"scriptLink",
+					id:"updateLink",
 					type:"input",
 					value:"http://userscripts.org/scripts/source/45836.user.js",
 					style:"width:330px;",
 					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的脚本下载地址"},
 				}],
 				agent:USERSCRIPT
+			},{
+				text:"检查更新地址：##",
+				ctrl:[{
+					id:"checkLink",
+					type:"input",
+					value:"http://xiaonei-reformer.googlecode.com/files/45836.meta.js",
+					style:"width:330px",
+					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的检查更新地址"}
+				}],
+				agent:FIREFOX
+			},{
+				text:"扩展下载地址：##",
+				ctrl:[{
+					id:"updateLink",
+					type:"input",
+					value:"http://xiaonei-reformer.googlecode.com/files/xiaonei_reformer-fx.xpi",
+					style:"width:330px;",
+					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的脚本下载地址"},
+				}],
+				agent:FIREFOX
 			},{
 				text:"##升级后显示通知",
 				ctrl:[{
