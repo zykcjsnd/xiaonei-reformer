@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>XNR Background</title>
+<script>
+safari.application.addEventListener("message",function(msg) {
+	switch(msg.name) {
+		case "xnr_save":
+			localStorage.setItem("xnr_options",msg.message);
+			break;
+		case "xnr_load":
+			var options=localStorage.getItem("xnr_options");
+			if(options==null) {
+				msg.target.page.dispatchMessage("xnr_load_data",{id:msg.message,data:{}});
+			} else {
+				msg.target.page.dispatchMessage("xnr_load_data",{id:msg.message,data:JSON.parse(options)});
+			}
+			break;
+		case "xnr_get":
+			var httpReq= new XMLHttpRequest();
+			httpReq.onload=function() {
+				msg.target.page.dispatchMessage("xnr_get_data",{id:msg.message.id,data:(httpReq.status==200?httpReq.responseText:null)});
+			};
+			httpReq.onerror=function(e) {
+				msg.target.page.dispatchMessage("xnr_get_data",{id:msg.message.id,data:null});
+			};
+			httpReq.open("GET",msg.message.url,true);
+			//httpReq.setRequestHeader("Cache-Control","no-cache");
+			httpReq.send();
+			break;
+	}
+},false);
+</script>
+</head>
+<body>
+</body>
+</html>
