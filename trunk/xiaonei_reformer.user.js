@@ -1777,7 +1777,7 @@ function useWhisper() {
 
 // 隐藏橙名
 function hideOrangeName(evt) {
-	if(evt && evt.target.tagName!="DL" && evt.target.className.indexOf("comment")!=-1) {
+	if(evt && evt.target.tagName!="DL" && !(evt.target.className && evt.target.className.indexOf("comment")!=-1)) {
 		return;
 	}
 	$("a.lively-user").removeClass("lively-user").attr("title","");
