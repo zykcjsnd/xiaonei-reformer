@@ -1464,8 +1464,8 @@ function showFullSizeImage(evt) {
 				if(t!=$alloc("image_viewer").viewer && t!=$alloc("image_viewer").image) {
 					// 不是在显示的图像上
 					$alloc("image_viewer").viewer.style("display","none");
-					$alloc("image_viewer").image.attr({src:"",lid:""});
-
+					// 仅仅将src设成""会有一些2B浏览器去读取当前页面。可能是造成出现浏览满100人警告的原因
+					$alloc("image_viewer").image.attr({src:null,lid:""});
 				}
 			}
 			return;
