@@ -13,15 +13,57 @@
 	<script>
 		function getPhotos() {
 			try {
-				var data=unescape(/d&(.*?)&/.exec(location.href)[1]);
-				var title=unescape(/t&(.*?)&/.exec(location.href)[1]);
-				if(title) {
-					document.title=title;
+				var album=JSON.parse(unescape(/#(.*)$/.exec(location.href)[1]));
+				if(album.title) {
+					document.title=album.title;
 				}
-				document.body.innerHTML=data;
+				var html="";
+				html+="<p>来源："+album.ref+"</p>";
+				if(album.unknown.length>0) {
+					html+="<p>未能取得以下地址的图片：</p>";
+					if(album.type) {
+						for(var i=0;i<album.unknown.length;i++) {
+							html+="<span>"+album.unknown[i]+"</span><br/>";
+						}
+					} else {
+						for(var i=0;i<album.unknown.length;i++) {
+							html+="<a href=\""+album.unknown[i]+"\">"+album.unknown[i]+"</a>";
+						}
+					}
+					html+="<p/>";
+				}
+				if(album.type) {
+					if(album.data.length>0) {
+						html+="<p>使用下载工具软件（推荐使用Flashgot/Downthemall扩展）下载本页面全部链接即可得到下列"+album.data.length+"张照片</p>";
+					}
+					html+="<p><input type=\"button\" onclick=\"switchLink()\" value=\"切换链接描述\"/> 有些下载工具（如Downthemall扩展）能够根据链接描述文字来设置下载文件的文件名</p>"
+					for(var i=0;i<album.data.length;i++) {
+						var img=album.data[i];
+						html+="<a href=\""+img.src+"\" title=\""+img.title+"\">"+img.src+"</a><br/>"
+					}
+				} else {
+					if(album.data.length>0) {
+						html+="<p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列"+album.data.length+"张照片</p>";
+					}
+					for(var i=0;i<album.data.length;i++) {
+						var img=album.data[i];
+						html+="<img height=\"128\" width=\"128\" src=\""+img.src+"\" title=\""+img.title+"\"/>"
+					}
+				}
+				document.body.innerHTML=html;
 			} catch(err) {
 			}
 		};
+		function switchLink() {
+			var links=document.querySelectorAll("a[title]:not([title=''])");
+			for(var i=0;i<links.length;i++) {
+				if(links[i].textContent!=links[i].title) {
+					links[i].textContent=links[i].title;
+				} else {
+					links[i].textContent=links[i].href;
+				}
+			}
+		}
 	</script>
 </head>
 <body onload="getPhotos()">

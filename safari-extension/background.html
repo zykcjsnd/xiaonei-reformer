@@ -28,6 +28,12 @@ safari.application.addEventListener("message",function(msg) {
 			//httpReq.setRequestHeader("Cache-Control","no-cache");
 			httpReq.send();
 			break;
+		case "xnr_album":
+			var tab=safari.application.activeBrowserWindow.openTab();
+			var reqId=parseInt(Math.random()*1000000);
+			localStorage.setItem("xnr_album_"+reqId,JSON.stringify(msg.message));
+			tab.url=safari.extension.baseURI+"album.html#"+reqId;
+			break;
 	}
 },false);
 </script>
