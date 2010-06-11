@@ -1015,6 +1015,11 @@ function addExtraEmotions() {
 		"(bbt)":	{t:"棒棒糖",		s:"/imgpro/icons/statusface/bbt.gif"},
 		"(xr)":		{t:"儿时回忆",		s:"/imgpro/icons/statusface/sm.gif"},
 		"(gk)":		{t:"高考",			s:"/imgpro/icons/statusface/gaokao.gif"},
+		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
+		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
+		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
+		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
+		"(yc)":		{t:"黄牌",			s:"/imgpro/icons/new-statusface/yellowCard.gif"},
 		"(^)":		{t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
 		"(h)":		{t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		"(r)":		{t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
@@ -1390,9 +1395,9 @@ function addDownloadAlbumLink(linkOnly) {
 					}
 					if(album.type) {
 						if(album.data.length>0) {
-							html+="<p>使用下载工具软件（推荐Firefox用户使用Flashgot/Downthemall扩展）下载本页面全部链接即可得到下列"+album.data.length+"张照片</p>";
+							html+="<p>使用下载工具软件（推荐使用Flashgot/Downthemall扩展）下载本页面全部链接即可得到下列"+album.data.length+"张照片</p>";
 						}
-						html+="<p><input type=\"button\" onclick=\"switchLink()\" value=\"切换链接描述\"/> 有些下载工具（如Firefox的Downthemall扩展）能够根据链接描述文字来设置下载文件的文件名</p>"
+						html+="<p><input type=\"button\" onclick=\"switchLink()\" value=\"切换链接描述\"/> 有些下载工具（如Downthemall扩展）能够根据链接描述文字来设置下载文件的文件名</p>"
 						for(var i=0;i<album.data.length;i++) {
 							var img=album.data[i];
 							html+="<a href=\""+img.src+"\" title=\""+img.title+"\">"+img.src+"</a><br/>"
@@ -1413,7 +1418,7 @@ function addDownloadAlbumLink(linkOnly) {
 				} else if(XNR.agent==CHROME) {
 					chrome.extension.sendRequest({action:"album",data:album});
 				} else if(XNR.agent==SAFARI) {
-					//document.documentElement.innerHTML="<meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+title+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style>"+data;
+					safari.self.tab.dispatchMessage("xnr_album",album);
 				}
 			}
 			$dealloc("download_album");

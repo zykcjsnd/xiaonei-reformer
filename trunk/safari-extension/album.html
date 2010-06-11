@@ -11,9 +11,13 @@
 		}
 	</style>
 	<script>
+		safari.self.addEventListener("message", function(msg){
+			alert(msg.message)}, false);
 		function getPhotos() {
 			try {
-				var album=JSON.parse(unescape(/#(.*)$/.exec(location.href)[1]));
+				var reqId=/#(.*)$/.exec(location.href)[1];
+				var album=JSON.parse(localStorage.getItem("xnr_album_"+reqId));
+				localStorage.setItem("xnr_album_"+reqId,null);
 				if(album.title) {
 					document.title=album.title;
 				}
