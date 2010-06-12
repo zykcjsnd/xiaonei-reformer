@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.1.20100611
-// @miniver        306
+// @version        3.0.1.20100612
+// @miniver        307
 // @author         xz
 // ==/UserScript==
 //
@@ -50,8 +50,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.1.20100611";
-XNR.miniver=306;
+XNR.version="3.0.1.20100612";
+XNR.miniver=307;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1582,7 +1582,14 @@ function showFullSizeImage(evt) {
 				} catch(ex) {
 				}
 			}
-			pageURL="http://photo.renren.com/getalbumprofile.do?owner="+/id=(\d+)/.exec(pageURL)[1];
+			// 公共主页目前还在6000xxxxx阶段，以后可能会更多
+			if(/profile\.do\?id=6000\d{5}/.test(pageURL)) {
+				// 公共主页头像相册
+				pageURL="http://page.renren.com/photo/album?h=1&owner="+/id=(\d+)/.exec(pageURL)[1];
+			} else {
+				// 一般头像相册
+				pageURL="http://photo.renren.com/getalbumprofile.do?owner="+/id=(\d+)/.exec(pageURL)[1];
+			}
 		} else if(pageURL.indexOf("/profile.do?")!=-1) {
 			// 直接链接到对方页面的头像图片
 			pageURL="http://photo.renren.com/getalbumprofile.do?owner="+/id=(\d+)/.exec(pageURL)[1];
@@ -3852,7 +3859,7 @@ function $page(category,url) {
 		club:"/club\\.renren\\.com/",	// 论坛
 		pages:"/page\\.renren\\.com/",	// 公共主页
 		status:"/status\\.renren\\.com/",	// 状态
-		photo:"/photo\\.renren\\.com/",	// 照片
+		photo:"/photo\\.renren\\.com/|/page\\.renren\\.com/[0-9]+/photo/",	// 照片
 		album:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|/photo/album\\?|photo\\.renren\\.com/photo/ap/",	// 相册
 		friend:"friend\\.renren\\.com/",	// 好友
 		share:"share\\.renren\\.com/"	// 分享
