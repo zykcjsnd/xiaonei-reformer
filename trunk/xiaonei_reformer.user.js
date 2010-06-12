@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.1.20100612
-// @miniver        307
+// @version        3.0.1.20100613
+// @miniver        308
 // @author         xz
 // ==/UserScript==
 //
@@ -50,8 +50,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.1.20100612";
-XNR.miniver=307;
+XNR.version="3.0.1.20100613";
+XNR.miniver=308;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1964,6 +1964,8 @@ function checkUpdate(evt,checkLink,updateLink,lastCheck) {
 	if(lastCheck) {
 		lastCheck=new Date(lastCheck);
 	} else {
+		// 初次使用，必须设置
+		$save("lastUpdate",today.toString());
 		lastCheck=today;
 	}
 	//一天只检查一次
