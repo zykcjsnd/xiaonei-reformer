@@ -11,7 +11,10 @@ var myListener={
 	onStateChange: function(aBrowser, aWebProgress, aRequest, aFlag, aStatus) {},  
 	onStatusChange: function(aBrowser, aWebProgress, aRequest, aStatus, aMessage) {},
 	onSecurityChange: function(aBrowser, aWebProgress, aRequest, aState) {},
-	onRefreshAttempted: function(aBrowser, aWebProgress, aRefreshURI, aMillis,aSameURI) {},
+	onRefreshAttempted: function(aBrowser, aWebProgress, aRefreshURI, aMillis,aSameURI) {
+		// must return true. if not, the refresh will be blocked
+		return true;
+	},
 	onLinkIconAvailable: function(aBrowser) {}
 };
 
