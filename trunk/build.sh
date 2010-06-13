@@ -19,7 +19,8 @@ cd ..
 
 #######################################
 
-cat firefox-extension/content/snippet-1.js "$TEMPOUT" firefox-extension/content/snippet-2.js > firefox-extension/content/overlay.js
+head -n 29 "$INPUT" > firefox-extension/content/overlay.js
+cat firefox-extension/content/snippet-1.js "$TEMPOUT" firefox-extension/content/snippet-2.js >> firefox-extension/content/overlay.js
 cd firefox-extension
 ./pack.sh
 cd ..

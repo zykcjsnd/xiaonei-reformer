@@ -7,13 +7,13 @@
 	<key>CFBundleDisplayName</key>
 	<string>人人网改造器</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.solo.xiaoneireformer</string>
+	<string>com.googlecode.xiaonei-reformer</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.0.1.309</string>
+	<string>3.0.1.310</string>
 	<key>CFBundleVersion</key>
-	<string>309</string>
+	<string>310</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Global Page</key>
