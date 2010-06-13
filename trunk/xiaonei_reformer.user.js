@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.1.20100613
-// @miniver        308
+// @version        3.0.1.20100614
+// @miniver        309
 // @author         xz
 // ==/UserScript==
 //
@@ -50,8 +50,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.1.20100613";
-XNR.miniver=308;
+XNR.version="3.0.1.20100614";
+XNR.miniver=309;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -89,12 +89,14 @@ var $=PageKit;
 // 清除广告
 function removeAds(evt) {
 	if(!evt) {
-		var ads=".ad-bar, .banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .video:not([style]), #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel";
+		var ads=".ad-bar, .banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel";
 		$ban(ads);
 		$wait(1,function() {
 			// .blank-holder在游戏大厅game.renren.com不能删
 			$(".blank-holder").remove(true);
 		});
+		// 其他的横幅广告。如2010-06的 kfc-banner
+		$("div[class$='-banner']").filter("a[target='_blank']>img").filter({childElementCount:0}).remove();
 	}
 	$wait(1,function() {
 		// 混迹于新鲜事中的广告
@@ -1959,13 +1961,10 @@ function enableYoukuFullscreen() {
 
 // 检查更新
 function checkUpdate(evt,checkLink,updateLink,lastCheck) {
-	//lastCheck="2000-1-1";
 	var today=new Date();
-	if(lastCheck) {
-		lastCheck=new Date(lastCheck);
-	} else {
-		// 初次使用，必须设置
-		$save("lastUpdate",today.toString());
+	lastCheck=new Date(lastCheck);
+	if(isNaN(lastCheck.valueOf())) {
+		$save("lastUpdate",today.valueOf());
 		lastCheck=today;
 	}
 	//一天只检查一次
@@ -1976,6 +1975,10 @@ function checkUpdate(evt,checkLink,updateLink,lastCheck) {
 		$(evt.target).attr({disabled:"disabled",value:"检查中..."});
 	}
 	$get(checkLink,function(html) {
+		if(!html) {
+			$save("lastUpdate",today.valueOf());
+			return;
+		}
 		try {
 			var miniver=(/@miniver[ \t]+(\d+)/.exec(html) || ["","0"])[1];
 			var ver=(/@version[ \t]+([0-9\.]+)/.exec(html) || ["","未知"])[1];
@@ -1990,7 +1993,7 @@ function checkUpdate(evt,checkLink,updateLink,lastCheck) {
 			}
 
 			$(".xnr_op #lastUpdate").text($formatDate(today));
-			$save("lastUpdate",today.toString());
+			$save("lastUpdate",today.valueOf());
 
 			if(evt) {
 				$(evt.target).attr({disabled:null,value:"立即检查"});
@@ -3210,7 +3213,7 @@ function main(savedOptions) {
 				ctrl:[{
 					id:"lastUpdate",
 					type:"label",
-					value:"",
+					value:0,
 					format:"date"
 				}],
 				agent:USERSCRIPT | FIREFOX
@@ -4264,7 +4267,11 @@ function $feedType(feed) {
  */
 function $formatDate(d) {
 	if(!(d instanceof Date)) {
-		d=new Date(d);
+		if(d===0) {
+			return "未知";
+		} else {
+			d=new Date(d);
+		}
 	}
 	if(isNaN(d.getYear())) {
 		return "未知";
@@ -4604,7 +4611,7 @@ PageKit.prototype={
 		return PageKit(res);
 	},
 	// 过滤出有符合条件子节点的节点
-	// o可以为字符串，作为CSS选择器。也可为函数，function(elem)，返回false或等价物时滤除
+	// o可以为字符串，作为CSS选择器。也可为函数，function(elem)，返回false或等价物时滤除。也可为一Object，表示期望有的属性:值
 	filter:function(o) {
 		if(!o) {
 			return this;
@@ -4619,6 +4626,19 @@ PageKit.prototype={
 		} else if(typeof o=="function") {
 			this.each(function(elem) {
 				if(o(elem)) {
+					res.push(elem);
+				}
+			});
+		} else if(typeof o=="object") {
+			this.each(function(elem) {
+				var flag=true;
+				for(var p in o) {
+					if(!(elem[p]===o)) {
+						flag=false;
+						break;
+					}
+				}
+				if(flag) {
 					res.push(elem);
 				}
 			});
