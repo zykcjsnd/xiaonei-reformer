@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.1.20100613
-// @miniver        310
+// @version        3.0.1.20100614
+// @miniver        311
 // @author         xz
 // ==/UserScript==
 //
@@ -50,8 +50,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.1.20100613";
-XNR.miniver=310;
+XNR.version="3.0.1.20100614";
+XNR.miniver=311;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -96,7 +96,7 @@ function removeAds(evt) {
 			$(".blank-holder").remove(true);
 		});
 		// 其他的横幅广告。如2010-06的 kfc-banner
-		$("div[class$='-banner']").filter("a[target='_blank']>img").filter({childElementCount:0}).remove();
+		$("div[class$='-banner']").filter("a[target='_blank']>img").filter({childElementCount:1}).remove();
 	}
 	$wait(1,function() {
 		// 混迹于新鲜事中的广告
@@ -3768,7 +3768,7 @@ function main(savedOptions) {
 	});
 
 	// 菜单在导航栏上的入口
-	var entry=$node("div").attr("class","menu").append($node("div").attr("class","menu-title").append($node("a").attr({href:"#nogo",onclick:"return false"}).text("改造")));
+	var entry=$node("div").attr("class","menu").append($node("div").attr("class","menu-title").append($node("a").attr({href:"javascript:;",onclick:"return false;"}).text("改造")));
 	entry.find("a").hook("click",function() {
 		menu.show().style({"top":parseInt(window.innerHeight-menu.prop("offsetHeight"))/2+"px","left":parseInt(window.innerWidth-menu.prop("offsetWidth"))/2+"px"});
 	});
@@ -4633,7 +4633,7 @@ PageKit.prototype={
 			this.each(function(elem) {
 				var flag=true;
 				for(var p in o) {
-					if(!(elem[p]===o)) {
+					if(!(elem[p]===o[p])) {
 						flag=false;
 						break;
 					}

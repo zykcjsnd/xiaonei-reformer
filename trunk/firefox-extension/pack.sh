@@ -1,3 +1,3 @@
 #! /bin/sh -
-rm -f ../xnr.xpi
-zip -r ../xnr.xpi `find -type f | grep -Ev ".svn|pack.sh|snippet-[12].js"`
+rm -f ../xiaonei_reformer-fx.xpi
+zip -r ../xiaonei_reformer-fx.xpi `find -type f | grep -Ev ".svn|pack.sh|snippet-[12].js"`
