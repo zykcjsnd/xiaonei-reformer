@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.1.20100614
-// @miniver        311
+// @version        3.0.1.20100615
+// @miniver        312
 // @author         xz
 // ==/UserScript==
 //
@@ -50,8 +50,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.1.20100614";
-XNR.miniver=311;
+XNR.version="3.0.1.20100615";
+XNR.miniver=312;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -3999,8 +3999,9 @@ function $popup(title,content,geometry,stayTime,popSpeed) {
 function $wait(stage,func) {
 	/*
 	 * 页面加载阶段测试：test3.html
-	 * Firefox 3.6.3/3.7a5pre：loading -> interactive -> completed
+	 * Firefox 3.6.3/3.7a6pre：loading -> interactive -> completed
 	 * Chromium 6.0.411.0 (47760)：loading -> loaded -> completed
+	 * Safari 5 (7533.16)：loading -> loaded -> completed
 	 * Opera 10.54：interactive -> interactive/completed -> completed
 	 * 目前不支持Opera。
 	 */
@@ -4867,10 +4868,20 @@ switch(XNR.agent) {
 		});
 		break;
 	case FIREFOX:
+		var opts;
 		try {
-			main(JSON.parse(unescape(Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getCharPref("extensions.xiaonei_reformer.xnr_options"))));
+			opts=JSON.parse(unescape(Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getCharPref("extensions.xiaonei_reformer.xnr_options")));
 		} catch(ex) {
-			main({});
+			opts={};
+		}
+		if(document.documentElement==null) {
+			// 时机太早了。。。从3.7a5pre开始
+			document.addEventListener("DOMNodeInserted",function(evt) {
+				document.removeEventListener("DOMNodeInserted",arguments.callee,true);
+				main(opts);
+			},true);
+		} else {
+			main(opts);
 		}
 		break;
 	case SAFARI:
