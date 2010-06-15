@@ -94,9 +94,9 @@ function removeAds(evt) {
 		$wait(1,function() {
 			// .blank-holder在游戏大厅game.renren.com不能删
 			$(".blank-holder").remove(true);
+			// 其他的横幅广告。如2010-06的 kfc-banner
+			$("div[class$='-banner']").filter("a[target='_blank']>img").filter({childElementCount:1}).remove();
 		});
-		// 其他的横幅广告。如2010-06的 kfc-banner
-		$("div[class$='-banner']").filter("a[target='_blank']>img").filter({childElementCount:1}).remove();
 	}
 	$wait(1,function() {
 		// 混迹于新鲜事中的广告
