@@ -2066,7 +2066,7 @@ function main(savedOptions) {
 	// [
 	//   {
 	//     [String]id:控件ID。type为hidden/warn/info时无需id
-	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）,"warn"（<input type="image"/>）,"info"（<input type="image"/>）。默认为check
+	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）,"warn"（<input type="image"/>）,"info"（<input type="image"/>）,"br"（<br/>）。默认为check
 	//     [Any]value:默认值。type为hidden或readonly为真时可以没有value
 	//     [Object]verify:{验证规则:失败信息,...}。验证规则为正则字串。可选
 	//     [String]style:样式。可选
@@ -2768,7 +2768,7 @@ function main(savedOptions) {
 					}],
 				}]
 			},{
-				text:"##增加导航栏项目####",
+				text:"##增加导航栏项目######",
 				ctrl:[
 					{
 						id:"addNavItems",
@@ -2782,6 +2782,8 @@ function main(savedOptions) {
 					},{
 						type:"info",
 						value:"每两行描述一项。第一行为显示的名称，第二行为对应的链接地址"
+					},{
+						type:"br"
 					},{
 						id:"navItemsContent",
 						type:"edit",
@@ -2908,7 +2910,7 @@ function main(savedOptions) {
 				],
 				page:"club"
 			},{
-				text:"##自定义页面样式##",
+				text:"##自定义页面样式####",
 				ctrl:[
 					{
 						id:"customizePageStyle",
@@ -2919,6 +2921,8 @@ function main(savedOptions) {
 							fire:true,
 							args:["@myPageStyle"]
 						}]
+					},{
+						type:"br"
 					},{
 						id:"myPageStyle",
 						type:"edit",
@@ -3048,7 +3052,7 @@ function main(savedOptions) {
 				],
 				page:"photo"
 			},{
-				text:"##在鼠标经过图片时显示大图## ##",
+				text:"##在鼠标经过图片时显示大图#### ##",
 				ctrl:[
 					{
 						id:"showFullSizeImage",
@@ -3068,6 +3072,9 @@ function main(savedOptions) {
 					},{
 						type:"info",
 						value:"要在鼠标移动时保持大图显示，按住Shift/Alt/Ctrl键不放"
+					},{
+						type:"warn",
+						value:"会记入对方最近来访名单中",
 					},{
 						type:"button",
 						value:"清除地址缓存",
@@ -3291,7 +3298,7 @@ function main(savedOptions) {
 		],
 		"诊断信息":[
 			{
-				text:"##如果您遇到功能出错，请在报告问题时附带上出错页面中的以下信息：##",
+				text:"##如果您遇到功能出错，请在报告问题时附带上出错页面中的以下信息：####",
 				ctrl:[
 					{
 						type:"hidden",
@@ -3299,6 +3306,8 @@ function main(savedOptions) {
 							name:diagnose,
 							stage:1,
 						}],
+					},{
+						type:"br"
 					},{
 						id:"diagnosisInfo",
 						type:"edit",
@@ -3417,6 +3426,9 @@ function main(savedOptions) {
 							node=$node("input").attr({type:"image",src:warnImage,tooltip:control.value,tabIndex:-1});
 							node.hook("mouseover",showTooltip).hook("mouseout",hideTooltip);
 							control.value=null;
+							break;
+						case "br":
+							node=$node("br");
 							break;
 					}
 					if(node) {
