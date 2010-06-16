@@ -3,10 +3,11 @@
 
 首先要声明的是，目前以及在将来可预见的一段时间内，本程序只会支持Google Chrome/Chromium/Firefox/Safari浏览器，所以不要指望它能够在别的浏览器上正常安装/使用。
 
-<a href="#g">Google Chrome/Chromium</a>
+[Installation#Google_Chrome_or_Chromium]
 
 
-<span name="g">针对Google Chrome/Chromium用户：</span>
+=Google Chrome or Chromium=
+
 <p>
 1、安装浏览器（以Google Chrome为例，我知道用Chromium的用户一般水平都比较高）：
 </p>
