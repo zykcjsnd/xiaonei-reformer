@@ -7,9 +7,9 @@
  * [Installation#Firefox Firefox]
 
 =Google Chrome/Chromium=
-==1、安装浏览器（以Google Chrome为例，我知道用Chromium的用户一般水平都比较高）：==
+==安装浏览器（以Google Chrome为例，我知道用Chromium的用户一般水平都比较高；）==
 推荐到[http://www.google.com/chrome 官方网站]去下载安装程序并运行。这样安装上的是正式版本。并不推荐使用beta、dev甚至daily版，尤其是dev版和daily版。因为其发布目的只是让开发人员（也就是像我这样的家伙）进行测试，本身可能存在很多问题，并不适合一般用户使用。
-==2、下载/安装扩展程序：==
+==下载/安装扩展程序==
 安装完Chrome浏览器后，运行它，并到[https://chrome.google.com/extensions/detail/bafellppfmjodafekndapfceggodmkfc 扩展下载页面]去安装扩展。
 
 点击“安装”后过一会儿会弹出下面的询问窗口，点击安装
@@ -47,7 +47,9 @@ http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_c6.jpg
 
 
 =Firefox=
-==1、安装Firefox==
+==安装Firefox==
 请到 http://www.getfirefox.com 去下载最新正式版的Firefox进行安装。如果你当前已经安装了Firefox，请检查其版本。本程序只能在3.5或更高版本的Firefox上使用
-==2、安装扩展==
+==安装扩展==
 到[https://addons.mozilla.org/firefox/addon/162178/ 扩展页面]去安装程序。如果您已经从其他地方，比如[http://xiaonei-reformer.googlecode.com/files/xiaonei_reformer-fx.xpi 这里]，获得了扩展程序，直接将其拖动到Firefox窗口上即可安装。
+==注意事项==
+Firefox扩展目前还未通过Mozilla官方审核，所以浏览器的检查扩展更新功能不会提示扩展的更新。因此请临时启用扩展程序自己的检查更新功能。
