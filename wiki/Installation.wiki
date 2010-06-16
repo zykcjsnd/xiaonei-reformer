@@ -6,7 +6,7 @@
 <a href="#g">Google Chrome/Chromium</a>
 
 
-<span id="g">针对Google Chrome/Chromium用户：</span>
+<span name="g">针对Google Chrome/Chromium用户：</span>
 <p>
 1、安装浏览器（以Google Chrome为例，我知道用Chromium的用户一般水平都比较高）：
 </p>
