@@ -3760,25 +3760,23 @@ function main(savedOptions) {
 		if(evt.button!=0) {
 			return;
 		}
-		window.captureEvents(Event.MOUSEMOVE | Event.MOUSEUP);
 		var move=$alloc("drag_optionMenu");
 		var menuRect=menu.get().getBoundingClientRect();
 		move.x=evt.clientX-menuRect.left;
 		move.y=evt.clientY-menuRect.top;
 		evt.target.style.cursor="move";
-	}).hook("mouseup",function(evt) {
+	},true).hook("mouseup",function(evt) {
 		if($allocated("drag_optionMenu")) {
 			$dealloc("drag_optionMenu");
-			window.releaseEvents(Event.MOUSEMOVE | Event.MOUSEUP);
 			evt.target.style.cursor=null;
 		}
-	});
+	},true);
 	$(document.documentElement).hook("mousemove",function(evt) {
 		if($allocated("drag_optionMenu")) {
 			var move=$alloc("drag_optionMenu");
 			menu.style({left:(evt.clientX-move.x)+"px",top:(evt.clientY-move.y)+"px"});
 		}
-	});
+	},true);
 
 	// 菜单在导航栏上的入口
 	var entry=$node("div").attr("class","menu").append($node("div").attr("class","menu-title").append($node("a").attr({href:"javascript:;",onclick:"return false;"}).text("改造")));
@@ -4841,21 +4839,21 @@ PageKit.prototype={
 		}
 	},
 	// 添加事件监听函数。可以有多个事件。由逗号分隔
-	hook:function(evt,func) {
+	hook:function(evt,func,capture) {
 		var e=evt.split(",");
 		this.each(function(elem) {
 			for(var i=0;i<e.length;i++) {
-				elem.addEventListener(e[i],func,false);
+				elem.addEventListener(e[i],func,!!capture);
 			}
 		});
 		return this;
 	},
 	// 解除事件监听
-	unhook:function(evt,func) {
+	unhook:function(evt,func,capture) {
 		var e=evt.split(",");
 		this.each(function(elem) {
 			for(var i=0;i<e.length;i++) {
-				elem.removeEventListener(e[i],func,false);
+				elem.removeEventListener(e[i],func,!!capture);
 			}
 		});
 		return this;

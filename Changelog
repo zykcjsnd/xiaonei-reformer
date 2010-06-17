@@ -1,5 +1,6 @@
 3.0.1.20100617 (313):
 fix:修正去除状态新鲜事链接对于动态增加的新鲜事无效的BUG
+fix:去除过时的captureEvent/releaseEvent
 
 3.0.1.20100615 (312):
 fix:Firefox扩展支持至3.7a6pre
