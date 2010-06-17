@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.1.20100615
-// @miniver        312
+// @version        3.0.1.20100617
+// @miniver        313
 // @author         xz
 // ==/UserScript==
 //
@@ -50,8 +50,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.1.20100615";
-XNR.miniver=312;
+XNR.version="3.0.1.20100617";
+XNR.miniver=313;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -2629,7 +2629,8 @@ function main(savedOptions) {
 					fn:[{
 						name:removeStatusFeedLink,
 						stage:1,
-						fire:true
+						fire:true,
+						trigger:{"ul#feedHome":"DOMNodeInserted"}
 					}]
 				}],
 				login:true,
