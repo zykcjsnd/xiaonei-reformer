@@ -1017,6 +1017,7 @@ function addExtraEmotions() {
 		"(bbt)":	{t:"棒棒糖",		s:"/imgpro/icons/statusface/bbt.gif"},
 		"(xr)":		{t:"儿时回忆",		s:"/imgpro/icons/statusface/sm.gif"},
 		"(gk)":		{t:"高考",			s:"/imgpro/icons/statusface/gaokao.gif"},
+		"(pass)":	{t:"CET必过",		s:"/imgpro/icons/statusface/cet46.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
