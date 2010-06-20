@@ -3188,7 +3188,7 @@ function main(savedOptions) {
 				text:"##允许全屏观看优酷视频分享",
 				ctrl:[{
 					id:"enableYoukuFullscreen",
-					value:true,
+					value:false,
 					fn:[{
 						name:enableYoukuFullscreen,
 						stage:1,
