@@ -4,7 +4,7 @@
   <Description about="urn:mozilla:install-manifest">
     <em:id>{3c43fd59-db7d-4dd7-b6fa-08566d5a0b9d}</em:id>
 	<em:name>xiaonei reformer</em:name>
-    <em:version>3.0.1.313</em:version>
+    <em:version>3.0.1.314</em:version>
     <em:description>为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能……</em:description>
     <em:creator>xz</em:creator>
 	<em:homepageURL>http://xiaonei-reformer.googlecode.com</em:homepageURL>
