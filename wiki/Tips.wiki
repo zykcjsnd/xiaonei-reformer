@@ -1,8 +1,7 @@
-#labels 技巧
-这里是一些小技巧。
-<p>
-Q：如何去除世界杯期间的状态发布栏背景等<br/>
-A：在“自定义页面样式”中添加以下内容<br/>
+#labels 自定义页面样式示例
+=自定义页面样式示例=
+
+去除世界杯期间的状态发布栏背景等
 {{{
 .publisher{background:none}
 .bless,.wc-footer,#worldCup{display:none}
@@ -10,4 +9,4 @@ A：在“自定义页面样式”中添加以下内容<br/>
 .publisher .world-cup textarea{border:1px solid #BDC7D8}
 .publisher .world-cup form{border-bottom:1px solid #BDC7D8}
 }}}
-</p>
+
