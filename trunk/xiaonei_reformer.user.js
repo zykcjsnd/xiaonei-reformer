@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.1.20100620
-// @miniver        314
+// @version        3.0.1.20100622
+// @miniver        315
 // @author         xz
 // ==/UserScript==
 //
@@ -50,8 +50,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.1.20100620";
-XNR.miniver=314;
+XNR.version="3.0.1.20100622";
+XNR.miniver=315;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -390,6 +390,8 @@ function hideFeedContent() {
 // 去除状态新鲜事上的链接
 function removeStatusFeedLink() {
 	$("#feedHome h3>a.text").tag("span");
+	// xn.app.status.js中的renderStatusFeed会将新增的新鲜事加上链接
+	$script("renderStatusFeed=function(){}");
 };
 
 // 在新鲜事中标记在线好友
@@ -2067,9 +2069,10 @@ function main(savedOptions) {
 	// [
 	//   {
 	//     [String]id:控件ID。type为hidden/warn/info时无需id
-	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）,"warn"（<input type="image"/>）,"info"（<input type="image"/>）,"br"（<br/>）。默认为check
+	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）,"warn"（<input type="image"/>）,"info"（<input type="image"/>）,"br"（<br/>）, "link"（<a/>）。默认为check
 	//     [Any]value:默认值。type为hidden或readonly为真时可以没有value
 	//     [Object]verify:{验证规则:失败信息,...}。验证规则为正则字串。可选
+	//     [Object]attr:{属性名:属性值,...}。属性。可选
 	//     [String]style:样式。可选
 	//     [Boolean]readonly:控件只读。可选
 	//     [String]format:值格式。显示时会自动转换。目前只支持"date"。
@@ -2631,7 +2634,6 @@ function main(savedOptions) {
 						name:removeStatusFeedLink,
 						stage:1,
 						fire:true,
-						trigger:{"ul#feedHome":"DOMNodeInserted"}
 					}]
 				}],
 				login:true,
@@ -2912,7 +2914,7 @@ function main(savedOptions) {
 				],
 				page:"club"
 			},{
-				text:"##自定义页面样式####",
+				text:"##自定义页面样式######",
 				ctrl:[
 					{
 						id:"customizePageStyle",
@@ -2923,6 +2925,14 @@ function main(savedOptions) {
 							fire:true,
 							args:["@myPageStyle"]
 						}]
+					},{
+						type:"link",
+						value:"更多示例",
+						attr:{
+							href:"http://code.google.com/p/xiaonei-reformer/wiki/Styles",
+							target:"_blank"
+						},
+						style:"margin-left:10px"
 					},{
 						type:"br"
 					},{
@@ -3410,15 +3420,6 @@ function main(savedOptions) {
 						case "input":
 							node=$node("input");
 							break;
-						case "edit":
-							node=$node("textarea");
-							break;
-						case "button":
-							node=$node("input").attr("type","button");
-							break;
-						case "label":
-							node=$node("span");
-							break;
 						case "info":
 							node=$node("input").attr({type:"image",src:infoImage,tooltip:control.value,tabIndex:-1});
 							node.hook("mouseover",showTooltip).hook("mouseout",hideTooltip);
@@ -3431,6 +3432,18 @@ function main(savedOptions) {
 							break;
 						case "br":
 							node=$node("br");
+							break;
+						case "edit":
+							node=$node("textarea");
+							break;
+						case "button":
+							node=$node("input").attr("type","button");
+							break;
+						case "label":
+							node=$node("span");
+							break;
+						case "link":
+							node=$node("a");
 							break;
 					}
 					if(node) {
@@ -3449,6 +3462,9 @@ function main(savedOptions) {
 						}
 						if(control.style) {
 							node.attr("style",control.style);
+						}
+						if(control.attr) {
+							node.attr(control.attr);
 						}
 						if(control.readonly) {
 							node.attr("readonly","true");
