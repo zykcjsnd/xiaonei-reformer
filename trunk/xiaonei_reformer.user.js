@@ -4143,7 +4143,7 @@ function $save(name,value) {
 function $get(url,func,userData) {
 	switch(XNR.agent) {
 		case FIREFOX:
-			var httpReq= new XMLHttpRequest();
+			var httpReq= new window.XMLHttpRequest();
 			if(func!=null) {
 				httpReq.onload=function() {
 					func((httpReq.status==200?httpReq.responseText:null),url,userData);
