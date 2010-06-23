@@ -48,6 +48,7 @@ function loadScript(obj,direct) {
 	var sandbox=new Components.utils.Sandbox(window);
 	sandbox.window=contentWindow;
 	sandbox.document=contentWindow.document;
+	sandbox.__proto__=contentWindow;
 
 	sandbox.importFunction(function(name,value) {
 		const op="extensions.xiaonei_reformer.xnr_options";

@@ -1803,7 +1803,7 @@ function cleanFullSizeImageCache() {
 		delete cache.o;
 	}
 	window.localStorage.setItem("xnr_image_cache","{}");
-	window.alert("缓存已经清空");
+	alert("缓存已经清空");
 };
 
 // 选中“悄悄话”选框
@@ -1989,7 +1989,7 @@ function checkUpdate(evt,checkLink,updateLink,lastCheck) {
 				});
 			} else if(evt) {
 				// 手动点击检查更新按钮时要弹出提示
-				window.alert("最新版本为："+ver+" ("+miniver+")\n当前版本为："+XNR.version+" ("+XNR.miniver+")\n\n无须更新");
+				alert("最新版本为："+ver+" ("+miniver+")\n当前版本为："+XNR.version+" ("+XNR.miniver+")\n\n无须更新");
 			}
 
 			$(".xnr_op #lastUpdate").text($formatDate(today));
@@ -3721,7 +3721,7 @@ function main(savedOptions) {
 					menu.find(".pages>div").hide().pick(index).show();
 					menu.find(".category li").removeClass("selected").pick(index-1).addClass("selected");
 
-					window.alert(rules[rule]);
+					alert(rules[rule]);
 					elem.focus();
 					pass=false;
 					return false;
