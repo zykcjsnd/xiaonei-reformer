@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.1.20100622
-// @miniver        315
+// @version        3.0.2.20100623
+// @miniver        316
 // @author         xz
 // ==/UserScript==
 //
@@ -27,11 +27,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-(function(_contentWindow){
-
-// 主要是为了Firefox扩展。需要覆盖window。为了减少修改也把document覆盖了
-var window=_contentWindow;
-var document=_contentWindow.document;
+(function(){
 
 if (window.self != window.top) {
 	if(document.designMode=="on") {
@@ -50,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.1.20100622";
-XNR.miniver=315;
+XNR.version="3.0.2.20100623";
+XNR.miniver=316;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -77,7 +73,7 @@ if(window.chrome) {
 	XNR.agent=SAFARI;
 } else if (typeof GM_setValue=="function") {
 	XNR.agent=USERSCRIPT;
-} else if (typeof Components=="object") {
+} else if (typeof extServices=="function") {
 	XNR.agent=FIREFOX;
 }
 
@@ -706,6 +702,7 @@ function recoverOriginalTheme(ignoreTheme) {
 				"ul.richlist.feeds li .details a.share:hover{color:"+FCOLOR+"}",
 				".app-box .common-app h1 .open{color:"+FCOLOR+"}",
 				".user-data,.panel.bookmarks,.statuscmtitem{background-color:"+SCOLOR+"}",
+				".home .home-sidebar .pymk .comefrom{background-color:"+SCOLOR+"}",
 			],
 			"webpager-std-min.css":[
 				".webpager ul.icon a:hover .tooltip{background-color:"+FCOLOR+"}",
@@ -1806,7 +1803,7 @@ function cleanFullSizeImageCache() {
 		delete cache.o;
 	}
 	window.localStorage.setItem("xnr_image_cache","{}");
-	alert("缓存已经清空");
+	window.alert("缓存已经清空");
 };
 
 // 选中“悄悄话”选框
@@ -1992,7 +1989,7 @@ function checkUpdate(evt,checkLink,updateLink,lastCheck) {
 				});
 			} else if(evt) {
 				// 手动点击检查更新按钮时要弹出提示
-				alert("最新版本为："+ver+" ("+miniver+")\n当前版本为："+XNR.version+" ("+XNR.miniver+")\n\n无须更新");
+				window.alert("最新版本为："+ver+" ("+miniver+")\n当前版本为："+XNR.version+" ("+XNR.miniver+")\n\n无须更新");
 			}
 
 			$(".xnr_op #lastUpdate").text($formatDate(today));
@@ -2024,7 +2021,7 @@ function updatedNotify(notify,lastVersion) {
 // 生成诊断信息
 function diagnose() {
 	var str="";
-	str+="运行环境："+navigator.userAgent+"\n";
+	str+="运行环境："+window.navigator.userAgent+"\n";
 	str+="当前页面："+XNR.url+"\n";
 	str+="程序版本："+XNR.version+"("+XNR.miniver+") - "+XNR.agent+"\n";
 	str+="功能："+JSON.stringify(XNR.options)+"\n\n";
@@ -3724,7 +3721,7 @@ function main(savedOptions) {
 					menu.find(".pages>div").hide().pick(index).show();
 					menu.find(".category li").removeClass("selected").pick(index-1).addClass("selected");
 
-					alert(rules[rule]);
+					window.alert(rules[rule]);
 					elem.focus();
 					pass=false;
 					return false;
@@ -4123,7 +4120,7 @@ function $save(name,value) {
 			GM_setValue("xnr_options",opts);
 			break;
 		case FIREFOX:
-			Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).setCharPref("extensions.xiaonei_reformer.xnr_options",escape(opts));
+			extServices("save",escape(opts));
 			break;
 		case CHROME:
 			chrome.extension.sendRequest({action:"save",data:opts});
@@ -4209,7 +4206,7 @@ function $error(func,error) {
 	if(typeof error=="object" && error.name && error.message) {
 		var msg="在 "+func+"() 中发生了一个错误。\n错误名称："+error.name+"\n错误信息："+error.message+"\n\n";
 		if(XNR.agent==FIREFOX) {
-			Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService).logStringMessage(msg);
+			extServices("log",msg);
 		} else {
 			console.log(msg);
 		}
@@ -4898,7 +4895,7 @@ switch(XNR.agent) {
 	case FIREFOX:
 		var opts;
 		try {
-			opts=JSON.parse(unescape(Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getCharPref("extensions.xiaonei_reformer.xnr_options")));
+			opts=JSON.parse(unescape(extServices("load")));
 		} catch(ex) {
 			opts={};
 		}
@@ -4926,5 +4923,4 @@ switch(XNR.agent) {
 		throw "unsupported browser";
 };
 
-// docWindow是Firefox扩展中的
-})(typeof docWindow=="undefined"?window:docWindow);
+})();
