@@ -24,8 +24,7 @@ cd ..
 
 #######################################
 
-head -n 29 "$INPUT" > firefox-extension/content/overlay.js
-cat firefox-extension/content/snippet-1.js "$TEMPOUT" firefox-extension/content/snippet-2.js >> firefox-extension/content/overlay.js
+cp "$OUTPUT" firefox-extension/content/"$INPUT"
 cd firefox-extension
 sed -i -E '7s/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/'$VERSION'/' install.rdf
 ./pack.sh
