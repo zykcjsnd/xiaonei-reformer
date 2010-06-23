@@ -2782,7 +2782,7 @@ function main(savedOptions) {
 						}],
 					},{
 						type:"info",
-						value:"每两行描述一项。第一行为显示的名称，第二行为对应的链接地址"
+						value:"每两行描述一项。第一行为显示的名称，第二行为对应的链接地址。链接地址请用包含协议名的完整形式，如http://a.com，不要仅填写a.com"
 					},{
 						type:"br"
 					},{
@@ -4143,17 +4143,9 @@ function $save(name,value) {
 function $get(url,func,userData) {
 	switch(XNR.agent) {
 		case FIREFOX:
-			var httpReq= new window.XMLHttpRequest();
-			if(func!=null) {
-				httpReq.onload=function() {
-					func((httpReq.status==200?httpReq.responseText:null),url,userData);
-				};
-				httpReq.onerror=function() {
-					func(null,url,userData);
-				};
-			}
-		    httpReq.open("GET",url,true);
-			httpReq.send();
+			// 如果直接使用window.XMLHttpRequest，即使在创建sandbox时赋予chrome的window权限，也会被noscript阻挡。
+			// 是该赞叹noscript尽职呢还是怪它管的太宽呢…
+			extServices("get",{url:url,func:func,data:userData});
 			break;
 		case USERSCRIPT:
 			if(func!=null) {

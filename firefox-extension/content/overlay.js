@@ -44,8 +44,7 @@ function loadScript(obj,direct) {
 	// can't use mozIJSSubScriptLoader due to https://bugzilla.mozilla.org/show_bug.cgi?id=377498
 	var script=getUrlContents('chrome://xiaonei-reformer/content/xiaonei_reformer.user.js');
 
-	// for cross-domain XMLHttpRequest privillage
-	var sandbox=new Components.utils.Sandbox(window);
+	var sandbox=new Components.utils.Sandbox(contentWindow);
 	sandbox.window=contentWindow;
 	sandbox.document=contentWindow.document;
 	sandbox.__proto__=contentWindow;
@@ -60,6 +59,19 @@ function loadScript(obj,direct) {
 				return Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getCharPref(op);
 			case "log":
 				Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService).logStringMessage(value);
+				break;
+			case "get":
+				var httpReq= new window.XMLHttpRequest();
+				if(value.func!=null) {
+					httpReq.onload=function() {
+						value.func((httpReq.status==200?httpReq.responseText:null),value.url,value.data);
+					};
+					httpReq.onerror=function() {
+						value.func(null,value.url,value.data);
+					};
+				}
+			    httpReq.open("GET",value.url,true);
+				httpReq.send();
 				break;
 		}
 	},"extServices");
