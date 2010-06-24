@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.2.20100623
-// @miniver        316
+// @version        3.0.2.20100624
+// @miniver        317
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.2.20100623";
-XNR.miniver=316;
+XNR.version="3.0.2.20100624";
+XNR.miniver=317;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -85,7 +85,7 @@ var $=PageKit;
 // 清除广告
 function removeAds(evt) {
 	if(!evt) {
-		var ads=".ad-bar, .banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel";
+		var ads=".ad-bar, .banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel";
 		$ban(ads);
 		$wait(1,function() {
 			// .blank-holder在游戏大厅game.renren.com不能删
@@ -200,7 +200,7 @@ function removeHomeGadgets(gadgetOpt) {
 		"publicPageAdmin":"#pageAdmin",	// 公共主页管理
 		"birthday":"#homeBirthdayPart",	// 好友生日
 		"survey":".side-item.sales-poll",	// 人人网调查
-		"newStar":".star-new"	// 人气之星/新人
+		"newStar":".star-new"	// 人气之星
 	};
 	const filters={
 		"webFunction":{t:".side-item",f:".web-function"},	// 站内功能
@@ -240,7 +240,8 @@ function removeProfileGadgets(gadgetOpt) {
 		"visitors":"#visitors.mod",
 		"pages":"#pages.mod",
 		"friends":"#friends.mod",
-		"theme":".enter-paints,#paintother,#paintself"
+		"theme":".enter-paints,#paintother,#paintself",
+		"invitation":".guide-find-friend,p.inviteguys"
 	};
 	var patch="";
 	for(var g in gadgetOpt) {
@@ -1017,6 +1018,7 @@ function addExtraEmotions() {
 		"(xr)":		{t:"儿时回忆",		s:"/imgpro/icons/statusface/sm.gif"},
 		"(gk)":		{t:"高考",			s:"/imgpro/icons/statusface/gaokao.gif"},
 		"(pass)":	{t:"CET必过",		s:"/imgpro/icons/statusface/cet46.gif"},
+		"(qf)":		{t:"祈福",			s:"/imgpro/icons/statusface/candle.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
@@ -1071,7 +1073,7 @@ function addExtraEmotions() {
 		"(微笑)":33
 	};
 
-	// 状态页(status.renren.com)的表情列表
+	// 状态页(status.renren.com)的表情列表，活动页面中似乎也是这个
 	var list=$("#status_emotions");
 	if(!list.empty()) {
 		// 已经有的表情列表
@@ -1100,7 +1102,7 @@ function addExtraEmotions() {
 			var el=emlist[e];
 			// 不在已有列表中
 			if(!curlist[e]) {
-				$node("li").append($node("a").attr("href","#nogo").append($node("img").attr({title:el.t,alt:el.t,emotion:e,src:"http://xnimg.cn"+el.s,rsrc:"http://xnimg.cn"+el.s}))).appendTo(list);
+				$node("li").append($node("a").attr("href","javascript:;").append($node("img").attr({title:el.t,alt:el.t,emotion:e,src:"http://xnimg.cn"+el.s,rsrc:"http://xnimg.cn"+el.s}))).appendTo(list);
 			}
 		}
 	}
@@ -1454,9 +1456,9 @@ function initFullSizeImage() {
 };
 
 // 当鼠标在图片上时显示大图
-function showFullSizeImage(evt) {
+function showFullSizeImage(evt,shifty) {
 	try {
-		if(evt.shiftKey || evt.ctrlKey || evt.altKey) {
+		if(evt.ctrlKey || evt.altKey || evt.metaKey) {
 			return;
 		}
 		var t=evt.target;	// 经过的对象
@@ -1502,6 +1504,11 @@ function showFullSizeImage(evt) {
 			}
 			return;
 		}
+
+		if(shifty && !evt.shiftKey) {
+			return;
+		}
+
 		imgId=thumbnail.substring(thumbnail.lastIndexOf("_"));
 	
 		// 早期的图片（http://fm071.img.renren.com/pic001/20070201/2002/H[0-9]+[A-Z]+.jpg），改imgId
@@ -1608,7 +1615,7 @@ function showFullSizeImage(evt) {
 		if($page("photo",pageURL) && pageURL.match("getphoto\\.do|gettagphoto\\.do|/photo\\.renren\\.com/photo/[0-9]+/photo-[0-9]+|/page\\.renren\\.com/.*/photo/|photo\\.renren\\.com/photo/sp/")) {
 			// 早期图片 http://fm100.img.xiaonei.com/pic001/20070707/11/12/13/H[0-9A-Z]+.jpg
 			if(thumbnail.match("\\.img\\.xiaonei\\.com/pic[0-9]{3}/[0-9]{8}/[0-9]{2}/[0-9]{2}/[0-9]{2}/H[0-9A-Z]{9}\\.jpg")) {
-				imgId=imgId.replace(/H([0-9A-Z]{9}\\.jpg)$/,"L$1");
+				imgId=imgId.replace(/H([0-9A-Z]{9}\.jpg)$/,"L$1");
 			}
 			_showViewer(evt.pageX,null,imgId);
 			_getImage(pageURL,imgId);
@@ -1798,10 +1805,7 @@ function showFullSizeImage(evt) {
 
 // 清除大图地址缓存
 function cleanFullSizeImageCache() {
-	var cache=$alloc("image_cache");
-	for(var o in cache) {
-		delete cache.o;
-	}
+	$dealloc("image_cache");
 	window.localStorage.setItem("xnr_image_cache","{}");
 	alert("缓存已经清空");
 };
@@ -2066,7 +2070,7 @@ function main(savedOptions) {
 	// [
 	//   {
 	//     [String]id:控件ID。type为hidden/warn/info时无需id
-	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）,"warn"（<input type="image"/>）,"info"（<input type="image"/>）,"br"（<br/>）, "link"（<a/>）。默认为check
+	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）,"warn"（<input type="image"/>）,"info"（<input type="image"/>）,"br"（<article/>）, "link"（<a/>）。默认为check
 	//     [Any]value:默认值。type为hidden或readonly为真时可以没有value
 	//     [Object]verify:{验证规则:失败信息,...}。验证规则为正则字串。可选
 	//     [Object]attr:{属性名:属性值,...}。属性。可选
@@ -2296,7 +2300,7 @@ function main(savedOptions) {
 						value:false,
 					},{
 						id:"newStar",
-						text:"##人气之星/新人栏",
+						text:"##人气之星",
 						value:false,
 					}
 				],
@@ -2363,6 +2367,10 @@ function main(savedOptions) {
 					},{
 						id:"friends",
 						text:"##好友",
+						value:false,
+					},{
+						id:"invitation",
+						text:"##邀请朋友",
 						value:false,
 					}
 				]
@@ -2954,7 +2962,7 @@ function main(savedOptions) {
 						fire:true
 					}],
 				}],
-				page:"home,profile,status",
+				page:"home,profile,status,act",
 				login:true
 			},{
 				text:"##为评论增加楼层计数##",
@@ -3021,7 +3029,7 @@ function main(savedOptions) {
 				login:true,
 				page:"album"
 			},{
-				text:"##允许下载相册图片##  ##仅生成图片链接",
+				text:"##允许下载相册图片####仅生成图片链接",
 				ctrl:[
 					{
 						id:"addDownloadAlbumLink",
@@ -3038,6 +3046,7 @@ function main(savedOptions) {
 					},{
 						id:"showImageLinkOnly",
 						value:false,
+						style:"margin-left:5px"
 					}
 				],
 				master:0,
@@ -3061,7 +3070,7 @@ function main(savedOptions) {
 				],
 				page:"photo"
 			},{
-				text:"##在鼠标经过图片时显示大图#### ##",
+				text:"##在鼠标经过图片时显示大图######需按下Shift键####",
 				ctrl:[
 					{
 						id:"showFullSizeImage",
@@ -3075,15 +3084,23 @@ function main(savedOptions) {
 								name:showFullSizeImage,
 								stage:2,
 								fire:"trigger",
+								args:[null,"@shiftyImage"],
 								trigger:{"body":"mouseover"}
 							}
 					 	]
 					},{
 						type:"info",
-						value:"要在鼠标移动时保持大图显示，按住Shift/Alt/Ctrl键不放"
+						value:"要在鼠标移动时保持大图显示，按住PC键盘的Alt/Ctrl/Meta或Mac键盘的Option/Ctrl/Command键不放"
 					},{
 						type:"warn",
-						value:"会记入对方最近来访名单中",
+						value:"会记入对方最近来访名单中。为防止误访问，请启用“需按下Shift键”，只在按住Shift键时才显示图片",
+					},{
+						id:"shiftyImage",
+						value:false,
+						style:"margin-left:5px"
+					},{
+						type:"br",
+						style:"height:3px"
 					},{
 						type:"button",
 						value:"清除地址缓存",
@@ -3091,7 +3108,7 @@ function main(savedOptions) {
 							name:cleanFullSizeImageCache,
 							fire:"click"
 						}],
-						style:"margin-left:5px;padding:1px"
+						style:"margin-left:15px;padding:1px"
 					}
 				]
 			},{
@@ -3389,6 +3406,9 @@ function main(savedOptions) {
 						// 寻找前一个check作为关联目标
 						var forCheck="";
 						for(var iCtrl=iText-1;iCtrl>=0;iCtrl--) {
+							if(o.ctrl[iCtrl].type=="br") {
+								break;
+							}
 							if(!o.ctrl[iCtrl].type || o.ctrl[iCtrl].type=="check") {
 								forCheck=o.ctrl[iCtrl].id;
 								break;
@@ -3428,7 +3448,7 @@ function main(savedOptions) {
 							control.value=null;
 							break;
 						case "br":
-							node=$node("br");
+							node=$node("article");
 							break;
 						case "edit":
 							node=$node("textarea");
@@ -3889,10 +3909,11 @@ function $page(category,url) {
 		club:"/club\\.renren\\.com/",	// 论坛
 		pages:"/page\\.renren\\.com/",	// 公共主页
 		status:"/status\\.renren\\.com/",	// 状态
-		photo:"/photo\\.renren\\.com/|/page\\.renren\\.com/[0-9]+/photo/",	// 照片
+		photo:"/photo\\.renren\\.com/|/page\\.renren\\.com/[^/]+/photo/",	// 照片
 		album:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|/photo/album\\?|photo\\.renren\\.com/photo/ap/",	// 相册
 		friend:"friend\\.renren\\.com/",	// 好友
-		share:"share\\.renren\\.com/"	// 分享
+		share:"share\\.renren\\.com/",	// 分享
+		act:"act\\.renren\\.com/"	// 活动
 	};
 	if(!url) {
 		url=XNR.url;
