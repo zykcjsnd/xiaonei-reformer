@@ -3175,7 +3175,8 @@ function main(savedOptions) {
 						type:"info",
 						value:"在鼠标经过会可能被记入最近来访的图片时，会在图片右下角显示一个放大图标，点击后才会显示原大图片"
 					}
-				]
+				],
+				master:0
 			},{
 				text:"##默认使用悄悄话",
 				ctrl:[{
