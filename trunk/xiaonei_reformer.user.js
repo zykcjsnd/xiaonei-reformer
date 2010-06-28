@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.2.20100626
-// @miniver        318
+// @version        3.0.2.20100628
+// @miniver        319
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.2.20100626";
-XNR.miniver=318;
+XNR.version="3.0.2.20100628";
+XNR.miniver=319;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1678,10 +1678,15 @@ function showFullSizeImage(evt,indirect) {
 			});
 		}
 	};
-	// 显示放大图标
+	// 显示放大镜图标
 	function _showMagnifier(target) {
 		var node=$node("img").attr({style:"z-index:199999;position:absolute;opacity:0.7",height:22,width:22}).attr("src","data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAMAAADzapwJAAAAw1BMVEUxlJ9TVVJWWFVZW1hhYmBPe7JRfbR4endVf7dVg7Rfg7Zah7ljh7qChIFki7iJi4iKjImWm52cnpt4qNSho6CCrNOmqKWFrtaIstqJs9uSttiUuNqXvN6ZvuC3uraevtuzvMSgwN29v7ylxeK6wsqtxOOvxuW9xc2pyebAxsi1yeKvy+O3yuS7yt61zd+zzua7zujKz9G90erG0uDF1enO1t/O2ujZ3uHY4enZ4urc4uTi6Ord6ffh6fLp6+jl7fbp8frKBh0+AAAAAXRSTlMAQObYZgAAAQtJREFUGNN10O1ygjAQBdBoS0wjkoC2tAQECioWFD+ItqYQ3v+pZCggztj7J5mTnZ3dAFCH1AH3IXrIheChfvdAPbF1GXO3wqM95SpEaZrEL1DlnRNPzcsSH1IsZa56bR9dwHI8zg6VYwmF3hSHG1zWmkRIok34V064m+J0t0vjKPCR7fKGhZXESRwtF4HvMMsUHfvR8itaBIHPzGnH3J0qH8y2mfVuKq9+22R1VHJo1YG/8LhqJjQEyiGyHcdBKEfCaJcMNSklCgJUHVrYrUnPGsZJFYy1c++z6Lr4PmXZ6adYk9nb882N/aUoLntjAsj88+ZgQiklo+oyHJG+dxn87/Onhz57xGAwBFen2iHevJ8kLwAAAABJRU5ErkJggg%3D%3D").attr({onmouseover:"this.style.opacity=1",onmouseout:"this.style.opacity=0.7"});
-		var rect=target.getBoundingClientRect();
+		if(target.parentNode.tagName!="I") {
+			var rect=target.getBoundingClientRect();
+		} else {
+			// 高度大于宽度的小头像
+			var rect=target.parentNode.getBoundingClientRect();
+		}
 		node.style({left:parseInt(rect.right-22+window.scrollX)+"px",top:parseInt(rect.bottom-22+window.scrollY)+"px"});
 		node.appendTo(document.documentElement);
 		$alloc("image_magnifier",node);
@@ -3173,7 +3178,7 @@ function main(savedOptions) {
 						style:"margin-left:15px"
 					},{
 						type:"info",
-						value:"在鼠标经过会可能被记入最近来访的图片时，会在图片右下角显示一个放大图标，点击后才会显示原大图片"
+						value:"在鼠标经过会可能被记入最近来访的图片时，会在图片右下角显示一个放大镜图标，点击后才会显示原大图片"
 					}
 				],
 				master:0
