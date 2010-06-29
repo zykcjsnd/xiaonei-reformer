@@ -1501,7 +1501,7 @@ function showFullSizeImage(evt,indirect) {
 				}
 				break;
 		}
-		if(!thumbnail || thumbnail.match(/\/large|_large|large_|\/photos\/0\/0\/|\/page_pic\/|\/homeAd\//)) {
+		if(!thumbnail || thumbnail.match(/\/large|_large|large_|\/photos\/0\/0\/|\/page_pic\/|\/homeAd\/|\/xnapp\/vip\//)) {
 			// 大图/默认空白头像/公共主页图像
 			if($allocated("image_viewer")) {
 				if(t!=$alloc("image_viewer").viewer && t!=$alloc("image_viewer").image) {
