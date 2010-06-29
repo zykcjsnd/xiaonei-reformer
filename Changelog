@@ -1,5 +1,6 @@
 3.0.2.20100629 (320):
 fix:修改支持的Firefox最低版本为3.6（document.readyState的原因）
+fix:修改Firefox版本支持至4.0b1
 fix:修改新鲜事提醒通知区域，使其在webpager禁用了消息通知时仍然可用
 
 3.0.2.20100628 (319):
