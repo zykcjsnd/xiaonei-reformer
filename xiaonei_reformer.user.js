@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.2.20100628
-// @miniver        319
+// @version        3.0.2.20100629
+// @miniver        320
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.2.20100628";
-XNR.miniver=319;
+XNR.version="3.0.2.20100629";
+XNR.miniver=320;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -5000,7 +5000,7 @@ switch(XNR.agent) {
 				safari.self.removeEventListener("message",arguments.callee,false);
 				main(msg.message.data);
 			}
-		}, false);
+		},false);
 	    safari.self.tab.dispatchMessage("xnr_load",reqId);
 		break;
 	default:
