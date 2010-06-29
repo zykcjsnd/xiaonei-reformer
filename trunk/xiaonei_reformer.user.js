@@ -452,12 +452,12 @@ function flodFeedComment() {
 // 自动检查提醒新鲜事更新
 function autoCheckFeeds(interval,feedFilter) {
 	// 在bottombar上建立一个新的接收区域
-	if(!$("#webpager #notification-panel").empty()) {
-		var root=$node("div").attr("class","popupwindow notify-panel").appendTo($("#webpager #notification-panel"));
+	if(!$("#webpager #setting-panel").empty()) {
+		var root=$node("div").attr("class","popupwindow notify-panel").appendTo($node("div").attr("class","panel").insertTo($("#webpager #setting-panel").superior(),$("#webpager #setting-panel").index()));
 		var Btn=$node("div").attr("class","panelbarbutton").appendTo(root);
 		$node("img").attr({"class":"icon",height:"16",width:"16",src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA4klEQVQ4y61TsQrCQAztp9lCO3dz82N0cXFydXIWP0LE3Q/QxVEoR0Fpz15P3sGlSWlpix6EvOSSl9ccDYJ/nNnyZBfro53iqRmJ3fnmbHW42O31PiomEgBcwHjhUEwE881eSPNxG7fv4UlBXddkxhiLw+Oq+ogYXnwCCjxR13SOfT0pAODMuATmk31sjXI5rXW3AhT1Teb4VWipQClFCvj0tiqPxQ7SNHWMY3cAjHr0iVcY2gHPP7J3oyAMQ5sX2eQdoM8RxHFsn3kp3rlvB1xVkiTN/wA2b1EUCevKieZfzxcMt3dNdxsqQQAAAABJRU5ErkJggg%3D%3D",alt:"新鲜事",title:"新鲜事"}).appendTo(Btn);
 		$node("div").attr({id:"feed_toread_tip","class":"buttontooltip",style:"display:none"}).append($node("strong").attr("id","feed_toread_num").text("0")).appendTo(Btn);
-		var list=$node("article").attr("class","window").code('<header><h4>新的新鲜事</h4><menu><command title="最小化" label="最小化" class="minimize"></command></menu></header><section><p style="padding:5px;">没有新的新鲜事</p></section>').appendTo(root);
+		var list=$node("article").attr("class","window").style({right:"-84px",width:"280px"}).code('<header><h4>新的新鲜事</h4><menu><command title="最小化" label="最小化" class="minimize"></command></menu></header><section><p style="padding:5px;">没有新的新鲜事</p></section>').appendTo(root);
 		Btn.hook("click",function(evt) {
 			if(root.attr("class").indexOf("actived")!=-1) {
 				list.hide();
@@ -4122,13 +4122,19 @@ function $wait(stage,func) {
 	 * Opera 10.54：interactive -> interactive/completed -> completed
 	 * 目前不支持Opera。
 	 */
-	var curStage=2;
-	if(document.readyState=="loading") {
-		curStage=0;
-	} else if(document.readyState=="completed") {
-		curStage=3;
-	} else if(stage==1 || stage==2) {
-		curStage=stage;
+	var curStage=3;
+	switch(document.readyState) {
+		case "loading":
+			curStage=0;
+			break;
+		case "loaded":
+		case "interactive":
+			if(stage==1 || stage==2) {
+				curStage=stage;
+			} else {
+				curStage=2;
+			}
+			break;
 	}
 	if(stage>curStage) {
 		// stage>curStage>=0 -> stage>0
