@@ -6,7 +6,7 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.2.20100702
+// @version        3.0.3.20100702
 // @miniver        321
 // @author         xz
 // ==/UserScript==
@@ -46,7 +46,7 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.2.20100702";
+XNR.version="3.0.3.20100702";
 XNR.miniver=321;
 
 // 存储空间，用于保存全局性变量
@@ -2054,6 +2054,11 @@ function enableYoukuFullscreen() {
 	});
 };
 
+// 提升搜索结果上限到200页
+function expandSearchResult() {
+	$node("a").text("扩展到200页").attr({style:"float:left;padding:3px",onclick:"XN.app.search._bottomPager.setPageCount(200)"}).prependTo($("#bottomPagerHolder"));
+};
+
 // 检查更新
 function checkUpdate(evt,checkLink,updateLink,lastCheck) {
 	var today=new Date();
@@ -3333,6 +3338,23 @@ function main(savedOptions) {
 					}]
 				}],
 				page:"share,blog",
+			},{
+				text:"##允许提升搜索结果上限到200页##",
+				ctrl:[
+					{
+						id:"expandSearchResult",
+						value:false,
+						fn:[{
+							name:expandSearchResult,
+							stage:2,
+							fire:true
+						}]
+					},{
+						type:"info",
+						value:"在搜索结果页面下方的翻页区域左侧。目前无法提升到更多页数"
+					}
+				],
+				page:"searchEx",
 			}
 		],
 		"自动更新":[
@@ -4027,7 +4049,8 @@ function $page(category,url) {
 		friend:"/friend\\.renren\\.com/",	// 好友
 		share:"/share\\.renren\\.com/",	// 分享
 		act:"/act\\.renren\\.com/",	// 活动
-		request:"/req\\.renren\\.com/"	// 请求
+		request:"/req\\.renren\\.com/",	// 请求
+		searchEx:"/browse\\.renren\\.com/searchEx\\.do"	//搜索结果
 	};
 	if(!url) {
 		url=XNR.url;
