@@ -70,8 +70,11 @@ function loadScript(obj,direct) {
 						value.func(null,value.url,value.data);
 					};
 				}
-			    httpReq.open("GET",value.url,true);
+			    httpReq.open(value.method,value.url,true);
 				httpReq.send();
+				break;
+			case "album":
+				gBrowser.addTab("chrome://xiaonei-reformer/content/album.html#"+escape(JSON.stringify(value)));
 				break;
 		}
 	},"extServices");

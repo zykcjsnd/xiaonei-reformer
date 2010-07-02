@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.2.20100629
-// @miniver        320
+// @version        3.0.2.20100702
+// @miniver        321
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.2.20100629";
-XNR.miniver=320;
+XNR.version="3.0.2.20100702";
+XNR.miniver=321;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -325,6 +325,24 @@ function rejectRequest(req) {
 				$get("http://friend.renren.com/RejectRecFriend.do?id="+command[1]);
 			}
 		}
+	});
+};
+
+// 允许接受全部好友申请
+function acceptAllFriendRequests() {
+	if($("#content div[id='601_ingoreAll_div']").empty()) {
+		return;
+	}
+	$node("a").attr({"href":"javascript:;","class":"operation"}).text("接受所有好友申请，慎用！").style("paddingLeft","10px").prependTo($("#content div[id='601_ingoreAll_div']")).hook("click",function() {
+		if(!confirm("确实要接受所有列出的好友申请吗？")) {
+			return;
+		}
+		$("#content div.section[id^='friend_section_']").each(function(elem) {
+			var fid=/[0-9]+/.exec(elem.id);
+			$get("http://friend.renren.com/ApplyGuestRequest.do?friendId="+fid,null,null,"POST");
+		});
+		alert("已经接受了所有申请，将刷新页面……");
+		document.location.reload();
 	});
 };
 
@@ -1271,11 +1289,11 @@ function showImagesInOnePage() {
 // 在相册中添加生成下载页链接
 // 压力测试：http://photo.renren.com/photo/242786354/album-236660334
 function addDownloadAlbumLink(linkOnly) {
-	var downLink=$node("a").attr({"style":'background-image:none;padding-left:10px',"href":'#nogo'}).text("下载当前页图片");
-	if(!$(".function-nav.photolist-pager ul.nav-btn").empty()) {
-		$(".function-nav.photolist-pager ul.nav-btn").append($node("li").attr("class","pipe").text("|")).append($node("li").append(downLink));
+	var downLink=$node("a").attr({"style":'background-image:none;padding-left:10px;padding-right:10px',"href":'javascript:;'}).text("下载当前页图片");
+	if(!$(".function-nav.bottom-operate ul.nav-btn").empty()) {
+		$(".function-nav.bottom-operate ul.nav-btn").append($node("li").attr("class","pipe").text("|")).append($node("li").append(downLink));
 	} else {
-		$(".pager-bottom").prepend(downLink);
+		$(".pager-bottom").prepend(downLink.style("lineHeight","22px"));
 	}
 	downLink.hook("click",function(evt) {
 		if(downLink.text().match("分析中")) {
@@ -1354,81 +1372,85 @@ function addDownloadAlbumLink(linkOnly) {
 			},elem);
 		});
 		function finish() {
-			if($alloc("download_album").length>0) {
-				var failedImages=$(".photo-list span.img a[down],table.photoList td.photoPan>a[down]");
-				var failedImagesList=[];
-				if(failedImages.size()>0) {
-					failedImages.each(function(elem) {
-						failedImagesList.push(elem.href);
-					});
-				}
-				var title=$(".ablum-Information .Information h1").text();
-				if(!title) {
-					// 外链相册
-					var t=$(".album-meta .detail>.name").clone();
-					t.find("strong").remove();
-					title=t.text().replace(/^ - /,"");
-				}
-				if(!title) {
-					// 公共主页
-					title=$(".compatible>#content>.pager-top>span>h3").text();
-				}
-
-				// 相册数据
-				var album={
-					ref:XNR.url,					// 来源
-					title:title,					// 相册名
-					data:$alloc("download_album"),	// 已分析出的图片数据
-					unknown:failedImagesList,		// 失败/未知的数据
-					type:linkOnly					// 只显示链接
-				};
-				if(XNR.agent==USERSCRIPT) {
-					var html="<head><meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+album.title+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style><script>function switchLink(){var links=document.querySelectorAll(\"a[title]:not([title=\\'\\'])\");for(var i=0;i<links.length;i++){if(links[i].textContent!=links[i].title){links[i].textContent=links[i].title}else{links[i].textContent=links[i].href}}}</script></head><body>";
-					html+="<p>来源："+album.ref+"</p>";
-					if(album.unknown.length>0) {
-						html+="<p>未能取得以下地址的图片：</p>";
+			try {
+				if($alloc("download_album").length>0) {
+					var failedImages=$(".photo-list span.img a[down],table.photoList td.photoPan>a[down]");
+					var failedImagesList=[];
+					if(failedImages.size()>0) {
+						failedImages.each(function(elem) {
+							failedImagesList.push(elem.href);
+						});
+					}
+					var title=$(".ablum-Information .Information h1").text();
+					if(!title) {
+						// 外链相册
+						var t=$(".album-meta .detail>.name").clone();
+						t.find("strong").remove();
+						title=t.text().replace(/^ - /,"");
+					}
+					if(!title) {
+						// 公共主页
+						title=$(".compatible>#content>.pager-top>span>h3").text();
+					}
+	
+					// 相册数据
+					var album={
+						ref:XNR.url,					// 来源
+						title:title,					// 相册名
+						data:$alloc("download_album"),	// 已分析出的图片数据
+						unknown:failedImagesList,		// 失败/未知的数据
+						type:linkOnly					// 只显示链接
+					};
+					if(XNR.agent==USERSCRIPT) {
+						var html="<head><meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+album.title+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style><script>function switchLink(){var links=document.querySelectorAll(\"a[title]:not([title=\\'\\'])\");for(var i=0;i<links.length;i++){if(links[i].textContent!=links[i].title){links[i].textContent=links[i].title}else{links[i].textContent=links[i].href}}}</script></head><body>";
+						html+="<p>来源："+album.ref+"</p>";
+						if(album.unknown.length>0) {
+							html+="<p>未能取得以下地址的图片：</p>";
+							if(album.type) {
+								for(var i=0;i<album.unknown.length;i++) {
+									html+="<span>"+album.unknown[i]+"</span><br/>";
+								}
+							} else {
+								for(var i=0;i<album.unknown.length;i++) {
+									html+="<a href=\""+album.unknown[i]+"\">"+album.unknown[i]+"</a>";
+								}
+							}
+							html+="<p/>";
+						}
 						if(album.type) {
-							for(var i=0;i<album.unknown.length;i++) {
-								html+="<span>"+album.unknown[i]+"</span><br/>";
+							if(album.data.length>0) {
+								html+="<p>使用下载工具软件（推荐使用Flashgot/Downthemall扩展）下载本页面全部链接即可得到下列"+album.data.length+"张照片</p>";
+							}
+							html+="<p><input type=\"button\" onclick=\"switchLink()\" value=\"切换链接描述\"/> 有些下载工具（如Downthemall扩展）能够根据链接描述文字来设置下载文件的文件名</p>"
+							for(var i=0;i<album.data.length;i++) {
+								var img=album.data[i];
+								html+="<a href=\""+img.src+"\" title=\""+img.title+"\">"+img.src+"</a><br/>"
 							}
 						} else {
-							for(var i=0;i<album.unknown.length;i++) {
-								html+="<a href=\""+album.unknown[i]+"\">"+album.unknown[i]+"</a>";
+							if(album.data.length>0) {
+								html+="<p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列"+album.data.length+"张照片</p>";
+							}
+							for(var i=0;i<album.data.length;i++) {
+								var img=album.data[i];
+								html+="<img height=\"128\" width=\"128\" src=\""+img.src+"\" title=\""+img.title+"\"/>"
 							}
 						}
-						html+="<p/>";
+						html+="</body>";
+						window.open("javascript:'"+html+"'");
+					} else if(XNR.agent==FIREFOX) {
+						extServices("album",album);
+					} else if(XNR.agent==CHROME) {
+						chrome.extension.sendRequest({action:"album",data:album});
+					} else if(XNR.agent==SAFARI) {
+						safari.self.tab.dispatchMessage("xnr_album",album);
 					}
-					if(album.type) {
-						if(album.data.length>0) {
-							html+="<p>使用下载工具软件（推荐使用Flashgot/Downthemall扩展）下载本页面全部链接即可得到下列"+album.data.length+"张照片</p>";
-						}
-						html+="<p><input type=\"button\" onclick=\"switchLink()\" value=\"切换链接描述\"/> 有些下载工具（如Downthemall扩展）能够根据链接描述文字来设置下载文件的文件名</p>"
-						for(var i=0;i<album.data.length;i++) {
-							var img=album.data[i];
-							html+="<a href=\""+img.src+"\" title=\""+img.title+"\">"+img.src+"</a><br/>"
-						}
-					} else {
-						if(album.data.length>0) {
-							html+="<p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列"+album.data.length+"张照片</p>";
-						}
-						for(var i=0;i<album.data.length;i++) {
-							var img=album.data[i];
-							html+="<img height=\"128\" width=\"128\" src=\""+img.src+"\" title=\""+img.title+"\"/>"
-						}
-					}
-					html+="</body>";
-					window.open("javascript:'"+html+"'");
-				} else if(XNR.agent==FIREFOX) {
-					gBrowser.selectedTab=gBrowser.addTab("chrome://xiaonei-reformer/content/album.html#"+escape(JSON.stringify(album)));
-				} else if(XNR.agent==CHROME) {
-					chrome.extension.sendRequest({action:"album",data:album});
-				} else if(XNR.agent==SAFARI) {
-					safari.self.tab.dispatchMessage("xnr_album",album);
 				}
+				$dealloc("download_album");
+				downLink.text("下载当前页图片");
+				$(".photo-list span.img a,table.photoList td.photoPan>a").attr({down:null});
+			} catch(ex) {
+				$error("addDownloadAlbumLink::finish",ex)
 			}
-			$dealloc("download_album");
-			downLink.text("下载当前页图片");
-			$(".photo-list span.img a,table.photoList td.photoPan>a").attr({down:null})
 		};
 	});
 };
@@ -1608,7 +1630,8 @@ function showFullSizeImage(evt,indirect) {
 
 		// 相册封面图片或头像图片
 		if($page("album",pageURL)) {
-			if(pageURL.match("page.renren.com")) {
+			if(pageURL.match("page.renren.com") || pageURL.match("/photo/ap/")) {
+				// 公共主页相册和外链地址相册不会记入最近来访。2010/07/01测试
 				_loadImage("album",false,evt,imgId,pageURL,imageDate);
 			} else {
 				_loadImage("album",indirect,evt,imgId,pageURL,imageDate);
@@ -1622,7 +1645,8 @@ function showFullSizeImage(evt,indirect) {
 			if(thumbnail.match("\\.img\\.xiaonei\\.com/pic[0-9]{3}/[0-9]{8}/[0-9]{2}/[0-9]{2}/[0-9]{2}/H[0-9A-Z]{9}\\.jpg")) {
 				imgId=imgId.replace(/H([0-9A-Z]{9}\.jpg)$/,"L$1");
 			}
-			if(pageURL.match("page.renren.com")) {
+			if(pageURL.match("page.renren.com") || pageURL.match("/photo/sp/")) {
+				// 公共主页相册和外链地址相册不会记入最近来访。2010/07/01测试
 				_loadImage("image",false,evt,imgId,pageURL);
 			} else {
 				_loadImage("image",indirect,evt,imgId,pageURL);
@@ -2505,7 +2529,7 @@ function main(savedOptions) {
 			},{
 				id:"rejectRequestGroup",
 				text:"自动拒绝以下类型的请求",
-				info:"由于是在后台进行拒绝，首页上可能仍然会显示有请求待处理",
+				info:"由于是在后台拒绝，首页上可能仍然会显示有请求待处理",
 				column:3,
 				ctrl:[
 					{
@@ -2530,6 +2554,24 @@ function main(savedOptions) {
 						value:false,
 					}
 				]
+			},{
+				text:"##允许一次性接受全部好友申请##",
+				ctrl:[
+					{
+						id:"acceptAllFriendRequests",
+						value:false,
+						fn:[{
+							name:acceptAllFriendRequests,
+							stage:2,
+							fire:true
+						}]
+					},{
+						type:"info",
+						value:"在请求中心页面上“你有XX个好友申请”右侧"
+					}
+				],
+				page:"request",
+				login:true,
 			},{
 				text:"##自动屏蔽应用通知##",
 				ctrl:[
@@ -3982,9 +4024,10 @@ function $page(category,url) {
 		status:"/status\\.renren\\.com/",	// 状态
 		photo:"/photo\\.renren\\.com/|/page\\.renren\\.com/[^/]+/photo/",	// 照片
 		album:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|/photo/album\\?|photo\\.renren\\.com/photo/ap/",	// 相册
-		friend:"friend\\.renren\\.com/",	// 好友
-		share:"share\\.renren\\.com/",	// 分享
-		act:"act\\.renren\\.com/"	// 活动
+		friend:"/friend\\.renren\\.com/",	// 好友
+		share:"/share\\.renren\\.com/",	// 分享
+		act:"/act\\.renren\\.com/",	// 活动
+		request:"/req\\.renren\\.com/"	// 请求
 	};
 	if(!url) {
 		url=XNR.url;
@@ -4230,37 +4273,41 @@ function $save(name,value) {
 };
 
 /*
- * 发送GET请求。支持跨域。Chrome跨域还需要在manifest.json配置权限。
+ * 发送HTTP请求。支持跨域。Chrome/Safari跨域还需要配置权限。
  * 参数
  *   [String]url:页面地址
  *   [Function]func:回调函数。function(pageText,url,data){}。如果发生错误，pageText为null
  *   [Any]userData:额外的用户数据。可选。
+ *   [String]method:请求方法。可选，默认为GET。
  * 返回值
  *   无
  */
-function $get(url,func,userData) {
+function $get(url,func,userData,method) {
+	if(!method) {
+		method="GET";
+	}
 	switch(XNR.agent) {
 		case FIREFOX:
 			// 如果直接使用window.XMLHttpRequest，即使在创建sandbox时赋予chrome的window权限，也会被noscript阻挡。
 			// 是该赞叹noscript尽职呢还是怪它管的太宽呢…
-			extServices("get",{url:url,func:func,data:userData});
+			extServices("get",{url:url,func:func,data:userData,method:method});
 			break;
 		case USERSCRIPT:
 			if(func!=null) {
-				GM_xmlhttpRequest({method:"GET",url:url,onload:function(o) {
+				GM_xmlhttpRequest({method:method,url:url,onload:function(o) {
 					func((o.status==200?o.responseText:null),url,userData);
 				},onerror:function(o) {
 					func(null,url,userData);
 				}});
 			} else {
-				GM_xmlhttpRequest({method:"GET",url:url});
+				GM_xmlhttpRequest({method:method,url:url});
 			}
 			break;
 		case CHROME:
 			if(func==null) {
-				chrome.extension.sendRequest({action:"get",url:url});
+				chrome.extension.sendRequest({action:"get",url:url,method:method});
 			} else {
-				chrome.extension.sendRequest({action:"get",url:url},function(response) {
+				chrome.extension.sendRequest({action:"get",url:url,method:method},function(response) {
 					func(response.data,url,userData);
 				});
 			}
@@ -4276,7 +4323,7 @@ function $get(url,func,userData) {
 					}
 				},false);
 			}
-	    	safari.self.tab.dispatchMessage("xnr_get",{id:requestId,url:url});
+	    	safari.self.tab.dispatchMessage("xnr_get",{id:requestId,url:url,method:method});
 			break;
 	} 
 };
