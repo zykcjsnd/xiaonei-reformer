@@ -24,7 +24,7 @@ safari.application.addEventListener("message",function(msg) {
 			httpReq.onerror=function(e) {
 				msg.target.page.dispatchMessage("xnr_get_data",{id:msg.message.id,data:null});
 			};
-			httpReq.open("GET",msg.message.url,true);
+			httpReq.open(meg.message.method,msg.message.url,true);
 			//httpReq.setRequestHeader("Cache-Control","no-cache");
 			httpReq.send();
 			break;
