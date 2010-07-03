@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.3.20100702
-// @miniver        321
+// @version        3.0.3.20100703
+// @miniver        322
 // @author         xz
 // ==/UserScript==
 //
@@ -866,6 +866,9 @@ function recoverOriginalTheme(ignoreTheme) {
 				"ul.share-hot-list li div.legend a{color:"+FCOLOR+"}",
 				"ul.share-hot-list li h3 a,ul.share-hot-list li h3 a:hover{color:"+FCOLOR+"}",
 			],
+			"guide-new":[	//guide-new-gameX.X.css，新注册用户
+				".find-friend-box .users .friend-selector li .name label{color:"+FCOLOR+"}",
+			]
 		};
 		var style="";
 		for(var f in files) {
@@ -4038,7 +4041,7 @@ function $node(name) {
  */
 function $page(category,url) {
 	const pages={
-		home:"/[hH]ome\\.do",	// 首页
+		home:"/[hH]ome\\.do|/guide\\.renren\\.com/guidexf\\.do",	// 首页，后面的是新注册用户的首页
 		profile:"/[Pp]rofile\\.do|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|renren.com/[a-zA-Z0-9_]{4,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personalLink.do
 		blog:"/blog\\.renren\\.com/",	// 日志
 		club:"/club\\.renren\\.com/",	// 论坛
