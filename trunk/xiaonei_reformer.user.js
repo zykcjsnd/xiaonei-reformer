@@ -2113,6 +2113,115 @@ function expandSearchResult() {
 	$node("a").text("扩展到200页").attr({style:"float:left;padding:3px",onclick:"XN.app.search._bottomPager.setPageCount(200)"}).prependTo($("#bottomPagerHolder"));
 };
 
+// 搜索分享
+function searchShare() {
+	if($(".share-home .subnav-tabs").empty()) {
+		return;
+	}
+	var searchBar=$node("div").insertTo($(".share-home"),$(".share-home .subnav-tabs").index()+1);
+	$node("input").attr("type","text").style("width","200px").appendTo(searchBar).hook("keypress",function(evt) {
+		// 按下回车键触发搜索按钮点击事件
+		if(evt.keyCode==13) {
+			var cevt=document.createEvent("MouseEvents");
+			cevt.initMouseEvent("click",true,true,window,0,0,0,0,0,false,false,false,false,0,null);
+			evt.target.nextSibling.dispatchEvent(cevt);
+		}
+	});
+	$node("input").attr("type","button").style("width","50px").value("搜索").appendTo(searchBar).hook("click",function(evt) {
+		var text=evt.target.previousSibling.value;
+		if(!text) {
+			var i=0;
+			$(".share-home .share-itembox").each(function(elem) {
+				if(i<20) {
+					$(elem).show();
+				} else {
+					$(elem).hide();
+				}
+				i++;
+			});
+			$(".pager-top,.pager-bottom").show();
+			return;
+		}
+		var curpage=0;
+		var lastpage=0;
+		if(!$(".pager-top ol.pagerpro").empty()) {
+			curpage=parseInt($(".pager-top ol.pagerpro li.current a").text())-1;
+			lastpage=curpage;
+			try {
+				lastpage=parseInt(/curpage=([0-9]+)/.exec($(".pager-top ol.pagerpro li:last-child a").attr("href"))[1]);
+				// 在当前页为倒数第3页时，倒数第一项可能为下一页，倒数第二项才是最后一页
+				var i=parseInt(/curpage=([0-9]+)/.exec($(".pager-top ol.pagerpro li:nth-last-child(2) a").attr("href"))[1]);
+				if(i>lastpage) {
+					lastpage=i;
+				}
+			} catch(ex) {
+			}
+		}
+		if(lastpage>100) {
+			if(!confirm("分享数太多，估计会卡上一阵子。要继续吗？")) {
+				return;
+			} else if(lastpage>1000) {
+				alert("我不能眼睁睁看着悲剧发生，我只好把眼睛闭上了。");
+			}
+		}
+		// 当页数小于50时（1000项），启用缓存模式，将所有搜索到的项目加入到页面
+		var cache=lastpage<50;
+		$(".pager-top,.pager-bottom").hide();
+		$(".share-home .share-itembox").each(function(elem) {
+			var s=$(elem);
+			if(s.find(".share-content").text().indexOf(text)==-1) {
+				s.hide();
+			} else {
+				s.show();
+			}
+		});
+		if(!cache || !$allocated("share_items")) {
+			$alloc("share_items");
+			var link=$(".pager-top ol.pagerpro li.current a").prop("href").replace(/curpage=[0-9]+/,"").replace(/#.*$/,"");
+			if(link.indexOf("?")==-1) {
+				link+="?";
+			}
+			for(var i=0;i<=lastpage;i++) {
+				if(i!=curpage) {
+					$get(link+"&curpage="+i,function(html) {
+						try {
+							var body=$node("div").code(/<body[\S\s]+<\/body>/.exec(html));
+							body.find(".share-home .share-itembox").each(function(elem) {
+								if(cache) {
+									var s=$(elem);
+								} else {
+									var s=$("#"+elem.id);
+									if(s.empty()) {
+										s=$(elem);
+									}
+								}
+								var f=false;
+								if(s.find(".share-content").text().indexOf(text)!=-1) {
+									if(!cache) {
+										s.show();
+									}
+									f=true;
+								} else if(cache) {
+									s.hide();
+								}
+								if(f || cache) {
+									s.appendTo($(".share-home"));
+								}
+							});
+							body.find("body").remove();
+							body=null;
+							// 将翻页移动到最下面
+							$(".share-home .pager-bottom").appendTo($(".share-home"));
+						} catch(ex) {
+							$error("searchShare::get",ex);
+						}
+					});
+				}
+			}
+		}
+	});
+};
+
 // 检查更新
 function checkUpdate(evt,checkLink,updateLink,lastCheck) {
 	var today=new Date();
@@ -3121,7 +3230,7 @@ function main(savedOptions) {
 						}]
 					},{
 						type:"info",
-						value:"每行一条调整规则，语法如下：\n 将A放置到B之前：A<<B\n 将A放置到B之后：A>>B\n 将A作为B的第一个子节点：A<<<B\n 将A作为B最后一个子节点：A>>>B\n以上A、B皆为CSS选择器，其余行将被忽略"
+						value:"每行一条调整规则，语法如下：\n 将A放置到B之前：A<<B\n 将A放置到B之后：A>>B\n 将A作为B的第一个子节点：A<<<B\n 将A作为B最后一个子节点：A>>>B\n以上A、B皆为CSS选择器。不合规则的行将被忽略"
 					},{
 						type:"link",
 						value:"更多示例",
@@ -3135,7 +3244,7 @@ function main(savedOptions) {
 					},{
 						id:"myPageLayout",
 						type:"edit",
-						value:"/* 将个人主页上留言板移至新鲜事下方 */\nbody#profile .talk-box>.box>>>body#profile .talk-box",
+						value:"将个人主页上留言板移至新鲜事下方\nbody#profile .talk-box>.box>>>body#profile .talk-box",
 						style:"width:99%;height:110px;margin-top:5px;"
 					}
 				],
@@ -3408,7 +3517,7 @@ function main(savedOptions) {
 					}
 				]
 			},{
-				text:"##允许全屏观看优酷视频分享",
+				text:"##允许全屏观看优酷视频",
 				ctrl:[{
 					id:"enableYoukuFullscreen",
 					value:false,
@@ -3436,6 +3545,22 @@ function main(savedOptions) {
 					}
 				],
 				page:"searchEx",
+			},{
+				text:"##增加分享搜索功能##",
+				ctrl:[
+					{
+						id:"searchShare",
+						value:true,
+						fn:[{
+							name:searchShare,
+							stage:2,
+							fire:true
+						}]
+					},{
+						type:"info",
+						value:"可以通过标题/内容预览搜索自己或他人的分享"
+					}
+				]
 			}
 		],
 		"自动更新":[
@@ -5078,6 +5203,7 @@ PageKit.prototype={
 						break;
 				}
 			});
+			return this;
 		} else {
 			// 读取
 			var elem=this.get();
