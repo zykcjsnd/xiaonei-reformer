@@ -2118,8 +2118,8 @@ function searchShare() {
 	if($(".share-home .subnav-tabs").empty()) {
 		return;
 	}
-	var searchBar=$node("div").insertTo($(".share-home"),$(".share-home .subnav-tabs").index()+1);
-	$node("input").attr("type","text").style("width","200px").appendTo(searchBar).hook("keypress",function(evt) {
+	var searchBar=$node("div").style({padding:"3px",marginBottom:"10px"}).insertTo($(".share-home"),$(".share-home .subnav-tabs").index()+1);
+	$node("input").attr({type:"text","class":"input-text"}).attr("style","width:200px;min-height:17px;margin-right:5px").appendTo(searchBar).hook("keypress",function(evt) {
 		// 按下回车键触发搜索按钮点击事件
 		if(evt.keyCode==13) {
 			var cevt=document.createEvent("MouseEvents");
@@ -2127,7 +2127,7 @@ function searchShare() {
 			evt.target.nextSibling.dispatchEvent(cevt);
 		}
 	});
-	$node("input").attr("type","button").style("width","50px").value("搜索").appendTo(searchBar).hook("click",function(evt) {
+	$node("input").attr({type:"button","class":"input-button"}).style("minHeight","25px").value("搜索").appendTo(searchBar).hook("click",function(evt) {
 		var text=evt.target.previousSibling.value;
 		if(!text) {
 			var i=0;
@@ -2160,8 +2160,6 @@ function searchShare() {
 		if(lastpage>100) {
 			if(!confirm("分享数太多，估计会卡上一阵子。要继续吗？")) {
 				return;
-			} else if(lastpage>1000) {
-				alert("我不能眼睁睁看着悲剧发生，我只好把眼睛闭上了。");
 			}
 		}
 		// 当页数小于50时（1000项），启用缓存模式，将所有搜索到的项目加入到页面
