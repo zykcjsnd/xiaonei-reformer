@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.3.20100703
-// @miniver        322
+// @version        3.0.4.20100705
+// @miniver        323
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.3.20100702";
-XNR.miniver=321;
+XNR.version="3.0.4.20100705";
+XNR.miniver=323;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -235,6 +235,7 @@ function removeProfileGadgets(gadgetOpt) {
 		"share":"#share.mod",
 		"gift":"#gift.mod",
 		"fav":"#kuAi.mod",
+		"lover":"#lover-space-div.mod",
 		"specialFriends":"#spFriends.mod",
 		"mutualFriends":"#cmFriends.mod",
 		"visitors":"#visitors.mod",
@@ -907,11 +908,6 @@ function limitHeadList(amountString) {
 	});
 };
 
-// 将留言板移动到新鲜事下方
-function moveMessageBoardToBottom() {
-	$(".talk-box").append($(".talk-box>.box"));
-};
-
 // 修正导航栏项目高度
 function fixNavItemHeight() {
 	$patchCSS(".navigation .menu-title a{max-height:35px}");
@@ -928,6 +924,61 @@ function fixClubTypesetting() {
 // 自定义页面样式
 function customizePageStyle(style) {
 	$patchCSS(style);
+};
+
+// 调整页面布局
+function customizePageLayout(layouts) {
+	var layout=layouts.split("\n");
+	for(var i=0;i<layout.length;i++) {
+		var line=layout[i];
+		if(line.length<4) {
+			// 最短为a<<b
+			continue;
+		}
+		var type=1;
+		var t=line.split("<<<");
+		if(t.length!=2) {
+			type=2;
+			t=line.split(">>>");
+			if(t.length!=2) {
+				type=3;
+				t=line.split("<<");
+				if(t.length!=2) {
+					type=4;
+					t=line.split(">>");
+					if(t.length!=2) {
+						continue;
+					}
+				}
+			}
+		}
+		try {
+			var a=$(t[0]);
+			if(a.empty()) {
+				continue;
+			}
+			var b=$(t[1]);
+			if(b.empty()) {
+				continue;
+			}
+		} catch(ex) {
+			continue;
+		}
+		switch(type) {
+			case 1:
+				b.prepend(a);
+				break;
+			case 2:
+				b.append(a);
+				break;
+			case 3:
+				b.superior().insert(a,b.index());
+				break;
+			case 4:
+				b.superior().insert(a,b.index()+1);
+				break;
+		}
+	}
 };
 
 // 增加更多表情
@@ -2448,6 +2499,10 @@ function main(savedOptions) {
 						text:"##装扮主页",
 						value:false,
 					},{
+						id:"lover",
+						text:"##情侣空间",
+						value:false,
+					},{
 						id:"specialFriends",
 						text:"##特别好友",
 						value:false,
@@ -2988,19 +3043,6 @@ function main(savedOptions) {
 				master:0,
 				page:"profile"
 			},{
-				text:"##将个人主页上留言板移至新鲜事下方",
-				ctrl:[{
-					id:"moveMessageBoardToBottom",
-					value:false,
-					fn:[{
-						name:moveMessageBoardToBottom,
-						stage:1,
-						fire:true
-					}]
-				}],
-				login:true,
-				page:"profile"
-			},{
 				text:"##修正导航栏项目高度##",
 				agent:FIREFOX | USERSCRIPT,
 				ctrl:[
@@ -3061,6 +3103,39 @@ function main(savedOptions) {
 						id:"myPageStyle",
 						type:"edit",
 						value:"/* 例子:浅灰->白渐变背景 */\nbody{background:-moz-linear-gradient(left,lightgray,white);background:-webkit-gradient(linear,left center,right center,from(lightgray),to(white))}",
+						style:"width:99%;height:110px;margin-top:5px;"
+					}
+				],
+				master:0
+			},{
+				text:"##调整页面布局########",
+				ctrl:[
+					{
+						id:"customizePageLayout",
+						value:false,
+						fn:[{
+							name:customizePageLayout,
+							stage:1,
+							fire:true,
+							args:["@myPageLayout"]
+						}]
+					},{
+						type:"info",
+						value:"每行一条调整规则，语法如下：\n 将A放置到B之前：A<<B\n 将A放置到B之后：A>>B\n 将A作为B的第一个子节点：A<<<B\n 将A作为B最后一个子节点：A>>>B\n以上A、B皆为CSS选择器，其余行将被忽略"
+					},{
+						type:"link",
+						value:"更多示例",
+						attr:{
+							href:"http://code.google.com/p/xiaonei-reformer/wiki/Layout",
+							target:"_blank"
+						},
+						style:"margin-left:10px"
+					},{
+						type:"br"
+					},{
+						id:"myPageLayout",
+						type:"edit",
+						value:"/* 将个人主页上留言板移至新鲜事下方 */\nbody#profile .talk-box>.box>>>body#profile .talk-box",
 						style:"width:99%;height:110px;margin-top:5px;"
 					}
 				],
@@ -3313,7 +3388,7 @@ function main(savedOptions) {
 				],
 				login:true
 			},{
-				text:"##启用快速通道菜单##",
+				text:"##启用快速通道菜单####",
 				ctrl:[
 					{
 						id:"enableShortcutMenu",
@@ -3327,6 +3402,9 @@ function main(savedOptions) {
 					},{
 						type:"info",
 						value:"鼠标经过人名链接时，显示对方相册/日志/留言板等的链接"
+					},{
+						type:"warn",
+						value:"访问对方相册/日志会在对方最近来访中留下记录"
 					}
 				]
 			},{
@@ -3490,7 +3568,10 @@ function main(savedOptions) {
 		var tip=$alloc("optionsMenu_tooltip");
 		var rect=evt.target.getBoundingClientRect();
 		tip.w=$node("div").style({maxWidth:"300px",background:"#FFFFBF",border:"1px solid #CFCF3D",position:"fixed",zIndex:"200001",padding:"6px 8px 6px 8px",fontSize:"13px",left:(rect.right+3)+"px","top":(rect.bottom+3)+"px"});
-		$node("span").text(evt.target.getAttribute("tooltip")).appendTo(tip.w);
+		var text=evt.target.getAttribute("tooltip").split("\n");
+		for(var i=0;i<text.length;i++) {
+			$node("div").text(text[i]).appendTo(tip.w);
+		}
 		tip.w.appendTo(document.documentElement)
 	};
 	const hideTooltip=function(evt) {
@@ -4732,11 +4813,11 @@ PageKit.prototype={
 					//在最后
 					node.appendChild(o);
 				} else {
-					// 在pos之前
+					// 在pos之前/
 					node.insertBefore(o,node.children[pos]);
 				}
 			} else if(typeof o=="string") {
-				xhr.insert($($node("div",o).get().children),pos);
+				xhr.insert($($(node.cloneNode(false)).code(o).get().children),pos);
 			}
 		}
 		return this;
@@ -5036,7 +5117,7 @@ PageKit.prototype={
 		return this;
 	},
 	// 复制所有DOM节点到新对象
-	clone:function(evt) {
+	clone:function() {
 		var nodes=[];
 		this.each(function(elem) {
 			nodes.push(elem.cloneNode(true));
