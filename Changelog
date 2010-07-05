@@ -1,10 +1,12 @@
 3.0.4.20100705 (323):
 add:增加调整页面布局功能
+add:增加分享搜索功能
 add:增加去除个人主页上“情侣空间”栏
 fix:快速通道功能添加警告信息
 fix:选项的Tooltip支持换行
 fix:修改PageKit::insert的BUG
 fix:去除PageKit::clone多余的参数
+fix:修改PageKit::value的BUG
 remove:去除将留言板移动到新鲜事下方功能
 
 3.0.3.20100703 (322):
