@@ -9,3 +9,17 @@
 .publisher .world-cup textarea{border:1px solid #BDC7D8}
 .publisher .world-cup form{border-bottom:1px solid #BDC7D8}
 }}}
+
+Facebook风格的个人主页
+{{{
+#profile .col-left{position:relative;top:-80px}
+#profile .col-center{position:relative}
+#profile .navigation,#profile .navigation-wrapper{width:100%}
+#profile .menu-bar{padding-bottom:0px}
+#profile .col-full{background-color:#EDEFF4}
+#profile .col-full .status-holder{padding-left:370px;width:auto}
+#profile .col-full .tabs-holder .tabpanel{width:auto}
+#profile .col-full .tabs-holder{padding-left:370px;width:auto}
+#profile .tabs-holder .tabpanel li:not(.current) a{background-color:#D8DFEA}
+#profile .tabs-holder .tabpanel li:not(.current) a:hover{background-color:#627AAD;color:white}
+}}}
