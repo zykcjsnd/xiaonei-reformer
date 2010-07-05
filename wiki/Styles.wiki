@@ -12,14 +12,14 @@
 
 Facebook风格的个人主页
 {{{
-#profile .col-left{position:relative;top:-80px}
-#profile .col-center{position:relative}
-#profile .navigation,#profile .navigation-wrapper{width:100%}
-#profile .menu-bar{padding-bottom:0px}
-#profile .col-full{background-color:#EDEFF4}
-#profile .col-full .status-holder{padding-left:370px;width:auto}
-#profile .col-full .tabs-holder .tabpanel{width:auto}
-#profile .col-full .tabs-holder{padding-left:370px;width:auto}
-#profile .tabs-holder .tabpanel li:not(.current) a{background-color:#D8DFEA}
-#profile .tabs-holder .tabpanel li:not(.current) a:hover{background-color:#627AAD;color:white}
+body#profile .col-left{position:relative;top:-80px}
+body#profile .col-center{position:relative}
+body#profile .navigation,#profile .navigation-wrapper{width:100%}
+body#profile .menu-bar{padding-bottom:0px}
+body#profile .col-full{background-color:#EDEFF4}
+body#profile .col-full .status-holder{padding-left:370px;width:auto}
+body#profile .col-full .tabs-holder .tabpanel{width:auto}
+body#profile .col-full .tabs-holder{padding-left:370px;width:auto}
+body#profile .tabs-holder .tabpanel li:not(.current) a{background-color:#D8DFEA}
+body#profile .tabs-holder .tabpanel li:not(.current) a:hover{background-color:#627AAD;color:white}
 }}}
