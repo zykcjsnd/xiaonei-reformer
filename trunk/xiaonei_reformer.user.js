@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.4.20100705
-// @miniver        323
+// @version        3.0.4.20100706
+// @miniver        324
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.4.20100705";
-XNR.miniver=323;
+XNR.version="3.0.4.20100706";
+XNR.miniver=324;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -895,7 +895,10 @@ function removeFontRestriction() {
 };
 
 // 限制头像列表中的头像最大数量
-function limitHeadList(amountString) {
+function limitHeadList(evt,amountString) {
+	if(evt && evt.target.className!="col-right") {
+		return;
+	}
 	var amount=parseInt(amountString);
 	if(amount==0) {
 		return;
@@ -1091,6 +1094,8 @@ function addExtraEmotions() {
 		"(gk)":		{t:"高考",			s:"/imgpro/icons/statusface/gaokao.gif"},
 		"(pass)":	{t:"CET必过",		s:"/imgpro/icons/statusface/cet46.gif"},
 		"(qf)":		{t:"祈福",			s:"/imgpro/icons/statusface/candle.gif"},
+		"(hot)":	{t:"烈日",			s:"/imgpro/icons/statusface/hot.gif"},
+		"(feng)":	{t:"风扇",			s:"/imgpro/icons/statusface/fan.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
@@ -1965,7 +1970,7 @@ function useWhisper() {
 
 // 隐藏橙名
 function hideOrangeName(evt) {
-	if(evt && evt.target.tagName!="DL" && !(evt.target.className && evt.target.className.indexOf("comment")!=-1)) {
+	if(evt && evt.target.tagName!="DL" && !(evt.target.className && evt.target.className.indexOf("comment")!=-1) && evt.target.className!="col-right") {
 		return;
 	}
 	$("a.lively-user").removeClass("lively-user").attr("title","");
@@ -2127,9 +2132,9 @@ function searchShare() {
 			evt.target.nextSibling.dispatchEvent(cevt);
 		}
 	});
-	$node("input").attr({type:"button","class":"input-button"}).style("minHeight","25px").value("搜索").appendTo(searchBar).hook("click",function(evt) {
+	$node("input").attr({type:"button","class":"input-button"}).attr("style","min-height:25px;margin-right:10px").value("搜索").appendTo(searchBar).hook("click",function(evt) {
 		var text=evt.target.previousSibling.value;
-		if(!text) {
+		if(!text || !text.replace(/^ +/,"")) {
 			var i=0;
 			$(".share-home .share-itembox").each(function(elem) {
 				if(i<20) {
@@ -2142,6 +2147,7 @@ function searchShare() {
 			$(".pager-top,.pager-bottom").show();
 			return;
 		}
+		var keywords=text.split(/ +/);
 		var curpage=0;
 		var lastpage=0;
 		if(!$(".pager-top ol.pagerpro").empty()) {
@@ -2157,33 +2163,51 @@ function searchShare() {
 			} catch(ex) {
 			}
 		}
-		if(lastpage>100) {
-			if(!confirm("分享数太多，估计会卡上一阵子。要继续吗？")) {
-				return;
+		var cache=false;
+		if(!$allocated("share_items")) {
+			if(lastpage<50) {
+				// 当页数小于50时（1000项），启用缓存模式，将所有搜索到的项目加入到页面
+				cache=true;
+			} else if(lastpage<100) {
+				if(confirm("是否启用搜索缓存？能加快再次搜索时的速度，但会占用较多内存")) {
+					cache=true;
+				}
+			} else {
+				if(!confirm("分享数太多，估计会卡上一阵子。要继续吗？")) {
+					return;
+				}
 			}
 		}
-		// 当页数小于50时（1000项），启用缓存模式，将所有搜索到的项目加入到页面
-		var cache=lastpage<50;
+		evt.target.value="0%";
 		$(".pager-top,.pager-bottom").hide();
 		$(".share-home .share-itembox").each(function(elem) {
 			var s=$(elem);
-			if(s.find(".share-content").text().indexOf(text)==-1) {
-				s.hide();
-			} else {
+			var content=s.find(".share-content").text();
+			for(var i=0;i<keywords.length;i++) {
+				if(content.indexOf(keywords[i])==-1) {
+					break;
+				}
+			}
+			if(i==keywords.length) {
 				s.show();
+			} else {
+				s.hide();
 			}
 		});
-		if(!cache || !$allocated("share_items")) {
-			$alloc("share_items");
+		if(!$allocated("share_items")) {
+			if(cache) {
+				$alloc("share_items");
+			}
 			var link=$(".pager-top ol.pagerpro li.current a").prop("href").replace(/curpage=[0-9]+/,"").replace(/#.*$/,"");
 			if(link.indexOf("?")==-1) {
 				link+="?";
 			}
+			var progress=1;
 			for(var i=0;i<=lastpage;i++) {
 				if(i!=curpage) {
-					$get(link+"&curpage="+i,function(html) {
+					$get(link+"&curpage="+i,function(data) {
 						try {
-							var body=$node("div").code(/<body[\S\s]+<\/body>/.exec(html));
+							var body=$node("div").code(/<body[\S\s]+<\/body>/.exec(data));
 							body.find(".share-home .share-itembox").each(function(elem) {
 								if(cache) {
 									var s=$(elem);
@@ -2194,8 +2218,15 @@ function searchShare() {
 									}
 								}
 								var f=false;
-								if(s.find(".share-content").text().indexOf(text)!=-1) {
+								var content=s.find(".share-content").text();
+								for(var i=0;i<keywords.length;i++) {
+									if(content.indexOf(keywords[i])==-1) {
+										break;
+									}
+								}
+								if(i==keywords.length) {
 									if(!cache) {
+										// 当cache为true时，s是从data中获取的，必然可见
 										s.show();
 									}
 									f=true;
@@ -2212,12 +2243,22 @@ function searchShare() {
 							$(".share-home .pager-bottom").appendTo($(".share-home"));
 						} catch(ex) {
 							$error("searchShare::get",ex);
+						} finally {
+							progress++;
+							if(progress>lastpage) {
+								evt.target.value="搜索";
+							} else {
+								evt.target.value=parseInt(progress*100/(lastpage+1))+"%";
+							}
 						}
 					});
 				}
 			}
+		} else {
+			evt.target.value="搜索";
 		}
 	});
+	$node("span").text("多个关键字用半角空格隔开").appendTo(searchBar);
 };
 
 // 检查更新
@@ -3137,7 +3178,8 @@ function main(savedOptions) {
 							name:limitHeadList,
 							stage:1,
 							fire:true,
-							args:["@headsAmount"]
+							args:[null,"@headsAmount"],
+							trigger:{"#ajaxContainer":"DOMNodeInserted"}
 						}]
 					},{
 						id:"headsAmount",
@@ -3436,7 +3478,7 @@ function main(savedOptions) {
 							name:hideOrangeName,
 							stage:1,
 							fire:true,
-							trigger:{"div.replies,div.cmt-list":"DOMNodeInserted"}
+							trigger:{"div.replies,div.cmt-list,#ajaxContainer":"DOMNodeInserted"}
 						}]
 					},{
 						type:"info",
