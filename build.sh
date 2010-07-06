@@ -7,12 +7,8 @@ VER1=`sed -n '9p' xiaonei_reformer.user.js | sed -E 's/ +/ /g' | cut -d' ' -f 3`
 VER2=`sed -n '10p' xiaonei_reformer.user.js | sed -E 's/ +/ /g' | cut -d' ' -f 3`
 VERSION=`echo $VER1 | sed -E 's/[0-9]+$/'$VER2'/'`
 
-TEMPOUT=min.js	
-
-yui-compressor --nomunge "$INPUT"  > "$TEMPOUT"
-
 head -n 29 "$INPUT" > "$OUTPUT"
-cat "$TEMPOUT" >> "$OUTPUT"
+yui-compressor --nomunge "$INPUT" >> "$OUTPUT"
 
 #######################################
 
@@ -43,6 +39,4 @@ cd ..
 
 sed -i -E '15s/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/'$VERSION'/' update.plist
 sed -i -E '13s/[0-9]+/'$VER2'/' update.plist
-
-rm "$TEMPOUT"
 
