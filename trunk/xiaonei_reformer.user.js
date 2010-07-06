@@ -1764,11 +1764,17 @@ function showFullSizeImage(evt,indirect) {
 	// 显示放大镜图标
 	function _showMagnifier(target) {
 		var node=$node("img").attr({style:"z-index:199999;position:absolute;opacity:0.7",height:22,width:22}).attr("src","data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAMAAADzapwJAAAAw1BMVEUxlJ9TVVJWWFVZW1hhYmBPe7JRfbR4endVf7dVg7Rfg7Zah7ljh7qChIFki7iJi4iKjImWm52cnpt4qNSho6CCrNOmqKWFrtaIstqJs9uSttiUuNqXvN6ZvuC3uraevtuzvMSgwN29v7ylxeK6wsqtxOOvxuW9xc2pyebAxsi1yeKvy+O3yuS7yt61zd+zzua7zujKz9G90erG0uDF1enO1t/O2ujZ3uHY4enZ4urc4uTi6Ord6ffh6fLp6+jl7fbp8frKBh0+AAAAAXRSTlMAQObYZgAAAQtJREFUGNN10O1ygjAQBdBoS0wjkoC2tAQECioWFD+ItqYQ3v+pZCggztj7J5mTnZ3dAFCH1AH3IXrIheChfvdAPbF1GXO3wqM95SpEaZrEL1DlnRNPzcsSH1IsZa56bR9dwHI8zg6VYwmF3hSHG1zWmkRIok34V064m+J0t0vjKPCR7fKGhZXESRwtF4HvMMsUHfvR8itaBIHPzGnH3J0qH8y2mfVuKq9+22R1VHJo1YG/8LhqJjQEyiGyHcdBKEfCaJcMNSklCgJUHVrYrUnPGsZJFYy1c++z6Lr4PmXZ6adYk9nb882N/aUoLntjAsj88+ZgQiklo+oyHJG+dxn87/Onhz57xGAwBFen2iHevJ8kLwAAAABJRU5ErkJggg%3D%3D").attr({onmouseover:"this.style.opacity=1",onmouseout:"this.style.opacity=0.7"});
-		if(target.parentNode.tagName!="I") {
+		if(target.parentNode.tagName!="I" && target.parentNode.className!="avatar") {
 			var rect=target.getBoundingClientRect();
 		} else {
-			// 高度大于宽度的小头像
-			var rect=target.parentNode.getBoundingClientRect();
+			// 高度与宽度不一致的小头像
+			var rect1=target.parentNode.getBoundingClientRect();
+			var rect2=target.getBoundingClientRect();
+			if(rect1.height>rect2.height) {
+				var rect=rect2;
+			} else {
+				var rect=rect1;
+			}
 		}
 		node.style({left:parseInt(rect.right-22+window.scrollX)+"px",top:parseInt(rect.bottom-22+window.scrollY)+"px"});
 		node.appendTo(document.documentElement);
@@ -1973,7 +1979,8 @@ function hideOrangeName(evt) {
 	if(evt && evt.target.tagName!="DL" && !(evt.target.className && evt.target.className.indexOf("comment")!=-1) && evt.target.className!="col-right") {
 		return;
 	}
-	$("a.lively-user").removeClass("lively-user").attr("title","");
+	// h1是个人主页上的姓名
+	$("a.lively-user,h1.lively-user").removeClass("lively-user").attr("title","");
 };
 
 // 去除只有星级用户才能修改特别好友的限制
@@ -3478,7 +3485,7 @@ function main(savedOptions) {
 							name:hideOrangeName,
 							stage:1,
 							fire:true,
-							trigger:{"div.replies,div.cmt-list,#ajaxContainer":"DOMNodeInserted"}
+							trigger:{"div.replies,div.cmt-list,div.boxcont,#ajaxContainer":"DOMNodeInserted"}
 						}]
 					},{
 						type:"info",
