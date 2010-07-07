@@ -1,6 +1,6 @@
 #summary 自定义页面样式示例
 
-去除世界杯期间的状态发布栏背景等
+==去除世界杯期间的状态发布栏背景等==
 {{{
 .publisher{background:none}
 .bless,.wc-footer,#worldCup,#worldCups2,#publisher_worldcup_close{display:none !important}
@@ -9,7 +9,7 @@
 .publisher .world-cup form{border-bottom:1px solid #BDC7D8}
 }}}
 
-Facebook风格的个人主页
+==Facebook风格的个人主页==
 {{{
 body#profile .col-left{position:relative;top:-80px}
 body#profile .col-center{position:relative}
@@ -21,4 +21,100 @@ body#profile .col-full .tabs-holder .tabpanel{width:auto}
 body#profile .col-full .tabs-holder{padding-left:370px;width:auto}
 body#profile .tabs-holder .tabpanel li:not(.current) a{background-color:#D8DFEA}
 body#profile .tabs-holder .tabpanel li:not(.current) a:hover{background-color:#627AAD;color:white}
+}}}
+
+==首页换肤==
+===雪花===
+{{{
+html {background:url(http://s.xnimg.cn/xnapp/vip/resimg/hometpl/snowflake/bg.gif) repeat-x center top;}
+body {background-color:transparent;}
+a:link, a:visited {color:#00729A;}
+.navigation .nav-body {background-color:#40A0E2;}
+.navigation .nav-other {background-image:url(about:blank);background-position: right center;}
+.navigation .menu-title a:link,.navigation .menu-title a:visited {color: #ffffff;_float:left;}
+.navigation .menu-title a:hover {background-color:#2C90DB;}
+.menu-dropdown-border {border-color:#3688A7;}
+.navigation .blank-holder .banner {background-image:none;}
+.menu-dropdown .menu-item a:hover {background-color: #00729A;}.menu-dropdown .menu-item li.show-more a:hover {background-color: #00729A;}.menu-dropdown .search-menu li a:hover {background-color: #00729A;}.menu-dropdown .optionmenu li a:hover {background-color: #00729A;}
+.navigation .blank-holder .banner {padding:0 1px 1px;}
+.panel.bookmarks {background-color:#F3FBFF;border:1px solid #CEE2EE;}#appNavHolder, .user-data {background-color:#F3FBFF;border-color:#CEE2EE;}
+.panel.bookmarks .more div.apps{border:1px solid #CEE2EE;}.panel.bookmarks .more:hover a.legend,.panel.bookmarks .more.hover a.legend {border: 1px solid #CEE2EE;border-right: 0;}
+.panel.bookmarks .more .apps ul li:hover,.panel.bookmarks .more .apps ul li.hover {background-color:#d6ecf9;}
+.panel.bookmarks .footer{border-top:1px solid #CEE2EE;}
+.home .section-header{border-bottom:1px solid #CEE2EE;}
+ul.richlist.feeds li{border-bottom:1px solid #CEE2EE;}
+.home .side-item{border-bottom:1px solid #CEE2EE;}
+.feed-header ul{border-bottom:1px solid #CEE2EE;}.feed-header li.current {border:1px solid #CEE2EE;border-width:1px 1px 0;}
+.publisher .status-publisher input.submit{background-image:url(about:blank);background-color:#40A0E2;border-color:#5BAEE6 #3688A7 #3688A7 #5BAEE6;}
+.statuscmtitem{	background-color:#F3FBFF;border-bottom:1px solid #E6EFF7;}
+.min-cmtbox {background:url(http://xnimg.cn/xnapp/vip/resimg/hometpl/snowflake/arrow.png);}
+.show-all {background-color:#F3FBFF;border:1px solid #CEE2EE;}
+.show-all a:hover{background-color:;}
+#footer .copyright{border-top:1px solid #CEE2EE;}
+.panel.bookmarks ul.apps li a.title:hover {background-color:#d6ecf9}
+.feed-content{border-bottom:1px solid #e6eff7;}
+.navigation{background-image:url(http://s.xnimg.cn/xnapp/vip/resimg/hometpl/snowflake/nav_bg.gif);background-position: right bottom;background-repeat:no-repeat;}.navigation .nav-other{background-image:none}.navigation .nav-body {background-color:transparent;}
+.input-button,.input-submit{background-color:;border-color:;}
+}}}
+===绿===
+{{{
+html{background:url(http://s.xnimg.cn/xnapp/vip/resimg/hometpl/green/bg.png) repeat-x center top;}
+body{background-color:transparent;}
+a:link, a:visited{color:#1C6D00;}
+.navigation .nav-other{background-image:url(about:blank);background-position:right center;}
+.navigation .menu-title a:link,.navigation .menu-title a:visited{color:;_float:left;}
+.navigation .menu-title a:hover{background-color:#BED774;}
+.menu-dropdown-border{border-color:#DCEECE;}
+.navigation .blank-holder .banner{background-image:none;}
+.menu-dropdown .menu-item a:hover{background-color:#BED774;}.menu-dropdown .menu-item li.show-more a:hover{background-color:#BED774;}.menu-dropdown .search-menu li a:hover{background-color:#BED774;}.menu-dropdown .optionmenu li a:hover{background-color:#BED774;}
+.navigation .blank-holder .banner{padding:0 1px 1px;}
+.panel.bookmarks{background-color:#FAFFF3;border:1px solid #DCEECE;}#appNavHolder, .user-data{background-color:#FAFFF3;border-color:#DCEECE;}
+.panel.bookmarks .more .apps ul li:hover,.panel.bookmarks .more .apps ul li.hover{background-color:#BED774;}
+.panel.bookmarks .footer{border-top:1px solid #DCEECE;}
+.home .section-header{border-bottom:1px solid #DCEECE;}
+ul.richlist.feeds li{border-bottom:1px solid #DCEECE;}
+.home .side-item{border-bottom:1px solid #DCEECE;}
+.feed-header ul{border-bottom:1px solid #DCEECE;}.feed-header li.current{border:1px solid #DCEECE;border-width:1px 1px 0;}
+.publisher .status-publisher input.submit{background-image:url(about:blank);background-color:#86C20D;border-color:#E1FAB0 #74A90B #74A90B #E1FAB0;}
+.statuscmtitem{background-color:#FAFFF3;border-bottom:1px solid #FAFFF3;}
+.min-cmtbox{background:url(http://xnimg.cn/xnapp/vip/resimg/hometpl/green/arrow.png);}
+.show-all{background-color:#FAFFF3;border:1px solid #DCEECE;}
+.show-all a:hover{background-color:#BED774;}
+#footer .copyright{border-top:1px solid #DCEECE;}
+.panel.bookmarks ul.apps li a.title:hover{background-color:#BED774;}
+.feed-content{border-bottom:1px solid #FAFFF3;}
+.navigation{background-image:url(http://s.xnimg.cn/xnapp/vip/resimg/hometpl/green/nav_bg.png);background-position:right bottom;background-repeat:no-repeat;}.navigation .nav-other{background-image:none}.navigation .nav-body{background-color:transparent;}
+.input-button,.input-submit{background-color:;border-color:;}
+}}}
+===超人===
+{{{
+html{background:url(http://s.xnimg.cn/xnapp/vip/resimg/hometpl/superman/bg.gif) repeat-x center top;}
+body{background-color:transparent;}
+a:link, a:visited{color:#005EAE;}
+.navigation .nav-body{background-color:#0379C1;}
+.navigation .nav-other{background-image:url(about:blank);background-position:right center;}
+.navigation .menu-title a:link,.navigation .menu-title a:visited{color:;_float:left;}
+.navigation .menu-title a:hover{background-color:#005EAE;}
+.menu-dropdown-border{border-color:#005EAE;}
+.navigation .blank-holder .banner{background-image:none;}
+.menu-dropdown .menu-item a:hover{background-color:#005EAE;}.menu-dropdown .menu-item li.show-more a:hover{background-color:#005EAE;}.menu-dropdown .search-menu li a:hover{background-color:#005EAE;}.menu-dropdown .optionmenu  li a:hover{background-color:#005EAE;}
+.navigation .blank-holder .banner{padding:0 1px 1px;}
+.panel.bookmarks{background-color:#EBF8FF;border:1px solid #CCE8F4;}#appNavHolder, .user-data{background-color:#EBF8FF;border-color:#CCE8F4;}
+.panel.bookmarks .more div.apps{border:1px solid #CCE8F4;}.panel.bookmarks .more:hover a.legend,.panel.bookmarks .more.hover a.legend{border:1px solid #CCE8F4;border-right:0;}
+.panel.bookmarks .more .apps ul li:hover,.panel.bookmarks .more .apps ul li.hover{background-color:#B2DAF9;}
+.panel.bookmarks .footer{border-top:1px solid #CCE8F4;}
+.home .section-header{border-bottom:1px solid #CCE8F4;}
+ul.richlist.feeds li{border-bottom:1px solid #CCE8F4;}
+.home .side-item{border-bottom:1px solid #CCE8F4;}
+.feed-header ul{border-bottom:1px solid #CCE8F4;}.feed-header li.current{border:1px solid #CCE8F4;border-width:1px 1px 0;}
+.publisher .status-publisher input.submit{background-image:url(about:blank);background-color:;border-color:#CCE8F4 #005EAE #005EAE #CCE8F4;}
+.statuscmtitem{background-color:#EBF8FF;border-bottom:1px solid #CCE8F4;}
+.min-cmtbox{background:url(http://xnimg.cn/xnapp/vip/resimg/hometpl/superman/arrow.png);}
+.show-all{background-color:#EBF8FF;border:1px solid #CCE8F4;}
+.show-all a:hover{background-color:#B2DAF9;}
+#footer .copyright{border-top:1px solid #CCE8F4;}
+.panel.bookmarks ul.apps li a.title:hover{background-color:#B2DAF9}
+.feed-content{border-bottom:1px solid #CCE8F4;}
+.navigation{background-image:url(http://s.xnimg.cn/xnapp/vip/resimg/hometpl/superman/nav_bg.gif);background-position:right bottom;background-repeat:no-repeat;}.navigation .nav-other{background-image:none}.navigation .nav-body{background-color:transparent;}
+.input-button,.input-submit{background-color:;border-color:#CCE8F4;}
 }}}
