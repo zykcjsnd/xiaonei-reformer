@@ -24,6 +24,11 @@ body#profile .tabs-holder .tabpanel li:not(.current) a:hover{background-color:#6
 }}}
 
 ==首页换肤==
+在一个等级达到11级的帐户，使用首页换肤功能，选择一个皮肤后，在地址栏输入
+{{{
+javascript:document.querySelector("#hometpl_style style").textContent.replace(/\/\*.*?\*\//g,"")
+}}}
+即可得到皮肤的页面样式，下面是两个例子
 ===雪花===
 {{{
 html {background:url(http://s.xnimg.cn/xnapp/vip/resimg/hometpl/snowflake/bg.gif) repeat-x center top;}
@@ -85,36 +90,4 @@ ul.richlist.feeds li{border-bottom:1px solid #DCEECE;}
 .feed-content{border-bottom:1px solid #FAFFF3;}
 .navigation{background-image:url(http://s.xnimg.cn/xnapp/vip/resimg/hometpl/green/nav_bg.png);background-position:right bottom;background-repeat:no-repeat;}.navigation .nav-other{background-image:none}.navigation .nav-body{background-color:transparent;}
 .input-button,.input-submit{background-color:;border-color:;}
-}}}
-===超人===
-{{{
-html{background:url(http://s.xnimg.cn/xnapp/vip/resimg/hometpl/superman/bg.gif) repeat-x center top;}
-body{background-color:transparent;}
-a:link, a:visited{color:#005EAE;}
-.navigation .nav-body{background-color:#0379C1;}
-.navigation .nav-other{background-image:url(about:blank);background-position:right center;}
-.navigation .menu-title a:link,.navigation .menu-title a:visited{color:;_float:left;}
-.navigation .menu-title a:hover{background-color:#005EAE;}
-.menu-dropdown-border{border-color:#005EAE;}
-.navigation .blank-holder .banner{background-image:none;}
-.menu-dropdown .menu-item a:hover{background-color:#005EAE;}.menu-dropdown .menu-item li.show-more a:hover{background-color:#005EAE;}.menu-dropdown .search-menu li a:hover{background-color:#005EAE;}.menu-dropdown .optionmenu  li a:hover{background-color:#005EAE;}
-.navigation .blank-holder .banner{padding:0 1px 1px;}
-.panel.bookmarks{background-color:#EBF8FF;border:1px solid #CCE8F4;}#appNavHolder, .user-data{background-color:#EBF8FF;border-color:#CCE8F4;}
-.panel.bookmarks .more div.apps{border:1px solid #CCE8F4;}.panel.bookmarks .more:hover a.legend,.panel.bookmarks .more.hover a.legend{border:1px solid #CCE8F4;border-right:0;}
-.panel.bookmarks .more .apps ul li:hover,.panel.bookmarks .more .apps ul li.hover{background-color:#B2DAF9;}
-.panel.bookmarks .footer{border-top:1px solid #CCE8F4;}
-.home .section-header{border-bottom:1px solid #CCE8F4;}
-ul.richlist.feeds li{border-bottom:1px solid #CCE8F4;}
-.home .side-item{border-bottom:1px solid #CCE8F4;}
-.feed-header ul{border-bottom:1px solid #CCE8F4;}.feed-header li.current{border:1px solid #CCE8F4;border-width:1px 1px 0;}
-.publisher .status-publisher input.submit{background-image:url(about:blank);background-color:;border-color:#CCE8F4 #005EAE #005EAE #CCE8F4;}
-.statuscmtitem{background-color:#EBF8FF;border-bottom:1px solid #CCE8F4;}
-.min-cmtbox{background:url(http://xnimg.cn/xnapp/vip/resimg/hometpl/superman/arrow.png);}
-.show-all{background-color:#EBF8FF;border:1px solid #CCE8F4;}
-.show-all a:hover{background-color:#B2DAF9;}
-#footer .copyright{border-top:1px solid #CCE8F4;}
-.panel.bookmarks ul.apps li a.title:hover{background-color:#B2DAF9}
-.feed-content{border-bottom:1px solid #CCE8F4;}
-.navigation{background-image:url(http://s.xnimg.cn/xnapp/vip/resimg/hometpl/superman/nav_bg.gif);background-position:right bottom;background-repeat:no-repeat;}.navigation .nav-other{background-image:none}.navigation .nav-body{background-color:transparent;}
-.input-button,.input-submit{background-color:;border-color:#CCE8F4;}
 }}}
