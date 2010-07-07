@@ -24,7 +24,7 @@ body#profile .tabs-holder .tabpanel li:not(.current) a:hover{background-color:#6
 }}}
 
 ==首页换肤==
-在一个等级达到11级的帐户，使用首页换肤功能，选择一个皮肤后，在地址栏输入
+在一个等级达到11级的帐户，使用首页换肤功能，选择一个皮肤后，在地址栏输入（Safari好像不行）
 {{{
 javascript:document.querySelector("#hometpl_style style").textContent.replace(/\/\*.*?\*\//g,"")
 }}}
