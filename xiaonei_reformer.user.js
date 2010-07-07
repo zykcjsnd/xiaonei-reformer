@@ -2136,11 +2136,11 @@ function searchShare() {
 		if(evt.keyCode==13) {
 			var cevt=document.createEvent("MouseEvents");
 			cevt.initMouseEvent("click",true,true,window,0,0,0,0,0,false,false,false,false,0,null);
-			evt.target.nextSibling.dispatchEvent(cevt);
+			evt.target.nextElementSibling.dispatchEvent(cevt);
 		}
 	});
 	$node("input").attr({type:"button","class":"input-button"}).attr("style","min-height:25px;margin-right:10px").value("搜索").appendTo(searchBar).hook("click",function(evt) {
-		var text=evt.target.previousSibling.value;
+		var text=evt.target.previousElementSibling.value;
 		if(!text || !text.replace(/^ +/,"")) {
 			var i=0;
 			$(".share-home .share-itembox").each(function(elem) {
