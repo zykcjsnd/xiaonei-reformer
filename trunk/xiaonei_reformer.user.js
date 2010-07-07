@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.4.20100706
-// @miniver        324
+// @version        3.0.4.20100707
+// @miniver        325
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.4.20100706";
-XNR.miniver=324;
+XNR.version="3.0.4.20100707";
+XNR.miniver=325;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -2140,129 +2140,139 @@ function searchShare() {
 		}
 	});
 	$node("input").attr({type:"button","class":"input-button"}).attr("style","min-height:25px;margin-right:10px").value("搜索").appendTo(searchBar).hook("click",function(evt) {
-		var text=evt.target.previousElementSibling.value;
-		if(!text || !text.replace(/^ +/,"")) {
-			var i=0;
-			$(".share-home .share-itembox").each(function(elem) {
-				if(i<20) {
-					$(elem).show();
-				} else {
-					$(elem).hide();
-				}
-				i++;
-			});
-			$(".pager-top,.pager-bottom").show();
-			return;
-		}
-		var keywords=text.split(/ +/);
-		var curpage=0;
-		var lastpage=0;
-		if(!$(".pager-top ol.pagerpro").empty()) {
-			curpage=parseInt($(".pager-top ol.pagerpro li.current a").text())-1;
-			lastpage=curpage;
-			try {
-				lastpage=parseInt(/curpage=([0-9]+)/.exec($(".pager-top ol.pagerpro li:last-child a").attr("href"))[1]);
-				// 在当前页为倒数第3页时，倒数第一项可能为下一页，倒数第二项才是最后一页
-				var i=parseInt(/curpage=([0-9]+)/.exec($(".pager-top ol.pagerpro li:nth-last-child(2) a").attr("href"))[1]);
-				if(i>lastpage) {
-					lastpage=i;
-				}
-			} catch(ex) {
+		try {
+			if(evt.target.value.indexOf("%")!=-1) {
+				// 正在查找中
+				return;
 			}
-		}
-		var cache=false;
-		if(!$allocated("share_items")) {
-			if(lastpage<50) {
-				// 当页数小于50时（1000项），启用缓存模式，将所有搜索到的项目加入到页面
-				cache=true;
-			} else if(lastpage<100) {
-				if(confirm("是否启用搜索缓存？能加快再次搜索时的速度，但会占用较多内存")) {
+			var text=evt.target.previousElementSibling.value;
+			if(!text || !text.replace(/^ +/,"")) {
+				var i=0;
+				$(".share-home .share-itembox").each(function(elem) {
+					if(i<20) {
+						$(elem).show();
+					} else {
+						$(elem).hide();
+					}
+					i++;
+				});
+				$(".pager-top,.pager-bottom").show();
+				return;
+			}
+			// 转换成小写，查找时不分大小写
+			var keywords=text.toLowerCase().split(/ +/);
+			var curpage=0;
+			var lastpage=0;
+			if(!$(".pager-top ol.pagerpro").empty()) {
+				curpage=parseInt($(".pager-top ol.pagerpro li.current a").text())-1;
+				lastpage=curpage;
+				try {
+					lastpage=parseInt(/curpage=([0-9]+)/.exec($(".pager-top ol.pagerpro li:last-child a").attr("href"))[1]);
+					// 在当前页为倒数第3页时，倒数第一项可能为下一页，倒数第二项才是最后一页
+					var i=parseInt(/curpage=([0-9]+)/.exec($(".pager-top ol.pagerpro li:nth-last-child(2) a").attr("href"))[1]);
+					if(i>lastpage) {
+						lastpage=i;
+					}
+				} catch(ex) {
+				}
+			}
+			var cache=false;
+			if(!$allocated("share_items")) {
+				if(lastpage<50) {
+					// 当页数小于50时（1000项），启用缓存模式，将所有搜索到的项目加入到页面
 					cache=true;
-				}
-			} else {
-				if(!confirm("分享数太多，估计会卡上一阵子。要继续吗？")) {
-					return;
-				}
-			}
-		}
-		evt.target.value="0%";
-		$(".pager-top,.pager-bottom").hide();
-		$(".share-home .share-itembox").each(function(elem) {
-			var s=$(elem);
-			var content=s.find(".share-content").text();
-			for(var i=0;i<keywords.length;i++) {
-				if(content.indexOf(keywords[i])==-1) {
-					break;
+				} else if(lastpage<100) {
+					if(confirm("是否启用搜索缓存？能加快再次搜索时的速度，但会占用较多内存")) {
+						cache=true;
+					}
+				} else {
+					if(!confirm("分享数太多，估计会卡上一阵子。要继续吗？")) {
+						return;
+					}
 				}
 			}
-			if(i==keywords.length) {
-				s.show();
-			} else {
-				s.hide();
-			}
-		});
-		if(!$allocated("share_items")) {
-			if(cache) {
-				$alloc("share_items");
-			}
-			var link=$(".pager-top ol.pagerpro li.current a").prop("href").replace(/curpage=[0-9]+/,"").replace(/#.*$/,"");
-			if(link.indexOf("?")==-1) {
-				link+="?";
-			}
-			var progress=1;
-			for(var i=0;i<=lastpage;i++) {
-				if(i!=curpage) {
-					$get(link+"&curpage="+i,function(data) {
-						try {
-							var body=$node("div").code(/<body[\S\s]+<\/body>/.exec(data));
-							body.find(".share-home .share-itembox").each(function(elem) {
-								if(cache) {
-									var s=$(elem);
+			evt.target.value="0%";
+			$(".pager-top,.pager-bottom").hide();
+			$(".share-home .share-itembox").each(function(elem) {
+				var s=$(elem);
+				var content=s.find(".share-content").text().toLowerCase();
+				for(var i=0;i<keywords.length;i++) {
+					if(content.indexOf(keywords[i])==-1) {
+						break;
+					}
+				}
+				if(i==keywords.length) {
+					s.show();
+				} else {
+					s.hide();
+				}
+			});
+			// lastpage为0时，缓存无意义
+			if(lastpage>0 && !$allocated("share_items")) {
+				if(cache) {
+					$alloc("share_items");
+				}
+				var link=$(".pager-top ol.pagerpro li.current a").prop("href").replace(/curpage=[0-9]+/,"").replace(/#.*$/,"");
+				if(link.indexOf("?")==-1) {
+					link+="?";
+				}
+				var progress=1;
+				for(var i=0;i<=lastpage;i++) {
+					if(i!=curpage) {
+						$get(link+"&curpage="+i,function(data) {
+							try {
+								var body=$node("div").code(/<body[\S\s]+<\/body>/.exec(data));
+								body.find(".share-home .share-itembox").each(function(elem) {
+									if(cache) {
+										var s=$(elem);
+									} else {
+										var s=$("#"+elem.id);
+										if(s.empty()) {
+											s=$(elem);
+										}
+									}
+									var f=false;
+									var content=s.find(".share-content").text().toLowerCase();
+									for(var i=0;i<keywords.length;i++) {
+										if(content.indexOf(keywords[i])==-1) {
+											break;
+										}
+									}
+									if(i==keywords.length) {
+										if(!cache) {
+											// 当cache为true时，s是从data中获取的，必然可见
+											s.show();
+										}
+										f=true;
+									} else if(cache) {
+										s.hide();
+									}
+									if(f || cache) {
+										s.appendTo($(".share-home"));
+									}
+								});
+								body.find("body").remove();
+								body=null;
+								// 将翻页移动到最下面
+								$(".share-home .pager-bottom").appendTo($(".share-home"));
+							} catch(ex) {
+								$error("searchShare::get",ex);
+							} finally {
+								progress++;
+								if(progress>lastpage) {
+									evt.target.value="搜索";
 								} else {
-									var s=$("#"+elem.id);
-									if(s.empty()) {
-										s=$(elem);
-									}
+									evt.target.value=parseInt(progress*100/(lastpage+1))+"%";
 								}
-								var f=false;
-								var content=s.find(".share-content").text();
-								for(var i=0;i<keywords.length;i++) {
-									if(content.indexOf(keywords[i])==-1) {
-										break;
-									}
-								}
-								if(i==keywords.length) {
-									if(!cache) {
-										// 当cache为true时，s是从data中获取的，必然可见
-										s.show();
-									}
-									f=true;
-								} else if(cache) {
-									s.hide();
-								}
-								if(f || cache) {
-									s.appendTo($(".share-home"));
-								}
-							});
-							body.find("body").remove();
-							body=null;
-							// 将翻页移动到最下面
-							$(".share-home .pager-bottom").appendTo($(".share-home"));
-						} catch(ex) {
-							$error("searchShare::get",ex);
-						} finally {
-							progress++;
-							if(progress>lastpage) {
-								evt.target.value="搜索";
-							} else {
-								evt.target.value=parseInt(progress*100/(lastpage+1))+"%";
 							}
-						}
-					});
+						});
+					}
 				}
+			} else {
+				evt.target.value="搜索";
 			}
-		} else {
-			evt.target.value="搜索";
+		} catch(ex) {
+			$error("searchShare::click",ex);
 		}
 	});
 	$node("span").text("多个关键字用半角空格隔开").appendTo(searchBar);
