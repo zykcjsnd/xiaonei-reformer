@@ -927,6 +927,28 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".opLink{color:"+FCOLOR+"}",
 				".blog-side-body .user-info .user-detail p.total strong{color:"+FCOLOR+"}",
 				".page-titletabs .act-btn a{background-color:"+FCOLOR+"}",
+			],
+			"list-all-min.css":[
+				".pagerpro li a:hover{background-color:"+FCOLOR+"}",
+				".pagerpro li.current a:hover{color:"+FCOLOR+"}",
+				".share a:hover{background-color:"+FCOLOR+"}",
+				"ul.share-hot-list li.share div.figure a:hover{background-color:"+FCOLOR+"}",
+				"ul.share-hot-list li h3 a,ul.share-hot-list li h3 a:hover{color:"+FCOLOR+"}",
+				"ul.share-hot-list li div.legend a,ul.share-hot-list li div.legend a:hover{color:"+FCOLOR+"}",
+				"#summary-wrap .share-vote-item a{color:"+FCOLOR+"}",
+				".share-lists .music-list li a span{color:"+FCOLOR+"}",
+				".share-lists .link-list .del a:hover{background-color:"+FCOLOR+"}",
+				".share-lists .music-list .del a:hover{background-color:"+FCOLOR+" !important}",
+				".input-button,.input-submit{background-color:"+FCOLOR+"}",
+				"a.share:hover{background-color:"+FCOLOR+"}",
+			],
+			"status-all-min.css":[
+				".pagerpro li.current a:hover{color:"+FCOLOR+"}",
+				".pagerpro li a:hover{background-color:"+FCOLOR+"}",
+				".pagerpro li.current a,.pagerpro li.current a:hover{color:"+FCOLOR+"}",
+				".input-button,.input-submit{background-color:"+FCOLOR+"}",
+				"a{color:"+FCOLOR+"}",
+				".catalog-list li.selected{background-color:"+FCOLOR+"}",
 			]
 		};
 		var style="";
