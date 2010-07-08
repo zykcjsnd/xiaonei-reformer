@@ -216,8 +216,13 @@ function removeHomeGadgets(gadgetOpt) {
 	if(patch) {
 		$ban(patch.substring(0,patch.length-1));
 	}
-	
+
 	$wait(1,function() {
+		if(!$("#container2").empty() && $("#sidebar2").heirs()==0) {
+			// 2010/07 v5版
+			setTimeout(arguments.callee,100);
+			return;
+		}
 		for(var g in filters) {
 			if(gadgetOpt[g]) {
 				$(filters[g].t).filter(filters[g].f).remove();
@@ -667,14 +672,20 @@ function addNavItems(content) {
 };
 
 // 恢复深蓝主题
-function recoverOriginalTheme(ignoreTheme) {
+function recoverOriginalTheme(evt,ignoreTheme) {
+	if(evt && evt.target.tagName!="LINK") {
+		return;
+	}
+
 	var FCOLOR="#3B5998";	//Facebook的深蓝色
 	var XCOLOR="#3B5888";	//校内原来的深蓝色
 	var BCOLOR="#5C75AA";	//原来的菜单背景色
 	var SCOLOR="#EBF3F7";	//原来的应用栏&回复背景色
 
-	// stage0预先打补丁。stage1修正
-	var prepatch=$patchCSS("a,a:link,a:visited,a:hover{color:"+FCOLOR+"}.navigation .nav-body{background-color:"+XCOLOR+"}.user-data,.panel.bookmarks,.statuscmtitem,.new-user{background-color:"+SCOLOR+"}");
+	if(!evt) {
+		// stage0预先打补丁。stage1修正
+		var prepatch=$patchCSS("a,a:link,a:visited,a:hover{color:"+FCOLOR+"}.navigation .nav-body{background-color:"+XCOLOR+"}.user-data,.panel.bookmarks,.statuscmtitem,.new-user{background-color:"+SCOLOR+"}");
+	}
 	$wait(1,function() {
 		if(!ignoreTheme) {
 			// 开始检测有无模板存在
@@ -698,7 +709,9 @@ function recoverOriginalTheme(ignoreTheme) {
 				});
 			}
 			if(theme) {
-				prepatch.remove();
+				if(!evt) {
+					prepatch.remove();
+				}
 				return;
 			}
 		}
@@ -896,18 +909,46 @@ function recoverOriginalTheme(ignoreTheme) {
 			],
 			"guide-new":[	//guide-new-gameX.X.css，新注册用户
 				".find-friend-box .users .friend-selector li .name label{color:"+FCOLOR+"}",
+			],
+			"blog-async.css":[
+				"a.share:hover{background-color:"+FCOLOR+"}",
+				".input-button,.input-submit{background-color:"+FCOLOR+"}",
+				".pagerpro li a:hover{background-color:"+FCOLOR+"}",
+				"#pages-jump a{color:"+FCOLOR+"}",
+				"a.button{background-color:"+FCOLOR+"}",
+				"#self-nav li a{color:"+FCOLOR+"}",
+				"#self-nav .selected a,#self-nav .selected a:hover{background-color:"+FCOLOR+"}",
+				"#entry h3{color:"+FCOLOR+"}",
+				"#super-input .sinput-list-action a:hover{background-color:"+FCOLOR+"}",
+				".share a:hover{background-color:"+FCOLOR+"}",
+				"#mycomment h3{color:"+FCOLOR+"}",
+				"#blogs .author ul a:hover{background-color:"+FCOLOR+"}",
+				".message h3{background-color:"+FCOLOR+"}",
+				".opLink{color:"+FCOLOR+"}",
+				".blog-side-body .user-info .user-detail p.total strong{color:"+FCOLOR+"}",
+				".page-titletabs .act-btn a{background-color:"+FCOLOR+"}",
 			]
 		};
 		var style="";
-		for(var f in files) {
-			if(!$("head link[rel='stylesheet'][href*='"+f+"']").empty()) {
-				style+=files[f].join("");
+		if(!evt) {
+			for(var f in files) {
+				if(!$("head link[rel='stylesheet'][href*='"+f+"']").empty()) {
+					style+=files[f].join("");
+				}
+			}
+		} else {
+			for(var f in files) {
+				if(evt.target.href && evt.target.href.indexOf(f)!=-1) {
+					style+=files[f].join("");
+				}
 			}
 		}
 		if(style) {
 			$patchCSS(style);
 		}
-		prepatch.remove();
+		if(!evt) {
+			prepatch.remove();
+		}
 	});
 };
 
@@ -3177,7 +3218,8 @@ function main(savedOptions) {
 						name:recoverOriginalTheme,
 						stage:0,
 						fire:true,
-						args:["@removePageTheme"]
+						args:[null,"@removePageTheme"],
+						trigger:{"head":"DOMNodeInserted"}
 					}],
 				},{
 					type:"info",
