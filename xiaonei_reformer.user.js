@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.4.20100710
-// @miniver        327
+// @version        3.0.4.20100712
+// @miniver        328
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.4.20100710";
-XNR.miniver=327;
+XNR.version="3.0.4.20100712";
+XNR.miniver=328;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -167,7 +167,7 @@ function removeBlogLinks() {
 		var o=$(elem);
 		// 链接到其他日志
 		if($page("blog",elem.href)) {
-			if(o.text().length>50) {
+			if(o.text().length>70) {
 				o.tag("span");
 			}
 			return;
@@ -1189,6 +1189,8 @@ function addExtraEmotions() {
 		"(qf)":		{t:"祈福",			s:"/imgpro/icons/statusface/candle.gif"},
 		"(hot)":	{t:"烈日",			s:"/imgpro/icons/statusface/hot.gif"},
 		"(feng)":	{t:"风扇",			s:"/imgpro/icons/statusface/fan.gif"},
+		"(by)":		{t:"下雨",			s:"/imgpro/icons/statusface/rain.gif"},
+		"(ng)":		{t:"否",			s:"/imgpro/icons/statusface/nogood.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
