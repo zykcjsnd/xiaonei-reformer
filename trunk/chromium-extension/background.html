@@ -13,7 +13,11 @@ function(request, sender, sendResponse) {
 			if(options==null) {
 				sendResponse({options:{}});
 			} else {
-				sendResponse({options:JSON.parse(options)});
+				try {
+					sendResponse({options:JSON.parse(options)});
+				} catch(ex) {
+					sendResponse({options:{}});
+				}
 			}
 			break;
 		case "get":

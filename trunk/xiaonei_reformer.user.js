@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.4.20100712
-// @miniver        328
+// @version        3.0.4.20100719
+// @miniver        330
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.4.20100712";
-XNR.miniver=328;
+XNR.version="3.0.4.20100719";
+XNR.miniver=330;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1859,10 +1859,10 @@ function showFullSizeImage(evt,indirect) {
 	// 显示放大镜图标
 	function _showMagnifier(target) {
 		var node=$node("img").attr({style:"z-index:199999;position:absolute;opacity:0.7",height:22,width:22}).attr("src","data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAMAAADzapwJAAAAw1BMVEUxlJ9TVVJWWFVZW1hhYmBPe7JRfbR4endVf7dVg7Rfg7Zah7ljh7qChIFki7iJi4iKjImWm52cnpt4qNSho6CCrNOmqKWFrtaIstqJs9uSttiUuNqXvN6ZvuC3uraevtuzvMSgwN29v7ylxeK6wsqtxOOvxuW9xc2pyebAxsi1yeKvy+O3yuS7yt61zd+zzua7zujKz9G90erG0uDF1enO1t/O2ujZ3uHY4enZ4urc4uTi6Ord6ffh6fLp6+jl7fbp8frKBh0+AAAAAXRSTlMAQObYZgAAAQtJREFUGNN10O1ygjAQBdBoS0wjkoC2tAQECioWFD+ItqYQ3v+pZCggztj7J5mTnZ3dAFCH1AH3IXrIheChfvdAPbF1GXO3wqM95SpEaZrEL1DlnRNPzcsSH1IsZa56bR9dwHI8zg6VYwmF3hSHG1zWmkRIok34V064m+J0t0vjKPCR7fKGhZXESRwtF4HvMMsUHfvR8itaBIHPzGnH3J0qH8y2mfVuKq9+22R1VHJo1YG/8LhqJjQEyiGyHcdBKEfCaJcMNSklCgJUHVrYrUnPGsZJFYy1c++z6Lr4PmXZ6adYk9nb882N/aUoLntjAsj88+ZgQiklo+oyHJG+dxn87/Onhz57xGAwBFen2iHevJ8kLwAAAABJRU5ErkJggg%3D%3D").attr({onmouseover:"this.style.opacity=1",onmouseout:"this.style.opacity=0.7"});
-		if(target.parentNode.tagName!="I" && target.parentNode.className!="avatar") {
+		if(target.parentNode.tagName!="I" && target.parentNode.className!="avatar" && target.parentNode.className!="clipImageBig") {
 			var rect=target.getBoundingClientRect();
 		} else {
-			// 高度与宽度不一致的小头像
+			// 高度与宽度不一致的头像
 			var rect1=target.parentNode.getBoundingClientRect();
 			var rect2=target.getBoundingClientRect();
 			if(rect1.height>rect2.height) {
@@ -5407,7 +5407,11 @@ PageKit.prototype={
 // 终于可以正式开始了，先获取保存的选项。
 switch(XNR.agent) {
 	case USERSCRIPT:
-		main(JSON.parse(GM_getValue("xnr_options","{}")));
+		try {
+			main(JSON.parse(GM_getValue("xnr_options","{}")));
+		} catch(ex) {
+			main({});
+		}
 		break;
 	case CHROME:
 		chrome.extension.sendRequest({action:"load"}, function(response) {
