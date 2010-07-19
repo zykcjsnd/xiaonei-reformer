@@ -13,7 +13,11 @@ safari.application.addEventListener("message",function(msg) {
 			if(options==null) {
 				msg.target.page.dispatchMessage("xnr_load_data",{id:msg.message,data:{}});
 			} else {
-				msg.target.page.dispatchMessage("xnr_load_data",{id:msg.message,data:JSON.parse(options)});
+				try {
+					msg.target.page.dispatchMessage("xnr_load_data",{id:msg.message,data:JSON.parse(options)});
+				} catch(ex) {
+					msg.target.page.dispatchMessage("xnr_load_data",{id:msg.message,data:{}});
+				}
 			}
 			break;
 		case "xnr_get":
