@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.4.20100719
-// @miniver        330
+// @version        3.0.5.20100725
+// @miniver        331
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.4.20100719";
-XNR.miniver=330;
+XNR.version="3.0.5.20100725";
+XNR.miniver=331;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -97,6 +97,7 @@ function removeAds(evt) {
 	$wait(1,function() {
 		// 混迹于新鲜事中的广告
 		$("ul#feedHome > li").filter("a[href^='http://edm.renren.com/link.do?']").remove();
+		$("ul#feedHome > li").filter("a[href^='http://gamestat.renren.com/game/']").remove();
 		// 人人桌面
 		$("ul#feedHome > li").filter("a[href^='http://im.renren.com/'][href*='.exe']").remove();
 		// 手机人人网
@@ -250,7 +251,8 @@ function removeProfileGadgets(gadgetOpt) {
 		"pages":"#pages.mod",
 		"friends":"#friends.mod",
 		"theme":".enter-paints,#paintother,#paintself",
-		"invitation":".guide-find-friend,p.inviteguys"
+		"invitation":".guide-find-friend,p.inviteguys",
+		"introduceFriends":"#commend-friends"
 	};
 	var patch="";
 	for(var g in gadgetOpt) {
@@ -331,7 +333,7 @@ function rejectRequest(req) {
 		if(req["recommendRequest"]) {
 			var command;
 			while(command=/rejectRecommend\((\d+),'.*?',\d+\)/g.exec(html)) {
-				$get("http://friend.renren.com/RejectRecFriend.do?id="+command[1]);
+				$get("http://friend.renren.com/RejectRecFriend.do?id="+command[1],null,null,"POST");
 			}
 		}
 	});
@@ -351,6 +353,35 @@ function acceptAllFriendRequests() {
 			$get("http://friend.renren.com/ApplyGuestRequest.do?friendId="+fid,null,null,"POST");
 		});
 		alert("已经接受了所有申请，将刷新页面……");
+		document.location.reload();
+	});
+};
+
+// 允许接受/拒绝全部好友推荐
+function acceptAllFriendRecommends() {
+	if($("#content #nonapp_position_701").empty()) {
+		return;
+	}
+	var header=$node("div").appendTo($("#content #nonapp_position_701").superior());
+	$node("a").attr({"href":"javascript:;","class":"operation"}).text("对所有推荐的好友发送申请，慎用！").style("paddingLeft","10px").appendTo(header).hook("click",function() {
+		if(!confirm("确实要向所有推荐的人发送好友申请吗？")) {
+			return;
+		}
+		$("#content div.section[id^='friend_recommend_section_']").each(function(elem) {
+			var fid=/[0-9]+/.exec(elem.id);
+			$get("http://friend.renren.com/ajax_request_friend.do?from=req.renren.com/request/requestList.do&codeFlag=0&code=&why=&id="+fid,null,null,"POST");
+		});
+		alert("已经发送了申请，将刷新页面……");
+		document.location.reload();
+	}).clone().text("忽略所有的好友推荐").prependTo(header).hook("click",function() {
+		if(!confirm("确实要忽略所有好友推荐吗？")) {
+			return;
+		}
+		$("#content div.section[id^='friend_recommend_section_']").each(function(elem) {
+			var fid=/[0-9]+/.exec(elem.id);
+			$get("http://friend.renren.com/RejectRecFriend.do?id="+fid,null,null,"POST");
+		});
+		alert("已经忽略了所有推荐，将刷新页面……");
 		document.location.reload();
 	});
 };
@@ -480,7 +511,7 @@ function flodFeedComment() {
 function autoCheckFeeds(interval,feedFilter) {
 	// 在bottombar上建立一个新的接收区域
 	if(!$("#webpager #setting-panel").empty()) {
-		var root=$node("div").attr("class","popupwindow notify-panel").appendTo($node("div").attr("class","panel").insertTo($("#webpager #setting-panel").superior(),$("#webpager #setting-panel").index()));
+		var root=$node("div").attr("class","popupwindow notify-panel").appendTo($node("div").attr({"class":"panel",id:"feed-panel"}).insertTo($("#webpager #setting-panel").superior(),$("#webpager #setting-panel").index()));
 		var Btn=$node("div").attr("class","panelbarbutton").appendTo(root);
 		$node("img").attr({"class":"icon",height:"16",width:"16",src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA4klEQVQ4y61TsQrCQAztp9lCO3dz82N0cXFydXIWP0LE3Q/QxVEoR0Fpz15P3sGlSWlpix6EvOSSl9ccDYJ/nNnyZBfro53iqRmJ3fnmbHW42O31PiomEgBcwHjhUEwE881eSPNxG7fv4UlBXddkxhiLw+Oq+ogYXnwCCjxR13SOfT0pAODMuATmk31sjXI5rXW3AhT1Teb4VWipQClFCvj0tiqPxQ7SNHWMY3cAjHr0iVcY2gHPP7J3oyAMQ5sX2eQdoM8RxHFsn3kp3rlvB1xVkiTN/wA2b1EUCevKieZfzxcMt3dNdxsqQQAAAABJRU5ErkJggg%3D%3D",alt:"新鲜事",title:"新鲜事"}).appendTo(Btn);
 		$node("div").attr({id:"feed_toread_tip","class":"buttontooltip",style:"display:none"}).append($node("strong").attr("id","feed_toread_num").text("0")).appendTo(Btn);
@@ -566,7 +597,7 @@ function autoCheckFeeds(interval,feedFilter) {
 
 				// 很好，可以直接加到工具栏中
 				if(!$("#webpager #feed_toread_tip").empty()) {
-					var root=$("#webpager #notification-panel .popupwindow.notify-panel").filter("#feed_toread_tip");
+					var root=$("#webpager #feed-panel .popupwindow.notify-panel").filter("#feed_toread_tip");
 					var section=root.find(".window>section");
 					if(section.child(0).prop("tagName")=="P") {
 						section.child(0).remove();
@@ -1126,6 +1157,7 @@ function addExtraEmotions() {
 		"(吻)":		{t:"吻",			s:"/imgpro/emotions/tie/20.gif"},
 		"(晕)":		{t:"晕",			s:"/imgpro/emotions/tie/21.gif"},
 		"(住嘴)":	{t:"住嘴",			s:"/imgpro/emotions/tie/23.gif"},
+		"(kb)":		{t:"抠鼻",			s:"/imgpro/icons/statusface/kbz2.gif"},
 		"(s)":		{t:"大兵",			s:"/imgpro/icons/statusface/soldier.gif"},
 		"(NBA)":	{t:"篮球",			s:"/imgpro/icons/statusface/basketball4.gif"},
 		"(蜜蜂)":	{t:"小蜜蜂",		s:"/imgpro/icons/statusface/bee.gif"},
@@ -1298,6 +1330,9 @@ function addFloorCounter(evt) {
 	}
 	var replyAmount;	//回复总数
 	if($page("blog")) {
+		if($("p.stat-article").empty()) {
+			return;
+		}
 		replyAmount=parseInt(/评论\((\d+)\)/.exec($("p.stat-article").text())[1]);
 	} else {
 		replyAmount=parseInt($("#allComCount").text());
@@ -2759,6 +2794,10 @@ function main(savedOptions) {
 						text:"##装扮主页",
 						value:false,
 					},{
+						id:"introduceFriends",
+						text:"##介绍朋友",
+						value:false,
+					},{
 						id:"lover",
 						text:"##情侣空间",
 						value:false,
@@ -2891,6 +2930,24 @@ function main(savedOptions) {
 					},{
 						type:"info",
 						value:"在请求中心页面上“你有XX个好友申请”右侧"
+					}
+				],
+				page:"request",
+				login:true,
+			},{
+				text:"##允许一次性接受/拒绝全部好友推荐##",
+				ctrl:[
+					{
+						id:"acceptAllFriendRecommends",
+						value:false,
+						fn:[{
+							name:acceptAllFriendRecommends,
+							stage:2,
+							fire:true
+						}]
+					},{
+						type:"info",
+						value:"在请求中心页面上“你有XX个推荐的好友”右侧"
 					}
 				],
 				page:"request",
@@ -4765,6 +4822,19 @@ function $master(master) {
  *   [String]:新鲜事类型文本。无符合的返回""
  */
 function $feedType(feed) {
+	// blog/status/photo/share/album 的充分条件
+	var script=feed.find(".details script[status='1']");
+	if(!script.empty()) {
+		var stype=/"type":"(.*?)"/.exec(script.text());
+		if(stype) {
+			if(stype[1]=="album") {
+				return "photo";
+			} else {
+				return stype[1];
+			}
+		}
+	}
+
 	var types={
 		// 标题文本，标题HTML，有无content，footerHTML
 		"share":	["^分享"],
@@ -4778,7 +4848,7 @@ function $feedType(feed) {
 		"tag":		["照片中被圈出来了$"],
 		"movie":	[null,"<a [^>]*href=\"http://movie.xiaonei.com/|<a [^>]*href=\"http://movie.renren.com/"],
 		"connect":	[null,null,null,"<a [^>]*href=\"http://www.connect.renren.com/"],
-		"friend":	["^和[\\s\\S]+成为了好友。|^、[\\s\\S]+和[\\s\\S]+成为了好友。"],
+		"friend":	["^[和、].*成为了好友。"],
 		"page":		[null,"<a [^>]*href=\"http://page.renren.com/"],
 		"vip":		["^更换了主页模板皮肤|^更换了主页装扮|^成为了人人网[\\d\\D]*VIP会员特权|^收到好友赠送的[\\d\\D]*VIP会员特权|^开启了人人网VIP个性域名"],
 		"music":	["^上传了音乐"],
