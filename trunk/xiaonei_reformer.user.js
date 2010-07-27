@@ -7,7 +7,7 @@
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
 // @version        3.0.5.20100727
-// @miniver        332
+// @miniver        333
 // @author         xz
 // ==/UserScript==
 //
@@ -47,7 +47,7 @@ var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
 XNR.version="3.0.5.20100727";
-XNR.miniver=332;
+XNR.miniver=333;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -2240,12 +2240,12 @@ function showLoginInfo(lastSid) {
 		return;
 	}
 	$save("lastSid",sid);
-	$get("http://safe.renren.com/ajax.do?type=logInfo",function(data) {
+	$get("http://safe.renren.com/alarm/index/info/",function(data) {
 		if(data==null) {
 			return;
 		}
 		data=data.replace(/<(\/?)a[^>]*>/g,"<$1span>").replace("<dt>当前登录信息</dt>","");
-		data+="<div><a style='float:right;padding:5px' href='http://safe.renren.com/alarm.do' target='_blank'>更多信息<a></div>";
+		data+="<div><a style='float:right;padding:5px' href='http://safe.renren.com/alarm' target='_blank'>更多信息<a></div>";
 		$popup("登录信息",data,"0x0-5-5",15,5);
 	});
 };

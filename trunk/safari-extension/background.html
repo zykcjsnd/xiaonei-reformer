@@ -21,14 +21,14 @@ safari.application.addEventListener("message",function(msg) {
 			}
 			break;
 		case "xnr_get":
-			var httpReq= new XMLHttpRequest();
+			var httpReq=new XMLHttpRequest();
 			httpReq.onload=function() {
 				msg.target.page.dispatchMessage("xnr_get_data",{id:msg.message.id,data:(httpReq.status==200?httpReq.responseText:null)});
 			};
 			httpReq.onerror=function(e) {
 				msg.target.page.dispatchMessage("xnr_get_data",{id:msg.message.id,data:null});
 			};
-			httpReq.open(meg.message.method,msg.message.url,true);
+			httpReq.open(msg.message.method,msg.message.url,true);
 			//httpReq.setRequestHeader("Cache-Control","no-cache");
 			httpReq.send();
 			break;
