@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.5.20100727
-// @miniver        333
+// @version        3.0.5.20100728
+// @miniver        334
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.5.20100727";
-XNR.miniver=333;
+XNR.version="3.0.5.20100728";
+XNR.miniver=334;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -270,6 +270,7 @@ function removeProfileGadgets(gadgetOpt) {
 function hideRequest(req) {
 	const table={
 		"appRequest":"l-app",
+		"hotRequest":"l-hotnews",
 		"nodifyRequest":"l-request",
 		"pokeRequest":"l-poke",
 		"recommendRequest":"l-recommend",
@@ -985,6 +986,9 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".input-button,.input-submit{background-color:"+FCOLOR+"}",
 				"a{color:"+FCOLOR+"}",
 				".catalog-list li.selected{background-color:"+FCOLOR+"}",
+			],
+			"hotinfo.css":[
+				".iwanttojoin span{background-color:"+FCOLOR+"}"
 			]
 		};
 		var style="";
@@ -1535,7 +1539,8 @@ function addDownloadAlbumLink(linkOnly) {
 			}
 			var cur=0;
 			links.each(function(elem) {
-				$alloc("download_album").push({src:$(elem).attr("lazy-src"),title:($(elem).attr("alt") || "")});
+				var t=$(elem);
+				$alloc("download_album").push({src:(t.attr("lazy-src") || t.attr("src")),title:(t.attr("alt") || "")});
 				cur++;
 				if(cur==totalImage) {
 					if(downLink.text().match("分析中")) {
@@ -1829,8 +1834,11 @@ function showFullSizeImage(evt,indirect) {
 		// 相册中的图片，可能在故事模式中有大图链接
 		if($page("album") && $page("photo",pageURL)) {
 			var storyImg=$(".story-pic .story-pic-list .photo-img img[lazy-src*='large_'][lazy-src*='"+imgId+"']");
+			if(storyImg.empty()) {
+				storyImg=$(".story-pic .story-pic-list .photo-img img[src*='large_'][src*='"+imgId+"']");
+			}
 			if(!storyImg.empty()) {
-				image=storyImg.attr("lazy-src");
+				image=storyImg.attr("lazy-src") || storyImg.attr("src");
 				_imageCache(imgId,image);
 				_showViewer(evt.pageX,image,imgId,true);
 				return;
@@ -2920,6 +2928,10 @@ function main(savedOptions) {
 					{
 						id:"appRequest",
 						text:"##应用请求",
+						value:false,
+					},{
+						id:"hotRequest",
+						text:"##热点动态",
 						value:false,
 					},{
 						id:"nodifyRequest",
