@@ -9,6 +9,7 @@
 目录
  * [Installation#Google_Chrome/Chromium Google Chrome/Chromium]
  * [Installation#Firefox Firefox]
+ * [Installation#Safari Safari]
 
 =Google Chrome/Chromium=
 ==安装浏览器（以Google Chrome为例，我知道用Chromium的用户一般水平都比较高；）==
@@ -55,5 +56,21 @@ http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_c6.jpg
 请到 http://www.getfirefox.com 去下载最新正式版的Firefox进行安装。如果你当前已经安装了Firefox，请检查其版本。本程序只能在3.6或更高版本的Firefox上使用
 ==安装扩展==
 到[https://addons.mozilla.org/firefox/addon/162178/ 扩展页面]去安装程序。如果您已经从其他地方，比如[http://xiaonei-reformer.googlecode.com/files/xiaonei_reformer-fx.xpi 这里]，获得了扩展程序，直接将其拖动到Firefox窗口上即可安装。
+==使用脚本==
+如果你不想安装扩展，也可以使用Greasemonkey脚本。首先需要安装[https://addons.mozilla.org/firefox/addon/748/ Greasemonkey扩展]，然后到[http://userscripts.org/scripts/show/45836 脚本主页]安装脚本
 ==注意事项==
 Firefox扩展目前还未通过Mozilla官方审核，所以浏览器的检查扩展更新功能不会提示扩展的更新。因此请临时启用扩展程序自己的检查更新功能。
+最近几个版本的Greasemonkey有些问题，在部分情况下可能会出现一些莫名其妙的错误，请尽可能使用扩展版。
+
+
+`=================================================================================================================`
+
+
+=Safari=
+==安装Safari==
+请到 http://www.apple.com.cn/safari/ 下载最新版Safari进行安装。只有5.0或更高版本的Safari才支持扩展
+==安装扩展==
+到[http://code.google.com/p/xiaonei-reformer/downloads/list 扩展下载页面]去下载扩展程序。下载后双击文件即可安装
+
+
+`=================================================================================================================`
