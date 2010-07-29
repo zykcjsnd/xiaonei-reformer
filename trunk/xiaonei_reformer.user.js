@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.5.20100728
-// @miniver        334
+// @version        3.0.5.20100730
+// @miniver        335
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.5.20100728";
-XNR.miniver=334;
+XNR.version="3.0.5.20100730";
+XNR.miniver=335;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1431,7 +1431,13 @@ function showImagesInOnePage() {
 		return;
 	}
 	baseURL=baseURL.replace("@@",ownerId).replace("##",albumId);
-	
+
+	var pager=$pager($(".pager-top"));
+	// 当前页数
+	var curPage=pager.current;
+	// 总页数
+	var maxPage=pager.last;
+
 	// 原始文字，防止后面出错
 	var origText="";
 	items.each(function(elem) {
@@ -1447,12 +1453,6 @@ function showImagesInOnePage() {
 			}
 		}
 	});
-
-	var pager=$pager($(".pager-top ol.pagerpro"));
-	// 当前页数
-	var curPage=pager.current;
-	// 总页数
-	var maxPage=pager.last;
 
 	album.child(0).attr("page",curPage);
 	if(typeof album2!="undefined") {
@@ -2381,7 +2381,7 @@ function searchShare() {
 			}
 			// 转换成小写，查找时不分大小写
 			var keywords=text.toLowerCase().split(/ +/);
-			var pager=$pager($(".pager-top ol.pagerpro"));
+			var pager=$pager($(".pager-top"));
 			var curpage=pager.current;
 			var lastpage=pager.last;
 			var cache=false;
@@ -4957,25 +4957,29 @@ function $feedType(feed) {
 };
 
 /*
- * 从翻页控件（ol.pagerpro）中取得当前页与最大页（序号从0开始）
+ * 从翻页控件（div.pager-top）中取得当前页与最后页（序号从0开始）
  * 参数
  *   [HTMLOListElement]pager:翻页控件
  * 返回值
- *   [Object]:{curpage:当前页,lastpage:最后一页}
+ *   [Object]:{current:当前页,last:最后页}
  */
 function $pager(pager) {
 	var curpage=0;
 	var lastpage=0;
 	if(!pager.empty() && !pager.find("li").empty()) {
 		try {
-			curpage=parseInt(pager.find("li.current a").text())-1;
-			lastpage=curpage;
-			lastpage=parseInt(/curpage=([0-9]+)/.exec(pager.find("li:last-child a").attr("href"))[1]);
-			// 在当前页为倒数第3页时，倒数第一项可能为下一页，倒数第二项才是最后一页
-			var i=parseInt(/curpage=([0-9]+)/.exec(pager.find("li:nth-last-child(2) a").attr("href"))[1]);
-			if(i>lastpage) {
-				lastpage=i;
+			curpage=parseInt(pager.find("ol.pagerpro li.current a").text())-1;
+			var p=pager.clone();
+			p.find("ol.pagerpro,ul").remove();
+			var text=p.text().replace(/\s/g,"");
+			var total=parseInt(/共([0-9]+)/.exec(text)[1])-1;
+			if(curpage==0) {
+				var ipp=parseInt(/[0-9]+-([0-9]+)/.exec(text)[1]);
+			} else {
+				var f=parseInt(/([0-9]+)-[0-9]+/.exec(text)[1])-1;
+				var ipp=f/curpage;
 			}
+			lastpage=parseInt(total/ipp);
 		} catch(ex) {
 		}
 	}
