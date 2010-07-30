@@ -74,7 +74,7 @@ function loadScript(obj,direct) {
 				httpReq.send();
 				break;
 			case "album":
-				gBrowser.addTab("chrome://xiaonei-reformer/content/album.html#"+escape(JSON.stringify(value)));
+				gBrowser.selectedTab=gBrowser.addTab("chrome://xiaonei-reformer/content/album.html#"+escape(JSON.stringify(value)));
 				break;
 		}
 	},"extServices");

@@ -2551,7 +2551,7 @@ function diagnose() {
 	str+="运行环境："+window.navigator.userAgent+"\n";
 	str+="当前页面："+XNR.url+"\n";
 	str+="程序版本："+XNR.version+"("+XNR.miniver+") - "+XNR.agent+"\n";
-	str+="功能："+JSON.stringify(XNR.options)+"\n\n";
+	str+="功能设置："+JSON.stringify(XNR.options)+"\n\n";
 	$("div.xnr_op #diagnosisInfo").value(str);
 };
 
@@ -4974,8 +4974,10 @@ function $pager(pager) {
 			var text=p.text().replace(/\s/g,"");
 			var total=parseInt(/共([0-9]+)/.exec(text)[1])-1;
 			if(curpage==0) {
+				// 如果当前为第一页，则后一个数值要么是每页项目数，要么是项目总数
 				var ipp=parseInt(/[0-9]+-([0-9]+)/.exec(text)[1]);
 			} else {
+				// 否则前curpage个页面一共有f个项目，可以算出每页项目数
 				var f=parseInt(/([0-9]+)-[0-9]+/.exec(text)[1])-1;
 				var ipp=f/curpage;
 			}
