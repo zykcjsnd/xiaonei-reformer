@@ -29,7 +29,7 @@ http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_c2.jpg
 
 http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_c4.jpg
 
-如果点击安装之后弹出类似下图中的出错信息，请自行google解决方法
+如果点击安装之后弹出类似下图中的出错信息，这是操作系统和/或浏览器自己的问题。请自行google解决方法
 
 http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_c3.jpg
 
