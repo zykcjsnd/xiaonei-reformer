@@ -2,8 +2,6 @@
 
 = 自动更新功能介绍 =
 
-本程序在不同浏览器中
-
 ==目录==
  * [Update#Greasemonkey Greasemonkey扩展]
  * [Update#Firefox Firefox扩展]
