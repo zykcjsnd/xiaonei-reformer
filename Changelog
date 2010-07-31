@@ -1,3 +1,9 @@
+3.0.5.20100731 (336):
+fix:改进隐藏橙名方法
+fix:PageKit对象增加looks方法用于获取实际样式
+fix:防止$script在Firefox中因未启用javascript而出错
+add:debug模式初步实现
+
 3.0.5.20100730 (335):
 fix:修正翻页控件更改导致的计数错误
 fix:Firefox扩展下载相册时切换到新开的标签

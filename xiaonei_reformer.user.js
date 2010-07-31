@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.5.20100730
-// @miniver        335
+// @version        3.0.5.20100731
+// @miniver        336
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.5.20100730";
-XNR.miniver=335;
+XNR.version="3.0.5.20100731";
+XNR.miniver=336;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -58,8 +58,8 @@ XNR.userId=$cookie("id","0");
 // 当前页面
 XNR.url=document.location.href;
 
-// 调试模式 TODO
-// XNR.debug=false;
+// 调试模式
+XNR.debug=true;
 
 // 选项
 XNR.options={};
@@ -2195,12 +2195,9 @@ function useWhisper() {
 };
 
 // 隐藏橙名
-function hideOrangeName(evt) {
-	if(evt && evt.target.tagName!="DL" && !(evt.target.className && evt.target.className.indexOf("comment")!=-1) && evt.target.className!="col-right") {
-		return;
-	}
-	// h1是个人主页上的姓名
-	$("a.lively-user,h1.lively-user").removeClass("lively-user").attr("title","");
+function hideOrangeName() {
+	var color=$("body a:not([class])").looks("color");
+	$patchCSS(".lively-user, a.lively-user:link, a.lively-user:visited{color:"+color+"}");
 };
 
 // 去除只有星级用户才能修改特别好友的限制
@@ -3730,7 +3727,6 @@ function main(savedOptions) {
 							name:hideOrangeName,
 							stage:1,
 							fire:true,
-							trigger:{"div.replies,div.cmt-list,div.boxcont,#ajaxContainer":"DOMNodeInserted"}
 						}]
 					},{
 						type:"info",
@@ -4269,10 +4265,16 @@ function main(savedOptions) {
 	// 执行优先级为0的函数
 	for(var i=0;i<fnQueue[0].length;i++) {
 		var fn=fnQueue[0][i];
+		if(XNR.debug) {
+			$error(fn.name,{msg:"start"});
+		}
 		try {
 			fn.name.apply(null,fn.args);
 		} catch(ex) {
 			$error(fn.name,ex);
+		}
+		if(XNR.debug) {
+			$error(fn.name,{msg:"end"});
 		}
 	}
 
@@ -4480,10 +4482,16 @@ function main(savedOptions) {
 					}
 				} else {
 					// 一般功能
+					if(XNR.debug) {
+						$error(fn.name,{msg:"start"});
+					}
 					try {
 						fn.name.apply(null,fn.args);
 					} catch(ex) {
 						$error(fn.name,ex);
+					}
+					if(XNR.debug) {
+						$error(fn.name,{msg:"end"});
 					}
 				}
 			}
@@ -4732,13 +4740,17 @@ function $script(code) {
 	}
 	// 让脚本以匿名函数方式执行
 	if(!/^\(function/.test(code)) {
-		code="(function(){try{"+code+"}catch(ex){}})();";
+		code="(function(){try{"+code+"}catch(ex){alert()}})();";
 	}
 	if(XNR.agent==CHROME || XNR.agent==SAFARI) {
 		// 如果chrome/safari用location方法，会发生各种各样奇怪的事。比如innerHTML失灵。。。万恶的webkit
 		$node("script").text(code).appendTo(document.documentElement);
 	} else {
-		document.location.href="javascript:"+code;
+		try {
+			document.location.href="javascript:"+code;
+		} catch(ex) {
+			$error("$script",{name:"javascript disabled"});
+		}
 	}
 };
 
@@ -4862,8 +4874,12 @@ function $error(func,error) {
 	if(typeof func=="function") {
 		func=/function (.*?)\(/.exec(func.toString())[1];
 	}
-	if(typeof error=="object" && error.name && error.message) {
-		var msg="在 "+func+"() 中发生了一个错误。\n错误名称："+error.name+"\n错误信息："+error.message+"\n\n";
+	if(typeof error=="object") {
+		var msg="在 "+func+"() 中发生了一个错误。\n";
+		for(var i in error) {
+			msg+=i+"："+error[i]+"\n";
+		}
+		msg+="\n";
 		if(XNR.agent==FIREFOX) {
 			extServices("log",msg);
 		} else {
@@ -5458,8 +5474,18 @@ PageKit.prototype={
 		}
 		return this;
 	},
+	// 读取实际表现出的CSS属性
+	looks:function(o) {
+		try {
+			if(typeof o=="string") {
+				return window.getComputedStyle(this.get(),null)[o];
+			}
+		} catch(ex) {
+		}
+		return null;
+	},
 	// 增加一个类
-	addClass: function(str) {
+	addClass:function(str) {
 		this.each(function(elem) {
 			var xnr=$(elem);
 			var c=xnr.attr("class");
