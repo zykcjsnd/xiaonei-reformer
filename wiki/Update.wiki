@@ -20,7 +20,7 @@ http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/update_g1.png
 检查更新地址：http://userscripts.org/scripts/source/45836.meta.js<br/>
 脚本下载地址：http://userscripts.org/scripts/source/45836.user.js
 
-如果用户无法直接访问userscripts.org，但可以访问xiaonei-reformer.googlecode.com，可以按以下设置来自动获取更新信息：
+如果用户无法直接访问[http://userscripts.org/ userscripts.org]，但可以访问[http://xiaonei-reformer.googlecode.com/ googlecode.com]，可以按以下设置来自动获取更新信息：
 
 检查更新地址：http://xiaonei-reformer.googlecode.com/files/45836.meta.js<br/>
 脚本下载地址：http://xiaonei-reformer.googlecode.com/files/xiaonei_reformer.min.user.js
