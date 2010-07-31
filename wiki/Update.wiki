@@ -25,10 +25,7 @@ http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/update_g1.png
 检查更新地址：http://xiaonei-reformer.googlecode.com/files/45836.meta.js<br/>
 脚本下载地址：http://xiaonei-reformer.googlecode.com/files/xiaonei_reformer.min.user.js
 
-如果连googlecode.com都无法访问，可以找一些在线代理网站，将在线代理编码后的地址填入，比如使用在线代理 http://go2-jp2.appspot.com/ ：
-
-检查更新地址：http://go2-jp2.appspot.com/f?mao2URL=0068007400740070003A002F002F00750073006500720073006300720069007000740073002E006F00720067002F0073006300720069007000740073002F0073006F0075007200630065002F00340035003800330036002E0075007300650072002E006A0073<br/>
-脚本下载地址：http://go2-jp2.appspot.com/f?mao2URL=0068007400740070003A002F002F007800690061006F006E00650069002D007200650066006F0072006D00650072002E0067006F006F0067006C00650063006F00640065002E0063006F006D002F00660069006C00650073002F007800690061006F006E00650069005F007200650066006F0072006D00650072002E006D0069006E002E0075007300650072002E006A0073
+如果连googlecode.com都无法访问，可以找一些在线代理网站，将在线代理编码后的地址填入，比如使用在线代理 http://go2-jp2.appspot.com/
 
 ==Firefox==
 Firefox浏览器本身有定期检查扩展更新功能，但目前对于本扩展来说，不会提示本扩展的升级。这是因为：
