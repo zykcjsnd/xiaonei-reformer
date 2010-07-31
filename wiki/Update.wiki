@@ -45,4 +45,4 @@ http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/update_c1.png
 Google Chrome/Chromium更新服务器的地址是clients2.google.com，在中国大陆的用户可能会无法访问（直接访问[http://clients2.google.com]出现问题，正常情况下会跳转到Google搜索）。这种情况下可以通过[http://code.google.com/feeds/p/xiaonei-reformer/downloads/basic RSS订阅本站下载页面]，也可以在下载页面的Chrome扩展项上加星，这样就可以在有更新时得到通知
 
 ==Safari==
-Safari浏览器本身有自动检查扩展更新功能，但这个功能可能会出现[KnownIssues#Safari扩展 问题]。另外升级需要访问本站。
+Safari浏览器本身有自动检查扩展更新功能，但这个功能可能会出现[KnownIssues#Safari 问题]。另外升级需要访问本站。
