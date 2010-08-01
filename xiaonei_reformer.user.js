@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.5.20100731
-// @miniver        336
+// @version        3.0.5.20100801
+// @miniver        337
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.5.20100731";
-XNR.miniver=336;
+XNR.version="3.0.5.20100801";
+XNR.miniver=337;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -566,6 +566,7 @@ function autoCheckFeeds(interval,feedFilter) {
 				}
 				// 滤除部分广告
 				feedList.find("li").filter("a[href^='http://edm.renren.com/link.do?']").remove();
+				feedList.find("li").filter("a[href^='http://gamestat.renren.com/game/']").remove();
 				// 人人桌面
 				feedList.find("li").filter("a[href^='http://im.renren.com/'][href*='.exe']").remove();
 				// 手机人人网
@@ -620,7 +621,34 @@ function autoCheckFeeds(interval,feedFilter) {
 							}
 						});
 						// 内容
-						var content=$node("section").code("<p>"+feedInfo.find("h3").code()+"</p>").appendTo(article);
+						var feedText=feedInfo.find("h3").code();
+						var feedScript=feedInfo.find("script[status='1']");
+						if(!feedScript.empty()) {
+							var replyText=feedScript.text();
+							try {
+								if(replyText.match(/"replyList":\[/)) {
+									var replyList=/"replyList":(\[[\S\s]+?\]),/.exec(replyText);
+									if(replyList) {
+										// 里面有一处type:'0'
+										replyList=replyList[1].replace(/'0'/g,"0");
+										replyList=JSON.parse(replyList);
+										if(replyList.length>0) {
+											var reply=replyList[replyList.length-1];
+											if(reply.ubname && reply.ubid && reply.replyContent) {
+												header.find("img").attr("src",reply.replyer_tinyurl);
+												feedText="<a href='http://renren.com/profile.do?id="+reply.ubid+"'>"+reply.ubname+"</a>："+reply.replyContent+" >> "+feedText;
+											} else {
+												$error("autoCheckFeeds",{name:"获取回复出错",message:"回复列表结构发生变化"});
+											}
+										}
+									}
+								}
+							} catch(ex) {
+								$error("autoCheckFeeds",ex);
+							}
+						}
+
+						var content=$node("section").code("<p>"+feedText+"</p>").appendTo(article);
 						content.find("img").style("position","absolute");
 					}
 					// 计数
@@ -2752,7 +2780,7 @@ function main(savedOptions) {
 					}],
 				}]
 			},{
-				text:"##去除右下角系统通知",
+				text:"##去除右下角系统通知（基本都是游戏广告）",
 				ctrl:[{
 					id:"removeSysNotification",
 					value:false,
