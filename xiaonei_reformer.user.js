@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.5.20100801
-// @miniver        337
+// @version        3.0.6.20100804
+// @miniver        338
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.5.20100801";
-XNR.miniver=337;
+XNR.version="3.0.6.20100804";
+XNR.miniver=338;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -121,6 +121,21 @@ function removePageTheme() {
 			return true;
 		}
 	});
+	// 恢复被注释了的原始模板
+	var nodes=$("head").get().childNodes;
+	for(var i=0;i<nodes.length;i++) {
+		// COMMENT_NODE
+		if(nodes[i].nodeType!=8) {
+			continue;
+		}
+		if(nodes[i].nodeValue.indexOf("profile-skin.css")!=-1) {
+			var file=/href=["'](.*?)["']/.exec(nodes[i].nodeValue);
+			if(file) {
+				$("head").append($node("link").attr({media:"all",type:"text/css",rel:"stylesheet",href:file[1]}));
+			}
+			break;
+		}
+	}
 	// 修复Logo
 	var logo=$("img[src*='viplogo-renren.png']").attr({height:null,width:null});
 	if(logo.size()>0) {
@@ -636,7 +651,7 @@ function autoCheckFeeds(interval,feedFilter) {
 											var reply=replyList[replyList.length-1];
 											if(reply.ubname && reply.ubid && reply.replyContent) {
 												header.find("img").attr("src",reply.replyer_tinyurl);
-												feedText="<a href='http://renren.com/profile.do?id="+reply.ubid+"'>"+reply.ubname+"</a>："+reply.replyContent+" >> "+feedText;
+												feedText="<a href='http://renren.com/profile.do?id="+reply.ubid+"'>"+reply.ubname+"</a> 回复了 "+feedText+"："+reply.replyContent;
 											} else {
 												$error("autoCheckFeeds",{name:"获取回复出错",message:"回复列表结构发生变化"});
 											}
@@ -1033,6 +1048,11 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				}
 			}
 		}
+		/*
+		if($page("profile")) {
+			style+=files["profile-skin.css"];
+		}
+		*/
 		if(style) {
 			$patchCSS(style);
 		}
@@ -1420,6 +1440,12 @@ function addBlogLinkProtocolsSupport() {
 function preventClickTracking() {
 	const code="var count=0;(function(){if(!XN||!XN.json||!XN.json.build){if(count<10){setTimeout(arguments.callee,500)};count++;return};XN.json.oldBuildFunc=XN.json.build;XN.json.build=function(a,b,c){if(typeof a=='object'&&b==null&&c==null){if(!(a.ID===undefined)&&!(a.R===undefined)&&!(a.T===undefined)&&!(a.X===undefined)&&!(a.Y===undefined)){if(decodeURIComponent(a.R)==location.href){throw 'click-tracking prevented';return;}}}return XN.json.oldBuildFunc(a,b,c)}})()";
 	$script(code);
+};
+
+// 阻止统计信息
+function preventScorecardResearch() {
+	const code="const COMSCORE=null";
+	$script(code,true);
 };
 
 // 将相册中所有照片放在一页中显示
@@ -3627,10 +3653,27 @@ function main(savedOptions) {
 						}]
 					},{
 						type:"info",
-						value:"可能是出于收集分析用户行为的目的，当你在人人网的绝大多数页面点击鼠标时，会在后台向网站发送你的ID/点击的位置/所在页面等相关信息。这个可以在Chrome开发者工具中的Resources项或者Firefox的Firebug扩展的Net项中看到，具体表现为向dj.renren.com发送了一个名为click的图像请求。如果你不想让网站搜集这些信息，可以启用本功能。启用本功能后每一次点击将会引发一次异常。"
+						value:"可能是出于收集分析用户行为的目的，当你在人人网的绝大多数页面点击鼠标时，会在后台向网站发送你的ID/点击的位置/所在页面等相关信息。这个可以在Chrome开发者工具中的Resources项或者Firefox的Firebug扩展的Net项中看到，具体表现为向dj.renren.com发送了一个名为click的图像请求。如果你不想让网站搜集这些信息，可以启用本功能。启用本功能后每次点击将会引发一次无害的异常（如果你不知道javascript中的异常是什么，可以忽略这句）。"
 					},{
 						type:"warn",
-						value:"启用本功能有极小的潜在可能性导致一些网站功能失效。如果遇到这种问题，请报告作者"
+						value:"启用本功能有极小的潜在可能性导致一些功能失效。如果遇到这种问题，请报告作者"
+					}
+				]
+			},{
+				text:"##阻止访问统计##",
+				agent:FIREFOX | CHROME | SAFARI,
+				ctrl:[
+					{
+						id:"preventScorecardResearch",
+						value:false,
+						fn:[{
+							name:preventScorecardResearch,
+							stage:0,
+							fire:true
+						}]
+					},{
+						type:"info",
+						value:"访问人人网的绝大多数页面时，会向scorecardresearch.com发送一些包含你访问过页面的统计信息，这在一定程度上降低了访问速度。如果你不想让网站获取这些统计信息，可以启用本功能。启用本功能后每次访问页面时会引发两个无害的异常（如果你不知道javascript中的异常是什么，可以忽略这句）。"
 					}
 				]
 			},{
@@ -3829,7 +3872,7 @@ function main(savedOptions) {
 						value:"鼠标经过人名链接时，显示对方相册/日志/留言板等的链接"
 					},{
 						type:"warn",
-						value:"访问对方相册/日志会在对方最近来访中留下记录"
+						value:"访问对方具体的相册/日志时会在对方最近来访中留下记录"
 					}
 				]
 			},{
@@ -4759,16 +4802,19 @@ function $wait(stage,func) {
  * 在浏览器中执行脚本
  * 参数
  *   [String]code:脚本内容
+ *   [Boolean]global:不放置于匿名函数
  * 返回值
  *   无
  */
-function $script(code) {
+function $script(code,global) {
 	if(!code){
 		return;
 	}
-	// 让脚本以匿名函数方式执行
-	if(!/^\(function/.test(code)) {
-		code="(function(){try{"+code+"}catch(ex){alert()}})();";
+	if(global) {
+		code="try{"+code+"}catch(ex){};";
+	} else if (!/^\(function/.test(code)) {
+		// 让脚本以匿名函数方式执行
+		code="(function(){try{"+code+"}catch(ex){}})();";
 	}
 	if(XNR.agent==CHROME || XNR.agent==SAFARI) {
 		// 如果chrome/safari用location方法，会发生各种各样奇怪的事。比如innerHTML失灵。。。万恶的webkit
@@ -4777,7 +4823,7 @@ function $script(code) {
 		try {
 			document.location.href="javascript:"+code;
 		} catch(ex) {
-			$error("$script",{name:"javascript disabled"});
+			$error("$script",{message:"javascript disabled?"});
 		}
 	}
 };
@@ -4904,8 +4950,21 @@ function $error(func,error) {
 	}
 	if(typeof error=="object") {
 		var msg="在 "+func+"() 中发生了一个错误。\n";
-		for(var i in error) {
-			msg+=i+"："+error[i]+"\n";
+		if(XNR.debug) {
+			for(var i in error) {
+				msg+=i+"："+error[i]+"\n";
+			}
+		} else {
+			if(error) {
+				if(error.name!=null) {
+					msg+="错误名称："+error.name+"\n";
+				}
+				if(error.message!=null) {
+					msg+="错误信息："+error.message+"\n";
+				}
+			} else {
+				return;
+			}
 		}
 		msg+="\n";
 		if(XNR.agent==FIREFOX) {
