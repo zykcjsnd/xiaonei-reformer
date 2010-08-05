@@ -1,4 +1,4 @@
-#! /usr/bin/ruby
+#! /usr/bin/ruby -Ku
 require 'json'
 require 'net/http'
 require 'uri'
