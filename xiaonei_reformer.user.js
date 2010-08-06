@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.6.20100804
-// @miniver        338
+// @version        3.0.6.20100806
+// @miniver        339
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.6.20100804";
-XNR.miniver=338;
+XNR.version="3.0.6.20100806";
+XNR.miniver=339;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -59,7 +59,7 @@ XNR.userId=$cookie("id","0");
 XNR.url=document.location.href;
 
 // 调试模式
-XNR.debug=true;
+XNR.debug=false;
 
 // 选项
 XNR.options={};
@@ -416,13 +416,17 @@ function blockAppNotification() {
 	});
 };
 
-// 隐藏特定新鲜事类型
-function hideFeeds(evt,feeds,mark) {
+// 隐藏特定类型/标题新鲜事
+function hideFeeds(evt,feeds,mark,forbiddenTitle) {
 	if(evt && evt.target.tagName!="LI") {
 		return;
 	}
 	(evt?$(evt.target):$("ul#feedHome > li")).filter(function(elem) {
-		var type=$feedType($(elem));
+		var feed=$(elem);
+		if(forbiddenTitle && feed.find("h3").text().replace(/\s/g,"").match(forbiddenTitle)) {
+			return true;
+		}
+		var type=$feedType(feed);
 		return (type!="" && feeds[type]==true);
 	}).each(function(elem) {
 		if(mark) {
@@ -451,11 +455,6 @@ function loadMoreFeeds(pages) {
 function disableAutoLoadFeeds() {
 	var code="var count=0;(function(){if(window.feedLoads==null && count<5){count++;setTimeout(arguments.callee,500)}else{window.feedLoads=2}})();";
 	$script(code);
-};
-
-// 隐藏新鲜事具体内容
-function hideFeedContent() {
-	$patchCSS("ul.richlist.feeds li div.content{display:none;}");
 };
 
 // 去除状态新鲜事上的链接
@@ -524,7 +523,7 @@ function flodFeedComment() {
 };
 
 // 自动检查提醒新鲜事更新
-function autoCheckFeeds(interval,feedFilter) {
+function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 	// 在bottombar上建立一个新的接收区域
 	if(!$("#webpager #setting-panel").empty()) {
 		var root=$node("div").attr("class","popupwindow notify-panel").appendTo($node("div").attr({"class":"panel",id:"feed-panel"}).insertTo($("#webpager #setting-panel").superior(),$("#webpager #setting-panel").index()));
@@ -574,9 +573,15 @@ function autoCheckFeeds(interval,feedFilter) {
 				var feedList=$node("ul").code(r[0].replace(/onload=".*?"/g,"").replace(/<script.*?<\/script>/g,"").replace(/src="http:\/\/s\.xnimg\.cn\/a\.gif"/g,"").replace(/lala=/g,"src="));
 				// 滤除被屏蔽的新鲜事类型
 				for(var i=feedList.heirs()-1;i>=0;i--) {
-					var feedType=$feedType(feedList.child(i));
-					if(feedType && feedFilter[feedType]) {
+					if(forbiddenTitle && feedList.child(i).find("h3").text().replace(/\s/g,"").match(forbiddenTitle)) {
+						// 按标题滤除
 						feedList.child(i).remove();
+					} else {
+						// 按类型滤除
+						var feedType=$feedType(feedList.child(i));
+						if(feedType && feedFilter[feedType]) {
+							feedList.child(i).remove();
+						}
 					}
 				}
 				// 滤除部分广告
@@ -3112,7 +3117,7 @@ function main(savedOptions) {
 					fn:[{
 						name:hideFeeds,
 						stage:1,
-						args:[null,"@feedGroup","@markFeedAsRead"],
+						args:[null,"@feedGroup","@markFeedAsRead","@forbiddenFeedTitle"],
 						trigger:{"ul#feedHome":"DOMNodeInserted"},
 					}],
 				}],
@@ -3198,6 +3203,21 @@ function main(savedOptions) {
 					}
 				]
 			},{
+				text:"隐藏标题中含有以下内容的新鲜事######",
+				ctrl:[
+					{
+						type:"info",
+						value:"忽略标题中的空格。多个关键字用|分隔。如“星座|教程”，即可屏蔽所有标题包含星座或教程的新鲜事。可以用于屏蔽某些人的分享，比如“张三分享”即可将所有张三的分享新鲜事屏蔽。实际上是正则表达式，如果你不懂正则表达式，就尽量不要使用特殊符号"
+					},{
+						type:"br"
+					},{
+						id:"forbiddenFeedTitle",
+						value:"",
+						type:"input",
+						style:"margin-left:5px;width:310px"
+					}
+				],
+			},{
 				text:"##将隐藏的新鲜事设为已读",
 				ctrl:[{
 					id:"markFeedAsRead",
@@ -3239,19 +3259,6 @@ function main(savedOptions) {
 				}],
 				login:true,
 				page:"home"
-			},{
-				text:"##隐藏新鲜事具体内容",
-				ctrl:[{
-					id:"hideFeedContent",
-					value:false,
-					fn:[{
-						name:hideFeedContent,
-						stage:0,
-						fire:true
-					}]
-				}],
-				login:true,
-				page:"home,profile"
 			},{
 				text:"##去除状态新鲜事上的链接",
 				ctrl:[{
@@ -3301,7 +3308,7 @@ function main(savedOptions) {
 							name:autoCheckFeeds,
 							stage:3,
 							fire:true,
-							args:["@checkFeedInterval","@feedGroup"]
+							args:["@checkFeedInterval","@feedGroup","@forbiddenFeedTitle"]
 						}]
 					},{
 						id:"checkFeedInterval",
@@ -3653,7 +3660,7 @@ function main(savedOptions) {
 						}]
 					},{
 						type:"info",
-						value:"可能是出于收集分析用户行为的目的，当你在人人网的绝大多数页面点击鼠标时，会在后台向网站发送你的ID/点击的位置/所在页面等相关信息。这个可以在Chrome开发者工具中的Resources项或者Firefox的Firebug扩展的Net项中看到，具体表现为向dj.renren.com发送了一个名为click的图像请求。如果你不想让网站搜集这些信息，可以启用本功能。启用本功能后每次点击将会引发一次无害的异常（如果你不知道javascript中的异常是什么，可以忽略这句）。"
+						value:"可能是出于收集分析用户行为的目的，当你在人人网的绝大多数页面点击鼠标时，会在后台向网站发送你的ID/点击的位置/所在页面等相关信息。这个可以在Chrome开发者工具中的Resources项或者Firefox的Firebug扩展的Net项中看到，具体表现为向dj.renren.com发送了一个名为click的图像请求。如果你不想让网站搜集这些信息，可以启用本功能。"
 					},{
 						type:"warn",
 						value:"启用本功能有极小的潜在可能性导致一些功能失效。如果遇到这种问题，请报告作者"
@@ -3673,7 +3680,7 @@ function main(savedOptions) {
 						}]
 					},{
 						type:"info",
-						value:"访问人人网的绝大多数页面时，会向scorecardresearch.com发送一些包含你访问过页面的统计信息，这在一定程度上降低了访问速度。如果你不想让网站获取这些统计信息，可以启用本功能。启用本功能后每次访问页面时会引发两个无害的异常（如果你不知道javascript中的异常是什么，可以忽略这句）。"
+						value:"访问人人网的绝大多数页面时，会向scorecardresearch.com发送一些包含你访问过页面的统计信息，这在一定程度上降低了访问速度。如果你不想让网站获取这些统计信息，可以启用本功能。"
 					}
 				]
 			},{
