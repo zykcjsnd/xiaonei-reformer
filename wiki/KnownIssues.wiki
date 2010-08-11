@@ -11,6 +11,7 @@
  * [KnownIssues#Greasemonkey Greasemonkey脚本]
  * [KnownIssues#Chrome Chrome扩展]
  * [KnownIssues#Safari Safari扩展]
+ * [KnownIssues#Opera Opera用户脚本]
 
 ==Firefox==
   # 在极少数时候会在首页卡死。表现为脚本后台执行占用大量CPU资源，经过一段时间后会弹出是否中止脚本执行的询问
@@ -24,3 +25,6 @@
 
 ==Safari==
   # Safari浏览器可能无法自动更新扩展。在Safari的Windows版本上观察到了这一现象。Safari在读取扩展升级文件时，可能实际读取的是以前缓存的文件，无法得到最新的版本号，从而认为不存在更新。解决方法是手动清除Safari浏览器缓存，也可以停用高速缓存功能。
+
+==Opera==
+ # 在Opera浏览器中设定检查更新地址时，对于某些地址（如：http://xiaonei-reformer.googlecode.com/files/45836.meta.js），会弹出一个文件下载询问窗口。这时需要手动点击打开按钮。如果点击其他按钮，会造成程序执行异常。
