@@ -3,7 +3,8 @@
 鉴于有部分使用者（几乎都是Google Chrome用户）不知道如何安装，在此编写了这么一个安装向导。
 
 首先声明：
- * 目前以及在将来可预见的一段时间内，本程序只会支持Google Chrome/Chromium/Firefox/Safari/Opera浏览器，所以不要指望它能够在别的浏览器上正常安装/使用。
+ * 目前以及在将来可预见的一段时间内，本程序只会支持Google Chrome/Chromium/Firefox/Safari浏览器，所以不要指望它能够在别的浏览器上正常安装/使用。
+ * 至于Opera，只是出于娱乐目的增加了对它的部分支持。所以遇到什么功能有问题，不要奇怪。
  * 如果你怀疑本程序有任何不良行为，请不要安装/自行卸载。你可以来信询问，但不欢迎质问。
 
 目录
@@ -81,7 +82,7 @@ Firefox扩展目前还未通过Mozilla官方审核，所以浏览器的检查扩
 ==安装Opera==
 请到 http://www.opera.com/ 下载最新版Opera进行安装。本程序不保证能在10.50以下版本上正常运行
 ==安装用户脚本==
- # 到[http://code.google.com/p/xiaonei-reformer/downloads/list 扩展下载页面]去下载[http://xiaonei-reformer.googlecode.com/files/opera_crossdomain.zip Opera用户脚本跨域支持]，将压缩包中的两个文件解压到[http://wiki.operachina.com/UserJS#.E5.85.A8.E5.B1.80.E4.BD.BF.E7.94.A8 javascript文件夹]内。如果不安装Opera用户脚本跨域支持，程序也可以运行，但部分功能将无法正常使用。关于Opera用户脚本跨域支持的相关信息，参考[http://my.opera.com/community/forums/topic.dml?id=155224 这里]。
+ # 到[http://code.google.com/p/xiaonei-reformer/downloads/list 扩展下载页面]去下载[http://xiaonei-reformer.googlecode.com/files/opera_crossdomain.zip Opera用户脚本跨域支持]，将压缩包中的两个文件解压到[http://wiki.operachina.com/UserJS#.E5.85.A8.E5.B1.80.E4.BD.BF.E7.94.A8 javascript文件夹]内。如果不安装Opera用户脚本跨域支持，程序也可以运行，但部分功能将会失效。关于Opera用户脚本跨域支持的相关信息，参考[http://my.opera.com/community/forums/topic.dml?id=155224 这里]。
  # 下载Opera用户脚本，将Opera用户脚本同样放置在[http://wiki.operachina.com/UserJS#.E5.85.A8.E5.B1.80.E4.BD.BF.E7.94.A8 javascript文件夹]中
 ==允许脚本存储==
 程序脚本需要在你的机器上存储你所设置的选项，但Opera默认并不允许程序脚本这么做。请在Opera设置（opera:config）里将"User JS Storage Quota"项的值设置为102400。关于脚本存储的更多信息，参考[http://www.opera.com/docs/userjs/specs/#scriptstorage 这里]。
