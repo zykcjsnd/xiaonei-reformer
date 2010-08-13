@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.7.20100812
-// @miniver        342
+// @version        3.0.7.20100813
+// @miniver        343
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.7.20100812";
-XNR.miniver=342;
+XNR.version="3.0.7.20100813";
+XNR.miniver=343;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -96,6 +96,7 @@ function removeAds(evt) {
 	if(!evt) {
 		var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, .box-body #flashcontent, div[id^='ad100']";
 		$ban(ads);
+		$script("const ad_js_version=null",true);
 		$wait(1,function() {
 			// .blank-holder在游戏大厅game.renren.com不能删
 			$(".blank-holder").remove(true);
@@ -529,6 +530,11 @@ function flodFeedComment() {
 		}
 		p.remove();
 	});
+};
+
+// 展开新鲜事回复时强制重载
+function refreshFeedReply() {
+	$script("var count=0;(function(){try{var f=XN.app.status.replyEditor.prototype;f.showO=f.show;f.show=function(mode){var id=this.getID('show_more_link');if(!$(id)){var c=document.createElement('div');c.id=id;c.className='statuscmtitem showmorereply';$(this.getID('replyList')).appendChild(c)}this.loadFromJSON=true;this._hasLoadAll=false;this._replyCount=0;this.showO(mode)};}catch(ex){count++;if(count<10)setTimeout(arguments.callee,200)}})()");
 };
 
 // 自动检查提醒新鲜事更新
@@ -1294,6 +1300,7 @@ function addExtraEmotions() {
 		"(ng)":		{t:"否",			s:"/imgpro/icons/statusface/nogood.gif"},
 		"(bb)":		{t:"便便",			s:"/imgpro/icons/statusface/shit.gif"},
 		"(raul)":	{t:"劳尔",			s:"/imgpro/icons/statusface/laoer.gif"},
+		"(mg)":		{t:"七彩玫瑰",		s:"/imgpro/icons/statusface/rose.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
@@ -3315,6 +3322,18 @@ function main(savedOptions) {
 				}],
 				page:"home,profile,pages"
 			},{
+				text:"##展开新鲜事回复时获取最新回复",
+				ctrl:[{
+					id:"refreshFeedReply",
+					value:false,
+					fn:[{
+						name:refreshFeedReply,
+						stage:2,
+						fire:true
+					}]
+				}],
+				page:"home,profile,status,pages"
+			},{
 				text:"##自动检查并提醒新的新鲜事，每隔##秒检查一次",
 				ctrl:[
 					{
@@ -4879,7 +4898,7 @@ function $script(code,global) {
 		try {
 			document.location.href="javascript:"+code;
 		} catch(ex) {
-			$error("$script",{message:"javascript disabled?"});
+			$error("$script",ex);
 		}
 	}
 };
@@ -5387,6 +5406,9 @@ PageKit.prototype={
 				return this;
 			}
 			var s=this.get();
+			if(!s) {
+				return PageKit([]);
+			}
 			for(;level>0;level--) {
 				s=s.parentNode;
 			}
