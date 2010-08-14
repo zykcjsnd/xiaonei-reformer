@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.7.20100813
-// @miniver        343
+// @version        3.0.7.20100814
+// @miniver        344
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.7.20100813";
-XNR.miniver=343;
+XNR.version="3.0.7.20100814";
+XNR.miniver=344;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -59,7 +59,7 @@ XNR.userId=$cookie("id","0");
 XNR.url=document.location.href;
 
 // 调试模式
-XNR.debug=true;
+XNR.debug=false;
 
 // 选项
 XNR.options={};
@@ -3695,7 +3695,7 @@ function main(savedOptions) {
 						}]
 					},{
 						type:"info",
-						value:"可能是出于收集分析用户行为的目的，当你在人人网的绝大多数页面点击鼠标时，会在后台向网站发送你的ID/点击的位置/所在页面等相关信息。这个可以在Chrome开发者工具中的Resources项或者Firefox的Firebug扩展的Net项中看到，具体表现为向dj.renren.com发送了一个名为click的图像请求。如果你不想让网站搜集这些信息，可以启用本功能。"
+						value:"可能是出于收集分析用户行为的目的，当你在人人网的绝大多数页面点击鼠标时，会在后台向网站发送你的ID/点击的位置/所在页面等相关信息。如果你不想让网站获取这些信息，可以启用本功能。"
 					},{
 						type:"warn",
 						value:"启用本功能有极小的潜在可能性导致一些功能失效。如果遇到这种问题，请报告作者"
@@ -4885,11 +4885,10 @@ function $script(code,global) {
 	if(!code){
 		return;
 	}
-	if(global) {
-		code="try{"+code+"}catch(ex){};";
-	} else if (!/^\(function/.test(code)) {
+	code="try{"+code+"}catch(ex){};";
+	if(!global) {
 		// 让脚本以匿名函数方式执行
-		code="(function(){try{"+code+"}catch(ex){}})();";
+		code="(function(){"+code+"})();";
 	}
 	if(XNR.agent==CHROME || XNR.agent==SAFARI) {
 		// 如果chrome/safari用location方法，会发生各种各样奇怪的事。比如innerHTML失灵。。。万恶的webkit
