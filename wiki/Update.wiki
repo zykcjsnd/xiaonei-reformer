@@ -3,10 +3,11 @@
 = 自动更新功能介绍 =
 
 ==目录==
- * [Update#Greasemonkey Greasemonkey扩展]
+ * [Update#Greasemonkey Greasemonkey脚本]
  * [Update#Firefox Firefox扩展]
  * [Update#Chrome Chrome扩展]
  * [Update#Safari Safari扩展]
+ * [Update#Opera Opera用户脚本]
 
 ==Greasemonkey==
 Greasemonkey脚本中有内建的检查更新机制，如下图
@@ -45,3 +46,6 @@ Google Chrome/Chromium更新服务器的地址是clients2.google.com，在中国
 
 ==Safari==
 Safari浏览器本身有自动检查扩展更新功能，但这个功能可能会出现[KnownIssues#Safari 问题]。另外升级需要访问本站。
+
+==Opera==
+Opera用户脚本采用内建的检查更新机制，设置同Greasemonkey脚本。如果自己设置了检查更新地址，可能会遇到一些[KnownIssues#Opera 问题]。
