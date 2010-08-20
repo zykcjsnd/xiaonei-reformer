@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.0.7.20100814
-// @miniver        344
+// @version        3.1.0.20100820
+// @miniver        345
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.0.7.20100814";
-XNR.miniver=344;
+XNR.version="3.1.0.20100820";
+XNR.miniver=345;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -92,27 +92,15 @@ var $=PageKit;
 /* 以下开始所有功能 */
 
 // 清除广告
-function removeAds(evt) {
-	if(!evt) {
-		var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, .box-body #flashcontent, div[id^='ad100']";
-		$ban(ads);
-		$script("const ad_js_version=null",true);
-		$wait(1,function() {
-			// .blank-holder在游戏大厅game.renren.com不能删
-			$(".blank-holder").remove(true);
-			// 其他的横幅广告。如2010-06的 kfc-banner
-			$("div[class$='-banner']").filter("a[target='_blank']>img").filter({childElementCount:1}).remove();
-		});
-	}
+function removeAds() {
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, .box-body #flashcontent, div[id^='ad100']";
+	$ban(ads);
+	$script("const ad_js_version=null",true);
 	$wait(1,function() {
-		// 混迹于新鲜事中的广告
-		$("ul#feedHome > li").filter("a[href^='http://edm.renren.com/']").remove();
-		$("ul#feedHome > li").filter("img[src^='http://edm.renren.com/']").remove();
-		$("ul#feedHome > li").filter("a[href^='http://gamestat.renren.com/game/']").remove();
-		// 人人桌面
-		$("ul#feedHome > li").filter("a[href^='http://im.renren.com/'][href*='.exe']").remove();
-		// 手机人人网
-		$("ul#feedHome > li").filter("div.no-interact").remove();
+		// .blank-holder在游戏大厅game.renren.com不能删
+		$(".blank-holder").remove(true);
+		// 其他的横幅广告。如2010-06的 kfc-banner
+		$("div[class$='-banner']").filter("a[target='_blank']>img").filter({childElementCount:1}).remove();
 	});
 };
 
@@ -222,10 +210,11 @@ function removeSysNotification() {
 function removeHomeGadgets(gadgetOpt) {
 	const gadgets={
 		"topNotice":".notice-holder, #notice_system",		// 顶部通知
-		"levelBar":".user-data",	// 个人等级
+		"levelBar":".site-menu-user-box",	// 个人等级
 		"footprint":"#footPrint",	// 最近来访
-		"newFriends":".side-item.pymk, .find-friend-box",	// 好友推荐，后面一个是新注册用户页面上的
-		"sponsors":"#sponsorsWidget",	// 赞助商内容
+		"newFriends":".pymk, .find-friend-box",	// 好友推荐，后面一个是新注册用户页面上的
+		"schoolBeauty":"#schoolBeautyBox",	// 校花校草
+		"sponsors":"#sponsorsWidget,.wide-sponsors",	// 赞助商内容
 		"publicPageAdmin":"#pageAdmin",	// 公共主页管理
 		"birthday":"#homeBirthdayPart",	// 好友生日
 		"survey":".side-item.sales-poll",	// 人人网调查
@@ -271,7 +260,7 @@ function removeProfileGadgets(gadgetOpt) {
 		"fav":"#kuAi.mod",
 		"lover":"#lover-space-div.mod",
 		"specialFriends":"#spFriends.mod",
-		"mutualFriends":"#cmFriends.mod",
+		"mutualFriends":"#cmFriends.mod",	// 当无共同好友时显示最近玩过的应用
 		"visitors":"#visitors.mod",
 		"pages":"#pages.mod",
 		"friends":"#friends.mod",
@@ -457,7 +446,7 @@ function hideFeeds(evt,feeds,mark,forbiddenTitle) {
 function loadMoreFeeds(pages) {
 	// 先修改load函数，原来的load最后有个window.scrollTo会使页面滚动
 	// 只要当前页数比预定页数少，就不断加载下一页
-	var code="var count=0;function dontscroll(){window.XN.page.home.feedFilter.oldLoad=window.XN.page.home.feedFilter.load;window.XN.page.home.feedFilter.load=function(a,b){var oldScrollTo=window.scrollTo;window.scrollTo=function(){};window.XN.page.home.feedFilter.oldLoad(a,b);window.scrollTo=oldScrollTo;}};function loadMoreFeeds(){if(window.XN.page.home.feedFilter.currentPage<"+(parseInt(pages)-1)+"){if(!window.XN.page.home.feedFilter.loading){XN.Page.home.feedFilter.loadMore()};setTimeout(arguments.callee,1000);}else{window.XN.page.home.feedFilter.load=window.XN.page.home.feedFilter.oldLoad;window.XN.page.home.feedFilter.oldLoad=null}};(function(){try{dontscroll();loadMoreFeeds()}catch(e){if(count<5){count++;setTimeout(arguments.callee,500)}}})()";
+	var code="var count=0;(function(){try{var f=window.XN.page.home.feedFilter;if(f.oldLoad)return;f.oldLoad=f.load;f.load=function(a,b){var oldScrollTo=window.scrollTo;window.scrollTo=function(){};window.XN.page.home.feedFilter.oldLoad(a,b);window.scrollTo=oldScrollTo};(function(){var f=window.XN.page.home.feedFilter;if(f.currentPage<"+(parseInt(pages)-1)+"){if(!f.loading){f.loadMore()};setTimeout(arguments.callee,1000);}else if(f.oldLoad){f.load=f.oldLoad;f.oldLoad=null}})()}catch(e){if(count<5){count++;setTimeout(arguments.callee,500)}}})()";
 	$script(code);
 };
 
@@ -534,7 +523,8 @@ function flodFeedComment() {
 
 // 展开新鲜事回复时强制重载
 function refreshFeedReply() {
-	$script("var count=0;(function(){try{var f=XN.app.status.replyEditor.prototype;f.showO=f.show;f.show=function(mode){var id=this.getID('show_more_link');if(!$(id)){var c=document.createElement('div');c.id=id;c.className='statuscmtitem showmorereply';$(this.getID('replyList')).appendChild(c)}this.loadFromJSON=true;this._hasLoadAll=false;this._replyCount=0;this.showO(mode)};}catch(ex){count++;if(count<10)setTimeout(arguments.callee,200)}})()");
+	const code="var count=0;(function(){try{var f=XN.app.status.replyEditor.prototype;if(f.showO)return;f.showO=f.show;f.show=function(mode){var id=this.getID('show_more_link');if(!$(id)){var c=document.createElement('div');c.id=id;c.className='statuscmtitem showmorereply';$(this.getID('replyList')).appendChild(c)}this.loadFromJSON=true;this._hasLoadAll=false;this._replyCount=0;this.showO(mode)};}catch(ex){count++;if(count<10)setTimeout(arguments.callee,200)}})()";
+	$script(code);
 };
 
 // 自动检查提醒新鲜事更新
@@ -599,14 +589,6 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 						}
 					}
 				}
-				// 滤除部分广告
-				feedList.find("li").filter("a[href^='http://edm.renren.com/']").remove();
-				feedList.find("li").filter("img[src^='http://edm.renren.com/']").remove();
-				feedList.find("li").filter("a[href^='http://gamestat.renren.com/game/']").remove();
-				// 人人桌面
-				feedList.find("li").filter("a[href^='http://im.renren.com/'][href*='.exe']").remove();
-				// 手机人人网
-				feedList.find("li").filter("div.no-interact").remove();
 
 				if(feedList.heirs()==0) {
 					return;
@@ -751,6 +733,9 @@ function removeNavItems(navLinks) {
 // 加宽导航栏
 function widenNavBar() {
 	$patchCSS(".navigation-wrapper,.navigation{width:auto} .navigation .nav-body{width:auto;float:none}");
+	$wait(1,function() {
+		$("body.layout_home3cols").insert($("#navBar"),$("#container").index());
+	});
 };
 
 // 增加导航栏项目
@@ -862,6 +847,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"ul.richlist.feeds li .details a.share:hover{color:"+FCOLOR+"}",
 				".pymk .comefrom{background-color:"+SCOLOR+"}",
 				".user-data,.panel.bookmarks,.statuscmtitem,.mincmt-diggers,.friend-birthday-window .bless-msg{background-color:"+SCOLOR+"}",
+				".news-feed-types a.news-feed-type:hover{background-color:"+BCOLOR+"}",
 			],
 			"webpager-std-min.css":[
 				".webpager ul.icon a:hover .tooltip{background-color:"+FCOLOR+"}",
@@ -1053,20 +1039,15 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 			],
 			"hotinfo.css":[
 				".iwanttojoin span{background-color:"+FCOLOR+"}"
-			]
+			],
+			"hot-all-min.css":[
+				".hot-photo .photo-main,.hot-photo .photo-sub{background-color:"+SCOLOR+"}"
+			],
 		};
 		var style="";
-		if(!evt) {
-			for(var f in files) {
-				if(!$("head link[rel='stylesheet'][href*='"+f+"']").empty()) {
-					style+=files[f].join("");
-				}
-			}
-		} else {
-			for(var f in files) {
-				if(evt.target.href && evt.target.href.indexOf(f)!=-1) {
-					style+=files[f].join("");
-				}
+		for(var f in files) {
+			if(!$("head link[rel*='stylesheet'][href*='"+f+"']").empty()) {
+				style+=files[f].join("");
 			}
 		}
 		/*
@@ -1075,7 +1056,11 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 		}
 		*/
 		if(style) {
-			$patchCSS(style);
+			if($allocated("blueTheme")) {
+				$alloc("blueTheme").text(style);
+			} else {
+				$alloc("blueTheme",$patchCSS(style));
+			}
 		}
 		if(!evt) {
 			prepatch.remove();
@@ -1391,13 +1376,11 @@ function addExtraEmotions() {
 	}
 
 	// 新鲜事回复表情
-	if($("#home").empty()) {
-		// 不在首页，需要处理状态表情
-		var code="var count=0;(function(){if(!XN.app.status.emoJsonForNewsFeedStatus){if(count<10){setTimeout(arguments.callee,500)};count++;return}var list=JSON.parse('"+JSON.stringify(emlist)+"');var curList=JSON.parse(XN.app.status.emoJsonForNewsFeedStatus).ubbList;for(var i=0;i<curList.length;i++){var em=curList[i];if(list[em.ubb]){delete list[em.ubb]}};for(var e in list){var em=list[e];curList.push({alt:'('+em.t+')',id:0,src:em.s,position:1000,ubb:e,img:'<img src=\"http://xnimg.cn'+em.s+'\" alr=\"'+em.t+'\"'})};XN.app.status.emoJsonForNewsFeedStatus='{ubbList:'+JSON.stringify(curList)+'}'})()";
-		$script(code);
-	};
+	var code="var count=0;(function(){if(!XN.app.status.emoJsonForNewsFeedStatus){if(count<10){setTimeout(arguments.callee,500)};count++;return}var list=JSON.parse('"+JSON.stringify(emlist)+"');var curList=JSON.parse(XN.app.status.emoJsonForNewsFeedStatus).ubbList;for(var i=0;i<curList.length;i++){var em=curList[i];if(list[em.ubb]){delete list[em.ubb]}};for(var e in list){var em=list[e];curList.push({alt:'('+em.t+')',id:0,src:em.s,position:1000,ubb:e,img:'<img src=\"http://xnimg.cn'+em.s+'\" alr=\"'+em.t+'\"'})};XN.app.status.emoJsonForNewsFeedStatus='{\"ubbList\":'+JSON.stringify(curList)+'}'})()";
+	$script(code);
+
 	// 处理照片/日志表情
-	var code="var count=0;(function(){if(!XN.app.status.emoJsonForNewsFeedCommon){if(count<10){setTimeout(arguments.callee,500)};count++;return};var list=JSON.parse('"+JSON.stringify(emlist1)+"');var curList=JSON.parse(XN.app.status.emoJsonForNewsFeedCommon).ubbList;for(var i=0;i<curList.length;i++){var em=curList[i];if(em.types==0)continue;if(list[em.ubb]){delete list[em.ubb]}};for(var e in list){curList.push({alt:e.substring(1,e.length-1),id:0,kind:0,position:1000,size:1,src:'/imgpro/emotions/tie/'+list[e]+'.gif',types:9,ubb:e,img:'<img src=\"http://xnimg.cn/imgpro/emotions/tie/'+list[e]+'.gif\" alt=\"'+e.substring(1,e.length-1)+'\"/>'})};XN.app.status.emoJsonForNewsFeedCommon='{ubbList:'+JSON.stringify(curList)+'}'})()";
+	var code="var count=0;(function(){if(!XN.app.status.emoJsonForNewsFeedCommon){if(count<10){setTimeout(arguments.callee,500)};count++;return}var list=JSON.parse('"+JSON.stringify(emlist1)+"');var curList=JSON.parse(XN.app.status.emoJsonForNewsFeedCommon).ubbList;for(var i=0;i<curList.length;i++){var em=curList[i];if(em.types==0)continue;if(list[em.ubb]){delete list[em.ubb]}};for(var e in list){curList.push({alt:e.substring(1,e.length-1),id:0,kind:0,position:1000,size:1,src:'/imgpro/emotions/tie/'+list[e]+'.gif',types:9,ubb:e,img:'<img src=\"http://xnimg.cn/imgpro/emotions/tie/'+list[e]+'.gif\" alt=\"'+e.substring(1,e.length-1)+'\"/>'})};XN.app.status.emoJsonForNewsFeedCommon='{\"ubbList\":'+JSON.stringify(curList)+'}'})()";
 	$script(code);
 };
 
@@ -1460,7 +1443,7 @@ function addBlogLinkProtocolsSupport() {
 
 // 阻止点击跟踪
 function preventClickTracking() {
-	const code="var count=0;(function(){if(!XN||!XN.json||!XN.json.build){if(count<10){setTimeout(arguments.callee,500)};count++;return};XN.json.oldBuildFunc=XN.json.build;XN.json.build=function(a,b,c){if(typeof a=='object'&&b==null&&c==null){if(!(a.ID===undefined)&&!(a.R===undefined)&&!(a.T===undefined)&&!(a.X===undefined)&&!(a.Y===undefined)){if(decodeURIComponent(a.R)==location.href){throw 'click-tracking prevented';return;}}}return XN.json.oldBuildFunc(a,b,c)}})()";
+	const code="var count=0;(function(){if(!XN||!XN.json||!XN.json.build){if(count<10){setTimeout(arguments.callee,500)};count++;return};if(XN.json.oldBuildFunc)return;XN.json.oldBuildFunc=XN.json.build;XN.json.build=function(a,b,c){if(typeof a=='object'&&b==null&&c==null){if(!(a.ID===undefined)&&!(a.R===undefined)&&!(a.T===undefined)&&!(a.X===undefined)&&!(a.Y===undefined)){if(decodeURIComponent(a.R)==location.href){throw 'click-tracking prevented';return;}}}return XN.json.oldBuildFunc(a,b,c)}})()";
 	$script(code);
 };
 
@@ -2410,13 +2393,19 @@ function enableShortcutMenu(evt) {
 
 // 允许优酷全屏播放
 function enableYoukuFullscreen() {
-	if(!$("#sharevideo img.videoimg").empty()) {
-		$("#sharevideo").hook("DOMNodeInserted",arguments.callee);
-		return;
-	} else {
-		$("#sharevideo").unhook("DOMNodeInserted",arguments.callee);
+	if(!$("#sharevideo").empty()) {
+		if(!$("#sharevideo img.videoimg").empty()) {
+			$("#sharevideo").hook("DOMNodeInserted",arguments.callee);
+			return;
+		} else {
+			$("#sharevideo").unhook("DOMNodeInserted",arguments.callee);
+		}
 	}
-	$("embed[src*='youku.com']").each(function(elem) {
+	if(!$("img.video.mceItem").empty()) {
+		$("img.video.mceItem").superior().hook("DOMNodeInserted",arguments.callee);
+		return;
+	}
+	$("embed[src*='youku.com']:not([src*='winType=interior'])").each(function(elem) {
 		elem.src=elem.src.replace(/(http:\/\/player\.youku\.com[^"]*)(\/v.swf)/,"$1&winType=interior$2");
 		elem.src=elem.src.replace(/(http:\/\/static\.youku\.com[^"]*)/,'$1&winType=interior');
 		$(elem).attr("flashvars","winType=interior").tag(elem);
@@ -2430,10 +2419,10 @@ function expandSearchResult() {
 
 // 搜索分享
 function searchShare() {
-	if($(".share-home .subnav-tabs").empty()) {
+	if($("#content .toolbar").empty() || !$("#content .share-headline").empty()) {
 		return;
 	}
-	var searchBar=$node("div").style({padding:"3px",marginBottom:"10px"}).insertTo($(".share-home"),$(".share-home .subnav-tabs").index()+1);
+	var searchBar=$node("div").style({padding:"3px",marginBottom:"10px"}).insertTo($("#content"),$(".toolbar").index()+1);
 	$node("input").attr({type:"text","class":"input-text"}).attr("style","width:200px;min-height:17px;margin-right:5px").appendTo(searchBar).hook("keypress",function(evt) {
 		// 按下回车键触发搜索按钮点击事件
 		if(evt.keyCode==13) {
@@ -2451,7 +2440,7 @@ function searchShare() {
 			var text=evt.target.previousElementSibling.value;
 			if(!text || !text.replace(/^ +/,"")) {
 				var i=0;
-				$(".share-home .share-itembox").each(function(elem) {
+				$("#content .share-itembox").each(function(elem) {
 					if(i<20) {
 						$(elem).show();
 					} else {
@@ -2484,7 +2473,7 @@ function searchShare() {
 			}
 			evt.target.value="0%";
 			$(".pager-top,.pager-bottom").hide();
-			$(".share-home .share-itembox").each(function(elem) {
+			$("#content .share-itembox").each(function(elem) {
 				var s=$(elem);
 				var content=s.find(".share-content").text().toLowerCase();
 				for(var i=0;i<keywords.length;i++) {
@@ -2513,7 +2502,7 @@ function searchShare() {
 						$get(link+"&curpage="+i,function(data) {
 							try {
 								var body=$node("div").code(/<body[\S\s]+<\/body>/.exec(data));
-								body.find(".share-home .share-itembox").each(function(elem) {
+								body.find("#content .share-itembox").each(function(elem) {
 									if(cache) {
 										var s=$(elem);
 									} else {
@@ -2539,13 +2528,13 @@ function searchShare() {
 										s.hide();
 									}
 									if(f || cache) {
-										s.appendTo($(".share-home"));
+										s.appendTo($("#content"));
 									}
 								});
 								body.find("body").remove();
 								body=null;
 								// 将翻页移动到最下面
-								$(".share-home .pager-bottom").appendTo($(".share-home"));
+								$("#content .pager-bottom").appendTo($("#content"));
 							} catch(ex) {
 								$error("searchShare::get",ex);
 							} finally {
@@ -2742,7 +2731,6 @@ function main(savedOptions) {
 						name:removeAds,
 						stage:0,
 						fire:true,
-						trigger:{"ul#feedHome":"DOMNodeInserted"},
 					}],
 				}],
 			},{
@@ -2881,6 +2869,10 @@ function main(savedOptions) {
 						text:"##好友推荐",
 						value:false,
 					},{
+						id:"schoolBeauty",
+						text:"##校花校草",
+						value:false
+					},{
 						id:"sponsors",
 						text:"##赞助商内容",
 						value:false,
@@ -2964,7 +2956,7 @@ function main(savedOptions) {
 						value:false,
 					},{
 						id:"mutualFriends",
-						text:"##共同好友",
+						text:"##共同好友/最近应用",
 						value:false,
 					},{
 						id:"visitors",
@@ -3145,13 +3137,17 @@ function main(savedOptions) {
 					}],
 				}],
 				login:true,
-				page:"home,profile"
+				page:"feed,profile"
 			},{
 				id:"feedGroup",
 				text:"隐藏以下类型的新鲜事",
 				column:4,
 				ctrl:[
 					{
+						id:"ads",
+						text:"##广告",
+						value:true
+					},{
 						id:"blog",
 						text:"##日志",
 						value:false
@@ -3240,6 +3236,7 @@ function main(savedOptions) {
 						style:"margin-left:5px;width:310px"
 					}
 				],
+				page:"feed,profile"
 			},{
 				text:"##将隐藏的新鲜事设为已读",
 				ctrl:[{
@@ -3268,7 +3265,7 @@ function main(savedOptions) {
 				],
 				master:0,
 				login:true,
-				page:"home"
+				page:"feed"
 			},{
 				text:"##窗口滚动到底部时不加载下一页新鲜事",
 				ctrl:[{
@@ -3281,7 +3278,7 @@ function main(savedOptions) {
 					}]
 				}],
 				login:true,
-				page:"home"
+				page:"feed"
 			},{
 				text:"##去除状态新鲜事上的链接",
 				ctrl:[{
@@ -3294,7 +3291,7 @@ function main(savedOptions) {
 					}]
 				}],
 				login:true,
-				page:"home"
+				page:"feed"
 			},{
 				text:"##在新鲜事中标记在线好友",
 				ctrl:[{
@@ -3308,7 +3305,7 @@ function main(savedOptions) {
 					}]
 				}],
 				login:true,
-				page:"home"
+				page:"feed"
 			},{
 				text:"##默认收起新鲜事回复",
 				ctrl:[{
@@ -3320,7 +3317,7 @@ function main(savedOptions) {
 						fire:true
 					}]
 				}],
-				page:"home,profile,pages"
+				page:"feed,profile,pages"
 			},{
 				text:"##展开新鲜事回复时获取最新回复",
 				ctrl:[{
@@ -3332,7 +3329,7 @@ function main(savedOptions) {
 						fire:true
 					}]
 				}],
-				page:"home,profile,status,pages"
+				page:"feed,profile,status,pages"
 			},{
 				text:"##自动检查并提醒新的新鲜事，每隔##秒检查一次",
 				ctrl:[
@@ -3380,7 +3377,6 @@ function main(savedOptions) {
 				],
 				master:0,
 				login:true,
-				page:"home"
 			}
 		],
 		"改造导航栏":[
@@ -3648,7 +3644,7 @@ function main(savedOptions) {
 						fire:true
 					}],
 				}],
-				page:"home,profile,status,act",
+				page:"feed,profile,status,act",
 				login:true
 			},{
 				text:"##为评论增加楼层计数##",
@@ -3978,7 +3974,8 @@ function main(savedOptions) {
 						type:"info",
 						value:"可以通过标题/内容预览搜索自己或他人的分享"
 					}
-				]
+				],
+				page:"share"
 			}
 		],
 		"自动更新":[
@@ -4066,7 +4063,7 @@ function main(savedOptions) {
 				ctrl:[{
 					id:"updateLink",
 					type:"input",
-					value:"http://xiaonei-reformer.googlecode.com/files/xiaonei_reformer.js",
+					value:"http://xiaonei-reformer.googlecode.com/files/xiaonei_reformer.min.js",
 					style:"width:330px;",
 					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的脚本下载地址"},
 				}],
@@ -4130,8 +4127,10 @@ function main(savedOptions) {
 		$alloc("optionsMenu_tooltip").w.remove();
 		$dealloc("optionsMenu_tooltip");
 	};
-	// 函数执行队列。对应4个优先级，每一个优先级数组中的函数对象为{name:函数,args:函数参数,[trigger:{CSS选择器:事件名,...}]}
-	var fnQueue=[[],[],[],[]];
+	// 函数执行队列。
+	// {page1:[[],[],[],[]],page2:[[],[],[],[]]...}
+	// 对应4个优先级，每一个优先级数组中的函数对象为{name:函数,args:函数参数,[trigger:{CSS选择器:事件名,...}]}
+	var fnQueue={"*":[[],[],[],[]]};
 	// 本地触发器队列
 	var localTriggers=[];
 
@@ -4148,23 +4147,11 @@ function main(savedOptions) {
 			if(o.agent && (o.agent & XNR.agent)==0) {
 				continue;
 			}
-			// 不执行函数，仅生成选项
-			var noexec=false;
-			// 检查执行功能页面限制
-			if(o.page) {
-				var p=o.page.split(",");
-				noexec=true;
-				for(var iPage=0;iPage<p.length;iPage++) {
-					// 不适用于当前页面
-					if($page(p[iPage])==true) {
-						noexec=false;
-						break;
-					}
-				}
-			}
+			// 将执行函数
+			var exec=true;
 			// 检查登录限制
 			if(o.login && XNR.userId=="0") {
-				noexec=true;
+				exec=false;
 			}
 			// 放在一块中
 			var block=$node("div");
@@ -4272,7 +4259,7 @@ function main(savedOptions) {
 					}
 
 					// 相关函数
-					if(!noexec && control.fn) {
+					if(exec && control.fn) {
 						for(var iFn=0;iFn<control.fn.length;iFn++) {
 							var fn=control.fn[iFn];
 							// 没有设置参数的话，设置一个空的参数集，方便后面处理
@@ -4280,8 +4267,17 @@ function main(savedOptions) {
 								fn.args=[];
 							}
 							if(fn.fire==null || (typeof fn.fire=="boolean" && node.value()==fn.fire)) {
-								// 符合要求，放入执行序列
-								fnQueue[fn.stage].push({name:fn.name,args:fn.args});
+								// 符合要求，放入对应功能页面执行序列
+								if(!o.page) {
+									o.page="*";
+								}
+								var p=o.page.split(",");
+								for(var iPage=0;iPage<p.length;iPage++) {
+									if(!fnQueue[p[iPage]]) {
+										fnQueue[p[iPage]]=[[],[],[],[]];
+									}
+									fnQueue[p[iPage]][fn.stage].push({name:fn.name,args:fn.args});
+								}
 							} else if(fn.fire==="trigger" && node.value()) {
 								// 只在trigger指定的事件触发时执行
 							} else if(typeof fn.fire=="string" && fn.fire!="trigger") {
@@ -4292,8 +4288,17 @@ function main(savedOptions) {
 							}
 							// 其他节点触发事件
 							if(fn.trigger) {
-								// 只有等到DOM建立后页面节点才能保证可访问。所以优先级最小为1
-								fnQueue[(fn.stage==0?1:fn.stage)].push({name:fn.name,args:fn.args,trigger:fn.trigger});
+								if(!o.page) {
+									o.page="*";
+								}
+								var p=o.page.split(",");
+								for(var iPage=0;iPage<p.length;iPage++) {
+									if(!fnQueue[p[iPage]]) {
+										fnQueue[p[iPage]]=[[],[],[],[]];
+									}
+									// 只有等到DOM建立后页面节点才能保证可访问。所以优先级最小为1
+									fnQueue[p[iPage]][(fn.stage==0?1:fn.stage)].push({name:fn.name,args:fn.args,trigger:fn.trigger});
+								}
 							}
 						}
 					}
@@ -4388,33 +4393,39 @@ function main(savedOptions) {
 	}
 
 	// 检查执行队列中的参数，如果是@开头就替换成对应选项值
-	for(var iStage=0;iStage<4;iStage++) {
-		for(var i=0;i<fnQueue[iStage].length;i++) {
-			var fn=fnQueue[iStage][i];
-			if(!fn.args) {
-				continue;
-			}
-			for(var iArg=0;iArg<fn.args.length;iArg++) {
-				if(typeof fn.args[iArg]=="string" && fn.args[iArg].charAt(0)=="@") {
-					fn.args[iArg]=XNR.options[fn.args[iArg].substring(1)];
+	for(var iPage in fnQueue) {
+		for(var iStage=0;iStage<4;iStage++) {
+			for(var i=0;i<fnQueue[iPage][iStage].length;i++) {
+				var fn=fnQueue[iPage][iStage][i];
+				if(!fn.args) {
+					continue;
+				}
+				for(var iArg=0;iArg<fn.args.length;iArg++) {
+					if(typeof fn.args[iArg]=="string" && fn.args[iArg].charAt(0)=="@") {
+						fn.args[iArg]=XNR.options[fn.args[iArg].substring(1)];
+					}
 				}
 			}
 		}
 	}
 
 	// 执行优先级为0的函数
-	for(var i=0;i<fnQueue[0].length;i++) {
-		var fn=fnQueue[0][i];
-		if(XNR.debug) {
-			$error(fn.name,{msg:"start"});
-		}
-		try {
-			fn.name.apply(null,fn.args);
-		} catch(ex) {
-			$error(fn.name,ex);
-		}
-		if(XNR.debug) {
-			$error(fn.name,{msg:"end"});
+	for(var iPage in fnQueue) {
+		if(iPage=="*" || $page(iPage)) {
+			for(var i=0;i<fnQueue[iPage][0].length;i++) {
+				var fn=fnQueue[iPage][0][i];
+				if(XNR.debug) {
+					$error(fn.name,{msg:"start"});
+				}
+				try {
+					fn.name.apply(null,fn.args);
+				} catch(ex) {
+					$error(fn.name,ex);
+				}
+				if(XNR.debug) {
+					$error(fn.name,{msg:"end"});
+				}
+			}
 		}
 	}
 
@@ -4602,41 +4613,98 @@ function main(savedOptions) {
 				// 添加菜单入口项在页面DOM构建完毕后执行
 				entry.prependTo($(".nav-body .nav-other"));
 			}
-
-			for(var i=0;i<fnQueue[stage].length;i++) {
-				var fn=fnQueue[stage][i];
-				if(fn.trigger) {
-					// 触发器
-					for(var t in fn.trigger) {
-						// 将fn包在一个匿名函数中确保事件触发时能得到对应的fn
-						(function(func) {
-							$(t).hook(func.trigger[t],function(evt) {	
-								try {
-									func.args[0]=evt;
-									func.name.apply(null,func.args);
-								} catch(ex) {
-									$error(func.name,ex);
-								}
-							});
-						})(fn);
-					}
-				} else {
-					// 一般功能
-					if(XNR.debug) {
-						$error(fn.name,{msg:"start"});
-					}
-					try {
-						fn.name.apply(null,fn.args);
-					} catch(ex) {
-						$error(fn.name,ex);
-					}
-					if(XNR.debug) {
-						$error(fn.name,{msg:"end"});
+			for(var iPage in fnQueue) {
+				if(iPage!="*" && !$page(iPage)) {
+					continue;
+				}
+				for(var i=0;i<fnQueue[iPage][stage].length;i++) {
+					var fn=fnQueue[iPage][stage][i];
+					if(fn.trigger) {
+						// 触发器
+						for(var t in fn.trigger) {
+							// 将fn包在一个匿名函数中确保事件触发时能得到对应的fn
+							(function(func) {
+								$(t).hook(func.trigger[t],function(evt) {	
+									try {
+										var args=func.args.slice(0);
+										args[0]=evt;
+										func.name.apply(null,args);
+									} catch(ex) {
+										$error(func.name,ex);
+									}
+								});
+							})(fn);
+						}
+					} else {
+						// 一般功能
+						if(XNR.debug) {
+							$error(fn.name,{msg:"start"});
+						}
+						try {
+							fn.name.apply(null,fn.args);
+						} catch(ex) {
+							$error(fn.name,ex);
+						}
+						if(XNR.debug) {
+							$error(fn.name,{msg:"end"});
+						}
 					}
 				}
 			}
 		});
 	}
+
+	$wait(1,function() {
+		var eventId="XNR"+parseInt(parseInt(Math.random()*10000));
+		$node("script").text("if(window.asyncHTMLManager){window.asyncHTMLManager.addEvent('load',function(){var evt=document.createEvent('HTMLEvents');evt.initEvent('"+eventId+"',true,true);document.dispatchEvent(evt)})}").appendTo(document.body).remove();
+		$(document).hook(eventId,function(evt){
+			evt.stopPropagation();
+			XNR.url=document.location.href;
+
+			for(var p=0;p<=3;p++) {
+				$wait(p,function (stage) {
+					for(var iPage in fnQueue) {
+						if(iPage=="*" || !$page(iPage)) {
+							continue;
+						}
+						for(var i=0;i<fnQueue[iPage][stage].length;i++) {
+							var fn=fnQueue[iPage][stage][i];
+							if(fn.trigger) {
+								// 触发器
+								for(var t in fn.trigger) {
+									// 将fn包在一个匿名函数中确保事件触发时能得到对应的fn
+									(function(func) {
+										$(t).hook(func.trigger[t],function(evt) {	
+											try {
+												var args=func.args.slice(0);
+												args[0]=evt;
+												func.name.apply(null,args);
+											} catch(ex) {
+												$error(func.name,ex);
+											}
+										});
+									})(fn);
+								}
+							} else {
+								// 一般功能
+								if(XNR.debug) {
+									$error(fn.name,{msg:"async start"});
+								}
+								try {
+									fn.name.apply(null,fn.args);
+								} catch(ex) {
+									$error(fn.name,ex);
+								}
+								if(XNR.debug) {
+									$error(fn.name,{msg:"async end"});
+								}
+							}
+						}
+					}
+				});
+			}
+		},true);
+	});
 };
 
 /* 以下是基本辅助函数，所有函数以$开头 */
@@ -4687,15 +4755,16 @@ function $node(name) {
 function $page(category,url) {
 	const pages={
 		home:"renren\\.com/[hH]ome|/guide\\.renren\\.com/[Gg]uidexf",	// 首页，后面的是新注册用户的首页
+		feed:"renren\\.com/[hH]ome$|renren\\.com/[hH]ome.*#nogo$|renren\\.com/[hH]ome\?[^#]*$|#/home|/guide\\.renren\\.com/[Gg]uidexf",	// 首页新鲜事，后面的是新注册用户的首页
 		profile:"renren\\.com/[Pp]rofile|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|renren.com/[a-zA-Z0-9_]{4,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personalLink.do
-		blog:"/blog\\.renren\\.com/",	// 日志
+		blog:"/blog\\.renren\\.com/|#//blog/",	// 日志
 		club:"/club\\.renren\\.com/",	// 论坛
 		pages:"/page\\.renren\\.com/",	// 公共主页
-		status:"/status\\.renren\\.com/",	// 状态
+		status:"/status\\.renren\\.com/|#//status/",	// 状态
 		photo:"/photo\\.renren\\.com/|/page\\.renren\\.com/[^/]+/photo/",	// 照片
 		album:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|/photo/album\\?|photo\\.renren\\.com/photo/ap/",	// 相册
 		friend:"/friend\\.renren\\.com/",	// 好友
-		share:"/share\\.renren\\.com/",	// 分享
+		share:"/share\\.renren\\.com/|#//share/",	// 分享
 		act:"/act\\.renren\\.com/",	// 活动
 		request:"/req\\.renren\\.com/",	// 请求
 		searchEx:"/browse\\.renren\\.com/searchEx\\.do"	//搜索结果
@@ -4703,9 +4772,6 @@ function $page(category,url) {
 	if(!url) {
 		url=XNR.url;
 	}
-	// 把锚点去掉
-	url=url.replace(/#[\s\S]*$/,"");
-
 	return pages[category]==null || url.match(pages[category])!=null;
 };
 
@@ -5112,25 +5178,36 @@ function $feedType(feed) {
 		}
 	}
 
+	// 广告
+	if(!feed.find("a[href^='http://gamestat.renren.com/']").empty() ||
+		!feed.find("img[src^='http://edm.renren.com/']").empty() ||
+		!feed.find("a[href^='http://edm.renren.com/']").empty() ||
+		// 人人桌面
+		!feed.find("a[href^='http://im.renren.com/'][href*='.exe']").empty() ||
+		// 手机人人网
+		!feed.find("div.no-interact").empty()) {
+			return "ads";
+	}
+
 	var types={
 		// 标题文本，标题HTML，有无content，footerHTML
 		"share":	["^分享"],
+		"page":		[null,"<a [^>]*href=\"\\s*http://page.renren.com/"],
 		"status":	["^:",null,false],	// 如果是纯表情状态，:后面的空格会被去除
 		"blog":		["^发表日志"],
 		"photo":	["^上传了\\d+张照片至|^的照片|美化了一张照片$|^:",null,true],
 		"contact":	["^你和.*和好朋友保持联络$"],
 		"profile":	["^修改了头像"],
-		"app":		[null,"<a [^>]*href=\"http://apps?.renren.com/"],
-		"gift":		["^收到","<a [^>]*href=\"http://gift.renren.com/"],
+		"app":		[null,"<a [^>]*href=\"\\s*http://apps?.renren.com/"],
+		"gift":		["^收到","<a [^>]*href=\"\\s*http://gift.renren.com/"],
 		"tag":		["照片中被圈出来了$"],
-		"movie":	[null,"<a [^>]*href=\"http://movie.xiaonei.com/|<a [^>]*href=\"http://movie.renren.com/"],
-		"connect":	[null,null,null,"<a [^>]*href=\"http://www.connect.renren.com/"],
+		"movie":	[null,"<a [^>]*href=\"\\s*http://movie.xiaonei.com/|<a [^>]*href=\"\\s*http://movie.renren.com/"],
+		"connect":	[null,null,null,"<a [^>]*href=\"\\s*http://www.connect.renren.com/"],
 		"friend":	["^[和、][\\s\\S]*成为了好友。"],
-		"page":		[null,"<a [^>]*href=\"http://page.renren.com/"],
 		"vip":		["^更换了主页模板皮肤|^更换了主页装扮|^成为了人人网[\\s\\S]*VIP会员特权|^收到好友赠送的[\\s\\S]*VIP会员特权|^开启了人人网VIP个性域名"],
 		"music":	["^上传了音乐"],
-		"poll":		[null,"<a [^>]*href=\"http://abc.renren.com/"],
-		"group":	[null,"<a [^>]*href=\"http://group.renren.com/"],
+		"poll":		[null,"<a [^>]*href=\"\\s*http://abc.renren.com/"],
+		"group":	[null,"<a [^>]*href=\"\\s*http://group.renren.com/"],
 		"levelup":	["^等级升至"],
 	};
 
