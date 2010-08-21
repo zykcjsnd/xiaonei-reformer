@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.1.0.20100820
-// @miniver        345
+// @version        3.1.0.20100821
+// @miniver        346
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.1.0.20100820";
-XNR.miniver=345;
+XNR.version="3.1.0.20100821";
+XNR.miniver=346;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -93,7 +93,7 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, .box-body #flashcontent, div[id^='ad100']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .kfc-side, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, .box-body #flashcontent, div[id^='ad100']";
 	$ban(ads);
 	$script("const ad_js_version=null",true);
 	$wait(1,function() {
@@ -108,7 +108,7 @@ function removeAds() {
 function removePageTheme() {
 	const themes=["head link[rel='stylesheet'][href*='/csspro/themes/'][href*='.css']", //节日模板
 				"#hometpl_style",	// 首页模板
-				"head link[rel='stylesheet'][href*='zidou_nav.css']",	// 紫豆导航栏
+			//	"head link[rel='stylesheet'][href*='zidou_nav.css']",	// 紫豆导航栏
 				"#domain_wrapper",	// 个人域名提示栏
 				"#themeLink"];		// 公共主页模板
 	$(themes.join(",")).remove();
@@ -531,7 +531,7 @@ function refreshFeedReply() {
 function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 	// 在bottombar上建立一个新的接收区域
 	if(!$("#webpager #setting-panel").empty()) {
-		var root=$node("div").attr("class","popupwindow notify-panel").appendTo($node("div").attr({"class":"panel",id:"feed-panel"}).insertTo($("#webpager #setting-panel").superior(),$("#webpager #setting-panel").index()));
+		var root=$node("div").attr("class","popupwindow notify-panel").appendTo($node("div").attr({"class":"panel",id:"feed-panel"}).insertTo($("#webpager #setting-panel").superior(),$("#webpager #setting-panel")));
 		var Btn=$node("div").attr("class","panelbarbutton").appendTo(root);
 		$node("img").attr({"class":"icon",height:"16",width:"16",src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA4klEQVQ4y61TsQrCQAztp9lCO3dz82N0cXFydXIWP0LE3Q/QxVEoR0Fpz15P3sGlSWlpix6EvOSSl9ccDYJ/nNnyZBfro53iqRmJ3fnmbHW42O31PiomEgBcwHjhUEwE881eSPNxG7fv4UlBXddkxhiLw+Oq+ogYXnwCCjxR13SOfT0pAODMuATmk31sjXI5rXW3AhT1Teb4VWipQClFCvj0tiqPxQ7SNHWMY3cAjHr0iVcY2gHPP7J3oyAMQ5sX2eQdoM8RxHFsn3kp3rlvB1xVkiTN/wA2b1EUCevKieZfzxcMt3dNdxsqQQAAAABJRU5ErkJggg%3D%3D",alt:"新鲜事",title:"新鲜事"}).appendTo(Btn);
 		$node("div").attr({id:"feed_toread_tip","class":"buttontooltip",style:"display:none"}).append($node("strong").attr("id","feed_toread_num").text("0")).appendTo(Btn);
@@ -734,7 +734,7 @@ function removeNavItems(navLinks) {
 function widenNavBar() {
 	$patchCSS(".navigation-wrapper,.navigation{width:auto} .navigation .nav-body{width:auto;float:none}");
 	$wait(1,function() {
-		$("body.layout_home3cols").insert($("#navBar"),$("#container").index());
+		$("body.layout_home3cols").insert($("#navBar"),$("#container"));
 	});
 };
 
@@ -775,9 +775,10 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 			// 开始检测有无模板存在
 			var theme=false;
 			// 紫豆导航栏
-			if(!$("head > link[ref='stylesheet'][herf*='zidou_nav.css']").empty()) {
-				theme=true;
-			} else if(!$("#themeLink:not([href*='sid=-1'])").empty()) {
+			//if(!$("head > link[ref='stylesheet'][herf*='zidou_nav.css']").empty()) {
+			//	theme=true;
+			//} else if(!$("#themeLink:not([href*='sid=-1'])").empty()) {
+			if(!$("#themeLink:not([href*='sid=-1'])").empty()) {
 				// 公共主页模板
 				theme=true;
 			} else if(!$("#hometpl_style").empty() && $("#hometpl_style").text().indexOf("{")!=-1) {
@@ -993,6 +994,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 			"share.css":[
 				"ul.share-hot-list li div.legend a{color:"+FCOLOR+"}",
 				"ul.share-hot-list li h3 a,ul.share-hot-list li h3 a:hover{color:"+FCOLOR+"}",
+				".hot-photo .photo-main,.hot-photo .photo-sub{background-color:"+SCOLOR+"}",
 			],
 			"guide-new":[	//guide-new-gameX.X.css，新注册用户
 				".find-friend-box .users .friend-selector li .name label{color:"+FCOLOR+"}",
@@ -1042,6 +1044,10 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 			],
 			"hot-all-min.css":[
 				".hot-photo .photo-main,.hot-photo .photo-sub{background-color:"+SCOLOR+"}"
+			],
+			"zidou_nav.css":[
+				".navigation .nav-main .menu-title a:hover,.navigation .menu-title a:hover{background-color:transparent;color:"+FCOLOR+"}",
+				".navigation .nav-main .menu-title a,.navigation #searchMenu .menu-title a,.navigation .nav-other .menu-title a,.navigation .nav-main .menu-title a.searchcolor{color:"+FCOLOR+"}",
 			],
 		};
 		var style="";
@@ -1159,7 +1165,7 @@ function customizePageLayout(layouts) {
 				b.append(a);
 				break;
 			case 3:
-				b.superior().insert(a,b.index());
+				b.superior().insert(a,b);
 				break;
 			case 4:
 				b.superior().insert(a,b.index()+1);
@@ -1489,6 +1495,10 @@ function showImagesInOnePage() {
 		if(text.match("albumId:[0-9]+,")) {
 			albumId=/albumId:([0-9]+),/.exec(text)[1];
 			ownerId=/ownerId:([0-9]+),/.exec(text)[1];
+			return false;
+		} else if(text.match("XN\\.page\\.data\\s*=\\s*{[^}]*id:[0-9]+")) {
+			albumId=/album\/([0-9]+)/.exec(XNR.url)[1];
+			ownerId=/XN\.page\.data\s*=\s*{[^}]*id:([0-9]+)/.exec(text)[1];
 			return false;
 		}
 	});
@@ -2419,10 +2429,10 @@ function expandSearchResult() {
 
 // 搜索分享
 function searchShare() {
-	if($("#content .toolbar").empty() || !$("#content .share-headline").empty()) {
+	if(($("#content .toolbar").empty() || !$("#content .share-headline").empty()) && $(".share-home .subnav-tabs").empty()) {
 		return;
 	}
-	var searchBar=$node("div").style({padding:"3px",marginBottom:"10px"}).insertTo($("#content"),$(".toolbar").index()+1);
+	var searchBar=$node("div").style({padding:"3px",marginBottom:"10px"}).insertTo($("#content"),$(".toolbar").index()+1).insertTo($(".share-home"),$(".share-home .subnav-tabs").index()+1);
 	$node("input").attr({type:"text","class":"input-text"}).attr("style","width:200px;min-height:17px;margin-right:5px").appendTo(searchBar).hook("keypress",function(evt) {
 		// 按下回车键触发搜索按钮点击事件
 		if(evt.keyCode==13) {
@@ -2473,7 +2483,7 @@ function searchShare() {
 			}
 			evt.target.value="0%";
 			$(".pager-top,.pager-bottom").hide();
-			$("#content .share-itembox").each(function(elem) {
+			$(".share-itembox").each(function(elem) {
 				var s=$(elem);
 				var content=s.find(".share-content").text().toLowerCase();
 				for(var i=0;i<keywords.length;i++) {
@@ -2492,17 +2502,18 @@ function searchShare() {
 				if(cache) {
 					$alloc("share_items");
 				}
-				var link=$(".pager-top ol.pagerpro li.current a").prop("href").replace(/curpage=[0-9]+/,"").replace(/#.*$/,"");
+				var link=$(".pager-top ol.pagerpro li:not(.current) a").prop("href").replace(/curpage=[0-9]+/,"").replace(/#.*$/,"");
 				if(link.indexOf("?")==-1) {
 					link+="?";
 				}
+				link+="&__view=async-html";
 				var progress=1;
 				for(var i=0;i<=lastpage;i++) {
 					if(i!=curpage) {
 						$get(link+"&curpage="+i,function(data) {
 							try {
 								var body=$node("div").code(/<body[\S\s]+<\/body>/.exec(data));
-								body.find("#content .share-itembox").each(function(elem) {
+								body.find(".share-itembox").each(function(elem) {
 									if(cache) {
 										var s=$(elem);
 									} else {
@@ -2528,13 +2539,13 @@ function searchShare() {
 										s.hide();
 									}
 									if(f || cache) {
-										s.appendTo($("#content"));
+										s.appendTo($("#content,.share-home"));
 									}
 								});
 								body.find("body").remove();
 								body=null;
 								// 将翻页移动到最下面
-								$("#content .pager-bottom").appendTo($("#content"));
+								$("#content .pager-bottom,.share-home .pager-bottom").appendTo($("#content,.share-home"));
 							} catch(ex) {
 								$error("searchShare::get",ex);
 							} finally {
@@ -3742,7 +3753,6 @@ function main(savedOptions) {
 						fire:true
 					}]
 				}],
-				login:true,
 				page:"album"
 			},{
 				text:"##允许下载相册图片####仅生成图片链接",
@@ -3766,7 +3776,6 @@ function main(savedOptions) {
 					}
 				],
 				master:0,
-				login:true,
 				page:"album"
 			},{
 				text:"##当鼠标在照片上时隐藏圈人框##",
@@ -5531,29 +5540,40 @@ PageKit.prototype={
 	insert:function(o,pos) {
 		var node=this.get();
 		var xhr=this;
-		if(!node) {
+		if(!node || pos==null) {
 			return this;
 		} else if(node.nodeType==1) {
-			if(pos<0) {
-				pos=0;
-			} else if (pos>node.childElementCount) {
-				pos=node.childElementCount;
-			}
-			if(o instanceof PageKit) {
-				o.each(function(elem) {
-					xhr.insert(elem,pos);
-					pos++;
-				});
-			} else if(o.nodeType==1){
-				if(pos==node.childElementCount) {
-					//在最后
-					node.appendChild(o);
-				} else {
-					// 在pos之前/
-					node.insertBefore(o,node.children[pos]);
+			if(typeof pos=="number") {
+				if(pos<0) {
+					pos=0;
+				} else if (pos>node.childElementCount) {
+					pos=node.childElementCount;
 				}
-			} else if(typeof o=="string") {
-				xhr.insert($($(node.cloneNode(false)).code(o).get().children),pos);
+				if(o instanceof PageKit) {
+					o.each(function(elem) {
+						xhr.insert(elem,pos);
+						pos++;
+					});
+				} else if(o.nodeType==1) {
+					if(pos==node.childElementCount) {
+						//在最后
+						node.appendChild(o);
+					} else {
+						// 在pos之前
+						node.insertBefore(o,node.children[pos]);
+					}
+				}
+			} else if(pos instanceof PageKit) {
+				this.insert(o,pos.get());
+			} else if(pos.nodeType==1) {
+				if(o instanceof PageKit) {
+					o.each(function(elem) {
+						xhr.insert(elem,pos);
+					});
+				} else if(o.nodeType==1) {
+					// 在pos之前
+					node.insertBefore(o,pos);
+				}
 			}
 		}
 		return this;
