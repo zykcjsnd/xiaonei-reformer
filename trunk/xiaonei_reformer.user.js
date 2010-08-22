@@ -36,8 +36,8 @@ if (window.self != window.top) {
 	} else if(document.body && !document.body.id && !document.body.className) {
 		// 也不在body没有标记的frame中运行
 		return;
-	} else if(document.location.href.toLowerCase().indexOf("ajaxproxy")>0) {
-		// 也不在ajaxproxy.html中运行
+	} else if(document.location.href.match(/ajaxproxy|ime.htm/i)) {
+		// 也不在ajaxproxy.html和ime.htm中运行
 		return;
 	}
 }
