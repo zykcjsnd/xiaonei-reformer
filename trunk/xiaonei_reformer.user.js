@@ -1226,6 +1226,7 @@ function addExtraEmotions() {
 		"(晕)":		{t:"晕",			s:"/imgpro/emotions/tie/21.gif"},
 		"(住嘴)":	{t:"住嘴",			s:"/imgpro/emotions/tie/23.gif"},
 		"(kb)":		{t:"抠鼻",			s:"/imgpro/icons/statusface/kbz2.gif"},
+		"(sx)":		{t:"烧香",			s:"/imgpro/icons/statusface/shaoxiang.gif"},
 		"(s)":		{t:"大兵",			s:"/imgpro/icons/statusface/soldier.gif"},
 		"(NBA)":	{t:"篮球",			s:"/imgpro/icons/statusface/basketball4.gif"},
 		"(蜜蜂)":	{t:"小蜜蜂",		s:"/imgpro/icons/statusface/bee.gif"},
