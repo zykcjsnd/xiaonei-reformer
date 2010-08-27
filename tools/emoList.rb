@@ -3,11 +3,19 @@ require 'json'
 require 'net/http'
 require 'uri'
 
-url = URI.parse('http://status.renren.com/getdoingubblist.do')
-res = Net::HTTP.start(url.host, url.port) {|http|
-	http.get(url.path)
-}
-emoList = JSON.parse(res.body)["ubbList"]
+def getEmo()
+	url = URI.parse('http://status.renren.com/getdoingubblist.do')
+	res = Net::HTTP.start(url.host, url.port) {|http|
+		http.get(url.path)
+	}
+	return res.body
+end
+
+begin
+	emoList = JSON.parse(getEmo())["ubbList"]
+rescue JSON::ParserError
+	emoList = JSON.parse(getEmo())["ubbList"]
+end
 
 filename = File.dirname(__FILE__)+"/EMOTIONS"
 
