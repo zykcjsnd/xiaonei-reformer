@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.1.1.20100829
-// @miniver        350
+// @version        3.1.1.20100903
+// @miniver        352
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.1.1.20100829";
-XNR.miniver=350;
+XNR.version="3.1.1.20100903";
+XNR.miniver=352;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -227,15 +227,18 @@ function removeHomeGadgets(gadgetOpt) {
 		"webFunction":{t:".side-item",f:".web-function"},	// 站内功能
 	};
 
-	var patch=""
-	for(var g in gadgets) {
-		if(!gadgetOpt[g]) {
-			continue;
+	if(!$allocated("home_gadgets")) {
+		var patch=""
+		for(var g in gadgets) {
+			if(!gadgetOpt[g]) {
+				continue;
+			}
+			patch+=gadgets[g]+",";
 		}
-		patch+=gadgets[g]+",";
-	}
-	if(patch) {
-		$ban(patch.substring(0,patch.length-1));
+		if(patch) {
+			$ban(patch.substring(0,patch.length-1));
+		}
+		$alloc("home_gadgets");
 	}
 
 	$wait(1,function() {
@@ -836,6 +839,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".menu-dropdown .menu-item li.show-more a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .menu-item a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .optionmenu li a:hover{background-color:"+FCOLOR+"}",
+				".site-menu-nav .nav-item li.selected,.site-menu-nav .nav-item .item-title.selected{background-color:"+BCOLOR+"}",
 			],
 			"home-all-min.css":[
 				".input-button,.input-submit{background-color:"+FCOLOR+"}",
@@ -886,6 +890,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".tabs-holder .tabpanel a:visited,.tabs-holder .tabpanel a{color:"+FCOLOR+"}",
 				".super-menu li a:hover{background-color:"+FCOLOR+"}",
 				".filter li.c a{background-color:"+BCOLOR+"}",
+				".tabs-holder .tabpanel a{color:"+FCOLOR+"}",
 			],
 			"msg.css":[
 				".page-titletabs a.add-msg{background-color:"+FCOLOR+"}",
@@ -1052,18 +1057,33 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".navigation .nav-main .menu-title a:hover,.navigation .menu-title a:hover{background-color:transparent;color:"+FCOLOR+"}",
 				".navigation .nav-main .menu-title a,.navigation #searchMenu .menu-title a,.navigation .nav-other .menu-title a,.navigation .nav-main .menu-title a.searchcolor{color:"+FCOLOR+"}",
 			],
+			"blog-async.css":[
+				"a.sbutton{color:#333333}",
+				"a.share:hover{background-color:"+FCOLOR+"}",
+				".input-button, .input-submit{background-color:"+FCOLOR+"}",
+				".pagerpro li a:hover{background-color:"+FCOLOR+"}",
+				".pagerpro li.current a,.pagerpro li.current a:hover{color:"+FCOLOR+"}",
+				"#pages-jump a{color:"+FCOLOR+"}",
+				"a.button{background-color:"+FCOLOR+"}",
+				"#self-nav li a{color:"+FCOLOR+"}",
+				"#self-nav .selected a{background-color:"+FCOLOR+"}",
+				"#entry h3{color:"+FCOLOR+"}",
+				"#super-input .sinput-list-action a:hover{background-color:"+FCOLOR+"}",
+				".share a:hover{background-color:"+FCOLOR+"}",
+				"#mycomment h3{color:"+FCOLOR+"}",
+				"#blogs .author ul a:hover{background-color:"+FCOLOR+"}",
+				".message h3{background-color:"+FCOLOR+"}",
+				".opLink{color:"+FCOLOR+"}",
+				".blog-side-body .user-info .user-detail p.total strong{color:"+FCOLOR+"}",
+				".page-titletabs .act-btn a{background-color:"+FCOLOR+"}",
+			],
 		};
 		var style="";
 		for(var f in files) {
-			if(!$("head link[rel*='stylesheet'][href*='"+f+"']").empty()) {
+			if(!$("link[rel*='stylesheet'][href*='"+f+"']").empty()) {
 				style+=files[f].join("");
 			}
 		}
-		/*
-		if($page("profile")) {
-			style+=files["profile-skin.css"];
-		}
-		*/
 		if(style) {
 			if($allocated("blueTheme")) {
 				$alloc("blueTheme").text(style);
@@ -1296,6 +1316,7 @@ function addExtraEmotions() {
 		"(bb)":		{t:"便便",			s:"/imgpro/icons/statusface/shit.gif"},
 		"(raul)":	{t:"劳尔",			s:"/imgpro/icons/statusface/laoer.gif"},
 		"(mg)":		{t:"七彩玫瑰",		s:"/imgpro/icons/statusface/rose.gif"},
+		"(kxl)":	{t:"开学啦",		s:"/imgpro/icons/statusface/kaixuela-wide.gif",w:true},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
@@ -1363,9 +1384,10 @@ function addExtraEmotions() {
 			var el=emlist[e];
 			// 不在已有列表中
 			if(!curlist[e]) {
-				$node("li").append($node("a").attr("href","#nogo").append($node("img").attr({title:el.t,alt:el.t,emotion:e,src:"http://xnimg.cn"+el.s,rsrc:"http://xnimg.cn"+el.s}))).appendTo(list);
+				$node("li").attr(el.w?{"class":"wider"}:{}).append($node("a").attr("href","#nogo").append($node("img").attr({title:el.t,alt:el.t,emotion:e,src:"http://xnimg.cn"+el.s,rsrc:"http://xnimg.cn"+el.s}))).appendTo(list);
 			} 
 		}
+		$patchCSS(".publisher-new .emotion li.wider{width:50px}.publisher-new .emotion li.wider a{width:46px}.publisher-new .emotion img{margin:0;vertical-align:baseline}");
 	}
 
 	// 首页的状态表情列表
@@ -1380,7 +1402,7 @@ function addExtraEmotions() {
 			var el=emlist[e];
 			// 不在已有列表中
 			if(!curlist[e]) {
-				$node("li").append($node("a").attr("href","javascript:;").append($node("img").attr({title:el.t,alt:el.t,emotion:e,src:"http://xnimg.cn"+el.s,rsrc:"http://xnimg.cn"+el.s}))).appendTo(list);
+				$node("li").attr(el.w?{"class":"wider",style:"width:50px"}:{}).append($node("a").attr("href","javascript:;").append($node("img").attr({title:el.t,alt:el.t,emotion:e,src:"http://xnimg.cn"+el.s,rsrc:"http://xnimg.cn"+el.s}))).appendTo(list);
 			}
 		}
 	}
@@ -2710,6 +2732,7 @@ function main(savedOptions) {
 	//     [Number]stage:执行时机/优先级（0～3）。参考$wait()。
 	//     [Object]trigger:设定其他控件的触发事件。{CSS选择器:事件名,...}。可选。如果stage为0，则trigger的执行时机为1，否则与stage相同。
 	//     [Array]args:函数参数列表。如果参数为另一控件值/选项组，名称前加@。如果指定了trigger，请将第一个参数设置为null，在事件触发时将用事件对象替代第一个参数
+	//     [Boolean]once:设置是否仅执行一次。对触发器无效。如果未指定功能的page，也默认只执行一次。目前仅对在首页动态载入中调用的功能有意义。
 	//   },
 	//   {
 	//   	函数2描述...
@@ -2798,6 +2821,7 @@ function main(savedOptions) {
 						name:removeFloatObject,
 						stage:0,
 						fire:true,
+						once:true,
 					}],
 				}],
 				page:"profile",
@@ -2810,6 +2834,7 @@ function main(savedOptions) {
 						name:removeMouseCursor,
 						stage:0,
 						fire:true,
+						once:true,
 					}],
 				}],
 				page:"profile",
@@ -3512,10 +3537,11 @@ function main(savedOptions) {
 						name:recoverBigDeleteBtn,
 						stage:0,
 						fire:true,
+						once:true,
 					}],
 				}],
 				login:true,
-				page:"home,profile"
+				page:"feed"
 			},{
 				text:"##去除页面字体限制##",
 				ctrl:[
@@ -3582,7 +3608,7 @@ function main(savedOptions) {
 						fn:[{
 							name:fixClubTypesetting,
 							stage:0,
-							fire:true
+							fire:true,
 						}]
 					},{
 						type:"info",
@@ -4305,7 +4331,7 @@ function main(savedOptions) {
 									if(!fnQueue[p[iPage]]) {
 										fnQueue[p[iPage]]=[[],[],[],[]];
 									}
-									fnQueue[p[iPage]][fn.stage].push({name:fn.name,args:fn.args});
+									fnQueue[p[iPage]][fn.stage].push({name:fn.name,args:fn.args,once:fn.once});
 								}
 							} else if(fn.fire==="trigger" && node.value()) {
 								// 只在trigger指定的事件触发时执行
@@ -4448,6 +4474,7 @@ function main(savedOptions) {
 				}
 				try {
 					fn.name.apply(null,fn.args);
+					fn.name.rf=true;
 				} catch(ex) {
 					$error(fn.name,ex);
 				}
@@ -4484,7 +4511,7 @@ function main(savedOptions) {
 	var icons_safari='data:image/png;base64,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%3D';
 	var icons_opera='data:image/png;base64,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%3D';
 	// 生成选项菜单
-	var menuHTML='<style type="text/css">.xnr_op{width:500px;position:fixed;z-index:200000;color:black;font-size:12px;background:rgba(0,0,0,0.5);padding:10px;-moz-border-radius:8px;border-radius:8px}.xnr_op *{padding:0;margin:0;border-collapse:collapse;line-height:normal}.xnr_op h1{font-size:18px;font-weight:bold}.xnr_op a{color:#3B5990}.xnr_op table{width:100%}.xnr_op>div{background:#FFFFFA}.xnr_op .title{padding:4px;display:block;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none;cursor:default}.xnr_op .btns{background:#F0F5F8;text-align:right;border-top:1px solid lightgray}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px;cursor:pointer}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .ok:active{border-color:#124680 #B8D4E8 #B8D4E8 #124680}.xnr_op .cancel{background:#F0F0F0;border-color:white #848484 #848484 white;color:black}.xnr_op .cancel:active{border-color:#848484 white white #848484}.xnr_op .options{height:300px}.xnr_op .category{width:119px;border-right:1px solid lightgray;overflow-x:hidden;overflow-y:auto;height:300px;display:table-cell}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages{width:380px;display:table-cell;vertical-align:top}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>div{min-height:19px}.xnr_op .pages>div>*{padding:2px 0;width:100%}.xnr_op .pages>div>div>*{vertical-align:middle}.xnr_op .group{margin-left:5px;margin-top:3px;table-layout:fixed}.xnr_op .group td{padding:2px 0}.xnr_op input[type="checkbox"]{margin-right:4px}.xnr_op button{background:#EFEFEF;background:-moz-linear-gradient(top,#FDFCFB,#E7E2DB);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#E7E2DB));color:black;border-color:#877C6C #A99D8C #A99D8C;border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;font-size:12px;padding:1px}.xnr_op button:active{background:#DAD3C8;background:-moz-linear-gradient(top,#DAD3C8,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#DAD3C8),to(#CCC4B9))}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op input[type="image"]{margin-left:2px;margin-right:2px}.xnr_op input:not([type]){border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;padding:1px;border-color:#877C6C #A99D8C #A99D8C}.xnr_op input:not([type]):focus{border-color:#3A6389}.xnr_op textarea{resize:none;-moz-resize:none}.xnr_op .fp{text-align:center;vertical-align:middle;width:360px;height:300px;display:table-cell}.xnr_op .pages .fp>*{padding:5px}.xnr_op .icons>a{margin:8px}.xnr_op .icons img{width:29px}.xnr_op .icons img:hover{-webkit-transform:scale(1.1);-moz-transform:scale(1.1);-o-transform:scale(1.1)}</style>';
+	var menuHTML='<style type="text/css">.xnr_op{width:500px;position:fixed;z-index:200000;color:black;font-size:12px;background:rgba(0,0,0,0.5);padding:10px;-moz-border-radius:8px;border-radius:8px}.xnr_op *{padding:0;margin:0;border-collapse:collapse;line-height:normal}.xnr_op h1{font-size:18px;font-weight:bold}.xnr_op a{color:#3B5990}.xnr_op table{width:100%}.xnr_op>div{background:#FFFFFA}.xnr_op .title{padding:4px;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none;cursor:default}.xnr_op .btns{background:#F0F5F8;text-align:right;border-top:1px solid lightgray}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px;cursor:pointer}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .ok:active{border-color:#124680 #B8D4E8 #B8D4E8 #124680}.xnr_op .cancel{background:#F0F0F0;border-color:white #848484 #848484 white;color:black}.xnr_op .cancel:active{border-color:#848484 white white #848484}.xnr_op .options{height:300px}.xnr_op .category{width:119px;border-right:1px solid lightgray;overflow-x:hidden;overflow-y:auto;height:300px;display:table-cell}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages{width:380px;display:table-cell;vertical-align:top}.xnr_op .pages>div{overflow:auto;height:280px;padding:10px}.xnr_op .pages>div>div{min-height:19px}.xnr_op .pages>div>*{padding:2px 0;width:100%}.xnr_op .pages>div>div>*{vertical-align:middle}.xnr_op .group{margin-left:5px;margin-top:3px;table-layout:fixed}.xnr_op .group td{padding:2px 0}.xnr_op input[type="checkbox"]{margin-right:4px}.xnr_op button{background-color:#EFEFEF;background:-moz-linear-gradient(top,#FDFCFB,#E7E2DB);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#E7E2DB));color:black;border-color:#877C6C #A99D8C #A99D8C;border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;font-size:12px;padding:'+(XNR.agent==FIREFOX||XNR.agent==USERSCRIPT?1:3)+'px}.xnr_op button[disabled]{color:grey}.xnr_op button:active:not([disabled]){background:#DAD3C8;background:-moz-linear-gradient(top,#DAD3C8,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#DAD3C8),to(#CCC4B9))}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op input[type="image"]{margin-left:2px;margin-right:2px}.xnr_op input:not([type]){border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;padding:1px;border-color:#877C6C #A99D8C #A99D8C}.xnr_op input:not([type]):focus{border-color:#3A6389}.xnr_op textarea{resize:none;-moz-resize:none}.xnr_op .fp{text-align:center;vertical-align:middle;width:360px;height:300px;display:table-cell}.xnr_op .pages .fp>*{padding:5px}.xnr_op .icons>a{margin:8px}.xnr_op .icons img{width:29px}.xnr_op .icons img:hover{-webkit-transform:scale(1.1);-moz-transform:scale(1.1);-o-transform:scale(1.1)}</style>';
 	menuHTML+='<div class="title">改造选项</div><div class="options"><div class="category"><ul>'+categoryHTML+'</ul></div><div class="pages"><div class="fp"><h1>人人网改造器</h1><p><b>'+XNR.version+' ('+XNR.miniver+')</b></p><p><b>Copyright © 2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p><p class="icons"><a href="http://userscripts.org/scripts/show/45836" title="GreaseMonkey脚本" target="_blank"><img src="'+icons_gm+'"/></a><a href="https://chrome.google.com/extensions/detail/bafellppfmjodafekndapfceggodmkfc" title="Chrome/Chromium扩展" target="_blank"><img src="'+icons_chrome+'"/></a><a href="https://addons.mozilla.org/firefox/addon/162178" title="Firefox扩展" target="_blank"><img src="'+icons_fx+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Safari扩展" target="_blank"><img src="'+icons_safari+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Opera用户脚本" target="_blank"><img src="'+icons_opera+'"/></a></p></div></div></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div>';
 
 	var menu=$node("div").attr("class","xnr_op").style("display","none").code(menuHTML).appendTo(document.documentElement);
@@ -4496,8 +4523,7 @@ function main(savedOptions) {
 		if(t.prop("tagName")=="SPAN") {
 			t=t.superior();
 		}
-		menu.find(".pages>div").hide();
-		menu.find(".pages>div").pick(t.index()+1).show();
+		menu.find(".pages>div").hide().pick(t.index()+1).show();
 		menu.find(".category li.selected").removeClass("selected");
 		t.addClass("selected");
 	});
@@ -4671,6 +4697,7 @@ function main(savedOptions) {
 						}
 						try {
 							fn.name.apply(null,fn.args);
+							fn.name.rf=true;
 						} catch(ex) {
 							$error(fn.name,ex);
 						}
@@ -4714,12 +4741,17 @@ function main(savedOptions) {
 								})(fn);
 							}
 						} else {
+							if(fn.once && fn.name.rf) {
+								// 已经执行过了
+								continue;
+							}
 							// 一般功能
 							if(XNR.debug) {
 								$error(fn.name,{msg:"async start"});
 							}
 							try {
 								fn.name.apply(null,fn.args);
+								fn.name.rf=true;
 							} catch(ex) {
 								$error(fn.name,ex);
 							}
@@ -4794,7 +4826,7 @@ function $page(category,url) {
 		share:"/share\\.renren\\.com/|#//share/",	// 分享
 		act:"/act\\.renren\\.com/",	// 活动
 		request:"/req\\.renren\\.com/",	// 请求
-		searchEx:"/browse\\.renren\\.com/searchEx\\.do"	//搜索结果
+		searchEx:"/browse\\.renren\\.com/searchEx\\.do"	// 搜索结果
 	};
 	if(!url) {
 		url=XNR.url;
@@ -5003,7 +5035,14 @@ function $script(code,global) {
  *   [PageKit]:创建的style节点
  */
 function $patchCSS(style) {
-	return $node("style").attr("type","text/css").text(style).appendTo(document.documentElement);
+	if($allocated("css_block")) {
+		var p=$alloc("css_block");
+	} else {
+		var p=$alloc("css_block",$node("div").appendTo(document.documentElement));
+	}
+	// 永远保持在最后
+	p.appendTo(document.documentElement);
+	return $node("style").attr("type","text/css").text(style).appendTo(p);
 };
 
 /*
