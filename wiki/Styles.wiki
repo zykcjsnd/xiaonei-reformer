@@ -1,6 +1,10 @@
 #summary 自定义页面样式示例
 
+* 首先声明：所有这些自定义页面样式仅仅对你个人生效，在其他人访问你的页面时看到的仍然为原始页面 *
+
 ==Facebook风格的个人主页==
+
+<font color="black">
 {{{
 body#profile .col-left{position:relative;top:-80px}
 body#profile .col-center{position:relative}
@@ -13,6 +17,7 @@ body#profile .col-full .tabs-holder{padding-left:370px;width:auto}
 body#profile .tabs-holder .tabpanel li:not(.current) a{background-color:#D8DFEA}
 body#profile .tabs-holder .tabpanel li:not(.current) a:hover{background-color:#627AAD;color:white}
 }}}
+</font>
 
 ==首页皮肤==
 在一个等级达到11级的帐户，使用首页换肤功能，选择一个皮肤后，在地址栏输入
