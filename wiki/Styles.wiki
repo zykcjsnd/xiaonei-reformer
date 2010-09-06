@@ -32,8 +32,9 @@ javascript:document.documentElement.textContent=document.querySelector("#hometpl
 即可得到皮肤的页面样式，将其复制粘贴到改造器中自定义页面样式功能下的文本框中即可生效。
 
 <font color="red">注意：</font>
-  # 这只针对* 首页换肤 *功能，对VIP会员的* 主页皮肤 *无效
+  # 这只是针对* 首页换肤 *功能，对VIP会员的* 主页皮肤 *无效
   # 由于首页换肤本身只对原始宽度的导航栏提供了皮肤图片，如果你同时启用了加宽导航栏功能，导航栏会比较难看
+  # 使用这种方法，会对所有页面生效，而不仅仅是在首页
 
 
 下面是两个例子
