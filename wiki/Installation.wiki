@@ -89,4 +89,4 @@ Firefox扩展目前还未通过Mozilla官方审核，所以浏览器的检查扩
 
 http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_o1.png
 
-关于脚本存储的更多信息，参考[http://www.opera.com/docs/userjs/specs/#scriptstorage 这里]。
+<font color="red">这一步非常重要，如果不修改，脚本将无法运行。</font>关于脚本存储的更多信息，参考[http://www.opera.com/docs/userjs/specs/#scriptstorage 这里]。
