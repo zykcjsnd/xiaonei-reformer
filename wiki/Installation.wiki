@@ -87,6 +87,6 @@ Firefox扩展目前还未通过Mozilla官方审核，所以浏览器的检查扩
 ==允许脚本存储==
 程序脚本需要在你的机器上存储你所设置的选项，但Opera默认并不允许程序脚本这么做。请在Opera设置（opera:config）里将"User JS Storage Quota"项的值设置为102400。如下图所示。
 
-http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_o1.jpg
+http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_o1.png
 
 关于脚本存储的更多信息，参考[http://www.opera.com/docs/userjs/specs/#scriptstorage 这里]。
