@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.1.1.20100904
-// @miniver        353
+// @version        3.1.1.20100915
+// @miniver        354
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.1.1.20100904";
-XNR.miniver=353;
+XNR.version="3.1.1.20100915";
+XNR.miniver=354;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -118,6 +118,8 @@ function removePageTheme() {
 		var theme=$(elem);
 		if(theme.text().indexOf("url(http://i.static.renren.com")!=-1) {
 			theme.remove();
+			// 不修改紫豆导航栏样式，增加边距
+			$patchCSS(".menu-bar{margin-bottom:10px}");
 			return true;
 		}
 	});
@@ -529,7 +531,32 @@ function flodFeedComment() {
 
 // 展开新鲜事回复时强制重载
 function refreshFeedReply() {
-	const code="var count=0;(function(){try{var f=XN.app.status.replyEditor.prototype;if(f.showO)return;f.showO=f.show;f.show=function(mode){var id=this.getID('show_more_link');if(!$(id)){var c=document.createElement('div');c.id=id;c.className='statuscmtitem showmorereply';$(this.getID('replyList')).appendChild(c)}this.loadFromJSON=true;this._hasLoadAll=false;this._replyCount=0;this.showO(mode)};}catch(ex){count++;if(count<10)setTimeout(arguments.callee,200)}})()";
+	const code="var count=0;"+
+	"(function(){"+
+		"try{"+
+			"var f=XN.app.status.replyEditor.prototype;"+
+			"if(f.showO)"+
+				"return;"+
+			"f.showO=f.show;"+
+			"f.show=function(mode){"+
+				"var id=this.getID('show_more_link');"+
+				"if(!$(id)){"+
+					"var c=document.createElement('div');"+
+					"c.id=id;"+
+					"c.className='statuscmtitem showmorereply';"+
+					"$(this.getID('replyList')).appendChild(c)"+
+				"}"+
+				"this.loadFromJSON=true;"+
+				"this._hasLoadAll=false;"+
+				"this._replyCount=0;"+
+				"this.showO(mode)"+
+			"}"+
+		"}catch(ex){"+
+			"count++;"+
+			"if(count<10)"+
+				"setTimeout(arguments.callee,200)"+
+		"}"+
+	"})()";
 	$script(code);
 };
 
@@ -833,6 +860,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"button, input[type=button]{background-color:"+FCOLOR+"}",
 				"td.pop_content .dialog_body a,td.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
 				"td.pop_content .dialog_buttons input{background-color:"+FCOLOR+" !important}",
+				"td.pop_content h2{background-color:"+FCOLOR+"}",
 				"ul.square_bullets{color:"+FCOLOR+"}",
 				".navigation{background-color:"+XCOLOR+"}",
 				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
@@ -1007,6 +1035,9 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 			],
 			"guide-new":[	//guide-new-gameX.X.css，新注册用户
 				".find-friend-box .users .friend-selector li .name label{color:"+FCOLOR+"}",
+				".myRR-box-body dl{background-color:"+SCOLOR+"}",
+				".search-friend .title,.guide-tabs-content .title,#mayknow_user .title,.myRR .title,.guide-game h2,.guide-game .slide p,.add-stars h3,.web-invite{background-color:"+SCOLOR+"}",
+				".find-friend-box .toolbar .more a:hover,.find-friend-box .legend .desc a:hover,.find-friend-box .show-more a:hover{background-color:"+SCOLOR+"}",
 			],
 			"blog-async.css":[
 				"a.share:hover{background-color:"+FCOLOR+"}",
@@ -1052,7 +1083,8 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".iwanttojoin span{background-color:"+FCOLOR+"}"
 			],
 			"hot-all-min.css":[
-				".hot-photo .photo-main,.hot-photo .photo-sub{background-color:"+SCOLOR+"}"
+				".hot-photo .photo-main,.hot-photo .photo-sub{background-color:"+SCOLOR+"}",
+				"a.share:hover{background-color:"+FCOLOR+"}",
 			],
 			"zidou_nav.css":[
 				".navigation .nav-main .menu-title a:hover,.navigation .menu-title a:hover{background-color:transparent;color:"+FCOLOR+"}",
@@ -1078,6 +1110,12 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".blog-side-body .user-info .user-detail p.total strong{color:"+FCOLOR+"}",
 				".page-titletabs .act-btn a{background-color:"+FCOLOR+"}",
 			],
+			"album-activity.css":[
+				"a.button{color:white;background-color:"+FCOLOR+"}",
+				".side-action .gallery .thumbnail:hover, .side-action .gallery .ghover .thumbnail, .side-action .gallery .this .thumbnail{background-color:"+FCOLOR+"}",
+				".ghover .turna, .ghover .turnb{color:"+FCOLOR+" !important}",
+				".acts-list .tabs-item a.selected, .acts-list .tabs-item a.selected:hover{background-color:"+FCOLOR+"}",
+			]
 		};
 		var style="";
 		for(var f in files) {
@@ -1100,7 +1138,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 
 // 使用大号新鲜事删除按钮
 function recoverBigDeleteBtn() {
-	$patchCSS("ul.richlist.feeds li a.delete{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -115px 0 transparent;height:18px;width:18px}ul.richlist.feeds li a.delete:hover{background:url(\"http://xnimg.cn/imgpro/home/home_icon.png\") no-repeat scroll -133px 0 transparent;height:18px;width:18px}");
+	$patchCSS("ul.richlist.feeds li a.delete{background:url(\"http://a.xnimg.cn/n/apps/home/compatible/cssimg/close-button.png\");height:18px;width:18px}ul.richlist.feeds li a.delete:hover{background:url(\"http://a.xnimg.cn/n/apps/home/compatible/cssimg/close-button2.png\");height:18px;width:18px}");
 };
 
 // 去除页面字体限制
@@ -1249,6 +1287,8 @@ function addExtraEmotions() {
 		"(住嘴)":	{t:"住嘴",			s:"/imgpro/emotions/tie/23.gif"},
 		"(kb)":		{t:"抠鼻",			s:"/imgpro/icons/statusface/kbz2.gif"},
 		"(sx)":		{t:"烧香",			s:"/imgpro/icons/statusface/shaoxiang.gif"},
+		"(zmy)":	{t:"织毛衣",		s:"/imgpro/icons/statusface/zhimaoyi.gif"},
+		"(jh)":		{t:"秋菊",			s:"/imgpro/icons/statusface/chrysanthemum.gif"},
 		"(s)":		{t:"大兵",			s:"/imgpro/icons/statusface/soldier.gif"},
 		"(NBA)":	{t:"篮球",			s:"/imgpro/icons/statusface/basketball4.gif"},
 		"(蜜蜂)":	{t:"小蜜蜂",		s:"/imgpro/icons/statusface/bee.gif"},
@@ -1268,6 +1308,7 @@ function addExtraEmotions() {
 		"(qx2)":	{t:"七夕",			s:"/imgpro/icons/statusface/qixi2.gif"},
 		"(bl)":		{t:"冰露",			s:"/imgpro/icons/statusface/ice.gif"},
 		"(gs)":		{t:"园丁",			s:"/imgpro/icons/statusface/growing-sapling.gif"},
+		"(ga)":		{t:"园丁",			s:"/imgpro/icons/statusface/gardener.gif"},
 		"(gq1)":	{t:"国庆六十周年",	s:"/imgpro/icons/statusface/national-day-60-firework.gif"},
 		"(gq2)":	{t:"国庆快乐",		s:"/imgpro/icons/statusface/national-day-balloon.gif"},
 		"(gq3)":	{t:"我爱中国",		s:"/imgpro/icons/statusface/national-day-i-love-zh.gif"},
@@ -1318,6 +1359,8 @@ function addExtraEmotions() {
 		"(raul)":	{t:"劳尔",			s:"/imgpro/icons/statusface/laoer.gif"},
 		"(mg)":		{t:"七彩玫瑰",		s:"/imgpro/icons/statusface/rose.gif"},
 		"(kxl)":	{t:"开学啦",		s:"/imgpro/icons/statusface/kaixuela-wide.gif",w:true},
+		"(hzd)":	{t:"划重点",		s:"/imgpro/icons/statusface/huazhongdian.gif"},
+		"(dm)":		{t:"点名",			s:"/imgpro/icons/statusface/dianming.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
@@ -1476,7 +1519,17 @@ function addBlogLinkProtocolsSupport() {
 
 // 阻止点击跟踪
 function preventClickTracking() {
-	const code="var count=0;(function(){try{XN.app.statsMaster.destroy()}catch(ex){if(count<10)setTimeout(arguments.callee,500);count++}})()";
+	const code="var count=0;"+
+	"(function(){"+
+		"try{"+
+			"XN.app.statsMaster.init=function(){};"+
+			"XN.app.statsMaster.destroy()"+
+		"}catch(ex){"+
+			"if(count<10)"+
+				"setTimeout(arguments.callee,500);"+
+			"count++"+
+		"}"+
+	"})()";
 	$script(code);
 };
 
@@ -3340,7 +3393,7 @@ function main(savedOptions) {
 					}]
 				}],
 				login:true,
-				page:"feed"
+				page:"feed,profile"
 			},{
 				text:"##在新鲜事中标记在线好友",
 				ctrl:[{
@@ -3354,7 +3407,7 @@ function main(savedOptions) {
 					}]
 				}],
 				login:true,
-				page:"feed"
+				page:"feed,profile"
 			},{
 				text:"##默认收起新鲜事回复",
 				ctrl:[{
@@ -3542,7 +3595,7 @@ function main(savedOptions) {
 					}],
 				}],
 				login:true,
-				page:"feed"
+				page:"feed,profile"
 			},{
 				text:"##去除页面字体限制##",
 				ctrl:[
@@ -4031,7 +4084,8 @@ function main(savedOptions) {
 						stage:2,
 						fire:true,
 					}]
-				}]
+				}],
+				page:"feed",
 			}
 		],
 		"自动更新":[
@@ -4814,7 +4868,7 @@ function $node(name) {
  */
 function $page(category,url) {
 	const pages={
-		home:"renren\\.com/[hH]ome|/guide\\.renren\\.com/[Gg]uidexf",	// 首页，后面的是新注册用户的首页
+		home:"renren\\.com/[hH]ome|/|guide\\.renren\\.com/[Gg]uide",	// 首页，后面的是新注册用户的首页
 		feed:"renren\\.com/[hH]ome$|renren\\.com/[hH]ome.*#nogo$|renren\\.com/[hH]ome\?[^#]*$|#/home|/guide\\.renren\\.com/[Gg]uidexf",	// 首页新鲜事，后面的是新注册用户的首页
 		profile:"renren\\.com/[Pp]rofile|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|renren.com/[a-zA-Z0-9_]{4,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personalLink.do
 		blog:"/blog\\.renren\\.com/|#//blog/",	// 日志
@@ -5018,7 +5072,7 @@ function $script(code,global) {
 	}
 	if(XNR.agent==CHROME || XNR.agent==SAFARI) {
 		// 如果chrome/safari用location方法，会发生各种各样奇怪的事。比如innerHTML失灵。。。万恶的webkit
-		$node("script").text(code).appendTo(document.documentElement);
+		$node("script").text(code).appendTo(document.documentElement).remove();
 	} else {
 		try {
 			document.location.href="javascript:"+code;
@@ -5237,10 +5291,16 @@ function $feedType(feed) {
 	if(!script.empty()) {
 		var stype=/"type":"(.*?)"/.exec(script.text());
 		if(stype) {
-			if(stype[1]=="album") {
-				return "photo";
-			} else {
-				return stype[1];
+			switch(stype[1]) {
+				case "share":
+				case "status":
+				case "photo":
+				case "blog":
+					return stype[1];
+				case "album":
+					return "photo";
+				case "edm":
+					return "ads";
 			}
 		}
 	}
@@ -5252,7 +5312,8 @@ function $feedType(feed) {
 		// 人人桌面
 		!feed.find("a[href^='http://im.renren.com/'][href*='.exe']").empty() ||
 		// 手机人人网
-		!feed.find("div.no-interact").empty()) {
+		!feed.find("div.no-interact").empty() ||
+		!feed.find("a[href^='http://track.']").empty()) {
 			return "ads";
 	}
 
