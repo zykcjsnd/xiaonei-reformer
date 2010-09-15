@@ -28,7 +28,7 @@ rescue Errno::ENOENT
 end
 
 emoList.each() {|emo|
-	a[emo["ubb"]]={"s" => emo["src"], "t" => emo["alt"]}
+	a[emo["ubb"]]={"t" => emo["alt"], "s" => emo["src"]}
 }
 
 file = File.open(filename,"w")
