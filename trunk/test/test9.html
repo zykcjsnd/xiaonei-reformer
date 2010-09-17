@@ -1,0 +1,39 @@
+<html>
+<head>
+	<title>Title</title>
+	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+	<script>
+	function test() {
+		for(var c=0;c<5;c++) {
+			var t1=new Date();
+			var a=[];
+			a[0]=1;
+			a[100000]=1;
+			var b=0;
+			for(var i=0;i<a.length;i++) {
+				if(a[i]!=undefined) {
+					b+=a[i];
+				}
+			}
+			var time1=(new Date()-t1);
+			var t2=new Date();
+			var a=[];
+			a[0]=1;
+			a[100000]=1;
+			var b=0;
+			for(var i in a) {
+				b+=a[i];
+			}
+			var time2=(new Date()-t2);
+			document.getElementById("result").innerHTML+=time1+" - "+time2+"</br>"
+
+		}
+	}
+	</script>
+</head>
+<body onload="test()">
+	<span id="result">
+	</span>
+</body>
+
+</html>

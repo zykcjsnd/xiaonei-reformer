@@ -27,27 +27,29 @@
 						}
 					} else {
 						for(var i=0;i<album.unknown.length;i++) {
-							html+="<a href=\""+album.unknown[i]+"\">"+album.unknown[i]+"</a>";
+							html+="<a href=\""+album.unknown[i]+"\">"+album.unknown[i]+"</a><br/>";
 						}
 					}
 					html+="<p/>";
 				}
 				if(album.type) {
 					if(album.data.length>0) {
-						html+="<p>使用下载工具软件（推荐使用Flashgot/Downthemall扩展）下载本页面全部链接即可得到下列"+album.data.length+"张照片</p>";
+						html+="<p>使用下载工具软件下载本页面全部链接即可得到下列"+album.data.length+"张照片</p>";
+						html+="<p><input type=\"button\" onclick=\"switchLink()\" value=\"切换链接描述\"/> 有些下载工具能够根据链接描述文字来设置下载文件的文件名</p>";
+						html+="<p><input type=\"checkbox\" onclick=\"switchIndex(this.checked,"+album.data.length+")\">在描述前添加图片序号（仅对可以根据描述来重命名文件的下载软件有用）</input></p>";
 					}
-					html+="<p><input type=\"button\" onclick=\"switchLink()\" value=\"切换链接描述\"/> 有些下载工具（如Downthemall扩展）能够根据链接描述文字来设置下载文件的文件名</p>"
 					for(var i=0;i<album.data.length;i++) {
 						var img=album.data[i];
-						html+="<a href=\""+img.src+"\" title=\""+img.title+"\">"+img.src+"</a><br/>"
+						html+="<a href=\""+img.src+"\" index=\""+img.i+"\" title=\""+img.title+"\">"+img.src+"</a><br/>"
 					}
 				} else {
 					if(album.data.length>0) {
 						html+="<p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列"+album.data.length+"张照片</p>";
+						html+="<p><input type=\"checkbox\" onclick=\"switchIndex(this.checked,"+album.data.length+")\">在描述前添加图片序号（仅对可以根据描述来重命名文件的下载软件有用）</input></p>";
 					}
 					for(var i=0;i<album.data.length;i++) {
 						var img=album.data[i];
-						html+="<img height=\"128\" width=\"128\" src=\""+img.src+"\" title=\""+img.title+"\"/>"
+						html+="<img height=\"128\" width=\"128\" index=\""+img.i+"\" src=\""+img.src+"\" title=\""+img.title+"\"/>"
 					}
 				}
 				document.body.innerHTML=html;
@@ -63,6 +65,24 @@
 					links[i].textContent=links[i].href;
 				}
 			}
+		};
+		function switchIndex(add,max) {
+			var links=document.querySelectorAll("*[index]");
+			for(var i=0;i<links.length;i++) {
+				if(add) {
+					links[i].title=idx(parseInt(links[i].getAttribute("index"))+1,max)+" "+links[i].title;
+				} else {
+					links[i].title=links[i].title.replace(/^[0-9]+ /,"");
+				}
+			}
+		};
+		function idx(n,max) {
+			var i=0;
+			for(;max>0;max=parseInt(max/10)) {
+				i++;
+			}
+			n="00000"+n;
+			return n.substring(n.length-i,n.length);
 		}
 	</script>
 </head>
