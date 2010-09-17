@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.1.1.20100915
-// @miniver        354
+// @version        3.1.2.20100917
+// @miniver        355
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.1.1.20100915";
-XNR.miniver=354;
+XNR.version="3.1.2.20100917";
+XNR.miniver=355;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -298,6 +298,7 @@ function hideRequest(req) {
 		"recommendRequest":"l-recommend",
 		"friendRequest":"l-friend",
 		"tagRequest":"l-tag",
+		"loveRequest":"l-love-invite",
 		"otherRequest":"iOther"
 	};
 	var box=$(".side-item.newrequests ul.icon");
@@ -460,7 +461,7 @@ function loadMoreFeeds(pages) {
 
 // 禁止在窗口滚动到底部时自动加载下一页新鲜事
 function disableAutoLoadFeeds() {
-	var code="var count=0;(function(){if(window.feedLoads==null && count<5){count++;setTimeout(arguments.callee,500)}else{window.feedLoads=2}})();";
+	var code="feedLoads=2";
 	$script(code);
 };
 
@@ -1672,6 +1673,9 @@ function showImagesInOnePage() {
 // 在相册中添加生成下载页链接
 // 压力测试：http://photo.renren.com/photo/242786354/album-236660334
 function addDownloadAlbumLink(linkOnly) {
+	if($(".photo-list,table.photoList").empty()) {
+		return;
+	}
 	var downLink=$node("a").attr({"style":'background-image:none;padding-left:10px;padding-right:10px',"href":'javascript:;'}).text("下载当前页图片");
 	if(!$(".function-nav.bottom-operate ul.nav-btn").empty()) {
 		$(".function-nav.bottom-operate ul.nav-btn").pick(-1).append($node("li").attr("class","pipe").text("|")).append($node("li").append(downLink));
@@ -1693,9 +1697,9 @@ function addDownloadAlbumLink(linkOnly) {
 				return;
 			}
 			var cur=0;
-			links.each(function(elem) {
+			links.each(function(elem,index) {
 				var t=$(elem);
-				$alloc("download_album").push({src:(t.attr("lazy-src") || t.attr("src")),title:(t.attr("alt") || "")});
+				$alloc("download_album").push({i:index,src:(t.attr("lazy-src") || t.attr("src")),title:(t.attr("alt") || "")});
 				cur++;
 				if(cur==totalImage) {
 					if(downLink.text().match("分析中")) {
@@ -1714,7 +1718,7 @@ function addDownloadAlbumLink(linkOnly) {
 			var cur=0;
 			links.attr("down","down");
 			downLink.text("分析中...(0/"+totalImage+")");
-			links.each(function(elem) {
+			links.each(function(elem,index) {
 				if(!downLink.text().match("分析中")) {
 					return false;
 				}
@@ -1760,7 +1764,7 @@ function addDownloadAlbumLink(linkOnly) {
 						$error("addDownloadAlbumLink::$get",ex);
 					} finally {
 						if(imageSrc) {
-							$alloc("download_album").push({src:imageSrc,title:($(target).find("img").attr("alt") || "")});
+							$alloc("download_album").push({i:index,src:imageSrc,title:($(target).find("img").attr("alt") || "")});
 							$(target).attr({down:null});
 						}
 						cur++;
@@ -1807,7 +1811,7 @@ function addDownloadAlbumLink(linkOnly) {
 						type:linkOnly					// 只显示链接
 					};
 					if(XNR.agent==USERSCRIPT || XNR.agent==OPERA) {
-						var html="<head><meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+album.title+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style><script>function switchLink(){var links=document.querySelectorAll(\"a[title]:not([title=\\'\\'])\");for(var i=0;i<links.length;i++){if(links[i].textContent!=links[i].title){links[i].textContent=links[i].title}else{links[i].textContent=links[i].href}}}</script></head><body>";
+						var html="<head><meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+album.title+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style><script>function switchLink(){var links=document.querySelectorAll(\"a[title]:not([title=\\'\\'])\");for(var i=0;i<links.length;i++){if(links[i].textContent!=links[i].title){links[i].textContent=links[i].title}else{links[i].textContent=links[i].href}}};function switchIndex(add,max){var links=document.querySelectorAll(\"*[index]\");for(var i=0;i<links.length;i++){if(add){links[i].title=idx(parseInt(links[i].getAttribute(\"index\"))+1,max)+\" \"+links[i].title}else{links[i].title=links[i].title.replace(/^[0-9]+ /,\"\")}}};function idx(n,max){var i=0;for(;max>0;max=parseInt(max/10)){i++}n=\"00000\"+n;return n.substring(n.length-i,n.length)}</script></head><body>";
 						html+="<p>来源："+album.ref+"</p>";
 						if(album.unknown.length>0) {
 							html+="<p>未能取得以下地址的图片：</p>";
@@ -1825,11 +1829,12 @@ function addDownloadAlbumLink(linkOnly) {
 						if(album.type) {
 							if(album.data.length>0) {
 								html+="<p>使用下载工具软件（推荐使用Flashgot/Downthemall扩展）下载本页面全部链接即可得到下列"+album.data.length+"张照片</p>";
+								html+="<p><input type=\"button\" onclick=\"switchLink()\" value=\"切换链接描述\"/> 有些下载工具（如Downthemall扩展）能够根据链接描述文字来设置下载文件的文件名</p>";
+								html+="<p><input type=\"checkbox\" onclick=\"switchIndex(this.checked,"+album.data.length+")\">在描述前添加图片序号（仅对可以根据描述来重命名文件的下载软件有用）</input></p>";
 							}
-							html+="<p><input type=\"button\" onclick=\"switchLink()\" value=\"切换链接描述\"/> 有些下载工具（如Downthemall扩展）能够根据链接描述文字来设置下载文件的文件名</p>"
 							for(var i=0;i<album.data.length;i++) {
 								var img=album.data[i];
-								html+="<a href=\""+img.src+"\" title=\""+img.title.replace(/'/g,"\\'")+"\">"+img.src+"</a><br/>"
+								html+="<a href=\""+img.src+"\" index=\""+img.i+"\" title=\""+img.title.replace(/'/g,"\\'")+"\">"+img.src+"</a><br/>"
 							}
 						} else {
 							if(album.data.length>0) {
@@ -1838,10 +1843,11 @@ function addDownloadAlbumLink(linkOnly) {
 								} else {
 									html+="<p>自己想办法把这"+album.data.length+"张图片保存吧</p>"
 								}
+								html+="<p><input type=\"checkbox\" onclick=\"switchIndex(this.checked,"+album.data.length+")\">在描述前添加图片序号（仅对可以根据描述来重命名文件的下载软件有用）</input></p>";
 							}
 							for(var i=0;i<album.data.length;i++) {
 								var img=album.data[i];
-								html+="<img height=\"128\" width=\"128\" src=\""+img.src+"\" title=\""+img.title.replace(/'/g,"\\'")+"\"/>"
+								html+="<img height=\"128\" width=\"128\" src=\""+img.src+"\" index=\""+img.i+"\" title=\""+img.title.replace(/'/g,"\\'")+"\"/>"
 							}
 						}
 						html+="</body>";
@@ -1858,7 +1864,7 @@ function addDownloadAlbumLink(linkOnly) {
 				downLink.text("下载当前页图片");
 				$(".photo-list span.img a,table.photoList td.photoPan>a").attr({down:null});
 			} catch(ex) {
-				$error("addDownloadAlbumLink::finish",ex)
+				$error("addDownloadAlbumLink::finish",ex);
 			}
 		};
 	});
@@ -3127,6 +3133,10 @@ function main(savedOptions) {
 						text:"##圈人",
 						value:false,
 					},{
+						id:"loveRequest",
+						text:"##人气请求",
+						value:false,
+					},{
 						id:"otherRequest",
 						text:"##其他请求",
 						value:false,
@@ -3376,7 +3386,8 @@ function main(savedOptions) {
 					fn:[{
 						name:disableAutoLoadFeeds,
 						stage:1,
-						fire:true
+						fire:"trigger",
+						trigger:{"@":"scroll"}
 					}]
 				}],
 				login:true,
@@ -3861,7 +3872,7 @@ function main(savedOptions) {
 					},{
 						id:"showImageLinkOnly",
 						value:false,
-						style:"margin-left:5px"
+						style:"margin-left:25px"
 					}
 				],
 				master:0,
@@ -5448,8 +5459,12 @@ PageKit.prototype={
 		for(var i=0;i<o.length;i++) {
 			var selector=o[i];
 			if(typeof selector=="string") {
-				// CSS选择语句
-				this.nodes=this.nodes.concat(Array.prototype.slice.call(document.querySelectorAll(selector)));
+				if(selector=="@") {
+					this.nodes=this.nodes.concat([window]);
+				} else {
+					// CSS选择语句
+					this.nodes=this.nodes.concat(Array.prototype.slice.call(document.querySelectorAll(selector)));
+				}
 			} else if(selector.nodeType) {
 				// DOM节点
 				this.nodes=this.nodes.concat(Array(selector));
