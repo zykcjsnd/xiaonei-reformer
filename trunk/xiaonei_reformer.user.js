@@ -3872,7 +3872,7 @@ function main(savedOptions) {
 					},{
 						id:"showImageLinkOnly",
 						value:false,
-						style:"margin-left:25px"
+						style:"margin-left:5px"
 					}
 				],
 				master:0,
