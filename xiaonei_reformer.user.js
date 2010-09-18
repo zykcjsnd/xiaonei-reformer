@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.1.2.20100917
-// @miniver        355
+// @version        3.1.2.20100918
+// @miniver        356
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.1.2.20100917";
-XNR.miniver=355;
+XNR.version="3.1.2.20100918";
+XNR.miniver=356;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -322,6 +322,16 @@ function rejectRequest(req) {
 	// 招呼
 	if(req["pokeRequest"]) {
 		$get("http://www.renren.com/delallpoke.do");
+	}
+
+	// 热点动态
+	if(req["hotRequest"]) {
+		$get("http://notify.renren.com/hot/hotnews.html?request");
+	}
+
+	// 人气请求
+	if(req["loveRequest"]) {
+		$get("http://lover.renren.com/love/lovePageShare/clear");
 	}
 
 	// 没有其他选项被启用，退出。
@@ -3178,6 +3188,14 @@ function main(savedOptions) {
 					},{
 						id:"pokeRequest",
 						text:"##招呼",
+						value:false,
+					},{
+						id:"hotRequest",
+						text:"##热点动态",
+						value:false,
+					},{
+						id:"loveRequest",
+						text:"##人气请求",
 						value:false,
 					}
 				]

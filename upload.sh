@@ -27,4 +27,5 @@ type3="-l Deprecated"
 ./googlecode_upload.py -s "Safari扩展" $project $type1 xiaonei_reformer.safariextz
 ./googlecode_upload.py -s "Safari升级" $project $type3 update.plist
 ./googlecode_upload.py -s "Opera用户脚本" $project $type2 xiaonei_reformer.min.js
+./googlecode_upload.py -s "发布日志" $project Release.txt
 
