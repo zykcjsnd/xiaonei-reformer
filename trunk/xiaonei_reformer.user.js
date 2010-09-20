@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.1.2.20100918
-// @miniver        356
+// @version        3.1.2.20100920
+// @miniver        357
 // @author         xz
 // ==/UserScript==
 //
@@ -2437,7 +2437,7 @@ function enableShortcutMenu(evt) {
 		if($allocated("shortcut_menu")) {
 			var menu=$alloc("shortcut_menu");
 			var menuNode=menu.m.get();
-			if(t==menuNode || t.parentNode==menuNode) {
+			if(t==menuNode || (menuNode.compareDocumentPosition(t) & 16)) {
 				return;
 			}
 			// BUG：http://code.google.com/p/chromium/issues/detail?id=39978
@@ -2469,24 +2469,34 @@ function enableShortcutMenu(evt) {
 		var pages={
 			"Ta的相册":"http://photo.renren.com/getalbumlist.do?id=@@",
 			"Ta的头像相册":"http://photo.renren.com/getalbumprofile.do?owner=@@",
-			"圈Ta的照片":"http://photo.renren.com/someonetagphoto.do?id=@@", // http://photo.renren.com/photo/@@/relatives/hasTags
 			"Ta的日志":"http://blog.renren.com/GetBlog.do?id=@@",	// http://blog.renren.com/blog/@@/friends
+			"Ta的公开资料":"http://browse.renren.com/searchEx.do?ajax=1&q=@@",
+			"Ta的状态":"http://status.renren.com/status/@@",
+			"Ta的好友":"http://friend.renren.com/GetFriendList.do?id=@@",
+		};
+		var morePages={
+			"Ta的大头贴相册":"http://i.renren.com/hp/home?uid=@@",
+			"圈Ta的照片":"http://photo.renren.com/someonetagphoto.do?id=@@", // http://photo.renren.com/photo/@@/relatives/hasTags
 			"与Ta相关的日志":"http://blog.renren.com/SomeoneRelativeBlog.do?id=@@", // http://blog.renren.com/blog/@@/friendsRelatives
 			"Ta的分享":"http://share.renren.com/share/ShareList.do?id=@@",
 			"Ta的留言板":"http://gossip.renren.com/getgossiplist.do?id=@@",
-			"Ta的好友":"http://friend.renren.com/GetFriendList.do?id=@@",
-			"Ta的状态":"http://status.renren.com/status/@@",
 			"Ta的礼物":"http://gift.renren.com/show/box/otherbox?userId=@@",
 			"Ta的游戏徽章":"http://game.renren.com/medal?uid=@@",
 			"Ta的公共主页":"http://page.renren.com/home/friendspages/view?uid=@@",
-			"Ta的公开资料":"http://browse.renren.com/searchEx.do?ajax=1&q=@@",
 		};
-		var html="";
+		var html="<ul>";
 		for(var i in pages) {
-			html+="<a target='_blank' href='";
+			html+="<li><a target='_blank' href='";
 			html+=pages[i].replace("@@",id);
-			html+="'>"+i+"</a><br/>"
+			html+="'>"+i+"</a></li>"
 		}
+		html+="<li><a style='float:right;font-size:x-small' href='javascript:' onclick='var me=this.parentNode;for(var p=me;p.nextElementSibling;p=p.nextElementSibling){p.style.display=null};me.style.display=\"none\";return false'/>Ta的更多</a></li>";
+		for(var i in morePages) {
+			html+="<li style='display:none'><a target='_blank' href='";
+			html+=morePages[i].replace("@@",id);
+			html+="'>"+i+"</a></li>"
+		}
+		html+="</ul>";
 		var rect=t.getBoundingClientRect();
 		var menu=$alloc("shortcut_menu");
 		menu.t=t;
@@ -4114,7 +4124,7 @@ function main(savedOptions) {
 						fire:true,
 					}]
 				}],
-				page:"feed",
+				page:"feed,profile",
 			}
 		],
 		"自动更新":[
@@ -4898,7 +4908,7 @@ function $node(name) {
 function $page(category,url) {
 	const pages={
 		home:"renren\\.com/[hH]ome|/|guide\\.renren\\.com/[Gg]uide",	// 首页，后面的是新注册用户的首页
-		feed:"renren\\.com/[hH]ome$|renren\\.com/[hH]ome.*#nogo$|renren\\.com/[hH]ome\?[^#]*$|#/home|/guide\\.renren\\.com/[Gg]uidexf",	// 首页新鲜事，后面的是新注册用户的首页
+		feed:"renren\\.com/[hH]ome#?$|renren\\.com/[hH]ome.*#nogo$|renren\\.com/[hH]ome\?[^#]*$|#/home|/guide\\.renren\\.com/[Gg]uidexf",	// 首页新鲜事，后面的是新注册用户的首页
 		profile:"renren\\.com/[Pp]rofile|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|renren.com/[a-zA-Z0-9_]{4,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personalLink.do
 		blog:"/blog\\.renren\\.com/|#//blog/",	// 日志
 		club:"/club\\.renren\\.com/",	// 论坛
