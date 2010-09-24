@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.1.2.20100920
-// @miniver        357
+// @version        3.1.2.20100924
+// @miniver        358
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.1.2.20100918";
-XNR.miniver=356;
+XNR.version="3.1.2.20100924";
+XNR.miniver=358;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -179,6 +179,7 @@ function removeBlogTheme() {
 			return true;
 		}
 	});
+	$(".blog-wrap").removeClass("blog-wrap");
 };
 
 // 删除日志中整段的链接
@@ -1372,6 +1373,7 @@ function addExtraEmotions() {
 		"(kxl)":	{t:"开学啦",		s:"/imgpro/icons/statusface/kaixuela-wide.gif",w:true},
 		"(hzd)":	{t:"划重点",		s:"/imgpro/icons/statusface/huazhongdian.gif"},
 		"(dm)":		{t:"点名",			s:"/imgpro/icons/statusface/dianming.gif"},
+		"(yb)":		{t:"月饼",			s:"/imgpro/icons/statusface/mooncake.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
@@ -2475,8 +2477,8 @@ function enableShortcutMenu(evt) {
 			"Ta的好友":"http://friend.renren.com/GetFriendList.do?id=@@",
 		};
 		var morePages={
-			"Ta的大头贴相册":"http://i.renren.com/hp/home?uid=@@",
 			"圈Ta的照片":"http://photo.renren.com/someonetagphoto.do?id=@@", // http://photo.renren.com/photo/@@/relatives/hasTags
+			"Ta的大头贴相册":"http://i.renren.com/hp/home?uid=@@",
 			"与Ta相关的日志":"http://blog.renren.com/SomeoneRelativeBlog.do?id=@@", // http://blog.renren.com/blog/@@/friendsRelatives
 			"Ta的分享":"http://share.renren.com/share/ShareList.do?id=@@",
 			"Ta的留言板":"http://gossip.renren.com/getgossiplist.do?id=@@",
@@ -2501,7 +2503,7 @@ function enableShortcutMenu(evt) {
 		var menu=$alloc("shortcut_menu");
 		menu.t=t;
 		// absolute在放大页面的情况下会出现文字被错误截断导致宽度极小的问题
-		menu.m=$node("div").code(html).style({position:"absolute",left:parseInt(rect.left+window.scrollX)+"px",top:parseInt(rect.bottom+window.scrollY)+"px",backgroundColor:"#EBF3F7",opacity:0.88,padding:"5px",border:"1px solid #5C75AA",zIndex:99999}).appendTo(document.body);
+		menu.m=$node("div").code(html).style({position:"absolute",left:parseInt(rect.left+window.scrollX)+"px",top:parseInt(rect.bottom+window.scrollY)+"px",backgroundColor:"#EBF3F7",opacity:0.88,padding:"5px 8px",border:"1px solid #5C75AA",zIndex:99999}).appendTo(document.body);
 	} catch(ex) {
 		$error("enableShortcutMenu",ex);
 	}
@@ -4010,7 +4012,7 @@ function main(savedOptions) {
 				page:"friend",
 				login:true
 			},{
-				text:"##允许修改个人昵称##",
+				text:"##允许非星级用户修改个人昵称##",
 				ctrl:[
 					{
 						id:"removeNicknameRestriction",
