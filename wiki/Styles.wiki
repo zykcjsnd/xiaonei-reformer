@@ -7,6 +7,15 @@
 #feedback-box{display:none}
 }}}
 
+==去除国庆期间首页上状态发布栏背景等==
+{{{
+#nationalDay{background:none}
+.bless,.wc-footer,#publisher_worldcup_close{display:none !important}
+#nationalDay .status-publisher input.submit{background:url("http://xnimg.cn/imgpro/home/home_icon.png") no-repeat scroll 0 -73px transparent !important}
+#nationalDay .status-publisher #publisher_statusInput{border-color:#BDC7D8}
+#nationalDay .status-publisher form{border-bottom:1px solid #BDC7D8}
+}}}
+
 ==Facebook风格的个人主页==
 {{{
 body#profile .col-left{position:relative;top:-80px}
