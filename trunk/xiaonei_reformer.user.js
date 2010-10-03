@@ -6,8 +6,8 @@
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.1.2.20100924
-// @miniver        358
+// @version        3.1.2.20101004
+// @miniver        359
 // @author         xz
 // ==/UserScript==
 //
@@ -46,8 +46,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.1.2.20100924";
-XNR.miniver=358;
+XNR.version="3.1.2.20101004";
+XNR.miniver=359;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -59,7 +59,7 @@ XNR.userId=$cookie("id","0");
 XNR.url=document.location.href;
 
 // 调试模式 TODO
-XNR.debug=false;
+XNR.debug=true;
 
 // 选项
 XNR.options={};
@@ -93,7 +93,7 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .kfc-side, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, .box-body #flashcontent, div[id^='ad100']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .kfc-side, .imAdv, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, .box-body #flashcontent, div[id^='ad100']";
 	$ban(ads);
 	$script("const ad_js_version=null",true);
 	$wait(1,function() {
@@ -292,7 +292,7 @@ function removeProfileGadgets(gadgetOpt) {
 // 隐藏请求
 function hideRequest(req) {
 	const table={
-		"appRequest":"l-app",
+		"appRequest":"l-app-invite",
 		"hotRequest":"l-hotnews",
 		"notifyRequest":"l-request",
 		"pokeRequest":"l-poke",
@@ -314,7 +314,7 @@ function hideRequest(req) {
 };
 
 // 自动拒绝请求
-function rejectRequest(req) {
+function rejectRequest(req,blockApp) {
 	// 好友申请
 	if(req["friendRequest"]) {
 		$get("http://www.renren.com/delallguestrequest.do?id="+XNR.userId);
@@ -335,28 +335,31 @@ function rejectRequest(req) {
 		$get("http://lover.renren.com/love/lovePageShare/clear");
 	}
 
+	// 应用请求
+	if(req["appRequest"]==true || blockApp==true) {
+		$get("http://app.renren.com/app/appRequestList",function(html) {
+			if(html==null) {
+				return;
+			}
+			// 一般应用
+			var command;
+			while(command=/ignore_all_request\((\d+),(\d+),'(.*?)'\)/g.exec(html)) {
+				if(blockApp==true) {
+					// 屏蔽同时会清空当前的请求队列
+					$get("http://app.renren.com/req/blockAppRequest/block?action=block&type="+command[1]+"&appId="+command[2],null,null,"POST");
+				} else {
+					$get("http://app.renren.com/request/ignoreAppRequest.do?type="+command[1]+"&appId="+command[2],null,null,"POST");
+				}
+			}
+		});
+	}
+
 	// 没有其他选项被启用，退出。
-	if(req["appRequest"]==false && req["tagRequest"]==false && req["recommendRequest"]==false) {
+	if(req["tagRequest"]==false && req["recommendRequest"]==false) {
 		return;
 	}
 
 	$get("http://req.renren.com/request/requestList.do",function(html) {
-		if(html==null) {
-			return;
-		}
-		// 应用请求
-		if(req["appRequest"]) {
-			// 一般应用
-			var command;
-			while(command=/ignoreAllAppRequest\((\d+),(\d+),(\d+),'(.*?)'\)/g.exec(html)) {
-				$get("http://req.renren.com/request/ignoreAllAppRequest.do?post="+encodeURIComponent(JSON.stringify({"type":command[1],"id":command[2],"appId":command[3],"name":command[4]})));
-			}
-
-			// 人人餐厅
-			while(command=/ignoreSpecialRequest\(101002,(\d+),(\d+),\d+,'.*?','.*?','.*?'\)/g.exec(html)) {
-				$get("http://app.renren.com/request/ignoreAppRequest.do?rid="+command[1]+"&appId="+command[2]+"&type=101002");
-			}
-		}
 		// 圈人请求
 		if(req["tagRequest"]) {
 			var command;
@@ -1321,6 +1324,7 @@ function addExtraEmotions() {
 		"(bl)":		{t:"冰露",			s:"/imgpro/icons/statusface/ice.gif"},
 		"(gs)":		{t:"园丁",			s:"/imgpro/icons/statusface/growing-sapling.gif"},
 		"(ga)":		{t:"园丁",			s:"/imgpro/icons/statusface/gardener.gif"},
+		"(gq)":		{t:"国庆快乐",		s:"/imgpro/icons/statusface/nationalday2010.gif"},
 		"(gq1)":	{t:"国庆六十周年",	s:"/imgpro/icons/statusface/national-day-60-firework.gif"},
 		"(gq2)":	{t:"国庆快乐",		s:"/imgpro/icons/statusface/national-day-balloon.gif"},
 		"(gq3)":	{t:"我爱中国",		s:"/imgpro/icons/statusface/national-day-i-love-zh.gif"},
@@ -1374,6 +1378,11 @@ function addExtraEmotions() {
 		"(hzd)":	{t:"划重点",		s:"/imgpro/icons/statusface/huazhongdian.gif"},
 		"(dm)":		{t:"点名",			s:"/imgpro/icons/statusface/dianming.gif"},
 		"(yb)":		{t:"月饼",			s:"/imgpro/icons/statusface/mooncake.gif"},
+		"(草莓)":	{t:"愉悦一刻 ",		s:"/imgpro/icons/statusface/mzy.gif"},
+		"(bs)":		{t:"秋高气爽",		s:"/imgpro/icons/statusface/bluesky.gif"},
+		"(kz)":		{t:"孔子",			s:"/imgpro/icons/statusface/kz.gif"},
+		"(qgz)":	{t:"人人求工作",	s:"/imgpro/icons/statusface/offer.gif"},
+		"(ly)":		{t:"落叶",			s:"/imgpro/icons/statusface/autumn-leaves.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
@@ -3128,7 +3137,7 @@ function main(savedOptions) {
 				ctrl:[
 					{
 						id:"appRequest",
-						text:"##应用请求",
+						text:"##应用邀请",
 						value:false,
 					},{
 						id:"hotRequest",
@@ -3171,9 +3180,11 @@ function main(savedOptions) {
 					fn:[{
 						name:rejectRequest,
 						stage:0,
-						args:["@rejectRequestGroup"]
+						args:["@rejectRequestGroup","@blockAppRequest"],
+						once:true
 					}],
 				}],
+				page:"home",
 				login:true,
 			},{
 				id:"rejectRequestGroup",
@@ -3183,7 +3194,7 @@ function main(savedOptions) {
 				ctrl:[
 					{
 						id:"appRequest",
-						text:"##应用请求",
+						text:"##应用邀请",
 						value:false,
 					},{
 						id:"recommendRequest",
@@ -3211,6 +3222,17 @@ function main(savedOptions) {
 						value:false,
 					}
 				]
+			},{
+				text:"##屏蔽所有应用请求##",
+				ctrl:[
+					{
+						id:"blockAppRequest",
+						value:false,
+					},{
+						type:"info",
+						value:"在http://app.renren.com/app/appRequestList/blockList可以解除屏蔽"
+					}
+				],
 			},{
 				text:"##允许一次性接受全部好友申请##",
 				ctrl:[
@@ -4909,7 +4931,7 @@ function $node(name) {
  */
 function $page(category,url) {
 	const pages={
-		home:"renren\\.com/[hH]ome|/|guide\\.renren\\.com/[Gg]uide",	// 首页，后面的是新注册用户的首页
+		home:"renren\\.com/[hH]ome|guide\\.renren\\.com/[Gg]uide",	// 首页，后面的是新注册用户的首页
 		feed:"renren\\.com/[hH]ome#?$|renren\\.com/[hH]ome.*#nogo$|renren\\.com/[hH]ome\?[^#]*$|#/home|/guide\\.renren\\.com/[Gg]uidexf",	// 首页新鲜事，后面的是新注册用户的首页
 		profile:"renren\\.com/[Pp]rofile|renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|renren.com/[a-zA-Z0-9_]{4,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personalLink.do
 		blog:"/blog\\.renren\\.com/|#//blog/",	// 日志
