@@ -7,7 +7,9 @@ VER1=`sed -n '9p' xiaonei_reformer.user.js | sed -E 's/ +/ /g' | cut -d' ' -f 3`
 VER2=`sed -n '10p' xiaonei_reformer.user.js | sed -E 's/ +/ /g' | cut -d' ' -f 3`
 VERSION=`echo $VER1 | sed -E 's/[0-9]+$/'$VER2'/'`
 
-sed -i "s/^XNR.version=\".*\";$/XNR.version=\"$VER1\";/;s/^XNR.miniver=.*;$/XNR.miniver=$VER2;/" $INPUT
+sed -i "30,100s/^XNR.debug=true/XNR.debug=false/" $INPUT
+sed -i "30,100s/^XNR.version=\".*\";$/XNR.version=\"$VER1\";/" $INPUT
+sed -i "30,100s/^XNR.miniver=.*;$/XNR.miniver=$VER2;/" $INPUT
 
 head -n 29 "$INPUT" > "$OUTPUT"
 yui-compressor --nomunge "$INPUT" >> "$OUTPUT"
