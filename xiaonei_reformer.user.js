@@ -59,7 +59,7 @@ XNR.userId=$cookie("id","0");
 XNR.url=document.location.href;
 
 // 调试模式 TODO
-XNR.debug=true;
+XNR.debug=false;
 
 // 选项
 XNR.options={};
@@ -3223,7 +3223,7 @@ function main(savedOptions) {
 					}
 				]
 			},{
-				text:"##屏蔽所有应用请求##",
+				text:"##屏蔽所有应用邀请##",
 				ctrl:[
 					{
 						id:"blockAppRequest",
