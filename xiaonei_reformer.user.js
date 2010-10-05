@@ -5,9 +5,11 @@
 // @include        http://*.renren.com/*
 // @include        https://renren.com/*
 // @include        https://*.renren.com/*
+// @exclude        http://*.renren.com/ajaxproxy*
+// @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.1.2.20101004
-// @miniver        359
+// @version        3.1.2.20101005
+// @miniver        360
 // @author         xz
 // ==/UserScript==
 //
@@ -37,7 +39,7 @@ if (window.self != window.top) {
 		// 也不在body没有标记的frame中运行
 		return;
 	} else if(document.location.href.match(/ajaxproxy|ime.htm/i)) {
-		// 也不在ajaxproxy.html和ime.htm中运行
+		// 也不在ajaxproxy.html和ime.htm中运行。for damn chrome
 		return;
 	}
 }
@@ -46,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.1.2.20101004";
-XNR.miniver=359;
+XNR.version="3.1.2.20101005";
+XNR.miniver=360;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -245,11 +247,6 @@ function removeHomeGadgets(gadgetOpt) {
 	}
 
 	$wait(1,function() {
-		if(!$("#container2").empty() && $("#sidebar2").heirs()==0) {
-			// 2010/07 v5版
-			setTimeout(arguments.callee,100);
-			return;
-		}
 		for(var g in filters) {
 			if(gadgetOpt[g]) {
 				$(filters[g].t).filter(filters[g].f).remove();
@@ -3223,7 +3220,7 @@ function main(savedOptions) {
 					}
 				]
 			},{
-				text:"##屏蔽所有应用邀请##",
+				text:"##自动屏蔽所有应用邀请##",
 				ctrl:[
 					{
 						id:"blockAppRequest",
