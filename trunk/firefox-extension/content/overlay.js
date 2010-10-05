@@ -37,7 +37,10 @@ function loadScript(obj,direct) {
 			return;
 		}
 	}
-	if(!contentWindow.location.href.match("https?://.*\\.renren\\.com|https?://renren\\.com")) {
+	if(!contentWindow.location.href.match("^https?://.*\\.renren\\.com/|^https?://renren\\.com/")) {
+		return;
+	}
+	if(contentWindow.location.href.match("^http://wpi\\.renren\\.com/|ajaxproxy")) {
 		return;
 	}
 
