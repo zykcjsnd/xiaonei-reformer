@@ -1,0 +1,64 @@
+#summary 下载相册功能介绍
+
+= 选项说明 =
+如果想下载人人网相册，至少需将选项菜单中“允许下载相册图片”勾选。选项旁有说明图标，鼠标移上去会有基本的说明。请先仔细阅读
+
+带有两个子选项，“仅生成图片链接”和“替换模式”（替换模式是3.2版本新增功能）
+
+  * 仅生成图片链接：默认情况下，将会在页面中显示相册全部图片，这对于一些电脑/网络不太好的用户可能会导致浏览器假死，这种情况下可以考虑启用此功能。
+  * 替换模式：主要是方便Google浏览器/Opera用户进行下载。具体应用请继续阅读后面的内容。
+
+http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/download_1.jpeg
+
+
+
+= 操作步骤 =
+
+进入相册后，在相册底部会多出一个“下载当前页图片”链接
+
+http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/download_2.jpeg
+
+点击后，会弹出一个新标签页，列出当前页面上显示出的所有图片。
+
+  * Firefox：直接在页面空白处点击鼠标右键，选择页面另存为，在保存类型处选择“网页，全部”。
+  * Google浏览器：直接在页面空白处点击鼠标右键，选择另存为，在保存类型处选择“网页，全部内容”。
+  * Opera：请先启用“替换模式”功能。点击“下载当前页图片”链接后，选择菜单“文件”->“另存为”，在保存类型处选择“带图像的HTML页面”。
+  * Safari：抱歉，真不知道该怎么一次性保存全部图片。
+
+保存完毕后，在你所选择的保存位置里会多出一个html文件和一个文件夹，文件夹中即是全部图片。如果您使用Windows操作系统，注意先不要删除html文件，因为系统会自作聪明的将包含图片的文件夹一并删除
+
+如果启用了“仅生成图片链接”功能，则需要自行用下载工具下载列出的链接
+
+
+= 疑难解答 =
+==1、如何让下载的图片按其说明文字命名？==
+===Firefox===
+推荐安装[https://addons.mozilla.org/firefox/addon/201 Downthemall!扩展]。安装后在右键菜单会多出一项“Downthemall!”，选择它，在弹出的窗口中有一项“重命名掩码”，将其设置为
+{{{
+*text*.*ext*
+}}}
+即可，如下图
+
+http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/download_3.jpeg
+
+===Google浏览器===
+Google浏览器到目前为止，还没有发现有扩展能直接根据图片描述命名下载文件，所以需要使用其他下载工具配合。
+
+先同时启用“仅生成图片链接”和“替换模式”。再去安装[https://chrome.google.com/extensions/detail/mfjkgbjaikamkkojmakjclmkianficch 下载助手扩展]，这个扩展可以调用Flashget或迅雷来下载页面上的内容。这里以Flashget为例讲解。安装后浏览器工具栏会多一个箭头图标。
+
+在点击“下载当前页图片”后的页面中，先点击“切换链接描述”将显示的链接文字换成图片描述，再点击箭头图标，会调用Flashget来下载所有的图片，如下图
+
+http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/download_4.jpeg
+
+如图所示，描述一栏已经中已经是图片描述了，点击下载按钮进行下载。
+
+当全部文件下载完毕后，转到“完成下载”栏，选择下载的图片（小提示：鼠标先点击第一个文件，再按住Shift键点击最后一个即可选择全部的文件），点击鼠标右键，选择按注释重命名文件即可，如下图所示
+
+http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/download_5.jpeg
+
+
+===Opera===
+可以尝试使用迅雷仿照Google浏览器的方法进行下载。未经测试。
+
+===Safari===
+未知
