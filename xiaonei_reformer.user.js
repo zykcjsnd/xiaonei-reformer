@@ -1827,7 +1827,8 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 					};
 					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA) {
 						var html="<head><meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+album.title+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style><script>function switchLink(){var links=document.querySelectorAll(\"a[title]:not([title=\\'\\'])\");for(var i=0;i<links.length;i++){if(links[i].textContent!=links[i].title){links[i].textContent=links[i].title}else{links[i].textContent=links[i].href}}};function switchIndex(add,max){var links=document.querySelectorAll(\"*[index]\");for(var i=0;i<links.length;i++){if(add){links[i].title=idx(parseInt(links[i].getAttribute(\"index\"))+1,max)+\" \"+links[i].title}else{links[i].title=links[i].title.replace(/^[0-9]+ /,\"\")}}};function idx(n,max){var i=0;for(;max>0;max=parseInt(max/10)){i++}n=\"00000\"+n;return n.substring(n.length-i,n.length)}</script></head><body>";
-						html+="<p><a href=\"\">下载指南</a></p><p>来源："+album.ref+"</p>";
+						html+="<p><a target=\"_blank\" href=\"http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum\">下载指南</a>";
+						html+="</p><p>来源："+album.ref+"</p>";
 						if(album.unknown.length>0) {
 							html+="<p>未能取得以下地址的图片：</p>";
 							if(album.type) {
@@ -1843,9 +1844,10 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						}
 						if(album.type) {
 							if(album.data.length>0) {
-								html+="<p>使用下载工具软件"+XNR.agent==USERSCRIPT?"（推荐使用Flashgot/Downthemall扩展）":""+"下载本页面全部链接即可得到下列"+album.data.length+"张照片</p>";
-								html+="<p><input type=\"button\" onclick=\"switchLink()\" value=\"切换链接描述\"/> 有些下载工具（如Downthemall扩展）能够根据链接描述文字来设置下载文件的文件名</p>";
-								html+="<p><input type=\"checkbox\" onclick=\"switchIndex(this.checked,"+album.data.length+")\">在描述前添加图片序号（仅对可以根据描述来重命名文件的下载软件有用）</input></p>";
+								html+="<p>图片数量："+album.data.length+"</p>";
+								html+="<p>使用下载工具软件下载本页面全部链接即可得到下列图片</p>";
+								html+="<p><input type=\"button\" onclick=\"switchLink()\" value=\"切换链接描述\"/></p>";
+								html+="<p><input type=\"checkbox\" onclick=\"switchIndex(this.checked,"+album.data.length+")\">在描述前添加图片序号</input></p>";
 							}
 							for(var i=0;i<album.data.length;i++) {
 								var img=album.data[i];
@@ -1853,12 +1855,9 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 							}
 						} else {
 							if(album.data.length>0) {
-								if(XNR.agent!=OPERA) {
-									html+="<p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列"+album.data.length+"张图片</p>";
-								} else {
-									html+="<p>自己想办法把这"+album.data.length+"张图片保存吧</p>"
-								}
-								html+="<p><input type=\"checkbox\" onclick=\"switchIndex(this.checked,"+album.data.length+")\">在描述前添加图片序号（仅对可以根据描述来重命名文件的下载软件有用）</input></p>";
+								html+="<p>图片数量："+album.data.length+"</p>";
+								html+="<p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列图片</p>";
+								html+="<p><input type=\"checkbox\" onclick=\"switchIndex(this.checked,"+album.data.length+")\">在描述前添加图片序号</input></p>";
 							}
 							for(var i=0;i<album.data.length;i++) {
 								var img=album.data[i];
