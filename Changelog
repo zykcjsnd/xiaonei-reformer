@@ -1,3 +1,14 @@
+3.2.0.20101010 (361):
+add:为下载相册功能增加替换模式子选项
+fix:修改定时刷新新鲜事列表功能实现方式
+fix:改进新鲜事提醒
+fix:PageKit去除append/insert/prepend，代以add方法
+fix:PageKit去除appendTo/insertTo/prependTo，代以addTo方法
+fix:PageKit去除previous/next方法
+fix:PageKit修改each方法实现
+fix:PageKit添加exist方法，与empty方法返回相反值
+fix:PageKit部分方法更名，和jquery一致。
+
 3.1.2.20101005 (360):
 fix:添加脚本黑名单页面
 fix:删除去除首页组件中过时代码
