@@ -8,8 +8,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.0.20101010
-// @miniver        361
+// @version        3.2.0.20101011
+// @miniver        362
 // @author         xz
 // ==/UserScript==
 //
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.0.20101010";
-XNR.miniver=361;
+XNR.version="3.2.0.20101011";
+XNR.miniver=362;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -305,8 +305,11 @@ function hideRequest(req) {
 	}
 	for(var r in req) {
 		if(req[r] && table[r]) {
-			box.find("li img."+table[r]).superior().purge();
+			box.find("li img."+table[r]).superior().remove();
 		}
+	}
+	if(box.heirs()==0) {
+		$(".side-item.newrequests").remove();
 	}
 };
 
@@ -599,15 +602,7 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 		});
 	}
 
-	// 如果是在首页则记录下当前最新一条新鲜事的ID
-	if($page("home")) {
-		if($("#feedHome").heirs()>0) {
-			$alloc("xnr_feed").id=$("#feedHome").child(0).attr("id");
-		}
-	}
-
-	// 定时检查
-	setInterval(function() {
+	(function() {
 		// 应该用post，不过get也行
 		$get("http://www.renren.com/feedretrieve.do?p=0",function(html) {
 			if(html==null) {
@@ -639,26 +634,54 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 				if(feedList.heirs()==0) {
 					return;
 				}
-				// 已读的最新新鲜事ID
-				var feedId=$alloc("xnr_feed").id;
-				if(!feedId) {
-					// 如果为空，则认为所有新鲜事都读了。。。
-					feedId=feedList.child(0).attr("id");
-					$alloc("xnr_feed").id=feedId;
+
+				// 首次运行
+				var firstTime=!$allocated("xnr_feed");
+
+				// 整理新鲜事内容
+				var feedArray=[];
+				for(var i=0;i<feedList.heirs();i++) {
+					var feedInfo=feedList.child(i);
+
+					var id=feedInfo.attr("id");
+					var icon=feedInfo.find("a.avatar img").attr("src");
+					var feedText=feedInfo.find("h3").html().replace(/^\s+|\s+$/,"");
+					var lastReply=0;
+
+					var replyText=feedInfo.find("script[status='1']").text();
+					if(replyText) {
+						var replyList=/"replyList":(\[[\S\s]+?\]),/.exec(replyText);
+						if(replyList) {
+							// 里面有一处type:'0'
+							replyList=JSON.parse(replyList[1].replace(/:'0',/g,":0,"));
+							if(replyList.length>0) {
+								var reply=replyList[replyList.length-1];
+								if(reply.id && reply.ubname && reply.ubid && reply.replyContent) {
+									lastReply=reply.id;
+									// 看作是回复者的新鲜事，用回复者头像替换
+									icon=reply.replyer_tinyurl;
+									// 修改新鲜事内容
+									feedText="<a href='http://renren.com/profile.do?id="+reply.ubid+"'>"+reply.ubname+"</a> ："+reply.replyContent+" @ "+feedText;
+								} else {
+									$error("autoCheckFeeds",{name:"获取回复出错",message:"回复列表结构发生变化"});
+								}
+							}
+						}
+					}
+
+					var oldFeeds=$alloc("xnr_feed");
+					if(!firstTime) {
+						// 排除已有
+						if(lastReply==oldFeeds[id]) {
+							continue;
+						}
+						feedArray.push({id:id,icon:icon,text:feedText});
+					}
+					oldFeeds[id]=lastReply;
 				}
 
-				var feedCount=0;
-				// 判断有哪些新鲜事还没有读过
-				for(var i=0;i<feedList.heirs();i++) {
-					if(feedList.child(i).attr("id")==feedId) {
-						feedCount=i;
-						break;
-					}
-				}
-				if(feedCount<=0) {
+				if(firstTime || feedArray.length==0) {
 					return;
-				} else {
-					$alloc("xnr_feed").id=feedList.child(0).attr("id");
 				}
 
 				// 很好，可以直接加到工具栏中
@@ -670,53 +693,24 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 						$node("div").attr("class","notification").addTo(section);
 					}
 					var alist=section.child(0);
-
-					for(var i=feedCount-1;i>=0;i--) {
-						var feedInfo=feedList.child(i);
-						var article=$node("article").attr("class","iconpanel").attr("id",feedInfo.attr("id")).addTo(alist,0);
-						// 图标
-						var icon=feedInfo.find("a.avatar img").attr("src");
-						var header=$node("header").html("<img class='icon' height='16' width='16' src='"+icon+"'/><menu><command class='delete' closebtn='true' title='删除'/></menu>").addTo(article);
+					for(var i=feedArray.length-1;i>=0;i--) {
+						var feedInfo=feedArray[i];
+						var article=$node("article").attr("class","iconpanel").attr("id",feedInfo.id).addTo(alist,0);
+						var header=$node("header").html("<img class='icon' height='16' width='16' src='"+feedInfo.icon+"'/><menu><command class='delete' closebtn='true' title='删除'/></menu>").addTo(article);
 						// 删除按钮事件
 						header.find(".delete").bind("click",function(evt) {
-							var obj=$(evt.target).superior(3).remove();
-							if(alist.heirs()==0) {
-								$node("p").css("padding","5px").text("没有新的新鲜事").addTo(alist);
+							var a=$(evt.target).superior(3);
+							var n=a.superior();
+							a.remove();
+							if(n.heirs()==0) {
+								$node("p").css("padding","5px").text("没有新的新鲜事").addTo(n);
 							}
 						});
 						// 内容
-						var feedText=feedInfo.find("h3").html();
-						var feedScript=feedInfo.find("script[status='1']");
-						if(feedScript.exist()) {
-							var replyText=feedScript.text();
-							try {
-								if(replyText.match(/"replyList":\[/)) {
-									var replyList=/"replyList":(\[[\S\s]+?\]),/.exec(replyText);
-									if(replyList) {
-										// 里面有一处type:'0'
-										replyList=replyList[1].replace(/'0'/g,"0");
-										replyList=JSON.parse(replyList);
-										if(replyList.length>0) {
-											var reply=replyList[replyList.length-1];
-											if(reply.ubname && reply.ubid && reply.replyContent) {
-												header.find("img").attr("src",reply.replyer_tinyurl);
-												feedText="<a href='http://renren.com/profile.do?id="+reply.ubid+"'>"+reply.ubname+"</a> 回复："+reply.replyContent+" @ <font color='grey'>"+feedText+"</font>";
-											} else {
-												$error("autoCheckFeeds",{name:"获取回复出错",message:"回复列表结构发生变化"});
-											}
-										}
-									}
-								}
-							} catch(ex) {
-								$error("autoCheckFeeds",ex);
-							}
-						}
-
-						var content=$node("section").html("<p>"+feedText+"</p>").addTo(article);
-						//content.find("img").css("position","absolute");
+						$node("section").html("<p>"+feedText+"</p>").addTo(article);
 					}
 					// 计数
-					$("#feed_toread_num").text(feedCount+parseInt($("#feed_toread_num").text()));
+					$("#feed_toread_num").text(feedArray.length+parseInt($("#feed_toread_num").text()));
 					$("#feed_toread_tip").show();
 				} else {
 					// 底部工具栏靠不住，自己建立一个窗口
@@ -724,15 +718,16 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 					if(root.empty()) {
 						root=$node("div").attr({style:"position:fixed;bottom:10px;right:10px;width:250px;z-index:100000;background:#EBF3F7;border:#3B5888 solid 1px;",id:"xnr_newfeeds"}).add($node("div").css({padding:"3px",background:"#3B5998"}).html("<span style='color:white;font-weight:bold'>您有新的新鲜事</span><a style='float:right;cursor:pointer;color:white' onclick='document.body.removeChild(document.getElementById(\"xnr_newfeeds\"));'>关闭</a>")).add($node("div").attr("style","max-height:200px;padding-left:5px;padding-right:5px;overflow-y:auto").add($node("ul").attr("style","margin:0px;padding:0px;list-style-type:none"))).addTo(document.body);
 					}
-					var feedInfo=feedList.child(i);
-					// 图标
-					var icon=feedInfo.find("a.avatar img").attr("src");
+
 					var list=root.find("ul");
 					if(list.heirs()>0) {
 						list.child(-1).css("borderBottom","1px solid #AAAAAA");
 					}
-					for(var i=0;i<feedCount;i++) {
-						list.add($node("li").html("<img height='16' width='16' src='"+icon+"' style='float:left'/><div style='padding-left:20px'>"+feedInfo.find("h3").html().replace(/^ +| +$/,"")+"</div>").attr("style","padding-top:5px;padding-bottom:5px;border-bottom:1px solid #AAAAAA;"));
+
+					for(var i=feedArray.length-1;i>=0;i--) {
+						var feedInfo=feedArray[i];
+						// 内容
+						$node("li").attr({style:"padding-top:5px;padding-bottom:5px;border-bottom:1px solid #AAAAAA;",id:feedInfo.id}).html("<img height='16' width='16' src='"+feedInfo.icon+"' style='float:left'/><div style='padding-left:20px'>"+feedInfo.text+"</div>").addTo(list);
 					}
 					list.child(-1).css("borderBottom","");
 				}
@@ -740,7 +735,9 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 				$error("autoCheckFeeds",ex);
 			}
 		});
-	},parseInt(interval)*1000);
+		// 定时检查
+		setTimeout(arguments.callee,parseInt(interval)*1000);
+	})();
 };
 
 // 定时刷新新鲜事列表
@@ -1501,7 +1498,7 @@ function addFloorCounter(evt) {
 
 	//显示的回复的开始楼层
 	var replyStartFloor=replyAmount-shownReplies.size();
-	if(shownReplies.size()==0 || replyStartFloor<0) {
+	if(shownReplies.empty() || replyStartFloor<0) {
 		//没有回复或出错
 		return;
 	}
@@ -1649,7 +1646,7 @@ function showImagesInOnePage() {
 				return;
 			}
 			try {
-				if($("#single-column table.photoList").size()>0) {
+				if($("#single-column table.photoList").exist()) {
 					var photoList=/(<table .*?class="photoList".*?>[\d\D]+?<\/table>)/.exec(res)[1];
 				} else if(XNR.url.indexOf("/photo/ap/")!=-1) {
 					var photoList=/<div .*?class="photo-list clearfix".*?>([\d\D]+?)<\/div>/.exec(res)[1];
@@ -1693,7 +1690,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 	}
 	var downLink=$node("a").attr({"style":'background-image:none;padding-left:10px;padding-right:10px',"href":'javascript:;'}).text("下载当前页图片");
 	if($(".function-nav.bottom-operate ul.nav-btn").exist()) {
-		$(".function-nav.bottom-operate ul.nav-btn").pick(-1).add($node("li").attr("class","pipe").text("|")).add($node("li").add(downLink));
+		$(".function-nav.bottom-operate ul.nav-btn").eq(-1).add($node("li").attr("class","pipe").text("|")).add($node("li").add(downLink));
 	} else {
 		$(".pager-bottom").add(downLink.css("lineHeight","22px"),0);
 	}
@@ -1800,7 +1797,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 				if($alloc("download_album").length>0) {
 					var failedImages=$(".photo-list span.img a[down],table.photoList td.photoPan>a[down]");
 					var failedImagesList=[];
-					if(failedImages.size()>0) {
+					if(failedImages.exist()) {
 						failedImages.each(function() {
 							failedImagesList.push(this.href);
 						});
@@ -4559,7 +4556,7 @@ function main(savedOptions) {
 			// 为主控件（仅明确指定的）添加值切换相应事件
 			if(o.master!=null) {
 				// block下只有一层，滤掉所有的label就是所有控件，选出对应序号的即可
-				var target=block.find("*:not(label)").pick(o.master);
+				var target=block.find("*:not(label)").eq(o.master);
 				// 做个标记，用在点击选项菜单取消按钮重置选项时
 				target.attr("master","true");
 				$master(target);
@@ -4653,7 +4650,7 @@ function main(savedOptions) {
 		if(t.prop("tagName")=="SPAN") {
 			t=t.superior();
 		}
-		menu.find(".pages>div").hide().pick(t.index()+1).show();
+		menu.find(".pages>div").hide().eq(t.index()+1).show();
 		menu.find(".category li.selected").removeClass("selected");
 		t.addClass("selected");
 	});
@@ -4711,8 +4708,8 @@ function main(savedOptions) {
 						page=page.superior();
 					}
 					var index=page.index()
-					menu.find(".pages>div").hide().pick(index).show();
-					menu.find(".category li").removeClass("selected").pick(index-1).addClass("selected");
+					menu.find(".pages>div").hide().eq(index).show();
+					menu.find(".category li").removeClass("selected").eq(index-1).addClass("selected");
 
 					alert(rules[rule]);
 					this.focus();
@@ -5556,21 +5553,21 @@ PageKit.prototype={
 		}
 		return this;
 	},
-	// 获取对象中的DOM节点，如果index为-1取最后一个，默认为第一个
+	// 获取对象中的DOM节点，如果index为负数取倒数序号，默认为第一个
 	get:function(index) {
 		try {
 			if(index==null) {
 				index=0;
-			} else if(index==-1) {
-				index=this.nodes.length-1;
+			} else if(index<0) {
+				index+=this.nodes.length;
 			}
 			return this.nodes[index];
 		} catch(ex) {
 			return null;
 		}
 	},
-	// 获取对象中某一个DOM节点，经PageKit包装，如果index为-1取最后一个，默认为第一个
-	pick:function(index) {
+	// 获取对象中某一个DOM节点，经PageKit包装，如果index为负取倒数序号，默认为第一个
+	eq:function(index) {
 		return PageKit(this.get(index));
 	},
 	// 删除对象所有的DOM节点。如果safe为true，只有当其无子节点时才删除
@@ -5578,22 +5575,6 @@ PageKit.prototype={
 		this.each(function() {
 			if(!safe || this.childElementCount==0) {
 				this.parentNode.removeChild(this);
-			}
-		});
-		this.nodes=[];
-		return this;
-	},
-	// 删除对象所有DOM节点。如果safe为true，只有当其无子节点时才删除，如果删除后父节点无其他子节点，一并删除
-	purge:function(safe) {
-		this.each(function() {
-			if(!safe || this.childElementCount==0) {
-				var p=this.parentNode;
-				p.removeChild(this);
-				while (p.childElementCount==0) {
-					var q=p.parentNode;
-					q.removeChild(p);
-					p=q;
-				}
 			}
 		});
 		this.nodes=[];
@@ -5673,11 +5654,11 @@ PageKit.prototype={
 			return 0;
 		}
 	},
-	// 获取对象第一个DOM节点的某个子节点，index为-1时取最后一个。经PageKit包装
+	// 获取对象第一个DOM节点的某个子节点，index为负数时取倒数序号。经PageKit包装
 	child:function(index) {
 		try {
 			var node=this.get();
-			return $(node.children[index!=-1?index:node.childElementCount-1]);
+			return PageKit(node.children[index>=0?index:node.childElementCount+index]);
 		} catch(ex) {
 			return null;
 		}
