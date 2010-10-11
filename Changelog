@@ -1,3 +1,9 @@
+3.2.0.20101011 (362):
+fix:改进新鲜事提醒功能
+fix:PageKit去除purge方法
+fix:PageKit修改child/get方法，可以接受更多负值参数
+fix:PageKit中pick方法更名为eq
+
 3.2.0.20101010 (361):
 add:为下载相册功能增加替换模式子选项
 fix:修改定时刷新新鲜事列表功能实现方式
