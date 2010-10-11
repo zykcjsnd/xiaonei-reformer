@@ -652,8 +652,12 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 					if(replyText) {
 						var replyList=/"replyList":(\[[\S\s]+?\]),/.exec(replyText);
 						if(replyList) {
-							// 里面有一处type:'0'
-							replyList=JSON.parse(replyList[1].replace(/:'0',/g,":0,"));
+							try {
+								// 里面有一处"type":'0'之类的，会导致parse出错
+								replyList=JSON.parse(replyList[1].replace(/"type":'(\d+)',/g,'"type":0,'));
+							} catch(ex) {
+								replyList=[];
+							}
 							if(replyList.length>0) {
 								var reply=replyList[replyList.length-1];
 								if(reply.id && reply.ubname && reply.ubid && reply.replyContent) {
