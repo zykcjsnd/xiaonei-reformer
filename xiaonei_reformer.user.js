@@ -707,7 +707,7 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 							}
 						});
 						// 内容
-						$node("section").html("<p>"+feedText+"</p>").addTo(article);
+						$node("section").html("<p>"+feedInfo.text+"</p>").addTo(article);
 					}
 					// 计数
 					$("#feed_toread_num").text(feedArray.length+parseInt($("#feed_toread_num").text()));
