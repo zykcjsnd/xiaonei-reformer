@@ -1,3 +1,8 @@
+3.2.0.20101012 (363):
+fix:改进新鲜事提醒功能
+fix:修正Youku全屏功能失效（361引入）
+fix:PageKit增加sibling方法
+
 3.2.0.20101011 (362):
 fix:改进新鲜事提醒功能
 fix:PageKit去除purge方法

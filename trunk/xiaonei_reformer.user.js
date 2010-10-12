@@ -8,8 +8,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.0.20101011
-// @miniver        362
+// @version        3.2.0.20101012
+// @miniver        363
 // @author         xz
 // ==/UserScript==
 //
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.0.20101011";
-XNR.miniver=362;
+XNR.version="3.2.0.20101012";
+XNR.miniver=363;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -81,7 +81,7 @@ if(window.chrome) {
 	XNR.agent=FIREFOX;
 }
 
-// 针对Opera的特殊数据
+// 针对Opera的特殊处理
 if(XNR.agent==OPERA) {
 	XNR.scriptStorage=window.opera.scriptStorage;
 	// 判断当前阶段，document.readyState靠不住
@@ -579,26 +579,46 @@ function refreshFeedReply() {
 // 自动检查提醒新鲜事更新
 function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 	// 在bottombar上建立一个新的接收区域
-	if($("#webpager #setting-panel").exist()) {
-		var root=$node("div").attr("class","popupwindow notify-panel").addTo($node("div").attr({"class":"panel",id:"feed-panel"}).move("before",$("#webpager #setting-panel")));
-		var Btn=$node("div").attr("class","panelbarbutton").addTo(root);
-		$node("img").attr({"class":"icon",height:"16",width:"16",src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA4klEQVQ4y61TsQrCQAztp9lCO3dz82N0cXFydXIWP0LE3Q/QxVEoR0Fpz15P3sGlSWlpix6EvOSSl9ccDYJ/nNnyZBfro53iqRmJ3fnmbHW42O31PiomEgBcwHjhUEwE881eSPNxG7fv4UlBXddkxhiLw+Oq+ogYXnwCCjxR13SOfT0pAODMuATmk31sjXI5rXW3AhT1Teb4VWipQClFCvj0tiqPxQ7SNHWMY3cAjHr0iVcY2gHPP7J3oyAMQ5sX2eQdoM8RxHFsn3kp3rlvB1xVkiTN/wA2b1EUCevKieZfzxcMt3dNdxsqQQAAAABJRU5ErkJggg%3D%3D",alt:"新鲜事",title:"新鲜事"}).addTo(Btn);
-		$node("div").attr({id:"feed_toread_tip","class":"buttontooltip",style:"display:none"}).add($node("strong").attr("id","feed_toread_num").text("0")).addTo(Btn);
-		var list=$node("article").attr("class","window").css({right:"-84px",width:"280px"}).html('<header><h4>新的新鲜事</h4><menu><command title="最小化" label="最小化" class="minimize"></command></menu></header><section><p style="padding:5px;">没有新的新鲜事</p></section>').addTo(root);
-		Btn.bind("click",function(evt) {
-			if(root.attr("class").indexOf("actived")!=-1) {
-				list.hide();
-				root.removeClass("actived");
-			} else {
-				list.show();
-				root.addClass("actived");
+	if($("#bottombar").exist()) {
+		$("#bottombar").bind("DOMNodeInserted",function() {
+			if($("#webpager #setting-panel").exist()) {
+				$("#bottombar").unbind("DOMNodeInserted",arguments.callee);
+				var root=$node("div").attr("class","popupwindow notify-panel").addTo($node("div").attr({"class":"panel",id:"feed-panel"}).move("before",$("#webpager #setting-panel")));
+				var Btn=$node("div").attr("class","panelbarbutton").addTo(root);
+				$node("img").attr({"class":"icon",height:"16",width:"16",src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA4klEQVQ4y61TsQrCQAztp9lCO3dz82N0cXFydXIWP0LE3Q/QxVEoR0Fpz15P3sGlSWlpix6EvOSSl9ccDYJ/nNnyZBfro53iqRmJ3fnmbHW42O31PiomEgBcwHjhUEwE881eSPNxG7fv4UlBXddkxhiLw+Oq+ogYXnwCCjxR13SOfT0pAODMuATmk31sjXI5rXW3AhT1Teb4VWipQClFCvj0tiqPxQ7SNHWMY3cAjHr0iVcY2gHPP7J3oyAMQ5sX2eQdoM8RxHFsn3kp3rlvB1xVkiTN/wA2b1EUCevKieZfzxcMt3dNdxsqQQAAAABJRU5ErkJggg%3D%3D",alt:"新鲜事",title:"新鲜事"}).addTo(Btn);
+				$node("div").attr({id:"feed_toread_tip","class":"buttontooltip",style:"display:none"}).add($node("strong").attr("id","feed_toread_num").text("0")).addTo(Btn);
+				var list=$node("article").attr("class","window").css({right:"-84px",width:"280px"}).html('<header><h4>新的新鲜事</h4><menu><command title="最小化" label="最小化" class="minimize"></command></menu></header><section><p style="padding:5px;">没有新的新鲜事</p><div class="notification" style="display:none"></div></section>').addTo(root);
+				Btn.bind("click",function(evt) {
+					var root=$("#webpager #feed-panel .notify-panel");
+					var list=$("#webpager #feed-panel .window");
+					if(root.attr("class").indexOf("actived")!=-1) {
+						list.hide();
+						root.removeClass("actived");
+					} else {
+						list.show();
+						root.addClass("actived");
+					}
+					root.find("#feed_toread_tip").hide();
+					root.find("#feed_toread_num").text("0");
+				});
+				list.find("command").bind("click",function(evt) {
+					$("#webpager #feed-panel .window").hide();
+					$("#webpager #feed-panel .notify-panel").removeClass("actived");
+					// 清空计数
+					$("#feed_toread_num").text("0");
+					$("#feed_toread_tip").hide();
+				});
+				list.find(".notification").bind("DOMNodeRemoved",function(evt) {
+					var node=$(evt.relatedNode);
+					if(node.heirs()==1) {
+						node.hide();
+						node.sibling(-1).show();
+					}
+					// 清空计数
+					$("#feed_toread_num").text("0");
+					$("#feed_toread_tip").hide();
+				});
 			}
-			root.find("#feed_toread_tip").hide();
-			root.find("#feed_toread_num").text("0");
-		});
-		list.find("command").bind("click",function(evt) {
-			list.hide();
-			root.removeClass("actived");
 		});
 	}
 
@@ -675,8 +695,8 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 
 					var oldFeeds=$alloc("xnr_feed");
 					if(!firstTime) {
-						// 排除已有
-						if(lastReply==oldFeeds[id]) {
+						// 排除已有，如果 lastReply=0 & oldFeeds[id]>0，feed系统出错？
+						if(lastReply==oldFeeds[id] || (lastReply==0 && oldFeeds[id]!=0)) {
 							continue;
 						}
 						feedArray.push({id:id,icon:icon,text:feedText});
@@ -690,26 +710,13 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 
 				// 很好，可以直接加到工具栏中
 				if($("#webpager #feed_toread_tip").exist()) {
-					var root=$("#webpager #feed-panel .popupwindow.notify-panel").filter("#feed_toread_tip");
-					var section=root.find(".window>section");
-					if(section.child(0).prop("tagName")=="P") {
-						section.child(0).remove();
-						$node("div").attr("class","notification").addTo(section);
-					}
-					var alist=section.child(0);
+					var root=$("#webpager #feed-panel .window>section>.notification");
+					root.sibling(-1).hide();
+					root.show();
 					for(var i=feedArray.length-1;i>=0;i--) {
 						var feedInfo=feedArray[i];
-						var article=$node("article").attr("class","iconpanel").attr("id",feedInfo.id).addTo(alist,0);
-						var header=$node("header").html("<img class='icon' height='16' width='16' src='"+feedInfo.icon+"'/><menu><command class='delete' closebtn='true' title='删除'/></menu>").addTo(article);
-						// 删除按钮事件
-						header.find(".delete").bind("click",function(evt) {
-							var a=$(evt.target).superior(3);
-							var n=a.superior();
-							a.remove();
-							if(n.heirs()==0) {
-								$node("p").css("padding","5px").text("没有新的新鲜事").addTo(n);
-							}
-						});
+						var article=$node("article").attr("class","iconpanel").attr("id",feedInfo.id).addTo(root,0);
+						var header=$node("header").html("<img class='icon' height='16' width='16' src='"+feedInfo.icon+"'/><menu><command class='delete' closebtn='true' title='删除' onclick='var n=this.parentNode.parentNode.parentNode;n.parentNode.removeChild(n);'/></menu>").addTo(article);
 						// 内容
 						$node("section").html("<p>"+feedInfo.text+"</p>").addTo(article);
 					}
@@ -2533,8 +2540,8 @@ function enableYoukuFullscreen() {
 		return;
 	}
 	$("embed[src*='youku.com']:not([src*='winType=interior'])").each(function() {
-		this.src=elem.src.replace(/(http:\/\/player\.youku\.com[^"]*)(\/v.swf)/,"$1&winType=interior$2");
-		this.src=elem.src.replace(/(http:\/\/static\.youku\.com[^"]*)/,'$1&winType=interior');
+		this.src=this.src.replace(/(http:\/\/player\.youku\.com[^"]*)(\/v.swf)/,"$1&winType=interior$2");
+		this.src=this.src.replace(/(http:\/\/static\.youku\.com[^"]*)/,'$1&winType=interior');
 		$(this).attr("flashvars","winType=interior").tag(this);
 	});
 };
@@ -5684,6 +5691,28 @@ PageKit.prototype={
 				s=s.parentNode;
 			}
 			return PageKit(s);
+		} catch(ex) {
+			return null;
+		}
+	},
+	// 获取同级节点，i>0返回向后第i个，i<0返回向前第i个，i=0返回自己
+	sibling:function(i) {
+		try {
+			if(i>0) {
+				var p=this.get().nextElementSibling;
+				for(;i>1 && p!=null;i--) {
+					p=p.nextElementSibling;
+				}
+				return PageKit(p);
+			} else if(i<0) {
+				var p=this.get().previousElementSibling;
+				for(;i<-1 && p!=null;i++) {
+					p=p.previousElementSibling;
+				}
+				return PageKit(p);
+			} else {
+				return this;
+			}
 		} catch(ex) {
 			return null;
 		}
