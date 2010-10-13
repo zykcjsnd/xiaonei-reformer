@@ -8,9 +8,10 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.0.20101012
-// @miniver        363
+// @version        3.2.0.20101013
+// @miniver        364
 // @author         xz
+// @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
 //
 // Copyright (C) 2008-2010 Xu Zhen
@@ -48,8 +49,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.0.20101012";
-XNR.miniver=363;
+XNR.version="3.2.0.20101013";
+XNR.miniver=364;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -59,9 +60,6 @@ XNR.userId=$cookie("id","0");
 
 // 当前页面
 XNR.url=document.location.href;
-
-// 调试模式 TODO
-XNR.debug=false;
 
 // 选项
 XNR.options={};
@@ -580,46 +578,52 @@ function refreshFeedReply() {
 function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 	// 在bottombar上建立一个新的接收区域
 	if($("#bottombar").exist()) {
-		$("#bottombar").bind("DOMNodeInserted",function() {
-			if($("#webpager #setting-panel").exist()) {
+		(function(evt) {
+			if($("#webpager #setting-panel").empty()) {
+				// 底部工具栏尚未建立完毕，继续等待
+				$("#bottombar").bind("DOMNodeInserted",arguments.callee);
+				return;
+			} else if(evt) {
+				// 是通过DOMNodeInserted事件执行
 				$("#bottombar").unbind("DOMNodeInserted",arguments.callee);
-				var root=$node("div").attr("class","popupwindow notify-panel").addTo($node("div").attr({"class":"panel",id:"feed-panel"}).move("before",$("#webpager #setting-panel")));
-				var Btn=$node("div").attr("class","panelbarbutton").addTo(root);
-				$node("img").attr({"class":"icon",height:"16",width:"16",src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA4klEQVQ4y61TsQrCQAztp9lCO3dz82N0cXFydXIWP0LE3Q/QxVEoR0Fpz15P3sGlSWlpix6EvOSSl9ccDYJ/nNnyZBfro53iqRmJ3fnmbHW42O31PiomEgBcwHjhUEwE881eSPNxG7fv4UlBXddkxhiLw+Oq+ogYXnwCCjxR13SOfT0pAODMuATmk31sjXI5rXW3AhT1Teb4VWipQClFCvj0tiqPxQ7SNHWMY3cAjHr0iVcY2gHPP7J3oyAMQ5sX2eQdoM8RxHFsn3kp3rlvB1xVkiTN/wA2b1EUCevKieZfzxcMt3dNdxsqQQAAAABJRU5ErkJggg%3D%3D",alt:"新鲜事",title:"新鲜事"}).addTo(Btn);
-				$node("div").attr({id:"feed_toread_tip","class":"buttontooltip",style:"display:none"}).add($node("strong").attr("id","feed_toread_num").text("0")).addTo(Btn);
-				var list=$node("article").attr("class","window").css({right:"-84px",width:"280px"}).html('<header><h4>新的新鲜事</h4><menu><command title="最小化" label="最小化" class="minimize"></command></menu></header><section><p style="padding:5px;">没有新的新鲜事</p><div class="notification" style="display:none"></div></section>').addTo(root);
-				Btn.bind("click",function(evt) {
-					var root=$("#webpager #feed-panel .notify-panel");
-					var list=$("#webpager #feed-panel .window");
-					if(root.attr("class").indexOf("actived")!=-1) {
-						list.hide();
-						root.removeClass("actived");
-					} else {
-						list.show();
-						root.addClass("actived");
-					}
-					root.find("#feed_toread_tip").hide();
-					root.find("#feed_toread_num").text("0");
-				});
-				list.find("command").bind("click",function(evt) {
-					$("#webpager #feed-panel .window").hide();
-					$("#webpager #feed-panel .notify-panel").removeClass("actived");
-					// 清空计数
-					$("#feed_toread_num").text("0");
-					$("#feed_toread_tip").hide();
-				});
-				list.find(".notification").bind("DOMNodeRemoved",function(evt) {
-					var node=$(evt.relatedNode);
-					if(node.heirs()==1) {
-						node.hide();
-						node.sibling(-1).show();
-					}
-					// 清空计数
-					$("#feed_toread_num").text("0");
-					$("#feed_toread_tip").hide();
-				});
 			}
-		});
+			var root=$node("div").attr("class","popupwindow notify-panel").addTo($node("div").attr({"class":"panel",id:"feed-panel"}).move("before",$("#webpager #setting-panel")));
+			var Btn=$node("div").attr("class","panelbarbutton").addTo(root);
+			$node("img").attr({"class":"icon",height:"16",width:"16",src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA4klEQVQ4y61TsQrCQAztp9lCO3dz82N0cXFydXIWP0LE3Q/QxVEoR0Fpz15P3sGlSWlpix6EvOSSl9ccDYJ/nNnyZBfro53iqRmJ3fnmbHW42O31PiomEgBcwHjhUEwE881eSPNxG7fv4UlBXddkxhiLw+Oq+ogYXnwCCjxR13SOfT0pAODMuATmk31sjXI5rXW3AhT1Teb4VWipQClFCvj0tiqPxQ7SNHWMY3cAjHr0iVcY2gHPP7J3oyAMQ5sX2eQdoM8RxHFsn3kp3rlvB1xVkiTN/wA2b1EUCevKieZfzxcMt3dNdxsqQQAAAABJRU5ErkJggg%3D%3D",alt:"新鲜事",title:"新鲜事"}).addTo(Btn);
+			$node("div").attr({id:"feed_toread_tip","class":"buttontooltip",style:"display:none"}).add($node("strong").attr("id","feed_toread_num").text("0")).addTo(Btn);
+			var list=$node("article").attr("class","window").css({right:"-84px",width:"280px"}).html('<header><h4>新的新鲜事</h4><menu><command title="最小化" label="最小化" class="minimize"></command></menu></header><section><p style="padding:5px;">没有新的新鲜事</p><div class="notification" style="display:none"></div></section>').addTo(root);
+			Btn.bind("click",function(evt) {
+				var root=$("#webpager #feed-panel .notify-panel");
+				var list=$("#webpager #feed-panel .window");
+				if(root.attr("class").indexOf("actived")!=-1) {
+					list.hide();
+					root.removeClass("actived");
+				} else {
+					list.show();
+					root.addClass("actived");
+				}
+				root.find("#feed_toread_tip").hide();
+				root.find("#feed_toread_num").text("0");
+			});
+			list.find("command").bind("click",function(evt) {
+				$("#webpager #feed-panel .window").hide();
+				$("#webpager #feed-panel .notify-panel").removeClass("actived");
+				// 清空计数
+				$("#feed_toread_num").text("0");
+				$("#feed_toread_tip").hide();
+			});
+			list.find(".notification").bind("DOMNodeRemoved",function(evt) {
+				var node=$(evt.relatedNode);
+				if(node.heirs()<=1) {
+					// 事件触发时节点还没有删掉
+					node.hide();
+					node.sibling(-1).show();
+				}
+				// 清空计数
+				$("#feed_toread_num").text("0");
+				$("#feed_toread_tip").hide();
+			});
+		})();
 	}
 
 	(function() {
@@ -822,7 +826,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 
 	if(!evt) {
 		// stage0预先打补丁。stage1修正
-		var prepatch=$patchCSS("a,a:link,a:visited,a:hover{color:"+FCOLOR+"}.navigation .nav-body{background-color:"+XCOLOR+"}.user-data,.panel.bookmarks,.statuscmtitem,.new-user{background-color:"+SCOLOR+"}");
+		var prepatch=$patchCSS("a,a:link,a:visited,a:hover{color:"+FCOLOR+"}.navigation .nav-body{background-color:"+XCOLOR+"}.input-button,.input-submit{background-color:"+XCOLOR+"}.user-data,.panel.bookmarks,.statuscmtitem,.new-user{background-color:"+SCOLOR+"}");
 	}
 	$wait(1,function() {
 		if(!ignoreTheme) {
@@ -2770,8 +2774,36 @@ function diagnose() {
 	$("div.xnr_op #diagnosisInfo").val(str);
 };
 
-/* 所有功能完毕 */
+// 设置参数
+function setParam() {
+	try {
+		var name=$(".xnr_op #paramName").val();
+		var value=$(".xnr_op #paramValue").val();
+		if(!name) {
+			throw 0;
+		}
+		$save(name,JSON.parse(value));
+	} catch(ex) {
+		alert("参数错误！");
+	}
+};
 
+// 导入设置
+function importConfig() {
+	try {
+		var value=JSON.parse($(".xnr_op #configuration").val());
+		if(typeof value!="object") {
+			throw 0;
+		}
+		XNR.options=value;
+		$save();
+		document.location.reload();
+	} catch(ex) {
+		alert("配置数据错误！");
+	}
+};
+
+/* 所有功能完毕 */
 
 // 主执行函数。
 function main(savedOptions) {
@@ -4262,6 +4294,8 @@ function main(savedOptions) {
 				}],
 				agent:OPERA
 			},{
+				text:"* 以上地址保存后生效"
+			},{
 				text:"##升级后显示通知",
 				ctrl:[{
 					id:"updatedNotify",
@@ -4299,6 +4333,56 @@ function main(savedOptions) {
 						readonly:true,
 					}
 				],
+			}
+		],
+		"功能调试":[
+			{
+				text:"如果您不了解以下功能的用处，请不要使用！",
+			},{
+				text:"##输出调试信息",
+				ctrl:[{
+					id:"debug",
+					value:false
+				}]
+			},{
+				text:"##：## = ##",
+				ctrl:[
+					{
+						type:"button",
+						value:"参数设置",
+						fn:[{
+							name:setParam,
+							fire:"click"
+						}]
+					},{
+						id:"paramName",
+						type:"input",
+						style:"width:70px"
+					},{
+						id:"paramValue",
+						type:"input",
+						style:"width:170px"
+					}
+				]
+			},{
+				text:"##：####",
+				ctrl:[
+					{
+						type:"button",
+						value:"导入选项",
+						fn:[{
+							name:importConfig,
+							fire:"click",
+						}]
+					},{
+						type:"br",
+						style:"height:5px"
+					},{
+						id:"configuration",
+						type:"edit",
+						style:"width:99%;height:110px"
+					}
+				]
 			}
 		]
 	};
@@ -4354,18 +4438,24 @@ function main(savedOptions) {
 				for(var iText=0;iText<text.length;iText++) {
 					// 文本节点
 					if(text[iText]) {
-						// 寻找前一个check作为关联目标
-						var forCheck="";
-						for(var iCtrl=iText-1;iCtrl>=0;iCtrl--) {
-							if(o.ctrl[iCtrl].type=="br") {
-								break;
-							}
-							if(!o.ctrl[iCtrl].type || o.ctrl[iCtrl].type=="check") {
-								forCheck=o.ctrl[iCtrl].id;
-								break;
+						if(o.ctrl) {
+							// 寻找前一个check作为关联目标
+							var forCheck="";
+							for(var iCtrl=iText-1;iCtrl>=0;iCtrl--) {
+								if(o.ctrl[iCtrl].type=="br") {
+									break;
+								}
+								if(!o.ctrl[iCtrl].type || o.ctrl[iCtrl].type=="check") {
+									forCheck=o.ctrl[iCtrl].id;
+									break;
+								}
 							}
 						}
 						$node("label").attr("for",forCheck).text(text[iText]).addTo(block);
+					}
+					if(o.ctrl==null) {
+						// 纯文本描述
+						continue;
 					}
 					// 控件节点
 					var control=o.ctrl[iText];
@@ -4602,23 +4692,20 @@ function main(savedOptions) {
 		}
 	}
 
+	$debug("#0");
 	// 执行优先级为0的函数
 	for(var iPage in fnQueue) {
 		if(iPage=="*" || $page(iPage)) {
 			for(var i=0;i<fnQueue[iPage][0].length;i++) {
 				var fn=fnQueue[iPage][0][i];
-				if(XNR.debug) {
-					$error(fn.name,{msg:"start"});
-				}
+				$debug("^",fn.name);
 				try {
 					fn.name.apply(null,fn.args);
 					fn.name.rf=true;
 				} catch(ex) {
 					$error(fn.name,ex);
 				}
-				if(XNR.debug) {
-					$error(fn.name,{msg:"end"});
-				}
+				$debug("$",fn.name);
 			}
 		}
 	}
@@ -4802,6 +4889,7 @@ function main(savedOptions) {
 	// 执行剩下三个优先级的函数
 	for(var p=1;p<=3;p++) {
 		$wait(p,function (stage) {
+			$debug("#"+stage);
 			if(stage==2) {
 				// 添加菜单入口项在页面DOM构建完毕后执行
 				entry.addTo($(".nav-body .nav-other"),0);
@@ -4830,18 +4918,14 @@ function main(savedOptions) {
 						}
 					} else {
 						// 一般功能
-						if(XNR.debug) {
-							$error(fn.name,{msg:"start"});
-						}
+						$debug("^",fn.name);
 						try {
 							fn.name.apply(null,fn.args);
 							fn.name.rf=true;
 						} catch(ex) {
 							$error(fn.name,ex);
 						}
-						if(XNR.debug) {
-							$error(fn.name,{msg:"end"});
-						}
+						$debug("$",fn.name);
 					}
 				}
 			}
@@ -4854,6 +4938,8 @@ function main(savedOptions) {
 		$(document).bind(eventId,function(evt) {
 			evt.stopPropagation();
 			XNR.url=document.location.href;
+
+			$debug("async @ "+XNR.url);
 
 			for(var p=0;p<=3;p++) {
 				for(var iPage in fnQueue) {
@@ -4884,18 +4970,14 @@ function main(savedOptions) {
 								continue;
 							}
 							// 一般功能
-							if(XNR.debug) {
-								$error(fn.name,{msg:"async start"});
-							}
+							$debug("^=",fn.name);
 							try {
 								fn.name.apply(null,fn.args);
 								fn.name.rf=true;
 							} catch(ex) {
 								$error(fn.name,ex);
 							}
-							if(XNR.debug) {
-								$error(fn.name,{msg:"async end"});
-							}
+							$debug("$=",fn.name);
 						}
 					}
 				}
@@ -5206,7 +5288,10 @@ function $ban(style) {
  *   无
  */
 function $save(name,value) {
-	XNR.options[name]=value;
+	if(name) {
+		// 当name无效时，仅将当前设置保存
+		XNR.options[name]=value;
+	}
 	var opts=JSON.stringify(XNR.options);
 	switch(XNR.agent) {
 		case USERSCRIPT:
@@ -5313,20 +5398,12 @@ function $error(func,error) {
 	}
 	if(typeof error=="object") {
 		var msg="在 "+func+"() 中发生了一个错误。\n";
-		if(XNR.debug) {
-			for(var i in error) {
-				msg+=i+"："+error[i]+"\n";
+		if(error) {
+			if(error.name!=null) {
+				msg+="错误名称："+error.name+"\n";
 			}
-		} else {
-			if(error) {
-				if(error.name!=null) {
-					msg+="错误名称："+error.name+"\n";
-				}
-				if(error.message!=null) {
-					msg+="错误信息："+error.message+"\n";
-				}
-			} else {
-				return;
+			if(error.message!=null) {
+				msg+="错误信息："+error.message+"\n";
 			}
 		}
 		msg+="\n";
@@ -5339,6 +5416,31 @@ function $error(func,error) {
 		if(board.exist()) {
 			board.val(board.val()+msg);
 		}
+	}
+};
+
+/*
+ * 输出调试信息
+ * 参数
+ *   [String]msg:调试信息
+ * 返回值
+ *   无
+ */
+function $debug(msg,func) {
+	if(XNR.options.debug===false) {
+		return;
+	}
+	if(typeof func=="function") {
+		func=/function (.*?)\(/.exec(func.toString())[1];
+	}
+	if(func) {
+		msg=func+" "+msg;
+	}
+	msg="["+new Date().valueOf()+"]:"+msg;
+	if(XNR.agent==FIREFOX) {
+		extServices("log",msg);
+	} else {
+		console.log(msg);
 	}
 };
 
