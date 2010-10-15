@@ -8,8 +8,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.0.20101013
-// @miniver        364
+// @version        3.2.0.20101015
+// @miniver        366
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -49,8 +49,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.0.20101013";
-XNR.miniver=364;
+XNR.version="3.2.0.20101015";
+XNR.miniver=366;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -75,7 +75,7 @@ if(window.chrome) {
 	XNR.agent=OPERA;
 } else if (typeof GM_setValue=="function") {
 	XNR.agent=USERSCRIPT;
-} else if (typeof extServices=="function") {
+} else if (typeof XNR_save=="function") {
 	XNR.agent=FIREFOX;
 }
 
@@ -1389,6 +1389,9 @@ function addExtraEmotions() {
 		"(kz)":		{t:"孔子",			s:"/imgpro/icons/statusface/kz.gif"},
 		"(qgz)":	{t:"人人求工作",	s:"/imgpro/icons/statusface/offer.gif"},
 		"(ly)":		{t:"落叶",			s:"/imgpro/icons/statusface/autumn-leaves.gif"},
+		"(cy1)":	{t:"重阳节",		s:"/imgpro/icons/statusface/09double9-3.gif"},
+		"(cy2)":	{t:"登高",			s:"/imgpro/icons/statusface/09double9.gif"},
+		"(cy3)":	{t:"饮菊酒",		s:"/imgpro/icons/statusface/09double9-2.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
@@ -1885,7 +1888,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 							window.open("javascript:'"+html+"'");
 						}
 					} else if(XNR.agent==FIREFOX) {
-						extServices("album",album);
+						XNR_album(album);
 					} else if(XNR.agent==CHROME) {
 						chrome.extension.sendRequest({action:"album",data:album});
 					} else if(XNR.agent==SAFARI) {
@@ -2754,15 +2757,13 @@ function checkUpdate(evt,checkLink,updateLink,lastCheck) {
 function updatedNotify(notify,lastVersion) {
 	if(notify) {
 		var lastVer=parseInt(lastVersion);
-		// 首次运行。。？
+		// 0为首次运行。。？
 		if(lastVer>0 && lastVer<XNR.miniver) {
 			$popup(null,'<div style="color:black">人人网改造器已经更新到:<br/>'+XNR.version+' ('+XNR.miniver+')</div><div><a href="http://code.google.com/p/xiaonei-reformer/source/browse/trunk/Release.txt" style="padding-top:5px;padding-bottom:5px;float:right" target="_blank">查看更新内容</a></div>',null,20,5);
 		}
 	}
 	$save("lastVersion",XNR.miniver);
 };
-
-
 
 // 生成诊断信息
 function diagnose() {
@@ -2799,7 +2800,7 @@ function importConfig() {
 		$save();
 		document.location.reload();
 	} catch(ex) {
-		alert("配置数据错误！");
+		alert("选项数据错误！");
 	}
 };
 
@@ -4099,7 +4100,7 @@ function main(savedOptions) {
 						}]
 					},{
 						type:"info",
-						value:"启用本功能后，在“设置”->“资料编辑”->“基本信息”中编辑昵称"
+						value:"启用本功能后，在导航栏“设置”->“资料编辑”->“基本信息”中编辑昵称"
 					}
 				],
 				page:"profile",
@@ -4294,7 +4295,8 @@ function main(savedOptions) {
 				}],
 				agent:OPERA
 			},{
-				text:"* 以上地址保存后生效"
+				text:"* 以上地址保存后生效",
+				agent:USERSCRIPT | FIREFOX | OPERA
 			},{
 				text:"##升级后显示通知",
 				ctrl:[{
@@ -5298,7 +5300,7 @@ function $save(name,value) {
 			GM_setValue("xnr_options",opts);
 			break;
 		case FIREFOX:
-			extServices("save",escape(opts));
+			XNR_save(opts);
 			break;
 		case CHROME:
 			chrome.extension.sendRequest({action:"save",data:opts});
@@ -5330,7 +5332,7 @@ function $get(url,func,userData,method) {
 		case FIREFOX:
 			// 如果直接使用window.XMLHttpRequest，即使在创建sandbox时赋予chrome的window权限，也会被noscript阻挡。
 			// 是该赞叹noscript尽职呢还是怪它管的太宽呢…
-			extServices("get",{url:url,func:func,data:userData,method:method});
+			XNR_get(url,func,userData,method);
 			break;
 		case USERSCRIPT:
 			if(func!=null) {
@@ -5407,11 +5409,7 @@ function $error(func,error) {
 			}
 		}
 		msg+="\n";
-		if(XNR.agent==FIREFOX) {
-			extServices("log",msg);
-		} else {
-			console.log(msg);
-		}
+		console.log(msg);
 		var board=$(".xnr_op #diagnosisInfo");
 		if(board.exist()) {
 			board.val(board.val()+msg);
@@ -5437,11 +5435,7 @@ function $debug(msg,func) {
 		msg=func+" "+msg;
 	}
 	msg="["+new Date().valueOf()+"]:"+msg;
-	if(XNR.agent==FIREFOX) {
-		extServices("log",msg);
-	} else {
-		console.log(msg);
-	}
+	console.log(msg);
 };
 
 /*
@@ -6158,21 +6152,17 @@ switch(XNR.agent) {
 		});
 		break;
 	case FIREFOX:
-		var opts;
+		var opts=XNR_load();
 		try {
-			opts=JSON.parse(unescape(extServices("load")));
+			opts=JSON.parse(opts);
 		} catch(ex) {
-			opts={};
+			try {
+				opts=JSON.parse(unescape(opts).replace(/\n/g,"\\u000a"));	//TODO 3.x -> 3.2 升级兼容代码，以后删除
+			} catch(ex) {
+				opts={};
+			}
 		}
-		if(document.documentElement==null) {
-			// 时机太早了。。。从3.7a5pre开始
-			document.addEventListener("DOMNodeInserted",function(evt) {
-				document.removeEventListener("DOMNodeInserted",arguments.callee,true);
-				main(opts);
-			},true);
-		} else {
-			main(opts);
-		}
+		main(opts);
 		break;
 	case SAFARI:
 		var reqId=Math.random();
