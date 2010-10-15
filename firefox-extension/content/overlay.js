@@ -1,7 +1,9 @@
 var myListener={
 	onLocationChange: function(aBrowser, aProgress, aRequest, aURI) {
-		if(aBrowser.contentDocument.readyState=="loading") {
-			loadScript(aBrowser.contentWindow,true);
+		if(checkLocation(aBrowser.contentWindow.location.href)) {
+			if(aBrowser.contentDocument.readyState=="loading") {
+				loadScript(aBrowser.contentWindow,true);
+			}
 		}
 	},
 	onProgressChange: function(aBrowser, aWebProgress, aRequest, curSelf, maxSelf, curTot, maxTot) {},
@@ -32,57 +34,76 @@ function loadScript(obj,direct) {
 		contentWindow=obj;
 	} else {
 		contentWindow=obj.target.defaultView.window;
-		if(contentWindow==contentWindow.parent) {
+		if(contentWindow==contentWindow.top) {
 			// only run in frame
 			return;
 		}
 	}
-	if(!contentWindow.location.href.match("^https?://.*\\.renren\\.com/|^https?://renren\\.com/")) {
+	if(!checkLocation(contentWindow.location.href)) {
 		return;
 	}
-	if(contentWindow.location.href.match("^http://wpi\\.renren\\.com/|ajaxproxy")) {
-		return;
-	}
-
-	// can't use mozIJSSubScriptLoader due to https://bugzilla.mozilla.org/show_bug.cgi?id=377498
-	var script=getUrlContents('chrome://xiaonei-reformer/content/xiaonei_reformer.user.js');
 
 	var sandbox=new Components.utils.Sandbox(contentWindow);
 	sandbox.window=contentWindow;
 	sandbox.document=contentWindow.document;
 	sandbox.__proto__=contentWindow;
 
-	sandbox.importFunction(function(name,value) {
-		const op="extensions.xiaonei_reformer.xnr_options";
-		switch(name) {
-			case "save":
-				Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).setCharPref(op,value);
-				break;
-			case "load":
-				return Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getCharPref(op);
-			case "log":
-				Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService).logStringMessage(value);
-				break;
-			case "get":
-				var httpReq= new window.XMLHttpRequest();
-				if(value.func!=null) {
-					httpReq.onload=function() {
-						value.func((httpReq.status==200?httpReq.responseText:null),value.url,value.data);
-					};
-					httpReq.onerror=function() {
-						value.func(null,value.url,value.data);
-					};
-				}
-			    httpReq.open(value.method,value.url,true);
-				httpReq.send();
-				break;
-			case "album":
-				gBrowser.selectedTab=gBrowser.addTab("chrome://xiaonei-reformer/content/album.html#"+escape(JSON.stringify(value)));
-				break;
-		}
-	},"extServices");
+	const opt="extensions.xiaonei_reformer.xnr_options";
+	sandbox.importFunction(function (data) {
+		var str = Components.classes["@mozilla.org/supports-string;1"].createInstance(Components.interfaces.nsISupportsString);
+		str.data = data;
+		Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).setComplexValue(opt, Components.interfaces.nsISupportsString, str);
+	},"XNR_save");
 
-	Components.utils.evalInSandbox(script,sandbox);
+	sandbox.importFunction(function () {
+		return Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getComplexValue(opt, Components.interfaces.nsISupportsString).data;
+	},"XNR_load");
+
+	sandbox.importFunction(function (url, func, data, method) {
+		var httpReq = new window.XMLHttpRequest();
+		if(func != null) {
+			httpReq.onload = function() {
+				func((httpReq.status==200?httpReq.responseText:null), url, data);
+			};
+			httpReq.onerror=function () {
+				func(null, url, data);
+			};
+		}
+		httpReq.open(method, url, true);
+		httpReq.send();
+	},"XNR_get");
+
+	sandbox.importFunction(function (data) {
+		gBrowser.selectedTab=gBrowser.addTab("chrome://xiaonei-reformer/content/album.html#"+escape(JSON.stringify(data)));
+	},"XNR_album");
+
+
+	if(!sandbox.console) {
+		sandbox.console={
+			log: function(msg) {
+				Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService).logStringMessage(msg);
+			}
+		};
+	}
+
+	// can't use mozIJSSubScriptLoader due to https://bugzilla.mozilla.org/show_bug.cgi?id=377498
+	var script=getUrlContents('chrome://xiaonei-reformer/content/xiaonei_reformer.user.js');
+
+	if(sandbox.document.documentElement!=null) {
+		Components.utils.evalInSandbox(script,sandbox);
+	} else {
+		// from 3.7a5pre
+		sandbox.document.addEventListener("DOMSubtreeModified",function() {
+			sandbox.document.removeEventListener("DOMSubtreeModified",arguments.callee,true);
+			Components.utils.evalInSandbox(script,sandbox);
+		},true);
+	}
+}
+
+function checkLocation(url) {
+	const whitelist="^https?://.*\\.renren\\.com/|^https?://renren\\.com/";
+	const blacklist="^http://wpi\\.renren\\.com/|ajaxproxy";
+	return url.match(whitelist) && !url.match(blacklist);
 }
 
 // getUrlContents adapted from Greasemonkey Compiler
@@ -113,3 +134,4 @@ function getUrlContents(aUrl) {
 		return str;
 	}
 }
+
