@@ -32,6 +32,19 @@ body#profile .tabs-holder .tabpanel li:not(.current) a{background-color:#D8DFEA}
 body#profile .tabs-holder .tabpanel li:not(.current) a:hover{background-color:#627AAD;color:white}
 }}}
 
+==将底部工具栏移到页面顶部==
+{{{
+#bottombar{top:0;bottom:auto}
+#header:nth-child(1){margin-top:24px}
+body>#navBar{margin-top:24px}
+.webpager .popupwindow.actived>.panelbarbutton{border-top:1px solid #124680;border-bottom:1px solid #B5B5B5}
+.webpager .popupwindow.actived>.window{bottom:auto;top:24px}
+.webpager ul.icon a .tooltip{bottom:auto;top:25px}
+.webpager ul.icon a:hover .tooltip .tooltip-arrow{display:none}
+.webpager .buttontooltip{top:0}
+.webpager{border-bottom:1px solid #B4B4B4;border-top:none;background-position:bottom}
+}}}
+
 ==首页皮肤==
 在一个等级达到11级的帐户，使用首页换肤功能，选择一个皮肤后，在地址栏输入
 {{{
