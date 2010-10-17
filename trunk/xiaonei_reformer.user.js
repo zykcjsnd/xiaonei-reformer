@@ -8,8 +8,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.0.20101015
-// @miniver        366
+// @version        3.2.0.20101017
+// @miniver        367
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -49,8 +49,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.0.20101015";
-XNR.miniver=366;
+XNR.version="3.2.0.20101017";
+XNR.miniver=367;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1392,6 +1392,7 @@ function addExtraEmotions() {
 		"(cy1)":	{t:"重阳节",		s:"/imgpro/icons/statusface/09double9-3.gif"},
 		"(cy2)":	{t:"登高",			s:"/imgpro/icons/statusface/09double9.gif"},
 		"(cy3)":	{t:"饮菊酒",		s:"/imgpro/icons/statusface/09double9-2.gif"},
+		"(dx)":		{t:"雪人",			s:"/imgpro/icons/statusface/snowman.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},

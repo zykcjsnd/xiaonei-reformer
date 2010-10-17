@@ -10,8 +10,8 @@ else
 	test -z "$passwd" && exit 1
 fi
 
-VER1=`sed -n '9p' xiaonei_reformer.user.js | sed -E 's/ +/ /g' | cut -d' ' -f 3`
-VER2=`sed -n '10p' xiaonei_reformer.user.js | sed -E 's/ +/ /g' | cut -d' ' -f 3`
+VER1=`sed -n '11p' xiaonei_reformer.user.js | sed -E 's/ +/ /g' | cut -d' ' -f 3`
+VER2=`sed -n '12p' xiaonei_reformer.user.js | sed -E 's/ +/ /g' | cut -d' ' -f 3`
 VERSION=`echo $VER1 | sed -E 's/[0-9]+$/'$VER2'/'`
 
 project="-p xiaonei-reformer -u xnreformer -w $passwd"
