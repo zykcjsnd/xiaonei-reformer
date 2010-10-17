@@ -2,6 +2,8 @@
 
 * 首先声明：所有这些自定义页面样式仅仅对你个人生效，在其他人访问你的页面时看到的仍然为原始页面 *
 
+<font color="red">将以下列出的页面样式复制粘贴到改造器中“改造界面”->"自定义页面样式"下的编辑框中</font>
+
 ==隐藏“意见反馈”标签==
 {{{
 #feedback-box{display:none}
@@ -40,7 +42,7 @@ Safari浏览器请输入
 javascript:document.documentElement.textContent=document.querySelector("#hometpl_style style").textContent.replace(/\/\*.*?\*\//g,"")
 }}}
 
-即可得到皮肤的页面样式，将其复制粘贴到改造器中自定义页面样式功能下的文本框中即可生效。
+即可得到皮肤的页面样式，将其复制粘贴到改造器中自定义页面样式功能下的编辑框中即可生效。
 
 <font color="red">注意：</font>
   # 这只是针对* 首页换肤 *功能，对VIP会员的* 主页皮肤 *无效
