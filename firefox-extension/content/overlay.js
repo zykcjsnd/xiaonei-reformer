@@ -38,9 +38,9 @@ function loadScript(obj,direct) {
 			// only run in frame
 			return;
 		}
-	}
-	if(!checkLocation(contentWindow.location.href)) {
-		return;
+		if(!checkLocation(contentWindow.location.href)) {
+			return;
+		}
 	}
 
 	var sandbox=new Components.utils.Sandbox(contentWindow);
@@ -93,8 +93,9 @@ function loadScript(obj,direct) {
 		Components.utils.evalInSandbox(script,sandbox);
 	} else {
 		// from 3.7a5pre
-		sandbox.document.addEventListener("DOMSubtreeModified",function() {
-			sandbox.document.removeEventListener("DOMSubtreeModified",arguments.callee,true);
+		// using sandbox.document instead of contentWindow will cause infinite loop on 4.0b6 
+		contentWindow.addEventListener("DOMSubtreeModified",function() {
+			contentWindow.removeEventListener("DOMSubtreeModified",arguments.callee,true);
 			Components.utils.evalInSandbox(script,sandbox);
 		},true);
 	}
