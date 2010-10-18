@@ -1,3 +1,8 @@
+3.2.0.20101018 (368):
+fix:PageKit增加rect方法
+fix:首次运行增加提示，去除Firefox和Chrome的选项页面
+fix:更改Firefox扩展机制，使用wrapper包装
+
 3.2.0.20101017 (367):
 fix:修正Firefox扩展在已公布的Firefox 4.0beta版上卡死的问题
 fix:更新表情列表

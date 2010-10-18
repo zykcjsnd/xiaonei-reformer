@@ -43,10 +43,11 @@ function loadScript(obj,direct) {
 		}
 	}
 
-	var sandbox=new Components.utils.Sandbox(contentWindow);
-	sandbox.window=contentWindow;
-	sandbox.document=contentWindow.document;
-	sandbox.__proto__=contentWindow;
+	var wrapper=new XPCNativeWrapper(contentWindow);
+	var sandbox=new Components.utils.Sandbox(wrapper);
+	sandbox.window=wrapper;
+	sandbox.document=wrapper.document;
+	sandbox.__proto__=wrapper;
 
 	const opt="extensions.xiaonei_reformer.xnr_options";
 	sandbox.importFunction(function (data) {
@@ -77,7 +78,6 @@ function loadScript(obj,direct) {
 		gBrowser.selectedTab=gBrowser.addTab("chrome://xiaonei-reformer/content/album.html#"+escape(JSON.stringify(data)));
 	},"XNR_album");
 
-
 	if(!sandbox.console) {
 		sandbox.console={
 			log: function(msg) {
@@ -89,7 +89,7 @@ function loadScript(obj,direct) {
 	// can't use mozIJSSubScriptLoader due to https://bugzilla.mozilla.org/show_bug.cgi?id=377498
 	var script=getUrlContents('chrome://xiaonei-reformer/content/xiaonei_reformer.user.js');
 
-	if(sandbox.document.documentElement!=null) {
+	if(contentWindow.document.documentElement!=null) {
 		Components.utils.evalInSandbox(script,sandbox);
 	} else {
 		// from 3.7a5pre

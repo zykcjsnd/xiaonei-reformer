@@ -1,16 +1,18 @@
-#! /bin/sh
+#! /bin/bash -
 
 INPUT=xiaonei_reformer.user.js
 OUTPUT=xiaonei_reformer.min.user.js
 
-VER1=`sed -n '11p' xiaonei_reformer.user.js | sed -E 's/ +/ /g' | cut -d' ' -f 3`
-VER2=`sed -n '12p' xiaonei_reformer.user.js | sed -E 's/ +/ /g' | cut -d' ' -f 3`
+VER1L=`head -n 20 xiaonei_reformer.user.js | sed -n '/@version/='`
+VER1=`sed -n ${VER1L}p xiaonei_reformer.user.js | sed -E 's/ +/ /g' | cut -d' ' -f 3`
+VER2L=`head -n 20 xiaonei_reformer.user.js | sed -n '/@miniver/='`
+VER2=`sed -n ${VER2L}p xiaonei_reformer.user.js | sed -E 's/ +/ /g' | cut -d' ' -f 3`
 VERSION=`echo $VER1 | sed -E 's/[0-9]+$/'$VER2'/'`
 
 sed -i "32,100s/^XNR.version=\".*\";$/XNR.version=\"$VER1\";/" $INPUT
 sed -i "32,100s/^XNR.miniver=.*;$/XNR.miniver=$VER2;/" $INPUT
 
-head -n 32 "$INPUT" > "$OUTPUT"
+sed '/^\/\/\/$/q' "$INPUT" > "$OUTPUT"
 yui-compressor --nomunge "$INPUT" >> "$OUTPUT"
 
 #######################################
