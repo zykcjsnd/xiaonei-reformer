@@ -3,13 +3,11 @@
 // @namespace      Xiaonei_reformer
 // @include        http://renren.com/*
 // @include        http://*.renren.com/*
-// @include        https://renren.com/*
-// @include        https://*.renren.com/*
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.0.20101017
-// @miniver        367
+// @version        3.2.0.20101018
+// @miniver        368
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -28,7 +26,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+///
 
 (function(){
 
@@ -49,8 +47,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.0.20101017";
-XNR.miniver=367;
+XNR.version="3.2.0.20101018";
+XNR.miniver=368;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -2754,10 +2752,17 @@ function checkUpdate(evt,checkLink,updateLink,lastCheck) {
 	});
 };
 
-// 升级后提示
+// 升级后提示，必定执行
 function updatedNotify(notify,lastVersion) {
+	var lastVer=parseInt(lastVersion);
+	// 如果第一次执行（实际判断为版本小于368，以提醒用户），显示选项设置提示
+	if(lastVer<368) {
+		var rect=$(".menu.xnr_opt").rect(true);
+		if(rect) {
+			$node("div").attr("id","xnr_optip").html('<div style="border-color:transparent transparent red transparent;border-style:solid;width:0;height:0;top:'+parseInt(rect.bottom-14)+'px;border-width:8px;left:'+parseInt((rect.left+rect.right)/2-8)+'px;position:absolute;z-index:100000"></div><div style="background:red;-moz-border-radius:10px;border-radius:10px;top:'+parseInt(rect.bottom+2)+'px;padding:5px 10px;left:'+parseInt(rect.right-118)+'px;color:white;font-weight:bold;position:absolute;min-width:104px;-moz-box-shadow:2px 2px 5px #191919;box-shadow:2px 2px 5px #191919;z-index:99999">点击这里进行设置</div>').addTo($("body"));
+		}
+	}
 	if(notify) {
-		var lastVer=parseInt(lastVersion);
 		// 0为首次运行。。？
 		if(lastVer>0 && lastVer<XNR.miniver) {
 			$popup(null,'<div style="color:black">人人网改造器已经更新到:<br/>'+XNR.version+' ('+XNR.miniver+')</div><div><a href="http://code.google.com/p/xiaonei-reformer/source/browse/trunk/Release.txt" style="padding-top:5px;padding-bottom:5px;float:right" target="_blank">查看更新内容</a></div>',null,20,5);
@@ -4866,7 +4871,7 @@ function main(savedOptions) {
 			return;
 		}
 		var move=$alloc("drag_optionMenu");
-		var menuRect=menu.get().getBoundingClientRect();
+		var menuRect=menu.rect();
 		move.x=evt.clientX-menuRect.left;
 		move.y=evt.clientY-menuRect.top;
 		evt.target.style.cursor="move";
@@ -4884,9 +4889,11 @@ function main(savedOptions) {
 	},true);
 
 	// 菜单在导航栏上的入口
-	var entry=$node("div").attr("class","menu").add($node("div").attr("class","menu-title").add($node("a").attr({href:"javascript:;",onclick:"return false;"}).text("改造")));
+	var entry=$node("div").attr("class","menu xnr_opt").add($node("div").attr("class","menu-title").add($node("a").attr({href:"javascript:;",onclick:"return false;"}).text("改造")));
 	entry.find("a").bind("click",function() {
 		menu.show().css({"top":parseInt(window.innerHeight-menu.prop("offsetHeight"))/2+"px","left":parseInt(window.innerWidth-menu.prop("offsetWidth"))/2+"px"});
+		// 进行设置的提醒已经没必要了
+		$("#xnr_optip").remove();
 	});
 
 	// 执行剩下三个优先级的函数
@@ -6010,6 +6017,24 @@ PageKit.prototype={
 		} catch(ex) {
 		}
 		return null;
+	},
+	// 获取位置，abs为真时获取绝对位置
+	rect:function(abs) {
+		try {
+			var ro=this.get().getBoundingClientRect();
+			// ro的属性不能修改，故复制一个r返回
+			var r={};
+			var list={"left":window.scrollX,"right":window.scrollX,"top":window.scrollY,"bottom":window.scrollY,"width":0,"height":0};
+			for(var i in list) {
+				r[i]=ro[i];
+				if(abs) {
+					r[i]+=list[i];
+				}
+			}
+			return r;
+		} catch(ex) {
+			return null;
+		}
 	},
 	// 增加一个类
 	addClass:function(str) {
