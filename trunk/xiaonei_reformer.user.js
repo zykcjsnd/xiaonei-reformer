@@ -1391,6 +1391,7 @@ function addExtraEmotions() {
 		"(cy2)":	{t:"登高",			s:"/imgpro/icons/statusface/09double9.gif"},
 		"(cy3)":	{t:"饮菊酒",		s:"/imgpro/icons/statusface/09double9-2.gif"},
 		"(dx)":		{t:"雪人",			s:"/imgpro/icons/statusface/snowman.gif"},
+		"(cold)":	{t:"降温",			s:"/imgpro/icons/statusface/cold.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
@@ -2759,7 +2760,7 @@ function updatedNotify(notify,lastVersion) {
 	if(lastVer<368) {
 		var rect=$(".menu.xnr_opt").rect(true);
 		if(rect) {
-			$node("div").attr("id","xnr_optip").html('<div style="border-color:transparent transparent red transparent;border-style:solid;width:0;height:0;top:'+parseInt(rect.bottom-14)+'px;border-width:8px;left:'+parseInt((rect.left+rect.right)/2-8)+'px;position:absolute;z-index:100000"></div><div style="background:red;-moz-border-radius:10px;border-radius:10px;top:'+parseInt(rect.bottom+2)+'px;padding:5px 10px;left:'+parseInt(rect.right-118)+'px;color:white;font-weight:bold;position:absolute;min-width:104px;-moz-box-shadow:2px 2px 5px #191919;box-shadow:2px 2px 5px #191919;z-index:99999">点击这里进行设置</div>').addTo($("body"));
+			$node("div").attr("id","xnr_optip").html('<div style="border-color:transparent transparent red transparent;border-style:solid;width:0;height:0;top:'+parseInt(rect.bottom-14)+'px;border-width:8px;left:'+parseInt((rect.left+rect.right)/2-8)+'px;position:absolute;z-index:100000"></div><div style="background:red;-moz-border-radius:10px;border-radius:10px;top:'+parseInt(rect.bottom+2)+'px;padding:5px 10px;left:'+parseInt(rect.right-118)+'px;color:white;font-weight:bold;position:absolute;min-width:104px;-moz-box-shadow:2px 2px 5px #292929;-webkit-box-shadow:2px 2px 5px #292929;box-shadow:2px 2px 5px #292929;z-index:99999;text-align:center">点击这里进行设置</div>').addTo($("body"));
 		}
 	}
 	if(notify) {
@@ -4318,7 +4319,8 @@ function main(savedOptions) {
 				text:"##",
 				ctrl:[{
 					id:"lastVersion",
-					type:"hidden"
+					type:"hidden",
+					value:0
 				}]
 			}
 		],
