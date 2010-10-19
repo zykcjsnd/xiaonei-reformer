@@ -1,3 +1,10 @@
+3.2.0.20101019 (369):
+add:增加自动回应人气请求功能
+add:隐藏/拒绝请求功能增加情侣请求
+fix:选项增加subcheck类型
+fix:PageKit的looks方法更名为curCSS
+fix:细分增加增加额外表情功能
+
 3.2.0.20101018 (368):
 fix:PageKit增加rect方法
 fix:首次运行增加提示，去除Firefox和Chrome的选项页面

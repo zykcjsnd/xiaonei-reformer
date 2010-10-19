@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.0.20101018
-// @miniver        368
+// @version        3.2.0.20101019
+// @miniver        369
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -137,7 +137,7 @@ function removePageTheme() {
 		}
 	}
 	// 修复Logo
-	if($(".menu-bar").looks("backgroundImage")=="none") {
+	if($(".menu-bar").curCSS("backgroundImage")=="none") {
 		var logo=$("img[src*='viplogo-renren.png']");
 		if(logo.exist()) {
 			logo.attr({height:null,width:null}).attr("src",logo.attr("src").replace("viplogo-renren.png","logo-renren.png"));
@@ -293,6 +293,7 @@ function hideRequest(req) {
 		"friendRequest":"l-friend",
 		"tagRequest":"l-tag",
 		"loveRequest":"l-love-invite",
+		"loverRequest":"l-love",
 		"otherRequest":"iOther"
 	};
 	var box=$(".side-item.newrequests ul.icon");
@@ -310,7 +311,7 @@ function hideRequest(req) {
 };
 
 // 自动拒绝请求
-function rejectRequest(req,blockApp) {
+function rejectRequest(req,blockApp,replyLove,replyLoveMsg,followLove) {
 	// 好友申请
 	if(req["friendRequest"]) {
 		$get("http://www.renren.com/delallguestrequest.do?id="+XNR.userId);
@@ -327,8 +328,43 @@ function rejectRequest(req,blockApp) {
 	}
 
 	// 人气请求
-	if(req["loveRequest"]) {
-		$get("http://lover.renren.com/love/lovePageShare/clear");
+	if(req["loveRequest"] || (replyLove==true && replyLoveMsg!="")) {
+		if(replyLove) {
+			// 访问请求页面会自动清空？
+			$get("http://lover.renren.com/love/lovePageShareRequest",function(html) {
+				// 放在得到请求数据之后
+				if(req["loveRequest"]) {
+					$get("http://lover.renren.com/love/lovePageShare/clear");
+				}
+				if(html==null) {
+					return;
+				}
+				var reqList={};
+				var command;
+				while(command=/http:\/\/lover.renren.com\/(\d+)/.exec(html)) {
+					if(reqList[command[1]]) {
+						continue;
+					} else {
+						reqList[command[1]]=true;
+					}
+					(function(pageId) {
+						$get("http://lover.renren.com/makefans?pid="+pageId,function(html) {
+							var res=JSON.parse(html);
+							// 0/2：成功，16：多次加入同一个
+							if(res.code==0 || res.code==2 || res.code==16) {
+								$get("http://lover.renren.com/gossip/send?asMobile=0&c="+escape(replyLoveMsg)+"&cid=0&gid=0&pid="+pageId,function() {
+									if(!followLove) {
+										$get("http://lover.renren.com/exitfans?pid="+pageId,null,null,"POST");
+									}
+								},null,"POST");
+							}
+						},null,"POST");
+					})(command[1]);
+				}
+			});
+		} else if(req["loveRequest"]) {
+			$get("http://lover.renren.com/love/lovePageShare/clear");
+		}
 	}
 
 	// 应用请求
@@ -351,7 +387,7 @@ function rejectRequest(req,blockApp) {
 	}
 
 	// 没有其他选项被启用，退出。
-	if(req["tagRequest"]==false && req["recommendRequest"]==false) {
+	if(req["tagRequest"]==false && req["recommendRequest"]==false && req["loverRequest"]==false) {
 		return;
 	}
 
@@ -368,6 +404,13 @@ function rejectRequest(req,blockApp) {
 			var command;
 			while(command=/rejectRecommend\((\d+),'.*?',\d+\)/g.exec(html)) {
 				$get("http://friend.renren.com/RejectRecFriend.do?id="+command[1],null,null,"POST");
+			}
+		}
+		// 情侣请求，尚无全部拒绝功能
+		if(req["loverRequest"]) {
+			var command;
+			while(command=/ingoreLoversRequest\('.*?','.*?',\d+,'.*?',\d+,'(.*?)'\)/g.exec(html)) {
+				$get(command[1],null,null,"POST");
 			}
 		}
 	});
@@ -1256,10 +1299,10 @@ function customizePageLayout(layouts) {
 };
 
 // 增加更多表情
-function addExtraEmotions() {
+function addExtraEmotions(eEmo,fEmo) {
 	// 状态表情列表
-	var emlist={
-	//	":)":		{t:"开心",			s:"/imgpro/icons/statusface/1.gif"},
+	var emList1={
+		//	":)":		{t:"开心",			s:"/imgpro/icons/statusface/1.gif"},
 		"(微笑)":	{t:"微笑",			s:"/imgpro/icons/statusface/1.gif"},
 		"@_@":		{t:"嘴唇",			s:"/imgpro/icons/statusface/2.gif"},
 	//	"(k)":		{t:"嘴唇",			s:"/imgpro/icons/statusface/2.gif"},
@@ -1308,6 +1351,7 @@ function addExtraEmotions() {
 		"(sx)":		{t:"烧香",			s:"/imgpro/icons/statusface/shaoxiang.gif"},
 		"(zmy)":	{t:"织毛衣",		s:"/imgpro/icons/statusface/zhimaoyi.gif"},
 		"(jh)":		{t:"秋菊",			s:"/imgpro/icons/statusface/chrysanthemum.gif"},
+		"(cold)":	{t:"降温",			s:"/imgpro/icons/statusface/cold.gif"},
 		"(s)":		{t:"大兵",			s:"/imgpro/icons/statusface/soldier.gif"},
 		"(NBA)":	{t:"篮球",			s:"/imgpro/icons/statusface/basketball4.gif"},
 		"(蜜蜂)":	{t:"小蜜蜂",		s:"/imgpro/icons/statusface/bee.gif"},
@@ -1315,36 +1359,17 @@ function addExtraEmotions() {
 		"(fl)":		{t:"花仙子",		s:"/imgpro/icons/statusface/hanago.gif"},
 		"(zz)":		{t:"粽子",			s:"/imgpro/icons/statusface/zongzi.gif"},
 		"(cap)":	{t:"学位帽",		s:"/imgpro/icons/statusface/mortarboard.gif"},
-		"(dad)":	{t:"父亲节",		s:"/imgpro/icons/statusface/love-father.gif"},
 		"(ice)":	{t:"冰棍儿",		s:"/imgpro/icons/statusface/ice-cream.gif"},
-		"(mj)":		{t:"迈克尔.杰克逊",	s:"/imgpro/icons/statusface/mj.gif"},
-		"(mj2)":	{t:"迈克尔.杰克逊",	s:"/imgpro/icons/statusface/mj2.gif"},
-		"(mj3)":	{t:"迈克尔.杰克逊",	s:"/imgpro/icons/statusface/mj3.gif"},
-		"(eclipse)":{t:"日全食",		s:"/imgpro/icons/statusface/eclipse.gif"},
-		"(ta)":		{t:"博派",			s:"/imgpro/icons/statusface/Transformers-Autobot.gif"},
-		"(td)":		{t:"狂派",			s:"/imgpro/icons/statusface/Transformers-Decepticon.gif"},
-		"(qx)":		{t:"七夕",			s:"/imgpro/icons/statusface/qixi.gif"},
-		"(qx2)":	{t:"七夕",			s:"/imgpro/icons/statusface/qixi2.gif"},
-		"(bl)":		{t:"冰露",			s:"/imgpro/icons/statusface/ice.gif"},
 		"(gs)":		{t:"园丁",			s:"/imgpro/icons/statusface/growing-sapling.gif"},
 		"(ga)":		{t:"园丁",			s:"/imgpro/icons/statusface/gardener.gif"},
-		"(gq)":		{t:"国庆快乐",		s:"/imgpro/icons/statusface/nationalday2010.gif"},
-		"(gq1)":	{t:"国庆六十周年",	s:"/imgpro/icons/statusface/national-day-60-firework.gif"},
-		"(gq2)":	{t:"国庆快乐",		s:"/imgpro/icons/statusface/national-day-balloon.gif"},
-		"(gq3)":	{t:"我爱中国",		s:"/imgpro/icons/statusface/national-day-i-love-zh.gif"},
 		"(hp)":		{t:"杰克灯",		s:"/imgpro/icons/statusface/halloween-pumpkin.gif"},
 		"(hg)":		{t:"小鬼",			s:"/imgpro/icons/statusface/halloween-ghost.gif"},
-		"(qxs)":	{t:"悼念钱学森",	s:"/imgpro/icons/statusface/qianxuesen.gif"},
 		"(yt)":		{t:"光棍油条",		s:"/imgpro/icons/statusface/youtiao.gif"},
 		"(bz)":		{t:"光棍包子",		s:"/imgpro/icons/statusface/baozi.gif"},
 		"(wr)":		{t:"枯萎玫瑰",		s:"/imgpro/icons/statusface/wilt-rose.gif"},
 		"(bh)":		{t:"破碎的心",		s:"/imgpro/icons/statusface/broken-heart.gif"},
 		"(4)":		{t:"4周年",			s:"/imgpro/icons/statusface/4-years.gif"},
 		"(cake)":	{t:"周年蛋糕",		s:"/imgpro/icons/statusface/4-birthday.gif"},
-		"(hh)":		{t:"圣诞花环",		s:"/imgpro/icons/statusface/garland.gif"},
-		"(stick)":	{t:"拐杖糖",		s:"/imgpro/icons/statusface/stick.gif"},
-		"(socks)":	{t:"圣诞袜",		s:"/imgpro/icons/statusface/stocking.gif"},
-		"(元旦)":	{t:"元旦快乐",		s:"/imgpro/icons/statusface/gantan.gif"},
 	//	"(虎年)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
 		"(tiger)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
 		"(ny)":		{t:"布老虎",		s:"/imgpro/icons/statusface/tiger2.gif"},
@@ -1352,48 +1377,36 @@ function addExtraEmotions() {
 		"(girl)":	{t:"女孩",			s:"/imgpro/icons/statusface/girl.gif"},
 		"(earth)":	{t:"地球",			s:"/imgpro/icons/statusface/wwf-earth.gif"},
 		"(earth1)":	{t:"地球",			s:"/imgpro/icons/statusface/earth.gif"},
-		"(hjr)":	{t:"世界环境日",	s:"/imgpro/icons/statusface/earthday.gif"},
 		"(ty)":		{t:"汤圆",			s:"/imgpro/icons/statusface/tang-yuan.gif"},
-		"(dl)":		{t:"灯笼",			s:"/imgpro/icons/statusface/lantern.gif"},
 		"(nrj)":	{t:"女人节",		s:"/imgpro/icons/statusface/lipstick.gif"},
 		"(zsj)":	{t:"植树节",		s:"/imgpro/icons/statusface/trees.gif"},
 		"(zg)":		{t:"整蛊作战",		s:"/imgpro/icons/statusface/tomato.png"},
 		"(rainy)":	{t:"雨",			s:"/imgpro/icons/statusface/rainy.gif"},
 	//	"(rain)":	{t:"雨",			s:"/imgpro/icons/statusface/rainy.gif"},
-		"(abao)":	{t:"功夫熊猫",		s:"/imgpro/icons/statusface/panda.gif"},
 		"(jq)":		{t:"坚强",			s:"/imgpro/icons/statusface/quake.gif"},
-		"(smlq)":	{t:"萨马兰奇",		s:"/imgpro/icons/statusface/samaranch2.gif"},
 		"(read)":	{t:"读书日",		s:"/imgpro/icons/statusface/reading.gif"},
 		"(ct)":		{t:"锄头",			s:"/imgpro/icons/statusface/chutou.gif"},
 		"(jz)":		{t:"捐建小学",		s:"/imgpro/icons/statusface/grass.gif"},
 		"(bbt)":	{t:"棒棒糖",		s:"/imgpro/icons/statusface/bbt.gif"},
 		"(xr)":		{t:"儿时回忆",		s:"/imgpro/icons/statusface/sm.gif"},
-		"(gk)":		{t:"高考",			s:"/imgpro/icons/statusface/gaokao.gif"},
-		"(pass)":	{t:"CET必过",		s:"/imgpro/icons/statusface/cet46.gif"},
 		"(qf)":		{t:"祈福",			s:"/imgpro/icons/statusface/candle.gif"},
 		"(hot)":	{t:"烈日",			s:"/imgpro/icons/statusface/hot.gif"},
 		"(feng)":	{t:"风扇",			s:"/imgpro/icons/statusface/fan.gif"},
 		"(by)":		{t:"下雨",			s:"/imgpro/icons/statusface/rain.gif"},
 		"(ng)":		{t:"否",			s:"/imgpro/icons/statusface/nogood.gif"},
 		"(bb)":		{t:"便便",			s:"/imgpro/icons/statusface/shit.gif"},
-		"(raul)":	{t:"劳尔",			s:"/imgpro/icons/statusface/laoer.gif"},
 		"(mg)":		{t:"七彩玫瑰",		s:"/imgpro/icons/statusface/rose.gif"},
-		"(kxl)":	{t:"开学啦",		s:"/imgpro/icons/statusface/kaixuela-wide.gif",w:true},
 		"(hzd)":	{t:"划重点",		s:"/imgpro/icons/statusface/huazhongdian.gif"},
 		"(dm)":		{t:"点名",			s:"/imgpro/icons/statusface/dianming.gif"},
 		"(yb)":		{t:"月饼",			s:"/imgpro/icons/statusface/mooncake.gif"},
 		"(草莓)":	{t:"愉悦一刻 ",		s:"/imgpro/icons/statusface/mzy.gif"},
 		"(bs)":		{t:"秋高气爽",		s:"/imgpro/icons/statusface/bluesky.gif"},
-		"(kz)":		{t:"孔子",			s:"/imgpro/icons/statusface/kz.gif"},
-		"(qgz)":	{t:"人人求工作",	s:"/imgpro/icons/statusface/offer.gif"},
 		"(ly)":		{t:"落叶",			s:"/imgpro/icons/statusface/autumn-leaves.gif"},
-		"(cy1)":	{t:"重阳节",		s:"/imgpro/icons/statusface/09double9-3.gif"},
 		"(cy2)":	{t:"登高",			s:"/imgpro/icons/statusface/09double9.gif"},
 		"(cy3)":	{t:"饮菊酒",		s:"/imgpro/icons/statusface/09double9-2.gif"},
 		"(dx)":		{t:"雪人",			s:"/imgpro/icons/statusface/snowman.gif"},
-		"(cold)":	{t:"降温",			s:"/imgpro/icons/statusface/cold.gif"},
+		"(abao)":	{t:"功夫熊猫",		s:"/imgpro/icons/statusface/panda.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
-		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
 		"(yc)":		{t:"黄牌",			s:"/imgpro/icons/new-statusface/yellowCard.gif"},
@@ -1410,8 +1423,42 @@ function addExtraEmotions() {
 	//	"(l)":		{t:"爱",			s:"/img/ems/love.gif"}, 与:a相同
 		"(t)":		{t:"火炬",			s:"/img/ems/torch.gif"}
 	};
+	var eEmList={
+		"(gq)":		{t:"国庆快乐",		s:"/imgpro/icons/statusface/nationalday2010.gif"},
+		"(gq1)":	{t:"国庆六十周年",	s:"/imgpro/icons/statusface/national-day-60-firework.gif"},
+		"(gq2)":	{t:"国庆快乐",		s:"/imgpro/icons/statusface/national-day-balloon.gif"},
+		"(gq3)":	{t:"我爱中国",		s:"/imgpro/icons/statusface/national-day-i-love-zh.gif"},
+		"(元旦)":	{t:"元旦快乐",		s:"/imgpro/icons/statusface/gantan.gif"},
+		"(dl)":		{t:"灯笼",			s:"/imgpro/icons/statusface/lantern.gif"},
+		"(qx)":		{t:"七夕",			s:"/imgpro/icons/statusface/qixi.gif"},
+		"(qx2)":	{t:"七夕",			s:"/imgpro/icons/statusface/qixi2.gif"},
+		"(cy1)":	{t:"重阳节",		s:"/imgpro/icons/statusface/09double9-3.gif"},
+		"(dad)":	{t:"父亲节",		s:"/imgpro/icons/statusface/love-father.gif"},
+		"(hh)":		{t:"圣诞花环",		s:"/imgpro/icons/statusface/garland.gif"},
+		"(stick)":	{t:"拐杖糖",		s:"/imgpro/icons/statusface/stick.gif"},
+		"(socks)":	{t:"圣诞袜",		s:"/imgpro/icons/statusface/stocking.gif"},
+		"(hjr)":	{t:"世界环境日",	s:"/imgpro/icons/statusface/earthday.gif"},
+		"(eclipse)":{t:"日全食",		s:"/imgpro/icons/statusface/eclipse.gif"},
+		"(gk)":		{t:"高考",			s:"/imgpro/icons/statusface/gaokao.gif"},
+		"(pass)":	{t:"CET必过",		s:"/imgpro/icons/statusface/cet46.gif"},
+		"(qgz)":	{t:"人人求工作",	s:"/imgpro/icons/statusface/offer.gif"},
+		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
+		"(kxl)":	{t:"开学啦",		s:"/imgpro/icons/statusface/kaixuela-wide.gif",w:true},
+		"(bl)":		{t:"冰露",			s:"/imgpro/icons/statusface/ice.gif"},
+	};
+	var fEmList={
+		"(mj)":		{t:"迈克尔.杰克逊",	s:"/imgpro/icons/statusface/mj.gif"},
+		"(mj2)":	{t:"迈克尔.杰克逊",	s:"/imgpro/icons/statusface/mj2.gif"},
+		"(mj3)":	{t:"迈克尔.杰克逊",	s:"/imgpro/icons/statusface/mj3.gif"},
+		"(qxs)":	{t:"悼念钱学森",	s:"/imgpro/icons/statusface/qianxuesen.gif"},
+		"(raul)":	{t:"劳尔",			s:"/imgpro/icons/statusface/laoer.gif"},
+		"(smlq)":	{t:"萨马兰奇",		s:"/imgpro/icons/statusface/samaranch2.gif"},
+		"(kz)":		{t:"孔子",			s:"/imgpro/icons/statusface/kz.gif"},
+		"(ta)":		{t:"博派",			s:"/imgpro/icons/statusface/Transformers-Autobot.gif"},
+		"(td)":		{t:"狂派",			s:"/imgpro/icons/statusface/Transformers-Decepticon.gif"},
+	};
 	// 日志/照片回复表情列表，直接与序号/URL对应
-	emlist1={
+	emList2={
 		"(不)":1,
 		"(谄笑)":2,
 		"(吃饭)":3,
@@ -1447,6 +1494,17 @@ function addExtraEmotions() {
 		"(微笑)":33
 	};
 
+	if(eEmo) {
+		for(var e in eEmList) {
+			emList1[e]=eEmList[e];
+		}
+	}
+	if(fEmo) {
+		for(var e in fEmList) {
+			emList1[e]=fEmList[e];
+		}
+	}
+
 	// 状态页(status.renren.com)的表情列表，活动页面中似乎也是这个
 	var list=$("#status_emotions");
 	if(list.exist()) {
@@ -1455,8 +1513,8 @@ function addExtraEmotions() {
 		list.find("img").each(function() {
 			curlist[this.getAttribute("emotion")]=1;
 		});
-		for(var e in emlist) {
-			var el=emlist[e];
+		for(var e in emList1) {
+			var el=emList1[e];
 			// 不在已有列表中
 			if(!curlist[e]) {
 				$node("li").attr(el.w?{"class":"wider"}:{}).add($node("a").attr("href","#nogo").add($node("img").attr({title:el.t,alt:el.t,emotion:e,src:"http://xnimg.cn"+el.s,rsrc:"http://xnimg.cn"+el.s}))).addTo(list);
@@ -1473,8 +1531,8 @@ function addExtraEmotions() {
 		list.find("img").each(function() {
 			curlist[this.getAttribute("emotion")]=1;
 		});
-		for (var e in emlist) {
-			var el=emlist[e];
+		for (var e in emList1) {
+			var el=emList1[e];
 			// 不在已有列表中
 			if(!curlist[e]) {
 				$node("li").attr(el.w?{"class":"wider",style:"width:50px"}:{}).add($node("a").attr("href","javascript:;").add($node("img").attr({title:el.t,alt:el.t,emotion:e,src:"http://xnimg.cn"+el.s,rsrc:"http://xnimg.cn"+el.s}))).addTo(list);
@@ -1483,11 +1541,11 @@ function addExtraEmotions() {
 	}
 
 	// 新鲜事回复表情
-	var code="var count=0;(function(){if(!XN.app.status.emoJsonForNewsFeedStatus){if(count<10){setTimeout(arguments.callee,500)};count++;return}var list=JSON.parse('"+JSON.stringify(emlist)+"');var curList=JSON.parse(XN.app.status.emoJsonForNewsFeedStatus).ubbList;for(var i=0;i<curList.length;i++){var em=curList[i];if(list[em.ubb]){delete list[em.ubb]}};for(var e in list){var em=list[e];curList.push({alt:'('+em.t+')',id:0,src:em.s,position:1000,ubb:e,img:'<img src=\"http://xnimg.cn'+em.s+'\" alr=\"'+em.t+'\"'})};XN.app.status.emoJsonForNewsFeedStatus='{\"ubbList\":'+JSON.stringify(curList)+'}'})()";
+	var code="var count=0;(function(){if(!XN.app.status.emoJsonForNewsFeedStatus){if(count<10){setTimeout(arguments.callee,500)};count++;return}var list=JSON.parse('"+JSON.stringify(emList1)+"');var curList=JSON.parse(XN.app.status.emoJsonForNewsFeedStatus).ubbList;for(var i=0;i<curList.length;i++){var em=curList[i];if(list[em.ubb]){delete list[em.ubb]}};for(var e in list){var em=list[e];curList.push({alt:'('+em.t+')',id:0,src:em.s,position:1000,ubb:e,img:'<img src=\"http://xnimg.cn'+em.s+'\" alr=\"'+em.t+'\"'})};XN.app.status.emoJsonForNewsFeedStatus='{\"ubbList\":'+JSON.stringify(curList)+'}'})()";
 	$script(code);
 
 	// 处理照片/日志表情
-	var code="var count=0;(function(){if(!XN.app.status.emoJsonForNewsFeedCommon){if(count<10){setTimeout(arguments.callee,500)};count++;return}var list=JSON.parse('"+JSON.stringify(emlist1)+"');var curList=JSON.parse(XN.app.status.emoJsonForNewsFeedCommon).ubbList;for(var i=0;i<curList.length;i++){var em=curList[i];if(em.types==0)continue;if(list[em.ubb]){delete list[em.ubb]}};for(var e in list){curList.push({alt:e.substring(1,e.length-1),id:0,kind:0,position:1000,size:1,src:'/imgpro/emotions/tie/'+list[e]+'.gif',types:9,ubb:e,img:'<img src=\"http://xnimg.cn/imgpro/emotions/tie/'+list[e]+'.gif\" alt=\"'+e.substring(1,e.length-1)+'\"/>'})};XN.app.status.emoJsonForNewsFeedCommon='{\"ubbList\":'+JSON.stringify(curList)+'}'})()";
+	var code="var count=0;(function(){if(!XN.app.status.emoJsonForNewsFeedCommon){if(count<10){setTimeout(arguments.callee,500)};count++;return}var list=JSON.parse('"+JSON.stringify(emList2)+"');var curList=JSON.parse(XN.app.status.emoJsonForNewsFeedCommon).ubbList;for(var i=0;i<curList.length;i++){var em=curList[i];if(em.types==0)continue;if(list[em.ubb]){delete list[em.ubb]}};for(var e in list){curList.push({alt:e.substring(1,e.length-1),id:0,kind:0,position:1000,size:1,src:'/imgpro/emotions/tie/'+list[e]+'.gif',types:9,ubb:e,img:'<img src=\"http://xnimg.cn/imgpro/emotions/tie/'+list[e]+'.gif\" alt=\"'+e.substring(1,e.length-1)+'\"/>'})};XN.app.status.emoJsonForNewsFeedCommon='{\"ubbList\":'+JSON.stringify(curList)+'}'})()";
 	$script(code);
 };
 
@@ -2396,7 +2454,7 @@ function useWhisper() {
 
 // 隐藏橙名
 function hideOrangeName() {
-	var color=$("body a:not([class])").looks("color");
+	var color=$("body a:not([class])").curCSS("color");
 	$patchCSS(".lively-user, a.lively-user:link, a.lively-user:visited{color:"+color+"}");
 };
 
@@ -2848,7 +2906,7 @@ function main(savedOptions) {
 	// [
 	//   {
 	//     [String]id:控件ID。type为hidden/warn/info时无需id
-	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）,"warn"（<input type="image"/>）,"info"（<input type="image"/>）,"br"（<div/>）, "link"（<a/>）。默认为check
+	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"subcheck"（<div/><input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）,"warn"（<input type="image"/>）,"info"（<input type="image"/>）,"br"（<div/>）, "link"（<a/>）。默认为check
 	//     [Any]value:默认值。type为hidden或readonly为真时可以没有value
 	//     [Object]verify:{验证规则:失败信息,...}。验证规则为正则字串。可选
 	//     [Object]attr:{属性名:属性值,...}。属性。可选
@@ -3215,6 +3273,10 @@ function main(savedOptions) {
 						text:"##人气请求",
 						value:false,
 					},{
+						id:"loverRequest",
+						text:"##情侣请求",
+						value:false,
+					},{
 						id:"otherRequest",
 						text:"##其他请求",
 						value:false,
@@ -3227,7 +3289,7 @@ function main(savedOptions) {
 					fn:[{
 						name:rejectRequest,
 						stage:0,
-						args:["@rejectRequestGroup","@blockAppRequest"],
+						args:["@rejectRequestGroup","@blockAppRequest","@autoReplyLoveReq","@replyLoveReqMsg","@followLovePage"],
 						once:true
 					}],
 				}],
@@ -3267,6 +3329,10 @@ function main(savedOptions) {
 						id:"loveRequest",
 						text:"##人气请求",
 						value:false,
+					},{
+						id:"loverRequest",
+						text:"##情侣请求",
+						value:false
 					}
 				]
 			},{
@@ -3333,6 +3399,23 @@ function main(savedOptions) {
 					}
 				],
 				login:true,
+			},{
+				text:"##自动回应人气请求：####同时关注其情侣空间",
+				ctrl:[
+					{
+						id:"autoReplyLoveReq",
+						value:false
+					},{
+						id:"replyLoveReqMsg",
+						type:"input",
+						value:"再发请求恶心我，就把页面截下来等你们分手后天天发截图恶心你们",
+						verify:{"\\S+":"请填写自动回应内容！"}
+					},{
+						id:"followLovePage",
+						type:"subcheck",
+						value:false
+					}
+				]
 			}
 		],
 		"处理新鲜事":[
@@ -3847,16 +3930,28 @@ function main(savedOptions) {
 		],
 		"辅助功能":[
 			{
-				text:"##增加额外的表情项",
-				ctrl:[{
-					id:"addExtraEmotions",
-					value:true,
-					fn:[{
-						name:addExtraEmotions,
-						stage:2,
-						fire:true
-					}],
-				}],
+				text:"##启用隐藏表情项##启用节日事件表情##启用人物表情",
+				ctrl:[
+					{
+						id:"addExtraEmotions",
+						value:true,
+						fn:[{
+							name:addExtraEmotions,
+							stage:2,
+							args:["@eventEmo","@figureEmo"],
+							fire:true
+						}],
+					},{
+						type:"subcheck",
+						id:"eventEmo",
+						value:true
+					},{
+						type:"subcheck",
+						id:"figureEmo",
+						value:true
+					}
+				],
+				master:0,
 				page:"feed,profile,status,act",
 				login:true
 			},{
@@ -3954,7 +4049,7 @@ function main(savedOptions) {
 				}],
 				page:"album"
 			},{
-				text:"##允许下载相册图片######仅生成图片链接####替换模式##",
+				text:"##允许下载相册图片####仅生成图片链接##替换模式##",
 				ctrl:[
 					{
 						id:"addDownloadAlbumLink",
@@ -3969,19 +4064,13 @@ function main(savedOptions) {
 						type:"info",
 						value:"在相册图片列表下方会生成一个”下载当前页图片“链接。如果点击链接后进度长期卡住，再点击一次链接选择中止，可以下载其他已分析完毕的图片。"+(XNR.agent==USERSCRIPT?"分析完毕后会弹出一个窗口，其可能会被浏览器拦截，在浏览器状态栏上的弹出窗口拦截图标上点左键让其显示即可。":"")+"如果想下载整个相册的内容，请配合“相册所有图片在一页中显示”功能使用。",
 					},{
-						type:"br",
-						style:"height:3px"
-					},{
+						type:"subcheck",
 						id:"showImageLinkOnly",
 						value:false,
-						style:"margin-left:15px"
 					},{
-						type:"br",
-						style:"height:3px"
-					},{
+						type:"subcheck",
 						id:"repMode",
 						value:false,
-						style:"margin-left:15px"
 					},{
 						type:"info",
 						value:"直接替换当前页面内容，不打开新标签页",
@@ -4040,12 +4129,9 @@ function main(savedOptions) {
 						}],
 						style:"margin-left:5px"
 					},{
-						type:"br",
-						style:"height:2px"
-					},{
+						type:"subcheck",
 						id:"leakConfirmation",
 						value:true,
-						style:"margin-left:15px"
 					},{
 						type:"info",
 						value:"在鼠标经过会可能被记入最近来访的图片时，会在图片右下角显示一个放大镜图标，点击后才会显示原大图片"
@@ -4449,13 +4535,13 @@ function main(savedOptions) {
 					// 文本节点
 					if(text[iText]) {
 						if(o.ctrl) {
-							// 寻找前一个check作为关联目标
+							// 寻找前一个check/subcheck作为关联目标
 							var forCheck="";
 							for(var iCtrl=iText-1;iCtrl>=0;iCtrl--) {
 								if(o.ctrl[iCtrl].type=="br") {
 									break;
 								}
-								if(!o.ctrl[iCtrl].type || o.ctrl[iCtrl].type=="check") {
+								if(!o.ctrl[iCtrl].type || o.ctrl[iCtrl].type=="check" || o.ctrl[iCtrl].type=="subcheck") {
 									forCheck=o.ctrl[iCtrl].id;
 									break;
 								}
@@ -4500,6 +4586,10 @@ function main(savedOptions) {
 							break;
 						case "br":
 							node=$node("div");
+							break;
+						case "subcheck":
+							$node("div").css("height","3px").addTo(block);
+							node=$node("input").css("marginLeft","15px").attr("type","checkbox");
 							break;
 						case "edit":
 							node=$node("textarea");
@@ -6010,8 +6100,21 @@ PageKit.prototype={
 		}
 		return this;
 	},
+	// 获取实际的名称
+	/*
+	cssName:function(name) {
+		var a=name.split("-");
+		for(var i=1;i<a.length;i++) {
+			var ch=a[i].charCodeAt(0);
+			if(ch>=97 && ch<=122) {
+				a[i]=String.fromCharCode(ch-32)+a[i].substring(1);
+			}
+		}
+		return a.join("");
+	},
+	*/
 	// 读取实际表现出的CSS属性
-	looks:function(o) {
+	curCSS:function(o) {
 		try {
 			if(typeof o=="string") {
 				return window.getComputedStyle(this.get(),null)[o];
