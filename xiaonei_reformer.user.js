@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.0.20101019
-// @miniver        369
+// @version        3.2.0.20101020
+// @miniver        370
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -47,8 +47,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.0.20101018";
-XNR.miniver=368;
+XNR.version="3.2.0.20101020";
+XNR.miniver=370;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -330,18 +330,15 @@ function rejectRequest(req,blockApp,replyLove,replyLoveMsg,followLove) {
 	// 人气请求
 	if(req["loveRequest"] || (replyLove==true && replyLoveMsg!="")) {
 		if(replyLove) {
-			// 访问请求页面会自动清空？
 			$get("http://lover.renren.com/love/lovePageShareRequest",function(html) {
-				// 放在得到请求数据之后
-				if(req["loveRequest"]) {
-					$get("http://lover.renren.com/love/lovePageShare/clear");
-				}
+				// 放在得到请求数据之后，清空所有请求。回应后不应再显示，故强制执行。
+				$get("http://lover.renren.com/love/lovePageShare/clear");
 				if(html==null) {
 					return;
 				}
 				var reqList={};
 				var command;
-				while(command=/http:\/\/lover.renren.com\/(\d+)/.exec(html)) {
+				while(command=/http:\/\/lover.renren.com\/(\d+)/g.exec(html)) {
 					if(reqList[command[1]]) {
 						continue;
 					} else {
@@ -352,7 +349,7 @@ function rejectRequest(req,blockApp,replyLove,replyLoveMsg,followLove) {
 							var res=JSON.parse(html);
 							// 0/2：成功，16：多次加入同一个
 							if(res.code==0 || res.code==2 || res.code==16) {
-								$get("http://lover.renren.com/gossip/send?asMobile=0&c="+escape(replyLoveMsg)+"&cid=0&gid=0&pid="+pageId,function() {
+								$get("http://lover.renren.com/gossip/send?asMobile=0&c="+encodeURIComponent(replyLoveMsg)+"&cid=0&gid=0&pid="+pageId,function(html) {
 									if(!followLove) {
 										$get("http://lover.renren.com/exitfans?pid="+pageId,null,null,"POST");
 									}
@@ -468,7 +465,7 @@ function blockAppNotification() {
 	$get("http://msg.renren.com/notify/notifications.do",function(html) {
 		var blocked=[];
 		var command;
-		while(command=/showDialog\(this,(\d+)\)/.exec(html)) {
+		while(command=/showDialog\(this,(\d+)\)/g.exec(html)) {
 			if(!blocked[command[1]]) {
 				$get("http://msg.renren.com/notify/notifications.do?action=block&app_id="+command[1]);
 				blocked[command[1]]=true;
@@ -763,7 +760,7 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 						var article=$node("article").attr("class","iconpanel").attr("id",feedInfo.id).addTo(root,0);
 						var header=$node("header").html("<img class='icon' height='16' width='16' src='"+feedInfo.icon+"'/><menu><command class='delete' closebtn='true' title='删除' onclick='var n=this.parentNode.parentNode.parentNode;n.parentNode.removeChild(n);'/></menu>").addTo(article);
 						// 内容
-						$node("section").html("<p>"+feedInfo.text+"</p>").addTo(article);
+						$node("section").add($node("p").html(feedInfo.text)).addTo(article);
 					}
 					// 计数
 					$("#feed_toread_num").text(feedArray.length+parseInt($("#feed_toread_num").text()));
@@ -783,7 +780,7 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 					for(var i=feedArray.length-1;i>=0;i--) {
 						var feedInfo=feedArray[i];
 						// 内容
-						$node("li").attr({style:"padding-top:5px;padding-bottom:5px;border-bottom:1px solid #AAAAAA;",id:feedInfo.id}).html("<img height='16' width='16' src='"+feedInfo.icon+"' style='float:left'/><div style='padding-left:20px'>"+feedInfo.text+"</div>").addTo(list);
+						$node("li").attr({style:"padding-top:5px;padding-bottom:5px;border-bottom:1px solid #AAAAAA;",id:feedInfo.id}).add($node("img").attr({width:"16px",height:"16px",src:feedInfo.icon,style:"float:left"})).add($node("div").css("paddingLeft","20px").html(feedInfo.text)).addTo(list);
 					}
 					list.child(-1).css("borderBottom","");
 				}
@@ -851,7 +848,7 @@ function addNavItems(content) {
 		$node("div").html('<div class="menu-title"><a href="'+items[i+1]+'" target="_blank">'+items[i]+'</a></div>').attr("class","menu").addTo(nav);
 	}
 	//防止被自作主张改动链接
-	$script("try{var e=document.body.querySelectorAll('.nav-main .menu-title > a');for(var i in e){e[i]._ad_rd=true;}}catch(ex){}");
+	$script("try{var e=document.body.querySelectorAll('.nav-main .menu-title>a');for(var i in e){e[i]._ad_rd=true;}}catch(ex){}");
 };
 
 // 恢复深蓝主题
@@ -1100,6 +1097,15 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".myRR-box-body dl{background-color:"+SCOLOR+"}",
 				".search-friend .title,.guide-tabs-content .title,#mayknow_user .title,.myRR .title,.guide-game h2,.guide-game .slide p,.add-stars h3,.web-invite{background-color:"+SCOLOR+"}",
 				".find-friend-box .toolbar .more a:hover,.find-friend-box .legend .desc a:hover,.find-friend-box .show-more a:hover{background-color:"+SCOLOR+"}",
+			],
+			"guide-all-min.css":[
+				"a.action:hover{background-color:"+FCOLOR+"}",
+				".input-button, .input-submit{background-color:"+FCOLOR+"}",
+				".pop_content .dialog_body a, .pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
+				".publisher .status-publisher input.submit{background-color:"+FCOLOR+"}",
+				"#newUserGuide div.users span.button button span{color:"+FCOLOR+"}",
+				"ul.richlist.feeds li .details a.share:hover{color:"+FCOLOR+"}",
+				".app-box .common-app h1 .open{color:"+FCOLOR+"}",
 			],
 			"blog-async.css":[
 				"a.share:hover{background-color:"+FCOLOR+"}",
@@ -3409,13 +3415,14 @@ function main(savedOptions) {
 						id:"replyLoveReqMsg",
 						type:"input",
 						value:"再发请求恶心我，就把页面截下来等你们分手后天天发截图恶心你们",
-						verify:{"\\S+":"请填写自动回应内容！"}
+						verify:{"\\S+":"请填写自动回应内容！"},
+						style:"width:200px"
 					},{
 						id:"followLovePage",
 						type:"subcheck",
 						value:false
 					}
-				]
+				],
 			}
 		],
 		"处理新鲜事":[
@@ -5430,16 +5437,15 @@ function $get(url,func,userData,method) {
 	}
 	switch(XNR.agent) {
 		case FIREFOX:
-			// 如果直接使用window.XMLHttpRequest，即使在创建sandbox时赋予chrome的window权限，也会被noscript阻挡。
-			// 是该赞叹noscript尽职呢还是怪它管的太宽呢…
+			// 不能直接使用window.XMLHttpRequest，会被noscript阻挡
 			XNR_get(url,func,userData,method);
 			break;
 		case USERSCRIPT:
 			if(func!=null) {
 				GM_xmlhttpRequest({method:method,url:url,onload:function(o) {
-					func((o.status==200?o.responseText:null),url,userData);
+					func.call(window,(o.status==200?o.responseText:null),url,userData);
 				},onerror:function(o) {
-					func(null,url,userData);
+					func.call(window,null,url,userData);
 				}});
 			} else {
 				GM_xmlhttpRequest({method:method,url:url});
@@ -5450,7 +5456,7 @@ function $get(url,func,userData,method) {
 				chrome.extension.sendRequest({action:"get",url:url,method:method});
 			} else {
 				chrome.extension.sendRequest({action:"get",url:url,method:method},function(response) {
-					func(response.data,url,userData);
+					func.call(window,response.data,url,userData);
 				});
 			}
 			break;
@@ -5461,7 +5467,7 @@ function $get(url,func,userData,method) {
 				safari.self.addEventListener("message",function(msg) {
 					if(msg.name=="xnr_get_data" && msg.message.id==requestId) {
 						safari.self.removeEventListener("message",arguments.callee,false);
-						func(msg.message.data,url,userData);
+						func.call(window,msg.message.data,url,userData);
 					}
 				},false);
 			}
@@ -5475,10 +5481,10 @@ function $get(url,func,userData,method) {
 				var httpReq=new XMLHttpRequest();
 			}
 			httpReq.onload=function() {
-				func((httpReq.status==200?httpReq.responseText:null),url,userData);
+				func.call(window,(httpReq.status==200?httpReq.responseText:null),url,userData);
 			};
 			httpReq.onerror=function(e) {
-				func(null,url,userData);
+				func.call(window,null,url,userData);
 			};
 			httpReq.open(method,url,true);
 			httpReq.send();
