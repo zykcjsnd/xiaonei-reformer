@@ -3,13 +3,14 @@ fix:修正自动回应人气请求功能的BUG
 fix:修正自动屏蔽应用通知可能导致页面卡死的BUG
 fix:改进新鲜事提醒功能对新鲜事内容的限制
 fix:改进$get方法
+fix:PageKit允许接受空参数
 
 3.2.0.20101019 (369):
 add:增加自动回应人气请求功能
 add:隐藏/拒绝请求功能增加情侣请求
 fix:选项增加subcheck类型
 fix:PageKit的looks方法更名为curCSS
-fix:细分增加增加额外表情功能
+fix:细分增加额外表情功能
 
 3.2.0.20101018 (368):
 fix:PageKit增加rect方法

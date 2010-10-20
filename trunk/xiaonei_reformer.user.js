@@ -345,13 +345,18 @@ function rejectRequest(req,blockApp,replyLove,replyLoveMsg,followLove) {
 						reqList[command[1]]=true;
 					}
 					(function(pageId) {
-						$get("http://lover.renren.com/makefans?pid="+pageId,function(html) {
+						$get("http://lover.renren.com/gossip/send?asMobile=0&c="+encodeURIComponent(replyLoveMsg)+"&cid=0&gid=0&pid="+pageId,function(html) {
 							var res=JSON.parse(html);
-							// 0/2：成功，16：多次加入同一个
-							if(res.code==0 || res.code==2 || res.code==16) {
-								$get("http://lover.renren.com/gossip/send?asMobile=0&c="+encodeURIComponent(replyLoveMsg)+"&cid=0&gid=0&pid="+pageId,function(html) {
-									if(!followLove) {
-										$get("http://lover.renren.com/exitfans?pid="+pageId,null,null,"POST");
+							// 尚未关注
+							if(res.code==101) {	
+								$get("http://lover.renren.com/makefans?pid="+pageId,function(html) {
+									// 0/2：成功
+									if(res.code==0 || res.code==2) {
+										$get("http://lover.renren.com/gossip/send?asMobile=0&c="+encodeURIComponent(replyLoveMsg)+"&cid=0&gid=0&pid="+pageId,function() {
+											if(!followLove) {
+												$get("http://lover.renren.com/exitfans?pid="+pageId,null,null,"POST");
+											}
+										},null,"POST");
 									}
 								},null,"POST");
 							}
@@ -3423,6 +3428,7 @@ function main(savedOptions) {
 						value:false
 					}
 				],
+				master:0
 			}
 		],
 		"处理新鲜事":[
@@ -5720,8 +5726,8 @@ function $formatDate(d) {
  */
 function PageKit(o) {
 	if(!(this instanceof PageKit)) {
-		return o?new PageKit(arguments):null;
-	};
+		return new PageKit(arguments);
+	}
 	return this.init(o);
 };
 PageKit.prototype={
