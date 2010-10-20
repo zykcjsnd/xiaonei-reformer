@@ -835,7 +835,7 @@ function removeNavItems(navLinks) {
 function widenNavBar() {
 	$patchCSS(".navigation-wrapper,.navigation{width:auto} .navigation .nav-body{width:auto;float:none}");
 	$wait(1,function() {
-		$("#navBar").move("before",$("body.layout_home3cols #container"));
+		$("#navBar").move("before",$("body.layout_home3cols #container, body.layout_3cols #container"));
 	});
 };
 
@@ -1079,7 +1079,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"a.button{color:white;background-color:"+FCOLOR+"}",
 				".page-titletabs .act-btn a{background-color:"+FCOLOR+"}",
 			],
-			"global-std.min.css":[
+			"global-std-min.css":[
 				"a:link,a:visited,a:hover{color:"+FCOLOR+"}",
 				"button,input[type=button]{background-color:"+FCOLOR+"}",
 				"td.pop_content .dialog_body a,td.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
@@ -1088,6 +1088,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".menu-dropdown .menu-item li.show-more a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .menu-item a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .search-menu li a:hover,.menu-dropdown .optionmenu li a:hover{background-color:"+FCOLOR+"}",
+				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
 			],
 			"requests.css":[
 				"ul.figureslist.requests button.accept,ul.figureslist.requests button.ignore{background-color:"+FCOLOR+"}",
@@ -1659,7 +1660,7 @@ function showImagesInOnePage() {
 		var album=$("div.photo-list");
 		var items=$(".number-photo");
 	} else {
-		var baseURL="http://photo.renren.com/getalbum.do?id=##&owner=@@&curpage=%%";
+		var baseURL="http://photo.renren.com/getalbum.do?id=##&owner=@@&curpage=%%&t=**";
 		var album=$("div.photo-list");
 		var album2=$("div.story-pic");
 		var items=$(".number-photo");
@@ -1685,9 +1686,13 @@ function showImagesInOnePage() {
 	if(!ownerId) {
 		return;
 	}
+	// 加密相册密码
+	if(new RegExp("[?&]t=([0-9a-z]{32})").test(XNR.url)) {
+		baseURL=baseURL.replace("**",RegExp.$1);
+	}
 	baseURL=baseURL.replace("@@",ownerId).replace("##",albumId);
 
-	var pager=$pager($(".pager-top"));
+	var pager=$pager($(".pager-nav").eq());
 	// 当前页数
 	var curPage=pager.current;
 	// 总页数
@@ -1734,12 +1739,12 @@ function showImagesInOnePage() {
 			}
 			try {
 				if($("#single-column table.photoList").exist()) {
-					var photoList=/(<table .*?class="photoList".*?>[\d\D]+?<\/table>)/.exec(res)[1];
+					var photoList=/(<table .*?class="photoList".*?>[\s\S]+?<\/table>)/.exec(res)[1];
 				} else if(XNR.url.indexOf("/photo/ap/")!=-1) {
-					var photoList=/<div .*?class="photo-list clearfix".*?>([\d\D]+?)<\/div>/.exec(res)[1];
+					var photoList=/<div .*?class="photo-list clearfix".*?>([\s\S]+?)<\/div>/.exec(res)[1];
 				} else {
-					var photoList=/<div .*?class="photo-list clearfix".*?>([\d\D]+?)<\/div>/.exec(res)[1];
-					var storyList=/<!--start storyList mode-->\s*<div .*?class="story-pic clearfix".*?>([\d\D]+?)<\/div>\s*<!--story mode end-->/.exec(res)[1];
+					var photoList=/<div .*?class="photo-list clearfix".*?>([\s\S]+?)<\/div>/.exec(res)[1];
+					var storyList=/<!--start storyList mode-->\s*<div .*?class="story-pic clearfix".*?>([\s\S]+?)<\/div>\s*<!--story mode end-->/.exec(res)[1];
 				}
 				var pos;
 				if(page>parseInt(album.child(-1).attr("page"))) {
@@ -3961,7 +3966,7 @@ function main(savedOptions) {
 					},{
 						type:"subcheck",
 						id:"figureEmo",
-						value:true
+						value:false
 					}
 				],
 				master:0,
@@ -5648,7 +5653,7 @@ function $feedType(feed) {
 };
 
 /*
- * 从翻页控件（div.pager-top）中取得当前页与最后页（序号从0开始）
+ * 从翻页控件（div.pager-nav或div.pager-top）中取得当前页与最后页（序号从0开始）
  * 参数
  *   [HTMLOListElement]pager:翻页控件
  * 返回值
@@ -5674,6 +5679,7 @@ function $pager(pager) {
 			}
 			lastpage=parseInt(total/ipp);
 		} catch(ex) {
+			$error("$pager",ex);
 		}
 	}
 	return {current:curpage,last:lastpage};
@@ -5785,7 +5791,7 @@ PageKit.prototype={
 			return null;
 		}
 	},
-	// 获取对象中某一个DOM节点，经PageKit包装，如果index为负取倒数序号，默认为第一个
+	// 获取对象中某一个DOM节点，经PageKit包装，如果index为负取倒数序号。默认为第一个
 	eq:function(index) {
 		return PageKit(this.get(index));
 	},
