@@ -64,14 +64,14 @@ function loadScript(obj,direct) {
 		var httpReq = new window.XMLHttpRequest();
 		if(func != null) {
 			httpReq.onload = function() {
-				func((httpReq.status==200?httpReq.responseText:null), url, data);
+				func.call(sandbox.window, (httpReq.status==200?httpReq.responseText:null), url, data);
 			};
 			httpReq.onerror=function () {
-				func(null, url, data);
+				func.call(sandbox.window, null, url, data);
 			};
 		}
 		httpReq.open(method, url, true);
-		httpReq.send();
+		httpReq.send(null);
 	},"XNR_get");
 
 	sandbox.importFunction(function (data) {
