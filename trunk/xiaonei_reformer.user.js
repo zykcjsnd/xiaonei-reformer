@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.0.20101021
-// @miniver        371
+// @version        3.2.1.20101022
+// @miniver        372
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -47,8 +47,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.0.20101021";
-XNR.miniver=371;
+XNR.version="3.2.1.20101022";
+XNR.miniver=372;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -64,17 +64,24 @@ XNR.options={};
 
 // 当前运行环境（浏览器）
 const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4,SAFARI=8,OPERA=16;
+const GECKO=1,WEBKIT=2,PRESTO=4;
 XNR.agent=UNKNOWN;
+XNR.acore=UNKNOWN;
 if(window.chrome) {
 	XNR.agent=CHROME;
+	XNR.acore=WEBKIT;
 } else if (window.safari) {
 	XNR.agent=SAFARI;
+	XNR.acore=WEBKIT;
 } else if (window.opera) {
 	XNR.agent=OPERA;
+	XNR.acore=PRESTO;
 } else if (typeof GM_setValue=="function") {
 	XNR.agent=USERSCRIPT;
+	XNR.acore=GECKO;
 } else if (typeof XNR_save=="function") {
 	XNR.agent=FIREFOX;
+	XNR.acore=GECKO;
 }
 
 // 针对Opera的特殊处理
@@ -319,7 +326,7 @@ function hideRequest(req) {
 };
 
 // 自动拒绝请求
-function rejectRequest(req,blockApp,replyLove,replyLoveMsg,followLove) {
+function rejectRequest(req,blockApp) {
 	// 好友申请
 	if(req["friendRequest"]) {
 		$get("http://www.renren.com/delallguestrequest.do?id="+XNR.userId);
@@ -336,45 +343,8 @@ function rejectRequest(req,blockApp,replyLove,replyLoveMsg,followLove) {
 	}
 
 	// 人气请求
-	if(req["loveRequest"] || (replyLove==true && replyLoveMsg!="")) {
-		if(replyLove) {
-			$get("http://lover.renren.com/love/lovePageShareRequest",function(html) {
-				// 放在得到请求数据之后，清空所有请求。回应后不应再显示，故强制执行。
-				$get("http://lover.renren.com/love/lovePageShare/clear");
-				if(html==null) {
-					return;
-				}
-				var reqList={};
-				var command;
-				while(command=/http:\/\/lover.renren.com\/(\d+)/g.exec(html)) {
-					if(reqList[command[1]]) {
-						continue;
-					} else {
-						reqList[command[1]]=true;
-					}
-					(function(pageId) {
-						$get("http://lover.renren.com/gossip/send?asMobile=0&c="+encodeURIComponent(replyLoveMsg)+"&cid=0&gid=0&pid="+pageId,function(html) {
-							var res=JSON.parse(html);
-							// 尚未关注
-							if(res.code==101) {	
-								$get("http://lover.renren.com/makefans?pid="+pageId,function(html) {
-									// 0/2：成功
-									if(res.code==0 || res.code==2) {
-										$get("http://lover.renren.com/gossip/send?asMobile=0&c="+encodeURIComponent(replyLoveMsg)+"&cid=0&gid=0&pid="+pageId,function() {
-											if(!followLove) {
-												$get("http://lover.renren.com/exitfans?pid="+pageId,null,null,"POST");
-											}
-										},null,"POST");
-									}
-								},null,"POST");
-							}
-						},null,"POST");
-					})(command[1]);
-				}
-			});
-		} else if(req["loveRequest"]) {
-			$get("http://lover.renren.com/love/lovePageShare/clear");
-		}
+	if(req["loveRequest"]) {
+		$get("http://lover.renren.com/love/lovePageShare/clear");
 	}
 
 	// 应用请求
@@ -686,7 +656,7 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 			var r=html.split("##@L#");
 			if(r.length<4 || !/^\d+$/.test(r[1])) {
 				// 回复结构变了
-				$error("autoCheckFeeds",{name:"获取新鲜事出错",message:"获取新鲜事的页面结构发生变化"});
+				$error("autoCheckFeeds","获取新鲜事的页面结构发生变化");
 				return;
 			}
 			try {
@@ -742,7 +712,7 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 									// 修改新鲜事内容
 									feedText="<a href='http://renren.com/profile.do?id="+reply.ubid+"'>"+reply.ubname+"</a> ："+reply.replyContent+" @ "+feedText;
 								} else {
-									$error("autoCheckFeeds",{name:"获取回复出错",message:"回复列表结构发生变化"});
+									$error("autoCheckFeeds","回复列表结构发生变化");
 								}
 							}
 						}
@@ -1372,6 +1342,7 @@ function addExtraEmotions(eEmo,fEmo) {
 		"(zmy)":	{t:"织毛衣",		s:"/imgpro/icons/statusface/zhimaoyi.gif"},
 		"(jh)":		{t:"秋菊",			s:"/imgpro/icons/statusface/chrysanthemum.gif"},
 		"(cold)":	{t:"降温",			s:"/imgpro/icons/statusface/cold.gif"},
+		"(bw)":		{t:"暖暖被窝",		s:"/imgpro/icons/statusface/sleep.gif"},
 		"(s)":		{t:"大兵",			s:"/imgpro/icons/statusface/soldier.gif"},
 		"(NBA)":	{t:"篮球",			s:"/imgpro/icons/statusface/basketball4.gif"},
 		"(蜜蜂)":	{t:"小蜜蜂",		s:"/imgpro/icons/statusface/bee.gif"},
@@ -1697,6 +1668,8 @@ function showImagesInOnePage() {
 	// 加密相册密码
 	if(new RegExp("[?&]t=([0-9a-z]{32})").test(XNR.url)) {
 		baseURL=baseURL.replace("**",RegExp.$1);
+	} else {
+		baseURL=baseURL.replace("&t=**","");
 	}
 	baseURL=baseURL.replace("@@",ownerId).replace("##",albumId);
 
@@ -1989,7 +1962,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 
 // 当鼠标在照片上时隐藏圈人框
 function hideImageTagOnMouseOver() {
-	$("#photoContainer").attr({"onmouseover":"document.querySelector('.tagshowcon').style.visibility='hidden'","onmouseout":"document.querySelector('.tagshowcon').style.visibility=null"});
+	$("#photoContainer").attr({"onmouseover":"var o=document.querySelector('.tagshowcon');if(o)o.style.visibility='hidden'","onmouseout":"var o=document.querySelector('.tagshowcon');if(o)o.style.visibility=null"});
 };
 
 // 显示大图的初始化工作
@@ -2582,7 +2555,8 @@ function enableShortcutMenu(evt) {
 			"Ta的好友":"http://friend.renren.com/GetFriendList.do?id=@@",
 		};
 		var morePages={
-			"圈Ta的照片":"http://photo.renren.com/someonetagphoto.do?id=@@", // http://photo.renren.com/photo/@@/relatives/hasTags
+			// 已失效
+			//"圈Ta的照片":"http://photo.renren.com/someonetagphoto.do?id=@@", // http://photo.renren.com/photo/@@/relatives/hasTags
 			"Ta的大头贴相册":"http://i.renren.com/hp/home?uid=@@",
 			"与Ta相关的日志":"http://blog.renren.com/SomeoneRelativeBlog.do?id=@@", // http://blog.renren.com/blog/@@/friendsRelatives
 			"Ta的分享":"http://share.renren.com/share/ShareList.do?id=@@",
@@ -2590,6 +2564,8 @@ function enableShortcutMenu(evt) {
 			"Ta的礼物":"http://gift.renren.com/show/box/otherbox?userId=@@",
 			"Ta的游戏徽章":"http://game.renren.com/medal?uid=@@",
 			"Ta的公共主页":"http://page.renren.com/home/friendspages/view?uid=@@",
+			"Ta的情侣空间ID":"http://page.renren.com/getLoverSpace?uid=@@",
+			"Ta的名片资料":"http://friend.renren.com/showcard?friendID=@@",
 		};
 		var html="<ul>";
 		for(var i in pages) {
@@ -2597,7 +2573,7 @@ function enableShortcutMenu(evt) {
 			html+=pages[i].replace("@@",id);
 			html+="'>"+i+"</a></li>"
 		}
-		html+="<li><a style='float:right;font-size:x-small' href='javascript:' onclick='var me=this.parentNode;for(var p=me;p.nextElementSibling;p=p.nextElementSibling){p.style.display=null};me.style.display=\"none\";return false'/>Ta的更多</a></li>";
+		html+="<li><a style='float:right;font-size:x-small' href='javascript:' onclick='var me=this.parentNode;for(var p=me;p;p=p.nextElementSibling){p.style.display=null};me.style.display=\"none\";return false'/>Ta的更多</a></li>";
 		for(var i in morePages) {
 			html+="<li style='display:none'><a target='_blank' href='";
 			html+=morePages[i].replace("@@",id);
@@ -2788,6 +2764,82 @@ function removeNameCard() {
 	$script(code);
 	// 去除当前所有链接的namecard属性，防止产生异常
 	$("a[namecard]").attr({namecard:null});
+};
+
+// 提示图片主说明
+function showPhotoAuthorComment() {
+	var uid=$("input[name='owner']").val();
+	var pid=$("input#sourceid").val();
+	if(!uid || !pid) {
+		return;
+	}
+
+	const SRC_LABEL="showPhotoAuthorComment_src";
+	if($allocated(SRC_LABEL)) {
+		var ppid=$alloc(SRC_LABEL).id;
+		if(ppid==pid) {
+			return;
+		}
+	}
+	$alloc(SRC_LABEL).id=pid;
+	$("#ownerComment").remove();
+
+	var po=$alloc(SRC_LABEL)["o"+pid];
+	if(po!=null) {
+		if(typeof po=="object") {
+			po.clone().move("after",$("#photoTitle"));
+		}
+		return;
+	}
+
+	var url="http://photo.renren.com/photo/0/photo-0/comment?photo="+pid+"&owner="+uid+"&page=";
+	$get(url+"0",function(html) {
+		try {
+			if(!html) {
+				return;
+			}
+			var o=JSON.parse(html);
+			if(o.hasMore==false) {
+				$alloc(SRC_LABEL)["o"+pid]=0;
+				return;
+			}
+
+			// 每页30条
+			$get(url+parseInt(o.commentCount/30),function(html) {
+				try {
+					if(!html) {
+						return;
+					}
+					var o=JSON.parse(html);
+					var c=o.comments[o.comments.length-1];
+					if(c.author!=uid) {
+						// 不是上传者的留言
+						$alloc(SRC_LABEL)["o"+pid]=0;
+						return;
+					}
+					if(c.body.match("^回复.+：.+")) {
+						// 是回复别人的，有可能别人的话已经被删了。这种情况不大可能是图片说明（是吗？）
+						$alloc(SRC_LABEL)["o"+pid]=0;
+						return;
+					}
+					var hp="http://www.renren.com/profile.do?id="+c.author;
+					var dl=$node("div").attr({style:"background:#F0F5F8;width:600px;min-height:50px;padding:6px",id:"ownerComment"});
+					var dd=$node("dd").addTo(dl);
+					$node("a").attr("href",hp).add($node("img").attr({style:"float:left",height:"50",width:"50",src:c.headUrl})).addTo(dd);
+					$node("div").attr("style","line-height:1.4em;margin-left:58px").add($node("a").attr("href",hp).text(c.name)).addTo(dd);
+					$node("p").attr("style","margin:0 0 0 58px").html(c.body).addTo(dd);
+					$alloc(SRC_LABEL)["o"+pid]=dl.clone();
+					if($alloc(SRC_LABEL).id==pid) {
+						dl.move("after",$("#photoTitle"));
+					}
+				} catch(ex) {
+					$error("showPhotoAuthorComment",ex);
+				}
+			});
+		} catch(ex) {
+			$error("showPhotoAuthorComment",ex);
+		}
+	});
 };
 
 // 检查更新
@@ -3332,7 +3384,7 @@ function main(savedOptions) {
 					fn:[{
 						name:rejectRequest,
 						stage:0,
-						args:["@rejectRequestGroup","@blockAppRequest","@autoReplyLoveReq","@replyLoveReqMsg","@followLovePage"],
+						args:["@rejectRequestGroup","@blockAppRequest"],
 						once:true
 					}],
 				}],
@@ -3442,25 +3494,6 @@ function main(savedOptions) {
 					}
 				],
 				login:true,
-			},{
-				text:"##自动回应人气请求：####同时关注其情侣空间",
-				ctrl:[
-					{
-						id:"autoReplyLoveReq",
-						value:false
-					},{
-						id:"replyLoveReqMsg",
-						type:"input",
-						value:"再发请求恶心我，就把页面截下来等你们分手后天天发截图恶心你们",
-						verify:{"\\S+":"请填写自动回应内容！"},
-						style:"width:200px"
-					},{
-						id:"followLovePage",
-						type:"subcheck",
-						value:false
-					}
-				],
-				master:0
 			}
 		],
 		"处理新鲜事":[
@@ -4141,7 +4174,7 @@ function main(savedOptions) {
 				],
 				page:"photo"
 			},{
-				text:"##在鼠标经过图片时显示大图##########使用保护模式##",
+				text:"##在鼠标经过图片时显示大图########使用保护模式##",
 				ctrl:[
 					{
 						id:"showFullSizeImage",
@@ -4340,6 +4373,24 @@ function main(savedOptions) {
 					}]
 				}],
 				page:"feed,profile",
+			},{
+				text:"##显示图片上传者的说明性留言##",
+				ctrl:[
+					{
+						id:"showPhotoAuthorComment",
+						value:false,
+						fn:[{
+							name:showPhotoAuthorComment,
+							stage:2,
+							trigger:(XNR.acore==GECKO?{"input#sourceid":"DOMSubtreeModified"}:{".user-comment":"DOMNodeRemoved"}),
+							fire:true
+						}]
+					},{
+						type:"info",
+						value:"如果相册中图片的第一个留言是上传者的，有可能是对图片的补充说明。如果留言过多导致没有显示出一楼的话，本功能会将其单独显示出来"
+					}
+				],
+				page:"photo"
 			}
 		],
 		"自动更新":[
@@ -5534,7 +5585,7 @@ function $get(url,func,userData,method) {
  * 记录错误信息
  * 参数
  *   [String/Function]func:发生错误的函数(名)
- *   [Error]error:异常对象
+ *   [Object/String]error:异常对象或异常信息
  * 返回值
  *   无
  */
@@ -5542,18 +5593,22 @@ function $error(func,error) {
 	if(typeof func=="function") {
 		func=/function (.*?)\(/.exec(func.toString())[1];
 	}
+	var msg;
 	if(typeof error=="object") {
-		var msg="在 "+func+"() 中发生了一个错误。\n";
 		if(error) {
 			if(error.name!=null) {
-				msg+="错误名称："+error.name+"\n";
+				msg="错误名称："+error.name+"\n";
 			}
 			if(error.message!=null) {
 				msg+="错误信息："+error.message+"\n";
 			}
 		}
 		msg+="\n";
-		console.log(msg);
+	} else {
+		msg=error.toString();
+	}
+	if(msg) {
+		console.log("在 "+func+"() 中发生了一个错误。\n"+msg);
 		var board=$(".xnr_op #diagnosisInfo");
 		if(board.exist()) {
 			board.val(board.val()+msg);
@@ -5961,7 +6016,7 @@ PageKit.prototype={
 	// 添加子节点
 	add:function(o,pos) {
 		var node=this.get();
-		if(!node && node.nodeType!=1) {
+		if(!node || node.nodeType!=1) {
 			return this;
 		}
 		if(pos==null) {
