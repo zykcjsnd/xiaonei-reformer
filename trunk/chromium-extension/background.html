@@ -33,7 +33,7 @@ function(request, sender, sendResponse) {
 			httpReq.send();
 			break;
 		case "album":
-			chrome.tabs.create({url:chrome.extension.getURL("album.html")+"#"+escape(JSON.stringify(request.data))});
+			chrome.tabs.create({url:chrome.extension.getURL("album.html")+"#"+encodeURIComponent(JSON.stringify(request.data))});
 			break;
 	}
 });
