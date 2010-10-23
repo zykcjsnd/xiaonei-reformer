@@ -15,19 +15,20 @@ var Services = {};
 XPCOMUtils.defineLazyServiceGetter(Services, "io", "@mozilla.org/network/io-service;1", "nsIIOService2");
 XPCOMUtils.defineLazyServiceGetter(Services, "instream", "@mozilla.org/scriptableinputstream;1", "nsIScriptableInputStream"); 
 XPCOMUtils.defineLazyServiceGetter(Services, "console", "@mozilla.org/consoleservice;1", "nsIConsoleService");
+XPCOMUtils.defineLazyServiceGetter(Services, "wm", "@mozilla.org/appshell/window-mediator;1", "nsIWindowMediator");
 XPCOMUtils.defineLazyGetter(Services, "prefs", function () {
 	return cPref.getService(Ci.nsIPrefService).QueryInterface(Ci.nsIPrefBranch2);
 });
 
-var Instances = {};
-
-XPCOMUtils.defineLazyGetter(Instances, "supportString", function () {
-	return cSupportString.createInstance(Ci.nsISupportsString);
-});
-XPCOMUtils.defineLazyGetter(Instances, "unicodeConverter", function () {
-	return cUnicodeConverter.createInstance(Ci.nsIScriptableUnicodeConverter);
-});
-XPCOMUtils.defineLazyGetter(Instances, "xmlHttpRequest", function () {
-	return cXHR.createInstance(Ci.nsIXMLHttpRequest);
-});
+var Instances = {
+	supportString: function () {
+		return cSupportString.createInstance(Ci.nsISupportsString);
+	},
+	unicodeConverter: function () {
+		return cUnicodeConverter.createInstance(Ci.nsIScriptableUnicodeConverter);
+	},
+	xmlHttpRequest: function () {
+		return cXHR.createInstance(Ci.nsIXMLHttpRequest);
+	}
+};
 

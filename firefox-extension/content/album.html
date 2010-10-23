@@ -13,7 +13,7 @@
 	<script>
 		function getPhotos() {
 			try {
-				var album=JSON.parse(unescape(/#(.*)$/.exec(location.href)[1]));
+				var album=JSON.parse(decodeURIComponent(/#(.*)$/.exec(location.href)[1]));
 				if(album.title) {
 					document.title=album.title;
 				}
@@ -57,6 +57,7 @@
 				}
 				document.body.innerHTML=html;
 			} catch(err) {
+				document.body.textContent="数据传输出错！";
 			}
 		};
 		function switchLink() {

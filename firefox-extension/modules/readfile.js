@@ -9,7 +9,7 @@ Components.utils.import("resource://xiaonei-reformer/common.js");
 function getUrlContents(aUrl) {
 	var	ioService = Services.io;
 	var	scriptableStream = Services.instream;
-	var unicodeConverter = Instances.unicodeConverter;
+	var unicodeConverter = Instances.unicodeConverter();
 	unicodeConverter.charset="UTF-8";
 
 	var	channel=ioService.newChannel(aUrl, "UTF-8", null);

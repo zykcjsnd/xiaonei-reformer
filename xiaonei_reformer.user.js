@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.1.20101022
-// @miniver        372
+// @version        3.2.1.20101023
+// @miniver        373
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -47,8 +47,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.1.20101022";
-XNR.miniver=372;
+XNR.version="3.2.1.20101023";
+XNR.miniver=373;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -402,14 +402,14 @@ function acceptAllFriendRequests() {
 		return;
 	}
 	$node("a").attr({"href":"javascript:;","class":"operation"}).text("接受所有好友申请，慎用！").css("paddingLeft","10px").addTo($("#content div[id='601_ingoreAll_div']"),0).bind("click",function() {
-		if(!confirm("确实要接受所有列出的好友申请吗？")) {
+		if(!window.confirm("确实要接受所有列出的好友申请吗？")) {
 			return;
 		}
 		$("#content div.section[id^='friend_section_']").each(function() {
 			var fid=/[0-9]+/.exec(this.id);
 			$get("http://friend.renren.com/ApplyGuestRequest.do?friendId="+fid,null,null,"POST");
 		});
-		alert("已经接受了所有申请，将刷新页面……");
+		window.alert("已经接受了所有申请，将刷新页面……");
 		document.location.reload();
 	});
 };
@@ -421,24 +421,24 @@ function acceptAllFriendRecommends() {
 	}
 	var header=$node("div").addTo($("#content #nonapp_position_701").superior());
 	$node("a").attr({"href":"javascript:;","class":"operation"}).text("对所有推荐的好友发送申请，慎用！").css("paddingLeft","10px").addTo(header).bind("click",function() {
-		if(!confirm("确实要向所有推荐的人发送好友申请吗？")) {
+		if(!window.confirm("确实要向所有推荐的人发送好友申请吗？")) {
 			return;
 		}
 		$("#content div.section[id^='friend_recommend_section_']").each(function() {
 			var fid=/[0-9]+/.exec(this.id);
 			$get("http://friend.renren.com/ajax_request_friend.do?from=req.renren.com/request/requestList.do&codeFlag=0&code=&why=&id="+fid,null,null,"POST");
 		});
-		alert("已经发送了申请，将刷新页面……");
+		window.alert("已经发送了申请，将刷新页面……");
 		document.location.reload();
 	}).clone().text("忽略所有的好友推荐").addTo(header,0).bind("click",function() {
-		if(!confirm("确实要忽略所有好友推荐吗？")) {
+		if(!window.confirm("确实要忽略所有好友推荐吗？")) {
 			return;
 		}
 		$("#content div.section[id^='friend_recommend_section_']").each(function() {
 			var fid=/[0-9]+/.exec(this.id);
 			$get("http://friend.renren.com/RejectRecFriend.do?id="+fid,null,null,"POST");
 		});
-		alert("已经忽略了所有推荐，将刷新页面……");
+		window.alert("已经忽略了所有推荐，将刷新页面……");
 		document.location.reload();
 	});
 };
@@ -1769,7 +1769,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 	}
 	downLink.bind("click",function(evt) {
 		if(downLink.text().match("分析中")) {
-			if(confirm("要中止吗？")) {
+			if(window.confirm("要中止吗？")) {
 				finish();
 			}
 			return;
@@ -2438,7 +2438,7 @@ function showFullSizeImage(evt,indirect) {
 function cleanFullSizeImageCache() {
 	$dealloc("image_cache");
 	window.localStorage.setItem("xnr_image_cache","{}");
-	alert("缓存已经清空");
+	window.alert("缓存已经清空");
 };
 
 // 选中“悄悄话”选框
@@ -2661,11 +2661,11 @@ function searchShare() {
 					// 当页数小于50时（1000项），启用缓存模式，将所有搜索到的项目加入到页面
 					cache=true;
 				} else if(lastpage<100) {
-					if(confirm("是否启用搜索缓存？能加快再次搜索时的速度，但会占用较多内存")) {
+					if(window.confirm("是否启用搜索缓存？能加快再次搜索时的速度，但会占用较多内存")) {
 						cache=true;
 					}
 				} else {
-					if(!confirm("分享数太多，估计会卡上一阵子。要继续吗？")) {
+					if(!window.confirm("分享数太多，估计会卡上一阵子。要继续吗？")) {
 						return;
 					}
 				}
@@ -2872,7 +2872,7 @@ function checkUpdate(evt,checkLink,updateLink,lastCheck) {
 				});
 			} else if(evt) {
 				// 手动点击检查更新按钮时要弹出提示
-				alert("最新版本为："+ver+" ("+miniver+")\n当前版本为："+XNR.version+" ("+XNR.miniver+")\n\n已经是最新版本");
+				window.alert("最新版本为："+ver+" ("+miniver+")\n当前版本为："+XNR.version+" ("+XNR.miniver+")\n\n已经是最新版本");
 			}
 
 			$(".xnr_op #lastUpdate").text($formatDate(today));
@@ -2928,7 +2928,7 @@ function setParam() {
 		}
 		$save(name,JSON.parse(value));
 	} catch(ex) {
-		alert("参数错误！");
+		window.alert("参数错误！");
 	}
 };
 
@@ -2943,7 +2943,7 @@ function importConfig() {
 		$save();
 		document.location.reload();
 	} catch(ex) {
-		alert("选项数据错误！");
+		window.alert("选项数据错误！");
 	}
 };
 
@@ -5005,7 +5005,7 @@ function main(savedOptions) {
 					menu.find(".pages>div").hide().eq(index).show();
 					menu.find(".category li").removeClass("selected").eq(index-1).addClass("selected");
 
-					alert(rules[rule]);
+					window.alert(rules[rule]);
 					this.focus();
 					pass=false;
 					return false;
@@ -5238,7 +5238,7 @@ function $page(category,url) {
 		club:"/club\\.renren\\.com/",	// 论坛
 		pages:"/page\\.renren\\.com/",	// 公共主页
 		status:"/status\\.renren\\.com/|#//status/",	// 状态
-		photo:"/photo\\.renren\\.com/|/page\\.renren\\.com/[^/]+/photo/",	// 照片
+		photo:"/photo\\.renren\\.com/photo/sp/|/photo\\.renren\\.com/photo/[0-9]+/photo-|/page\\.renren\\.com/[^/]+/photo/",	// 照片
 		album:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|/photo/album\\?|photo\\.renren\\.com/photo/ap/",	// 相册
 		friend:"/friend\\.renren\\.com/",	// 好友
 		share:"/share\\.renren\\.com/|#//share/",	// 分享
@@ -6323,6 +6323,9 @@ PageKit.prototype={
 		} else {
 			// 读取
 			var elem=this.get();
+			if(!elem) {
+				return null;
+			}
 			switch(elem.tagName) {
 				case "INPUT":
 					switch((PageKit(elem).attr("type") || "").toLowerCase()) {

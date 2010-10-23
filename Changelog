@@ -1,3 +1,10 @@
+3.2.1.20101023 (373):
+fix:脚本中所有alert/confirm加上window限定（Firefox扩展有时会报它们undefined）
+fix:修正PageKit的val方法对空集合读取值出错的BUG
+fix:更改$page对photo的判定
+fix:Firefox/Chrome下载相册功能传参数由(un)escape改为(de)encodeURIComponent
+fix:修正Firefox扩展下载相册功能打开标签页出错的BUG（371引入）
+
 3.2.1.20101022 (372):
 remove:移除自动回应人气请求功能。自动取消关注存在问题。
 fix:修正PageKit::add方法的BUG
