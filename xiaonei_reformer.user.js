@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.1.20101023
-// @miniver        373
+// @version        3.2.1.20101025
+// @miniver        374
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -47,8 +47,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.1.20101023";
-XNR.miniver=373;
+XNR.version="3.2.1.20101025";
+XNR.miniver=374;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -482,6 +482,12 @@ function hideFeeds(evt,feeds,mark,forbiddenTitle) {
 			$(this).hide();
 		}
 	});
+};
+
+// 首页默认显示特别关注
+function showAttentionFeeds() {
+	// 不能只修改hash，从个人主页会来时会失效
+	document.location.href="http://www.renren.com/home#/homeAttention?from=homeleft";
 };
 
 // 加载更多页新鲜事
@@ -2494,18 +2500,27 @@ function removeNicknameRestriction() {
 };
 
 // 显示上一次登录信息
-function showLoginInfo(lastSid) {
+function showLoginInfo(lastHash) {
 	var sid=$cookie("xnsid");
-	if(!sid || sid==lastSid) {
+	if(!sid) {
 		return;
 	}
-	$save("lastSid",sid);
-	$get("http://safe.renren.com/alarm/index/info/",function(data) {
+	var hash=370840187;
+	for(var i=0;i<sid.length;i++) {
+		var y=(hash*sid.charCodeAt(i))&(-1);
+		hash=(y<<6)+(y>>>26);
+	}
+	hash=Math.abs(hash);
+	if(hash==parseInt(lastHash,16)) {
+		return;
+	}
+	$save("lastSid",hash.toString(16));
+	$get("http://safe.renren.com/alarm/alarmIndex/info/",function(data) {
 		if(data==null) {
 			return;
 		}
 		data=data.replace(/<(\/?)a[^>]*>/g,"<$1span>").replace("<dt>当前登录信息</dt>","");
-		data+="<div><a style='float:right;padding:5px' href='http://safe.renren.com/alarm' target='_blank'>更多信息<a></div>";
+		data+="<div><a style='float:right;padding:5px' href='http://safe.renren.com/alarm/alarmIndex' target='_blank'>更多信息<a></div>";
 		$popup("登录信息",data,"0x0-5-5",15,5);
 	});
 };
@@ -2951,6 +2966,17 @@ function importConfig() {
 
 // 主执行函数。
 function main(savedOptions) {
+	// 检查选项中是否设置了禁用页面隐藏项
+	if(savedOptions._blacklist) {
+		try {
+			if(new RegExp(savedOptions._blacklist).test(document.location.hostname)) {
+				return;
+			}
+		} catch(ex) {
+			$error("main","blacklist设置错误！");
+		}
+	}
+
 	// 选项菜单，定义选项菜单中各个项目
 	// 基本格式：
 	// {
@@ -3591,6 +3617,10 @@ function main(savedOptions) {
 						id:"levelup",
 						text:"##等级提升",
 						value:false
+					},{
+						id:"event",
+						text:"##线上活动",
+						value:false
 					}
 				]
 			},{
@@ -3614,7 +3644,20 @@ function main(savedOptions) {
 				ctrl:[{
 					id:"markFeedAsRead",
 					value:false
+				}]
+			},{
+				text:"##首页默认显示特别关注",
+				ctrl:[{
+					id:"showAttentionFeeds",
+					value:false,
+					fn:[{
+						name:showAttentionFeeds,
+						stage:0,
+						fire:true,
+						once:true
+					}]
 				}],
+				page:"feed"
 			},{
 				text:"##默认显示##页新鲜事",
 				ctrl:[
@@ -4535,6 +4578,13 @@ function main(savedOptions) {
 				ctrl:[{
 					id:"debug",
 					value:false
+				}]
+			},{
+				text:"##",		// 用于设置在部分页面不启用，不在界面提供直接修改途径，仅通过下面的参数设置功能设置
+				ctrl:[{
+						id:"_blacklist",
+						type:"hidden",
+						value:"",
 				}]
 			},{
 				text:"##：## = ##",
@@ -5695,41 +5745,56 @@ function $feedType(feed) {
 	}
 
 	var types={
-		// 标题文本，标题HTML，有无content，footerHTML
-		"share":	["^分享"],
-		"page":		[null,"<a [^>]*href=\"[^\"]*http://page.renren.com/"],
-		"status":	["^:",null,false],	// 如果是纯表情状态，:后面的空格会被去除
-		"blog":		["^发表日志"],
-		"photo":	["^上传了\\d+张照片至|^的照片|美化了一张照片$|^:",null,true],
-		"contact":	["^你和.*和好朋友保持联络$"],
-		"profile":	["^修改了头像"],
-		"app":		[null,"<a [^>]*href=\"[^\"]*http://apps?.renren.com/"],
-		"gift":		["^收到","<a [^>]*href=\"[^\"]*http://gift.renren.com/"],
-		"tag":		["照片中被圈出来了$"],
-		"movie":	[null,"<a [^>]*href=\"[^\"]*http://movie.xiaonei.com/|<a [^>]*href=\"\\s*http://movie.renren.com/"],
-		"connect":	[null,null,null,"<a [^>]*href=\"[^\"]*http://www.connect.renren.com/"],
-		"friend":	["^[和、][\\s\\S]*成为了好友。"],
-		"vip":		["^更换了主页模板皮肤|^更换了主页装扮|^成为了人人网[\\s\\S]*VIP会员特权|^收到好友赠送的[\\s\\S]*VIP会员特权|^开启了人人网VIP个性域名"],
-		"music":	["^上传了音乐"],
-		"poll":		[null,"<a [^>]*href=\"[^\"]*http://abc.renren.com/"],
-		"group":	[null,"<a [^>]*href=\"[^\"]*http://group.renren.com/"],
-		"levelup":	["^等级升至"],
+		// t:标题文本，l:标题/footer中链接地址，c:有无content
+		"share":	{t:/^分享/},
+		"page":		{l:/http:\/\/page.renren.com\//},
+		"status":	{t:/^:/,c:false},	// 如果是纯表情状态，:后面的空格会被去除
+		"blog":		{t:/^发表日志/},
+		"photo":	{t:/^上传了\d+张照片至|^的照片|美化了一张照片$|^:/,c:true},
+		"contact":	{t:/^你和.*和好朋友保持联络$/},
+		"profile":	{t:/^修改了头像/},
+		"app":		{l:/http:\/\/apps?\.renren\.com\//},
+		"gift":		{l:/http:\/\/gift\.renren\.com\//},
+		"tag":		{t:/照片中被圈出来了$/},
+		"movie":	{l:/http:\/\/movie\.(xiaonei|renren)\.com\//},
+		"connect":	{l:/http:\/\/www\.connect\.renren\.com\//},
+		"friend":	{t:/^[和、][\s\S]*成为了好友。/},
+		"vip":		{t:/^更换了主页模板皮肤|^更换了主页装扮|^成为了人人网[\s\S]*VIP会员特权|^收到好友赠送的[\s\S]*VIP会员特权|^开启了人人网VIP个性域名/},
+		"music":	{t:/^上传了音乐/},
+		"poll":		{l:/http:\/\/abc\.renren\.com\//},
+		"group":	{l:/http:\/\/group\.renren\.com\//},
+		"levelup":	{t:/^等级升至/},
+		"event":	{l:/http:\/\/event\.renren\.com\//}
 	};
 
-	var feedTitle=feed.find("h3");
 	// 删除所有链接子节点，只留下文本节点
-	var feedTitleText=feedTitle.clone();
-	feedTitleText.find("a:not(.text)").remove();
+	var feedTitle=feed.find("h3").clone();
+	feedTitle.find("a:not(.text)").remove();
 
-	for(i in types) {
-		var type=types[i];
-		var feedText=type[0];
-		var feedHTML=type[1];
-		var feedContent=type[2];
-		var feedFooterHTML=type[3];
-		if ((!feedText || new RegExp(feedText).test(feedTitleText.text().replace(/\s/g,""))) && (!feedHTML || new RegExp(feedHTML).test(feedTitle.html())) && (feedContent==null || feed.find("div.content").empty()!=feedContent) && (!feedFooterHTML || new RegExp(feedFooterHTML).test(feed.find(".details .legend").html()))) {
-			return i;
+	var feedLinks=feed.find("h3>a,.details>.legend>a");
+
+	var hasContent=feed.find("div.content").exist();
+
+	for(var i in types) {
+		var cond=types[i];
+		if(cond.t && !cond.t.test(feedTitle.text().replace(/\s/g,""))) {
+			continue;
 		}
+		if(cond.l) {
+			var match=false;
+			feedLinks.each(function() {
+				if(cond.l.test(this.href)) {
+					return match=true;
+				}
+			});
+			if(!match) {
+				continue;
+			}
+		}
+		if(cond.c!=null && hasContent!=cond.c) {
+			continue;
+		}
+		return i;
 	}
 	return "";
 };
