@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.1.20101025
-// @miniver        374
+// @version        3.2.1.20101026
+// @miniver        375
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -47,8 +47,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.1.20101025";
-XNR.miniver=374;
+XNR.version="3.2.1.20101026";
+XNR.miniver=375;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -309,6 +309,7 @@ function hideRequest(req) {
 		"tagRequest":"l-tag",
 		"loveRequest":"l-love-invite",
 		"loverRequest":"l-love",
+		"pageRequest":"l-page",
 		"otherRequest":"iOther"
 	};
 	var box=$(".side-item.newrequests ul.icon");
@@ -1096,6 +1097,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"#newUserGuide div.users span.button button span{color:"+FCOLOR+"}",
 				"ul.richlist.feeds li .details a.share:hover{color:"+FCOLOR+"}",
 				".app-box .common-app h1 .open{color:"+FCOLOR+"}",
+				".statuscmtitem{background-color:"+SCOLOR+"}",
 			],
 			"blog-async.css":[
 				"a.share:hover{background-color:"+FCOLOR+"}",
@@ -2962,18 +2964,33 @@ function importConfig() {
 	}
 };
 
+// 发送请求
+function sendReq() {
+	var method=$(".xnr_op input#req_m").val();
+	var url=$(".xnr_op input#req_u").val();
+	if(!method || !url) {
+		window.alert("请求参数错误！");
+		return;
+	}
+	$get(url,function (html) {
+		$debug(html);
+	},null,method.toUpperCase());
+};
+
 /* 所有功能完毕 */
 
 // 主执行函数。
 function main(savedOptions) {
 	// 检查选项中是否设置了禁用页面隐藏项
-	if(savedOptions._blacklist) {
-		try {
-			if(new RegExp(savedOptions._blacklist).test(document.location.hostname)) {
-				return;
+	if(savedOptions.blacklist) {
+		if(document.location.hostname!="renren.com") {
+			try {
+				if(new RegExp(savedOptions.blacklist).test(document.location.hostname)) {
+					return;
+				}
+			} catch(ex) {
+				$error("main","blacklist设置错误！");
 			}
-		} catch(ex) {
-			$error("main","blacklist设置错误！");
 		}
 	}
 
@@ -3398,6 +3415,10 @@ function main(savedOptions) {
 						text:"##情侣请求",
 						value:false,
 					},{
+						id:"pageRequest",
+						text:"##主页推荐",
+						value:false,
+					},{
 						id:"otherRequest",
 						text:"##其他请求",
 						value:false,
@@ -3620,6 +3641,10 @@ function main(savedOptions) {
 					},{
 						id:"event",
 						text:"##线上活动",
+						value:false
+					},{
+						id:"#lover",
+						text:"##情侣空间",
 						value:false
 					}
 				]
@@ -4582,7 +4607,7 @@ function main(savedOptions) {
 			},{
 				text:"##",		// 用于设置在部分页面不启用，不在界面提供直接修改途径，仅通过下面的参数设置功能设置
 				ctrl:[{
-						id:"_blacklist",
+						id:"blacklist",
 						type:"hidden",
 						value:"",
 				}]
@@ -4623,6 +4648,26 @@ function main(savedOptions) {
 						id:"configuration",
 						type:"edit",
 						style:"width:99%;height:110px"
+					}
+				]
+			},{
+				text:"##：## ##",
+				ctrl:[
+					{
+						type:"button",
+						value:"发送请求",
+						fn:[{
+							name:sendReq,
+							fire:"click",
+						}]
+					},{
+						id:"req_m",
+						type:"input",
+						style:"width:30px",
+					},{
+						id:"req_u",
+						type:"input",
+						style:"width:230px",
 					}
 				]
 			}
@@ -5712,6 +5757,63 @@ function $master(master) {
  *   [String]:新鲜事类型文本。无符合的返回""
  */
 function $feedType(feed) {
+	// 不全，待补完
+	var stats=feed.find("a[stats]").attr("stats");
+	if(stats && /NF_\d+_(\d+)_\d+/.test(stats)) {
+		var ntype=parseInt(RegExp.$1);
+		var mtype=parseInt(ntype/100);
+		switch(mtype) {
+			case 1:
+				// 分享好友:101, 分享日志:102, 分享照片:103, 分享相册:104, 分享链接:107, 分享视频:110
+				return "share";
+			case 4:
+				// 赞助商活动广告(？):401
+				return "ads";
+			case 5:
+				// 修改头像:501, 状态:502
+				if(ntype==501) {
+					return "profile";
+				} else if(ntype==502) {
+					return "status";
+				}
+			case 6:
+				// 发表日志:601
+				return "blog";
+			case 7:
+				// 上传1张照片:701, 圈人:702, XX的照片（有注释？）:708, 上传多张照片:709
+				if(ntype==702) {
+					return "tag";
+				} else {
+					return "photo";
+				}
+			case 8:
+				// 收到礼物:801
+				return "gift";
+			case 15:
+				// 看过电影:1502
+				return "movie";
+			case 20:
+				// 在公共主页留言:2001, 成为公共主页好友:2002, 分享公共主页日志:2003, 分享公共主页图片:2004, 分享公共分享链接:2005, 分享公共分享视频:2006, 公共主页发状态:2008, 公共主页发日志:2012, 公共主页发照片:2013, 公共主页改头像:2015, 公共主页发回复:2016, 分享公共主页:2017, 情侣空间发状态:2024, 情侣空间发日志:2025, 情侣空间发照片:2026
+				if(ntype>=2024 && ntype<=2026) {
+					return "lover";
+				} else {
+					return "page";
+				}
+			case 23:
+				// 发起投票:2301, 参加投票:2303
+				return "poll";
+			case 24:
+				// 添加应用:2401
+				return "app";
+			case 27:
+				// 线上活动:2701
+				return "event";
+			case 81:
+				// 连接网站:8185
+				return "connect";
+		}
+	}
+	
 	// blog/status/photo/share/album 的充分条件
 	var script=feed.find(".details script[status='1']");
 	if(script.exist()) {
@@ -5731,6 +5833,7 @@ function $feedType(feed) {
 		}
 	}
 
+	// 以下是根据新鲜事内容进行判断
 	// 广告
 	if(feed.find("a[href^='http://gamestat.renren.com/']").exist() ||
 		feed.find("img[src^='http://edm.renren.com/']").exist() ||
@@ -5747,24 +5850,25 @@ function $feedType(feed) {
 	var types={
 		// t:标题文本，l:标题/footer中链接地址，c:有无content
 		"share":	{t:/^分享/},
-		"page":		{l:/http:\/\/page.renren.com\//},
+		"page":		{l:/\/page.renren.com\//},
 		"status":	{t:/^:/,c:false},	// 如果是纯表情状态，:后面的空格会被去除
 		"blog":		{t:/^发表日志/},
 		"photo":	{t:/^上传了\d+张照片至|^的照片|美化了一张照片$|^:/,c:true},
 		"contact":	{t:/^你和.*和好朋友保持联络$/},
 		"profile":	{t:/^修改了头像/},
-		"app":		{l:/http:\/\/apps?\.renren\.com\//},
-		"gift":		{l:/http:\/\/gift\.renren\.com\//},
+		"app":		{l:/\/apps?\.renren\.com\//},
+		"gift":		{l:/\/gift\.renren\.com\//},
 		"tag":		{t:/照片中被圈出来了$/},
-		"movie":	{l:/http:\/\/movie\.(xiaonei|renren)\.com\//},
-		"connect":	{l:/http:\/\/www\.connect\.renren\.com\//},
+		"movie":	{l:/\/movie\.(xiaonei|renren)\.com\//},
+		"connect":	{l:/\/www\.connect\.renren\.com\//},
 		"friend":	{t:/^[和、][\s\S]*成为了好友。/},
 		"vip":		{t:/^更换了主页模板皮肤|^更换了主页装扮|^成为了人人网[\s\S]*VIP会员特权|^收到好友赠送的[\s\S]*VIP会员特权|^开启了人人网VIP个性域名/},
 		"music":	{t:/^上传了音乐/},
-		"poll":		{l:/http:\/\/abc\.renren\.com\//},
-		"group":	{l:/http:\/\/group\.renren\.com\//},
+		"poll":		{l:/\/abc\.renren\.com\//},
+		"group":	{l:/\/group\.renren\.com\//},
 		"levelup":	{t:/^等级升至/},
-		"event":	{l:/http:\/\/event\.renren\.com\//}
+		"event":	{l:/\/event\.renren\.com\//},
+		"lover":	{l:/\/lover\.renren\.com\//}
 	};
 
 	// 删除所有链接子节点，只留下文本节点
