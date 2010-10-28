@@ -45,6 +45,13 @@ cp "$OUTPUT" `echo "$OUTPUT" | sed 's/.user.js/.js/'`
 
 #######################################
 
+cp "$OUTPUT" opera-extension/includes/"$INPUT"
+cd opera-extension
+./pack.sh
+cd ..
+
+#######################################
+
 sed -i -E '15s/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/'$VERSION'/' update.plist
 sed -i -E '13s/[0-9]+/'$VER2'/' update.plist
 

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets" id="extensions:xiaonei-reformer" network="public">
+	<name>Xiaonei Reformer</name>
+	<description>enhance your experience on renren.com (formerly xiaonei.com)</description>
+	<author href="http://xiaonei-reformer.googlecode.com/" email="xnreformer@gmail.com">xz</author>
+	<icon src="icons/icon48.png"/>
+	<access origin="http://renren.com" subdomains="true"/>
+	<access origin="http://xiaonei-reformer.googlecode.com"/>
+</widget>
