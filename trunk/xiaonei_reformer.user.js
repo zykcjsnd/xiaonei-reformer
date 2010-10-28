@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.1.20101026
-// @miniver        375
+// @version        3.2.1.20101028
+// @miniver        376
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -63,7 +63,7 @@ XNR.url=document.location.href;
 XNR.options={};
 
 // 当前运行环境（浏览器）
-const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4,SAFARI=8,OPERA=16;
+const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4,SAFARI=8,OPERA_UJS=16,OPERA_EXT=32;
 const GECKO=1,WEBKIT=2,PRESTO=4;
 XNR.agent=UNKNOWN;
 XNR.acore=UNKNOWN;
@@ -74,7 +74,12 @@ if(window.chrome) {
 	XNR.agent=SAFARI;
 	XNR.acore=WEBKIT;
 } else if (window.opera) {
-	XNR.agent=OPERA;
+	// 没有window.opera.extension
+	if(opera.extension) {
+		XNR.agent=OPERA_EXT;
+	} else {
+		XNR.agent=OPERA_UJS;
+	}
 	XNR.acore=PRESTO;
 } else if (typeof GM_setValue=="function") {
 	XNR.agent=USERSCRIPT;
@@ -85,10 +90,40 @@ if(window.chrome) {
 }
 
 // 针对Opera的特殊处理
-if(XNR.agent==OPERA) {
-	XNR.scriptStorage=window.opera.scriptStorage;
+if(XNR.acore==PRESTO) {
 	// 判断当前阶段，document.readyState靠不住
 	XNR.loadStage=0;
+	window.addEventListener("load",function() {
+		window.removeEventListener("load",arguments.callee,true);
+		XNR.loadStage=3;
+	},true);
+	document.addEventListener("DOMContentLoaded",function() {
+		document.removeEventListener("DOMContentLoaded",arguments.callee,true);
+		XNR.loadStage=1;
+	},true);
+
+	if(XNR.agent==OPERA_EXT) {
+		// opera扩展使用单一的消息接收函数
+		XNR.msgHandlers={};
+		XNR.oexSendRequest=function(msg,handler) {
+			do {
+				var reqId=Math.random();
+			} while(XNR.msgHandlers[reqId]!=null);
+			XNR.msgHandlers[reqId]=handler;
+			msg.reqId=reqId;
+			opera.extension.postMessage(JSON.stringify(msg));
+		};
+		opera.extension.onmessage=function(event) {
+			var response=JSON.parse(event.data);
+			if(XNR.msgHandlers[response.reqId]) {
+				XNR.msgHandlers[response.reqId].call(window,response.data);
+				XNR.msgHandlers[response.reqId]=null;
+			}
+		};
+	} else {
+		// opera用户JS的存储空间，需要在第一次执行时留个引用
+		XNR.scriptStorage=window.opera.scriptStorage;
+	}
 }
 
 // 页面工具的简写
@@ -488,7 +523,11 @@ function hideFeeds(evt,feeds,mark,forbiddenTitle) {
 // 首页默认显示特别关注
 function showAttentionFeeds() {
 	// 不能只修改hash，从个人主页会来时会失效
-	document.location.href="http://www.renren.com/home#/homeAttention?from=homeleft";
+	if(document.location.pathname=="/home") {
+		document.location.hash="/homeAttention?from=homeleft";
+	} else {
+		document.location.href="http://www.renren.com/home#/homeAttention?from=homeleft";
+	}
 };
 
 // 加载更多页新鲜事
@@ -1903,7 +1942,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						unknown:failedImagesList,		// 失败/未知的数据
 						type:linkOnly					// 只显示链接
 					};
-					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA) {
+					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS || XNR.agent==OPERA_EXT) {
 						var html="<head><meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+album.title+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style><script>function switchLink(){var links=document.querySelectorAll(\"a[title]:not([title=\\'\\'])\");for(var i=0;i<links.length;i++){if(links[i].textContent!=links[i].title){links[i].textContent=links[i].title}else{links[i].textContent=links[i].href}}};function switchIndex(add,max){var links=document.querySelectorAll(\"*[index]\");for(var i=0;i<links.length;i++){if(add){links[i].title=idx(parseInt(links[i].getAttribute(\"index\"))+1,max)+\" \"+links[i].title}else{links[i].title=links[i].title.replace(/^[0-9]+ /,\"\")}}};function idx(n,max){var i=0;for(;max>0;max=parseInt(max/10)){i++}n=\"00000\"+n;return n.substring(n.length-i,n.length)}</script></head><body>";
 						html+="<p><a target=\"_blank\" href=\"http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum\">下载指南</a>";
 						html+="</p><p>来源："+album.ref+"</p>";
@@ -2876,6 +2915,11 @@ function checkUpdate(evt,checkLink,updateLink,lastCheck) {
 	}
 	$get(checkLink,function(html) {
 		if(!html) {
+			// 手动点击检查更新按钮时要弹出提示
+			if(evt) {
+				window.alert("无法检测最新版本");
+				$(evt.target).attr({disabled:null,value:"立即检查"});
+			}
 			$save("lastUpdate",today.valueOf());
 			return;
 		}
@@ -2973,6 +3017,13 @@ function sendReq() {
 		return;
 	}
 	$get(url,function (html) {
+		if(!html) {
+			window.alert("发送请求失败！");
+			return;
+		}
+		if(window.confirm("解析回应数据？")) {
+			document.documentElement.innerHTML=html;
+		}
 		$debug(html);
 	},null,method.toUpperCase());
 };
@@ -3643,7 +3694,7 @@ function main(savedOptions) {
 						text:"##线上活动",
 						value:false
 					},{
-						id:"#lover",
+						id:"lover",
 						text:"##情侣空间",
 						value:false
 					}
@@ -4090,7 +4141,7 @@ function main(savedOptions) {
 					},{
 						type:"subcheck",
 						id:"eventEmo",
-						value:true
+						value:false
 					},{
 						type:"subcheck",
 						id:"figureEmo",
@@ -4150,7 +4201,7 @@ function main(savedOptions) {
 				]
 			},{
 				text:"##阻止访问统计##",
-				agent:FIREFOX | CHROME | SAFARI | OPERA,
+				agent:FIREFOX | CHROME | SAFARI | OPERA_UJS | OPERA_EXT,
 				ctrl:[
 					{
 						id:"preventScorecardResearch",
@@ -4167,7 +4218,7 @@ function main(savedOptions) {
 				]
 			},{
 				text:"##阻止Google Analytics##",
-				agent:FIREFOX | CHROME | SAFARI | OPERA,
+				agent:FIREFOX | CHROME | SAFARI | OPERA_UJS | OPERA_EXT,
 				ctrl:[
 					{
 						id:"preventGoogleAnalytics",
@@ -4479,7 +4530,7 @@ function main(savedOptions) {
 						value:"24小时内最多检查一次"
 					}
 				],
-				agent:USERSCRIPT | FIREFOX | OPERA
+				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT
 			},{
 				text:"最后一次检查更新时间：##",
 				ctrl:[{
@@ -4488,7 +4539,7 @@ function main(savedOptions) {
 					value:0,
 					format:"date"
 				}],
-				agent:USERSCRIPT | FIREFOX | OPERA
+				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT
 			},{
 				text:"##",
 				ctrl:[{
@@ -4500,7 +4551,7 @@ function main(savedOptions) {
 						args:[null,"@checkLink","@updateLink","@lastUpdate"]
 					}],
 				}],
-				agent:USERSCRIPT | FIREFOX | OPERA
+				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT
 			},{
 				text:"检查更新地址：##",
 				ctrl:[{
@@ -4510,7 +4561,7 @@ function main(savedOptions) {
 					style:"width:330px",
 					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的检查更新地址"}
 				}],
-				agent:USERSCRIPT | OPERA
+				agent:USERSCRIPT | OPERA_UJS
 			},{
 				text:"脚本下载地址：##",
 				ctrl:[{
@@ -4530,7 +4581,7 @@ function main(savedOptions) {
 					style:"width:330px",
 					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的检查更新地址"}
 				}],
-				agent:FIREFOX
+				agent:FIREFOX | OPERA_EXT
 			},{
 				text:"扩展下载地址：##",
 				ctrl:[{
@@ -4550,10 +4601,20 @@ function main(savedOptions) {
 					style:"width:330px;",
 					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的脚本下载地址"},
 				}],
-				agent:OPERA
+				agent:OPERA_UJS
+			},{
+				text:"扩展下载地址：##",
+				ctrl:[{
+					id:"updateLink",
+					type:"input",
+					value:"http://xiaonei-reformer.googlecode.com/files/xiaonei_reformer-opera.oex",
+					style:"width:330px;",
+					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的脚本下载地址"},
+				}],
+				agent:OPERA_EXT
 			},{
 				text:"* 以上地址保存后生效",
-				agent:USERSCRIPT | FIREFOX | OPERA
+				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT
 			},{
 				text:"##升级后显示通知",
 				ctrl:[{
@@ -5474,7 +5535,7 @@ function $wait(stage,func) {
 	 * Opera 10.54：interactive -> interactive/complete -> complete（对于用户脚本：loading -> complete -> complete，但到达complete后仍然有可能出现interactive）
 	 */
 	var curStage=3;
-	if(XNR.agent==OPERA) {
+	if(XNR.acore==PRESTO) {
 		curStage=XNR.loadStage;
 		if(curStage==1 && (stage==1 || stage==2)) {
 			curStage=stage;
@@ -5599,9 +5660,11 @@ function $save(name,value) {
 		case SAFARI:
 			safari.self.tab.dispatchMessage("xnr_save",opts);
 			break;
-		case OPERA:
+		case OPERA_UJS:
 			XNR.scriptStorage["xnr_options"]=opts;
 			break;
+		case OPERA_EXT:
+			XNR.oexSendRequest({action:"save",data:opts});
 	}
 };
 
@@ -5657,12 +5720,12 @@ function $get(url,func,userData,method) {
 			}
 	    	safari.self.tab.dispatchMessage("xnr_get",{id:requestId,url:url,method:method});
 			break;
-		case OPERA:
+		case OPERA_UJS:
 			try {
 				var httpReq=new window.opera.XMLHttpRequest();
 			} catch(ex) {
-				$error("$get",{name:"使用非跨域模式",message:"未安装跨域支持脚本"});
-				var httpReq=new XMLHttpRequest();
+				$error("$get","未安装跨域支持脚本，使用非跨域模式");
+				var httpReq=new window.XMLHttpRequest();
 			}
 			httpReq.onload=function() {
 				func.call(window,(httpReq.status==200?httpReq.responseText:null),url,userData);
@@ -5671,7 +5734,22 @@ function $get(url,func,userData,method) {
 				func.call(window,null,url,userData);
 			};
 			httpReq.open(method,url,true);
-			httpReq.send();
+			try {
+				httpReq.send();
+			} catch(ex) {
+				$error("$get",ex);
+				func.call(window,null,url,userData);
+			}
+			break;
+		case OPERA_EXT:
+			var req={action:"get",url:url,method:method};
+			if(func==null) {
+				XNR.oexSendRequest(req);
+			} else {
+				XNR.oexSendRequest(req,function(response) {
+					func.call(window,response,url,userData);
+				});
+			}
 			break;
 	} 
 };
@@ -5769,13 +5847,6 @@ function $feedType(feed) {
 			case 4:
 				// 赞助商活动广告(？):401
 				return "ads";
-			case 5:
-				// 修改头像:501, 状态:502
-				if(ntype==501) {
-					return "profile";
-				} else if(ntype==502) {
-					return "status";
-				}
 			case 6:
 				// 发表日志:601
 				return "blog";
@@ -5792,6 +5863,9 @@ function $feedType(feed) {
 			case 15:
 				// 看过电影:1502
 				return "movie";
+			case 18:
+				// 成为vip:1801
+				return "vip";
 			case 20:
 				// 在公共主页留言:2001, 成为公共主页好友:2002, 分享公共主页日志:2003, 分享公共主页图片:2004, 分享公共分享链接:2005, 分享公共分享视频:2006, 公共主页发状态:2008, 公共主页发日志:2012, 公共主页发照片:2013, 公共主页改头像:2015, 公共主页发回复:2016, 分享公共主页:2017, 情侣空间发状态:2024, 情侣空间发日志:2025, 情侣空间发照片:2026
 				if(ntype>=2024 && ntype<=2026) {
@@ -5811,6 +5885,12 @@ function $feedType(feed) {
 			case 81:
 				// 连接网站:8185
 				return "connect";
+		}
+		// 修改头像:501, 状态:502
+		if(ntype==501) {
+			return "profile";
+		} else if(ntype==502) {
+			return "status";
 		}
 	}
 	
@@ -6577,20 +6657,21 @@ switch(XNR.agent) {
 		},false);
 	    safari.self.tab.dispatchMessage("xnr_load",reqId);
 		break;
-	case OPERA:
-		window.addEventListener("load",function() {
-			window.removeEventListener("load",arguments.callee,true);
-			XNR.loadStage=3;
-		},true);
-		document.addEventListener("DOMContentLoaded",function() {
-			document.removeEventListener("DOMContentLoaded",arguments.callee,true);
-			XNR.loadStage=1;
-		},true);
+	case OPERA_UJS:
 		try {
 			main(JSON.parse(window.opera.scriptStorage["xnr_options"]));
 		} catch(ex) {
 			main({});
 		}
+		break;
+	case OPERA_EXT:
+		XNR.oexSendRequest({action:"load"},function(response) {
+			try {
+				main(JSON.parse(response));
+			} catch(ex) {
+				main({});
+			}
+		});
 		break;
 	default:
 		throw "unsupported browser";
