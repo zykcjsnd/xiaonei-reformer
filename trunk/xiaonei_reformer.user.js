@@ -47,8 +47,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.1.20101026";
-XNR.miniver=375;
+XNR.version="3.2.1.20101028";
+XNR.miniver=376;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -345,6 +345,7 @@ function hideRequest(req) {
 		"loveRequest":"l-love-invite",
 		"loverRequest":"l-love",
 		"pageRequest":"l-page",
+		"addbookRequest":"l-friend-address",
 		"otherRequest":"iOther"
 	};
 	var box=$(".side-item.newrequests ul.icon");
@@ -495,10 +496,10 @@ function blockAppNotification() {
 
 // 隐藏特定类型/标题新鲜事
 function hideFeeds(evt,feeds,mark,forbiddenTitle) {
-	if(evt && evt.target.tagName!="LI") {
+	if(evt && evt.target.tagName!="ARTICLE") {
 		return;
 	}
-	(evt?$(evt.target):$("ul#feedHome > li")).filter(function(elem) {
+	(evt?$(evt.target):$("div.feed-list>article")).filter(function(elem) {
 		var feed=$(elem);
 		if(forbiddenTitle && feed.find("h3").text().replace(/\s/g,"").match(forbiddenTitle)) {
 			return true;
@@ -695,7 +696,7 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 
 	(function() {
 		// 应该用post，不过get也行
-		$get("http://www.renren.com/feedretrieve.do?p=0",function(html) {
+		$get("http://www.renren.com/feedretrieve2.do?p=0",function(html) {
 			if(html==null) {
 				return;
 			}
@@ -1401,7 +1402,9 @@ function addExtraEmotions(eEmo,fEmo) {
 		"(gs)":		{t:"园丁",			s:"/imgpro/icons/statusface/growing-sapling.gif"},
 		"(ga)":		{t:"园丁",			s:"/imgpro/icons/statusface/gardener.gif"},
 		"(hp)":		{t:"杰克灯",		s:"/imgpro/icons/statusface/halloween-pumpkin.gif"},
+		"(ngd)":	{t:"南瓜灯",		s:"/imgpro/icons/statusface/pumpkin.gif"},
 		"(hg)":		{t:"小鬼",			s:"/imgpro/icons/statusface/halloween-ghost.gif"},
+		"(xg)":		{t:"小鬼",			s:"/imgpro/icons/statusface/ghost.gif"},
 		"(yt)":		{t:"光棍油条",		s:"/imgpro/icons/statusface/youtiao.gif"},
 		"(bz)":		{t:"光棍包子",		s:"/imgpro/icons/statusface/baozi.gif"},
 		"(wr)":		{t:"枯萎玫瑰",		s:"/imgpro/icons/statusface/wilt-rose.gif"},
@@ -3470,6 +3473,10 @@ function main(savedOptions) {
 						text:"##主页推荐",
 						value:false,
 					},{
+						id:"addbookRequest",
+						text:"##通讯录请求",
+						value:false
+					},{
 						id:"otherRequest",
 						text:"##其他请求",
 						value:false,
@@ -3525,6 +3532,10 @@ function main(savedOptions) {
 					},{
 						id:"loverRequest",
 						text:"##情侣请求",
+						value:false
+					},{
+						id:"addbookRequest",
+						text:"##通讯录请求",
 						value:false
 					}
 				]
@@ -3603,7 +3614,7 @@ function main(savedOptions) {
 						name:hideFeeds,
 						stage:1,
 						args:[null,"@feedGroup","@markFeedAsRead","@forbiddenFeedTitle"],
-						trigger:{"ul#feedHome":"DOMNodeInserted"},
+						trigger:{"div.feed-list":"DOMNodeInserted"},
 					}],
 				}],
 				login:true,
@@ -5837,7 +5848,7 @@ function $master(master) {
 function $feedType(feed) {
 	// 不全，待补完
 	var stats=feed.find("a[stats]").attr("stats");
-	if(stats && /NF_\d+_(\d+)_\d+/.test(stats)) {
+	if(stats && /_\d+_(\d+)_\d+$/.test(stats)) {
 		var ntype=parseInt(RegExp.$1);
 		var mtype=parseInt(ntype/100);
 		switch(mtype) {
@@ -5882,6 +5893,10 @@ function $feedType(feed) {
 			case 27:
 				// 线上活动:2701
 				return "event";
+			case 80:
+				// 各类商业活动？
+				// 团购：8002
+				return "ads";
 			case 81:
 				// 连接网站:8185
 				return "connect";
