@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.1.20101028
-// @miniver        376
+// @version        3.2.2.20101029
+// @miniver        377
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -47,8 +47,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.1.20101028";
-XNR.miniver=376;
+XNR.version="3.2.2.20101029";
+XNR.miniver=377;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -384,6 +384,12 @@ function rejectRequest(req,blockApp) {
 		$get("http://lover.renren.com/love/lovePageShare/clear");
 	}
 
+	// 通讯录请求
+	if(req["addbookRequest"]) {
+		// 可以加多个id，friendIds=1&friendIds=2。但不加似乎也有效
+		$get("http://friend.renren.com/ignorequest?friendIds=",null,null,"POST");
+	}
+
 	// 应用请求
 	if(req["appRequest"]==true || blockApp==true) {
 		$get("http://app.renren.com/app/appRequestList",function(html) {
@@ -531,25 +537,19 @@ function showAttentionFeeds() {
 	}
 };
 
-// 加载更多页新鲜事
-function loadMoreFeeds(pages) {
-	// 先修改load函数，原来的load最后有个window.scrollTo会使页面滚动
-	// 只要当前页数比预定页数少，就不断加载下一页
-	var code="var count=0;(function(){try{var f=window.XN.page.home.feedFilter;if(f.oldLoad)return;f.oldLoad=f.load;f.load=function(a,b){var oldScrollTo=window.scrollTo;window.scrollTo=function(){};window.XN.page.home.feedFilter.oldLoad(a,b);window.scrollTo=oldScrollTo};(function(){var f=window.XN.page.home.feedFilter;if(f.currentPage<"+(parseInt(pages)-1)+"){if(!f.loading){f.loadMore()};setTimeout(arguments.callee,1000);}else if(f.oldLoad){f.load=f.oldLoad;f.oldLoad=null}})()}catch(e){if(count<5){count++;setTimeout(arguments.callee,500)}}})()";
-	$script(code);
-};
-
 // 禁止在窗口滚动到底部时自动加载下一页新鲜事
 function disableAutoLoadFeeds() {
-	var code="feedLoads=2";
+	var code="(function(){"+
+		"if(window._eventListeners&&window._eventListeners.scroll){"+
+			"var e=window._eventListeners.scroll;"+
+			"for(var i=0;i<e.length;i++){"+
+				"e[i].called=2"+
+			"}"+
+		"}else{"+
+			"setTimeout(arguments.callee,200)"+
+		"}"+
+	"})()";
 	$script(code);
-};
-
-// 去除状态新鲜事上的链接
-function removeStatusFeedLink() {
-	$("#feedHome h3>a.text").tag("span");
-	// xn.app.status.js中的renderStatusFeed会将新增的新鲜事加上链接
-	$script("renderStatusFeed=function(){}");
 };
 
 // 在新鲜事中标记在线好友
@@ -575,7 +575,7 @@ function markOnlineFriend(evt) {
 	});
 
 	function mark(list) {
-		$("#feedHome li h3").each(function() {
+		$(".feed-list>article>h3").each(function() {
 			var elem=this;
 			$(elem).find("a[href*='profile.do?']").each(function() {
 				var id=/id=([0-9]+)/.exec(this.href)[1];
@@ -593,14 +593,13 @@ function markOnlineFriend(evt) {
 // 收起新鲜事回复
 function flodFeedComment() {
 	// 先隐藏起来
-	var p=$patchCSS("#feedHome .details>.replies{display:none}");
+	var p=$patchCSS(".feed-list .details>.replies{display:none}");
 	// 修改loadJSON方法，loadJSON原方法最后会调用show强制显示
 	var code="var count=0;(function(){try{var code=XN.app.status.replyEditor.prototype.loadJSON.toString().replace(/function *\\(json\\) *{/,'').replace(/}$/,'').replace(/this.show\\([^\\)]*\\)/,'this.hide()')}catch(e){count++;if(count<5){setTimeout(arguments.callee,500)};return};XN.app.status.replyEditor.prototype.loadJSON=new Function('json',code)})()";
 	$script(code);
 	$wait(1,function() {
 		var list=[];
-		// feedView是公共主页的
-		$("#feedHome,#feedView").find(".details .legend a[id^='reply']").each(function() {
+		$(".feed-list").find(".details .legend a[id^='reply']").each(function() {
 			list.push(this.id.match("[0-9]+$")[0]);
 		});
 		if(list.length>0) {
@@ -959,6 +958,8 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".site-menu-nav .nav-item li.selected,.site-menu-nav .nav-item .item-title.selected{background-color:"+BCOLOR+"}",
 			],
 			"home-all-min.css":[
+				".feed-module .feed-tools a:link,.feed-module .feed-tools a:visited{color:"+FCOLOR+"}",
+				".feed-module .category-filter label{color:"+FCOLOR+"}",
 				".input-button,.input-submit{background-color:"+FCOLOR+"}",
 				".pop_content .dialog_body a,.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
 				"ul.square_bullets{color:"+FCOLOR+"}",
@@ -1215,6 +1216,13 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".side-action .gallery .thumbnail:hover, .side-action .gallery .ghover .thumbnail, .side-action .gallery .this .thumbnail{background-color:"+FCOLOR+"}",
 				".ghover .turna, .ghover .turnb{color:"+FCOLOR+" !important}",
 				".acts-list .tabs-item a.selected, .acts-list .tabs-item a.selected:hover{background-color:"+FCOLOR+"}",
+			],
+			"main.css":[
+				"body{color:"+FCOLOR+"}",
+				"a{color:"+FCOLOR+"}",
+				".dl_list dd li.on a,.dl_list dd li.on a:hover{background-color:"+FCOLOR+"}",
+				".pager ul li,.pager ul li a,.pager ul li.current a,.pager ul li.current a:hover{color:"+FCOLOR+"}",
+				"input.join,input.joingray{background-color:"+FCOLOR+"}",
 			]
 		};
 		var style="";
@@ -1688,6 +1696,11 @@ function showImagesInOnePage() {
 		var baseURL="http://photo.renren.com"+document.location.pathname+"?curpage=%%";
 		var album=$("div.photo-list");
 		var items=$(".number-photo");
+	} else if($(".all-photos>.photo-list").exist()) {
+		// 线上活动相册
+		var baseURL="http://event.renren.com"+document.location.pathname+"?curpage=%%";
+		var album=$("div.photo-list");
+		var items=$();	// 没有总数
 	} else {
 		var baseURL="http://photo.renren.com/getalbum.do?id=##&owner=@@&curpage=%%&t=**";
 		var album=$("div.photo-list");
@@ -1695,7 +1708,7 @@ function showImagesInOnePage() {
 		var items=$(".number-photo");
 	}
 
-	if(album.empty() || items.empty()) {
+	if(album.empty()) {
 		return;
 	}
 	// 获取相册信息
@@ -1712,7 +1725,7 @@ function showImagesInOnePage() {
 			return false;
 		}
 	});
-	if(!ownerId) {
+	if(baseURL.indexOf("@@")>0 && !ownerId) {
 		return;
 	}
 	// 加密相册密码
@@ -1723,7 +1736,7 @@ function showImagesInOnePage() {
 	}
 	baseURL=baseURL.replace("@@",ownerId).replace("##",albumId);
 
-	var pager=$pager($(".pager-nav").eq());
+	var pager=$pager($(".pager-nav,.all-photos>.pagertop").eq());
 	// 当前页数
 	var curPage=pager.current;
 	// 总页数
@@ -1773,6 +1786,8 @@ function showImagesInOnePage() {
 					var photoList=/(<table .*?class="photoList".*?>[\s\S]+?<\/table>)/.exec(res)[1];
 				} else if(XNR.url.indexOf("/photo/ap/")!=-1) {
 					var photoList=/<div .*?class="photo-list clearfix".*?>([\s\S]+?)<\/div>/.exec(res)[1];
+				} else if($(".all-photos>.photo-list").exist()) {
+					var photoList=/<div .*?class="photo-list".*?>\s*(<ul>[\S\s]+?<\/ul>)/.exec(res)[1];
 				} else {
 					var photoList=/<div .*?class="photo-list clearfix".*?>([\s\S]+?)<\/div>/.exec(res)[1];
 					var storyList=/<!--start storyList mode-->\s*<div .*?class="story-pic clearfix".*?>([\s\S]+?)<\/div>\s*<!--story mode end-->/.exec(res)[1];
@@ -1815,7 +1830,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 	if($(".function-nav.bottom-operate ul.nav-btn").exist()) {
 		$(".function-nav.bottom-operate ul.nav-btn").eq(-1).add($node("li").attr("class","pipe").text("|")).add($node("li").add(downLink));
 	} else {
-		$(".pager-bottom").add(downLink.css("lineHeight","22px"),0);
+		$(".pager-bottom,.pagerbottom").add(downLink.css("lineHeight","22px"),0);
 	}
 	downLink.bind("click",function(evt) {
 		if(downLink.text().match("分析中")) {
@@ -1845,7 +1860,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 				}
 			});
 		} else {
-			var links=$(".photo-list span.img a, table.photoList td.photoPan>a");
+			var links=$(".photo-list span.img a, table.photoList td.photoPan>a, .photo-list>ul>li>a.cover");
 			var totalImage=links.size();
 			if(totalImage==0) {
 				return;
@@ -1878,9 +1893,9 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 							}
 						}
 						// 公共主页相册
-						var src=/XN.PAGE.albumPhoto.init\((.*?)\);/.exec(html);
+						var src=/XN.PAGE.albumPhoto.init\((.*?)\);/i.exec(html);
 						if(src) {
-							src=JSON.parse("["+src[1].replace(/'.*?'/g,"0")+"]")[10];
+							src=JSON.parse("["+src[1].replace(/'.*?'/g,"0").replace(",photo:",',"photo":')+"]")[10];
 							if(src && src.photo && src.photo.large) {
 								imageSrc=src.photo.large;
 								return;
@@ -1918,7 +1933,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 		function finish() {
 			try {
 				if($alloc("download_album").length>0) {
-					var failedImages=$(".photo-list span.img a[down],table.photoList td.photoPan>a[down]");
+					var failedImages=$(".photo-list span.img a[down],table.photoList td.photoPan>a[down],.photo-list>ul>li>a.cover[down]");
 					var failedImagesList=[];
 					if(failedImages.exist()) {
 						failedImages.each(function() {
@@ -1935,6 +1950,10 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 					if(!title) {
 						// 公共主页
 						title=$(".compatible>#content>.pager-top>span>h3").text();
+					}
+					if(!title) {
+						// 线上活动相册
+						title=$(".page-title>h3").text();
 					}
 	
 					// 相册数据
@@ -2168,6 +2187,11 @@ function showFullSizeImage(evt,indirect) {
 			return;
 		}
 
+		// 线上活动图片
+		if(pageURL.match(/event\.renren\.com\/event\/\d+\/\d+\/photo/)) {
+			_loadImage("image",false,evt,imgId,pageURL);
+			return;
+		}
 		// 非常古老的头像（http://head.xiaonei.com/photos/20070201/1111/head[0-9]+.jpg），其head后的[0-9]+可能有变，以时间为准
 		if(thumbnail.match(/head\.xiaonei\.com\/photos\/[0-9]{8}\/[0-9]+\/head[0-9]+\./)) {
 			imageDate=/photos\/([0-9]{8}\/[0-9]+)/.exec(thumbnail)[1];
@@ -2435,10 +2459,10 @@ function showFullSizeImage(evt,indirect) {
 						return;
 					}
 				}
-				// 公共主页相册
-				var src=/XN.PAGE.albumPhoto.init\((.*?)\);/.exec(html);
+				// 公共主页/线上活动相册
+				var src=/XN.PAGE.albumPhoto.init\((.*?)\);/i.exec(html);
 				if(src) {
-					src=JSON.parse("["+src[1].replace(/'.*?'/g,"0")+"]")[10];
+					src=JSON.parse("["+src[1].replace(/'.*?'/g,"0").replace(",photo:",',"photo":')+"]")[10];
 					if(src && src.photo && src.photo.large) {
 						_imageCache(imgId,src.photo.large);
 						_showViewer(null,src.photo.large,imgId);
@@ -2643,7 +2667,7 @@ function enableShortcutMenu(evt) {
 		var menu=$alloc("shortcut_menu");
 		menu.t=t;
 		// absolute在放大页面的情况下会出现文字被错误截断导致宽度极小的问题
-		menu.m=$node("div").html(html).css({position:"absolute",left:parseInt(rect.left+window.scrollX)+"px",top:parseInt(rect.bottom+window.scrollY)+"px",backgroundColor:"#EBF3F7",opacity:0.88,padding:"5px 8px",border:"1px solid #5C75AA",zIndex:99999}).addTo(document.body);
+		menu.m=$node("div").html(html).css({position:"absolute",left:parseInt(rect.left+window.scrollX)+"px",top:parseInt(rect.bottom+window.scrollY)+"px",backgroundColor:"#EBF3F7",opacity:0.88,padding:"5px 8px",border:"1px solid #5C75AA",zIndex:999987}).addTo(document.body);
 	} catch(ex) {
 		$error("enableShortcutMenu",ex);
 	}
@@ -3746,55 +3770,18 @@ function main(savedOptions) {
 				}],
 				page:"feed"
 			},{
-				text:"##默认显示##页新鲜事",
-				ctrl:[
-					{
-						id:"loadMoreFeeds",
-						value:false,
-						fn:[{
-							name:loadMoreFeeds,
-							stage:2,
-							fire:true,
-							args:["@loadFeedPage"]
-						}]
-					},{
-						id:"loadFeedPage",
-						type:"input",
-						value:"2",
-						style:"width:15px;margin-left:3px;margin-right:3px",
-						verify:{"^[2-9]$":"新鲜事页数只能为2~9"}
-					}
-				],
-				master:0,
-				login:true,
-				page:"feed"
-			},{
-				text:"##窗口滚动到底部时不加载下一页新鲜事",
+				text:"##页面滚动到底部时不加载下一页新鲜事",
 				ctrl:[{
 					id:"disableAutoLoadFeeds",
 					value:false,
 					fn:[{
 						name:disableAutoLoadFeeds,
 						stage:1,
-						fire:"trigger",
-						trigger:{"@":"scroll"}
-					}]
-				}],
-				login:true,
-				page:"feed"
-			},{
-				text:"##去除状态新鲜事上的链接",
-				ctrl:[{
-					id:"removeStatusFeedLink",
-					value:false,
-					fn:[{
-						name:removeStatusFeedLink,
-						stage:1,
 						fire:true,
 					}]
 				}],
 				login:true,
-				page:"feed,profile"
+				page:"feed"
 			},{
 				text:"##在新鲜事中标记在线好友",
 				ctrl:[{
@@ -3804,7 +3791,7 @@ function main(savedOptions) {
 						name:markOnlineFriend,
 						stage:1,
 						fire:true,
-						trigger:{"ul#feedHome":"DOMNodeInserted"}
+						trigger:{".feed-list":"DOMNodeInserted"}
 					}]
 				}],
 				login:true,
@@ -5405,13 +5392,13 @@ function $page(category,url) {
 		club:"/club\\.renren\\.com/",	// 论坛
 		pages:"/page\\.renren\\.com/",	// 公共主页
 		status:"/status\\.renren\\.com/|#//status/",	// 状态
-		photo:"/photo\\.renren\\.com/photo/sp/|/photo\\.renren\\.com/photo/[0-9]+/photo-|/page\\.renren\\.com/[^/]+/photo/",	// 照片
-		album:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|/photo/album\\?|photo\\.renren\\.com/photo/ap/",	// 相册
+		photo:"/photo\\.renren\\.com/photo/sp/|/photo\\.renren\\.com/photo/[0-9]+/photo-|/page\\.renren\\.com/[^/]+/photo/|event\\.renren\\.com/event/[0-9]+/[0-9]+/photo/[0-9]+",	// 照片
+		album:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|/photo/album\\?|photo\\.renren\\.com/photo/ap/|event\\.renren\\.com/event/[0-9]+/photos|event\\.renren\\.com/event/[0-9]+/stars",	// 相册
 		friend:"/friend\\.renren\\.com/",	// 好友
 		share:"/share\\.renren\\.com/|#//share/",	// 分享
 		act:"/act\\.renren\\.com/",	// 活动
 		request:"/req\\.renren\\.com/",	// 请求
-		searchEx:"/browse\\.renren\\.com/searchEx\\.do"	// 搜索结果
+		searchEx:"/browse\\.renren\\.com/searchEx\\.do",	// 搜索结果
 	};
 	if(!url) {
 		url=XNR.url;
@@ -5869,14 +5856,20 @@ function $feedType(feed) {
 					return "photo";
 				}
 			case 8:
-				// 收到礼物:801
+				// 收到礼物:801, 收到活动礼物(?):802
 				return "gift";
 			case 15:
 				// 看过电影:1502
 				return "movie";
 			case 18:
-				// 成为vip:1801
-				return "vip";
+				// 成为vip:1801, 更换主页装扮:1804, 上传音乐:1805, 更换大头贴:1808
+				if(ntype==1805) {
+					return "music";
+				} else if(ntype==1808) {
+					return "profile";
+				} else {
+					return "vip";
+				}
 			case 20:
 				// 在公共主页留言:2001, 成为公共主页好友:2002, 分享公共主页日志:2003, 分享公共主页图片:2004, 分享公共分享链接:2005, 分享公共分享视频:2006, 公共主页发状态:2008, 公共主页发日志:2012, 公共主页发照片:2013, 公共主页改头像:2015, 公共主页发回复:2016, 分享公共主页:2017, 情侣空间发状态:2024, 情侣空间发日志:2025, 情侣空间发照片:2026
 				if(ntype>=2024 && ntype<=2026) {
@@ -5893,6 +5886,9 @@ function $feedType(feed) {
 			case 27:
 				// 线上活动:2701
 				return "event";
+			case 28:
+				// 等级提升:2801
+				return "levelup";
 			case 80:
 				// 各类商业活动？
 				// 团购：8002
@@ -5957,7 +5953,7 @@ function $feedType(feed) {
 		"movie":	{l:/\/movie\.(xiaonei|renren)\.com\//},
 		"connect":	{l:/\/www\.connect\.renren\.com\//},
 		"friend":	{t:/^[和、][\s\S]*成为了好友。/},
-		"vip":		{t:/^更换了主页模板皮肤|^更换了主页装扮|^成为了人人网[\s\S]*VIP会员特权|^收到好友赠送的[\s\S]*VIP会员特权|^开启了人人网VIP个性域名/},
+		"vip":		{t:/^更换了主页模板皮肤|^更换了主页装扮|^成为了人人网[\s\S]*VIP会员特权|^收到好友赠送的[\s\S]*VIP会员特权|^开启了人人网VIP个性域名|^更换了大头贴头像/},
 		"music":	{t:/^上传了音乐/},
 		"poll":		{l:/\/abc\.renren\.com\//},
 		"group":	{l:/\/group\.renren\.com\//},
@@ -6011,19 +6007,29 @@ function $pager(pager) {
 	if(pager.exist() && pager.find("li").exist()) {
 		try {
 			curpage=parseInt(pager.find("ol.pagerpro li.current a").text())-1;
-			var p=pager.clone();
-			p.find("ol.pagerpro,ul").remove();
-			var text=p.text().replace(/\s/g,"");
-			var total=parseInt(/共([0-9]+)/.exec(text)[1])-1;
-			if(curpage==0) {
-				// 如果当前为第一页，则后一个数值要么是每页项目数，要么是项目总数
-				var ipp=parseInt(/[0-9]+-([0-9]+)/.exec(text)[1]);
-			} else {
-				// 否则前curpage个页面一共有f个项目，可以算出每页项目数
-				var f=parseInt(/([0-9]+)-[0-9]+/.exec(text)[1])-1;
-				var ipp=f/curpage;
+			var p=pager.find("ol.pagerpro").get();
+			for(var i=0;i<p.childNodes.length;i++) {
+				if(p.childNodes[i].nodeType==8) {
+					if(/共条(\d+)/.test(p.childNodes[i].textContent)) {
+						lastpage=parseInt(RegExp.$1)-1;
+					}
+				}
 			}
-			lastpage=parseInt(total/ipp);
+			if(lastpage<=0) {
+				p=pager.clone();
+				p.find("ol.pagerpro,ul").remove();
+				var text=p.text().replace(/\s/g,"");
+				var total=parseInt(/共([0-9]+)/.exec(text)[1])-1;
+				if(curpage==0) {
+					// 如果当前为第一页，则后一个数值要么是每页项目数，要么是项目总数
+					var ipp=parseInt(/[0-9]+-([0-9]+)/.exec(text)[1]);
+				} else {
+					// 否则前curpage个页面一共有f个项目，可以算出每页项目数
+					var f=parseInt(/([0-9]+)-[0-9]+/.exec(text)[1])-1;
+					var ipp=f/curpage;
+				}
+				lastpage=parseInt(total/ipp);
+			}
 		} catch(ex) {
 			$error("$pager",ex);
 		}
@@ -6090,12 +6096,8 @@ PageKit.prototype={
 		for(var i=0;i<o.length;i++) {
 			var selector=o[i];
 			if(typeof selector=="string") {
-				if(selector=="@") {
-					this.nodes=this.nodes.concat([window]);
-				} else {
-					// CSS选择语句
-					this.nodes=this.nodes.concat(Array.prototype.slice.call(document.querySelectorAll(selector)));
-				}
+				// CSS选择语句
+				this.nodes=this.nodes.concat(Array.prototype.slice.call(document.querySelectorAll(selector)));
 			} else if(selector.nodeType) {
 				// DOM节点
 				this.nodes=this.nodes.concat(Array(selector));
