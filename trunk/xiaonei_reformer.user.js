@@ -2079,9 +2079,7 @@ function showFullSizeImage(evt,indirect) {
 						thumbnail=t.style.backgroundImage.replace(/^url\("?|"?\);?$/g,"");
 					}
 				} else {
-					if(t.className!="icon") {
-						thumbnail=t.src;
-					}
+					thumbnail=t.src;
 				}
 				break;
 			case "SPAN":;	// 同DIV
@@ -2097,7 +2095,7 @@ function showFullSizeImage(evt,indirect) {
 				}
 				break;
 		}
-		if(!thumbnail || thumbnail.match(/\/large|_large|large_|\/photos\/0\/0\/|\/page_pic\/|\/homeAd\/|\/xnapp\/vip\//)) {
+		if(!thumbnail || thumbnail.match("/large|_large|large_|/photos/0/0/|/page_pic/|/homeAd/|/[sa]\\.xnimg\\.cn/")) {
 			// 大图/默认空白头像/公共主页图像
 			if($allocated("image_viewer")) {
 				if(t!=$alloc("image_viewer").viewer && t!=$alloc("image_viewer").image) {
@@ -2233,7 +2231,7 @@ function showFullSizeImage(evt,indirect) {
 		}
 		
 		// 一般图片或被圈相片或公共主页上的图片
-		if($page("photo",pageURL) && pageURL.match("getphoto\\.do|gettagphoto\\.do|/photo\\.renren\\.com/photo/[0-9]+/photo-[0-9]+|/page\\.renren\\.com/.*/photo/|photo\\.renren\\.com/photo/sp/")) {
+		if($page("photo",pageURL) && pageURL.match("getphoto\\.do|gettagphoto\\.do|/photo\\.renren\\.com/photo/[0-9]+/photo-[0-9]+|/page\\.renren\\.com/.*/photo/|photo\\.renren\\.com/photo/sp/|lover\\.renren\\.com/photo/")) {
 			// 早期图片 http://fm100.img.xiaonei.com/pic001/20070707/11/12/13/H[0-9A-Z]+.jpg
 			if(thumbnail.match("\\.img\\.xiaonei\\.com/pic[0-9]{3}/[0-9]{8}/[0-9]{2}/[0-9]{2}/[0-9]{2}/H[0-9A-Z]{9}\\.jpg")) {
 				imgId=imgId.replace(/H([0-9A-Z]{9}\.jpg)$/,"L$1");
@@ -5393,8 +5391,8 @@ function $page(category,url) {
 		club:"/club\\.renren\\.com/",	// 论坛
 		pages:"/page\\.renren\\.com/",	// 公共主页
 		status:"/status\\.renren\\.com/|#//status/",	// 状态
-		photo:"/photo\\.renren\\.com/getphoto\\.do|/photo\\.renren\\.com/gettagphoto\\.do|/photo\\.renren\\.com/photo/sp/|/photo\\.renren\\.com/photo/[0-9]+/photo-|/page\\.renren\\.com/[^/]+/photo/|event\\.renren\\.com/event/[0-9]+/[0-9]+/photo/[0-9]+",	// 照片
-		album:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|/photo/album\\?|photo\\.renren\\.com/photo/ap/|event\\.renren\\.com/event/[0-9]+/photos|event\\.renren\\.com/event/[0-9]+/stars",	// 相册
+		photo:"/photo\\.renren\\.com/getphoto\\.do|/photo\\.renren\\.com/gettagphoto\\.do|/photo\\.renren\\.com/photo/sp/|/photo\\.renren\\.com/photo/[0-9]+/photo-|/page\\.renren\\.com/[^/]+/photo/|event\\.renren\\.com/event/[0-9]+/[0-9]+/photo/[0-9]+|lover\\.renren\\.com/photo/",	// 照片
+		album:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|/photo/album\\?|photo\\.renren\\.com/photo/ap/|event\\.renren\\.com/event/[0-9]+/photos|event\\.renren\\.com/event/[0-9]+/stars|lover\\.renren\\.com/album/",	// 相册
 		friend:"/friend\\.renren\\.com/",	// 好友
 		share:"/share\\.renren\\.com/|#//share/",	// 分享
 		act:"/act\\.renren\\.com/",	// 活动
@@ -5847,6 +5845,14 @@ function $feedType(feed) {
 			case 4:
 				// 赞助商活动广告(？):401
 				return "ads";
+			case 5:
+				// 修改头像:501, 状态:502
+				if(ntype==501) {
+					return "profile";
+				} else if(ntype==502) {
+					return "status";
+				}
+				break;
 			case 6:
 				// 发表日志:601
 				return "blog";
@@ -5902,12 +5908,6 @@ function $feedType(feed) {
 			case 81:
 				// 连接网站:8185
 				return "connect";
-		}
-		// 修改头像:501, 状态:502
-		if(ntype==501) {
-			return "profile";
-		} else if(ntype==502) {
-			return "status";
 		}
 	}
 	
