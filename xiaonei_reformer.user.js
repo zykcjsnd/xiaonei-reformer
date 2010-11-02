@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.2.20101101
-// @miniver        379
+// @version        3.2.2.20101102
+// @miniver        380
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -1345,10 +1345,10 @@ function customizePageLayout(layouts) {
 };
 
 // 增加更多表情
-function addExtraEmotions(eEmo,fEmo) {
+function addExtraEmotions(eEmo,fEmo,aEmo) {
 	// 状态表情列表
 	var emList1={
-		//	":)":		{t:"开心",			s:"/imgpro/icons/statusface/1.gif"},
+	//	":)":		{t:"开心",			s:"/imgpro/icons/statusface/1.gif"},
 		"(微笑)":	{t:"微笑",			s:"/imgpro/icons/statusface/1.gif"},
 		"@_@":		{t:"嘴唇",			s:"/imgpro/icons/statusface/2.gif"},
 	//	"(k)":		{t:"嘴唇",			s:"/imgpro/icons/statusface/2.gif"},
@@ -1409,33 +1409,23 @@ function addExtraEmotions(eEmo,fEmo) {
 		"(ice)":	{t:"冰棍儿",		s:"/imgpro/icons/statusface/ice-cream.gif"},
 		"(gs)":		{t:"园丁",			s:"/imgpro/icons/statusface/growing-sapling.gif"},
 		"(ga)":		{t:"园丁",			s:"/imgpro/icons/statusface/gardener.gif"},
-		"(hp)":		{t:"杰克灯",		s:"/imgpro/icons/statusface/halloween-pumpkin.gif"},
-		"(ngd)":	{t:"南瓜灯",		s:"/imgpro/icons/statusface/pumpkin.gif"},
-		"(hg)":		{t:"小鬼",			s:"/imgpro/icons/statusface/halloween-ghost.gif"},
-		"(xg)":		{t:"小鬼",			s:"/imgpro/icons/statusface/ghost.gif"},
 		"(yt)":		{t:"光棍油条",		s:"/imgpro/icons/statusface/youtiao.gif"},
 		"(bz)":		{t:"光棍包子",		s:"/imgpro/icons/statusface/baozi.gif"},
 		"(wr)":		{t:"枯萎玫瑰",		s:"/imgpro/icons/statusface/wilt-rose.gif"},
 		"(bh)":		{t:"破碎的心",		s:"/imgpro/icons/statusface/broken-heart.gif"},
 		"(4)":		{t:"4周年",			s:"/imgpro/icons/statusface/4-years.gif"},
 		"(cake)":	{t:"周年蛋糕",		s:"/imgpro/icons/statusface/4-birthday.gif"},
-	//	"(虎年)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
-		"(tiger)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
 		"(ny)":		{t:"布老虎",		s:"/imgpro/icons/statusface/tiger2.gif"},
 		"(boy)":	{t:"男孩",			s:"/imgpro/icons/statusface/boy.gif"},
 		"(girl)":	{t:"女孩",			s:"/imgpro/icons/statusface/girl.gif"},
 		"(earth)":	{t:"地球",			s:"/imgpro/icons/statusface/wwf-earth.gif"},
 		"(earth1)":	{t:"地球",			s:"/imgpro/icons/statusface/earth.gif"},
 		"(ty)":		{t:"汤圆",			s:"/imgpro/icons/statusface/tang-yuan.gif"},
-		"(nrj)":	{t:"女人节",		s:"/imgpro/icons/statusface/lipstick.gif"},
-		"(zsj)":	{t:"植树节",		s:"/imgpro/icons/statusface/trees.gif"},
-		"(zg)":		{t:"整蛊作战",		s:"/imgpro/icons/statusface/tomato.png"},
 		"(rainy)":	{t:"雨",			s:"/imgpro/icons/statusface/rainy.gif"},
 	//	"(rain)":	{t:"雨",			s:"/imgpro/icons/statusface/rainy.gif"},
 		"(jq)":		{t:"坚强",			s:"/imgpro/icons/statusface/quake.gif"},
 		"(read)":	{t:"读书日",		s:"/imgpro/icons/statusface/reading.gif"},
 		"(ct)":		{t:"锄头",			s:"/imgpro/icons/statusface/chutou.gif"},
-		"(jz)":		{t:"捐建小学",		s:"/imgpro/icons/statusface/grass.gif"},
 		"(bbt)":	{t:"棒棒糖",		s:"/imgpro/icons/statusface/bbt.gif"},
 		"(xr)":		{t:"儿时回忆",		s:"/imgpro/icons/statusface/sm.gif"},
 		"(qf)":		{t:"祈福",			s:"/imgpro/icons/statusface/candle.gif"},
@@ -1448,23 +1438,19 @@ function addExtraEmotions(eEmo,fEmo) {
 		"(hzd)":	{t:"划重点",		s:"/imgpro/icons/statusface/huazhongdian.gif"},
 		"(dm)":		{t:"点名",			s:"/imgpro/icons/statusface/dianming.gif"},
 		"(yb)":		{t:"月饼",			s:"/imgpro/icons/statusface/mooncake.gif"},
-		"(草莓)":	{t:"愉悦一刻 ",		s:"/imgpro/icons/statusface/mzy.gif"},
 		"(bs)":		{t:"秋高气爽",		s:"/imgpro/icons/statusface/bluesky.gif"},
 		"(ly)":		{t:"落叶",			s:"/imgpro/icons/statusface/autumn-leaves.gif"},
 		"(cy2)":	{t:"登高",			s:"/imgpro/icons/statusface/09double9.gif"},
 		"(cy3)":	{t:"饮菊酒",		s:"/imgpro/icons/statusface/09double9-2.gif"},
 		"(dx)":		{t:"雪人",			s:"/imgpro/icons/statusface/snowman.gif"},
-		"(abao)":	{t:"功夫熊猫",		s:"/imgpro/icons/statusface/panda.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
 		"(yc)":		{t:"黄牌",			s:"/imgpro/icons/new-statusface/yellowCard.gif"},
-		"(nuomi)":	{t:"糯米",			s:"/imgpro/icons/new-statusface/nuomi2.gif"},
 		"(^)":		{t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
 		"(h)":		{t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		"(r)":		{t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
 		"(w)":		{t:"宇航员",		s:"/imgpro/icons/ico_spacewalker.gif"},
-		"(LG)":		{t:"LG棒棒糖",		s:"/imgpro/activity/lg-lolipop/faceicon_2.gif"},
 		"(i)":		{t:"电灯泡",		s:"/img/ems/bulb.gif"},
 		"(yeah)":	{t:"哦耶",			s:"/img/ems/yeah.gif"},
 		"(good)":	{t:"牛",			s:"/img/ems/good.gif"},
@@ -1483,17 +1469,25 @@ function addExtraEmotions(eEmo,fEmo) {
 		"(qx2)":	{t:"七夕",			s:"/imgpro/icons/statusface/qixi2.gif"},
 		"(cy1)":	{t:"重阳节",		s:"/imgpro/icons/statusface/09double9-3.gif"},
 		"(dad)":	{t:"父亲节",		s:"/imgpro/icons/statusface/love-father.gif"},
+		"(hp)":		{t:"杰克灯",		s:"/imgpro/icons/statusface/halloween-pumpkin.gif"},
+		"(ngd)":	{t:"南瓜灯",		s:"/imgpro/icons/statusface/pumpkin.gif"},
+		"(hg)":		{t:"小鬼",			s:"/imgpro/icons/statusface/halloween-ghost.gif"},
+		"(xg)":		{t:"小鬼",			s:"/imgpro/icons/statusface/ghost.gif"},
 		"(hh)":		{t:"圣诞花环",		s:"/imgpro/icons/statusface/garland.gif"},
 		"(stick)":	{t:"拐杖糖",		s:"/imgpro/icons/statusface/stick.gif"},
 		"(socks)":	{t:"圣诞袜",		s:"/imgpro/icons/statusface/stocking.gif"},
+		"(nrj)":	{t:"女人节",		s:"/imgpro/icons/statusface/lipstick.gif"},
+		"(zsj)":	{t:"植树节",		s:"/imgpro/icons/statusface/trees.gif"},
 		"(hjr)":	{t:"世界环境日",	s:"/imgpro/icons/statusface/earthday.gif"},
+	//	"(虎年)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
+		"(tiger)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
 		"(eclipse)":{t:"日全食",		s:"/imgpro/icons/statusface/eclipse.gif"},
 		"(gk)":		{t:"高考",			s:"/imgpro/icons/statusface/gaokao.gif"},
 		"(pass)":	{t:"CET必过",		s:"/imgpro/icons/statusface/cet46.gif"},
 		"(qgz)":	{t:"人人求工作",	s:"/imgpro/icons/statusface/offer.gif"},
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
 		"(kxl)":	{t:"开学啦",		s:"/imgpro/icons/statusface/kaixuela-wide.gif",w:true},
-		"(bl)":		{t:"冰露",			s:"/imgpro/icons/statusface/ice.gif"},
+		"(jz)":		{t:"捐建小学",		s:"/imgpro/icons/statusface/grass.gif"},
 	};
 	var fEmList={
 		"(mj)":		{t:"迈克尔.杰克逊",	s:"/imgpro/icons/statusface/mj.gif"},
@@ -1506,8 +1500,17 @@ function addExtraEmotions(eEmo,fEmo) {
 		"(ta)":		{t:"博派",			s:"/imgpro/icons/statusface/Transformers-Autobot.gif"},
 		"(td)":		{t:"狂派",			s:"/imgpro/icons/statusface/Transformers-Decepticon.gif"},
 	};
+	var aEmList={
+		"(bl)":		{t:"冰露",			s:"/imgpro/icons/statusface/ice.gif"},
+		"(zg)":		{t:"整蛊作战",		s:"/imgpro/icons/statusface/tomato.png"},
+		"(abao)":	{t:"功夫熊猫",		s:"/imgpro/icons/statusface/panda.gif"},
+		"(nuomi)":	{t:"糯米",			s:"/imgpro/icons/new-statusface/nuomi2.gif"},
+		"(草莓)":	{t:"愉悦一刻 ",		s:"/imgpro/icons/statusface/mzy.gif"},
+		"(愉悦一刻)":{t:"果粒奶优,愉悦一刻",s:"/imgpro/icons/statusface/mzynew.gif"},
+		"(LG)":		{t:"LG棒棒糖",		s:"/imgpro/activity/lg-lolipop/faceicon_2.gif"},
+	};
 	// 日志/照片回复表情列表，直接与序号/URL对应
-	emList2={
+	var emList2={
 		"(不)":1,
 		"(谄笑)":2,
 		"(吃饭)":3,
@@ -1551,6 +1554,11 @@ function addExtraEmotions(eEmo,fEmo) {
 	if(fEmo) {
 		for(var e in fEmList) {
 			emList1[e]=fEmList[e];
+		}
+	}
+	if(aEmo) {
+		for(var e in aEmList) {
+			emList1[e]=aEmList[e];
 		}
 	}
 
@@ -4123,7 +4131,7 @@ function main(savedOptions) {
 		],
 		"辅助功能":[
 			{
-				text:"##启用隐藏表情项##启用节日事件表情##启用人物表情",
+				text:"##启用隐藏表情项##启用节日事件表情##启用人物表情##启用商业广告表情",
 				ctrl:[
 					{
 						id:"addExtraEmotions",
@@ -4131,7 +4139,7 @@ function main(savedOptions) {
 						fn:[{
 							name:addExtraEmotions,
 							stage:2,
-							args:["@eventEmo","@figureEmo"],
+							args:["@eventEmo","@figureEmo","@advEmo"],
 							fire:true
 						}],
 					},{
@@ -4141,6 +4149,10 @@ function main(savedOptions) {
 					},{
 						type:"subcheck",
 						id:"figureEmo",
+						value:false
+					},{
+						type:"subcheck",
+						id:"advEmo",
 						value:false
 					}
 				],
@@ -5898,9 +5910,11 @@ function $feedType(feed) {
 				// 等级提升:2801
 				return "levelup";
 			case 80:
-				// 团购/品牌调查：8002，保持联络：8006
+				// 团购/品牌调查:8002，保持联络:8006，成为好友:8007
 				if(ntype==8006) {
 					return "contact";
+				} else if(ntype==8007) {
+					return "friend";
 				} else {
 					// 其余都是各类商业活动？
 					return "ads";
