@@ -1709,6 +1709,11 @@ function showImagesInOnePage() {
 		var baseURL="http://event.renren.com"+document.location.pathname+"?curpage=%%";
 		var album=$("div.photo-list");
 		var items=$();	// 没有总数
+	} else if ($(".share-photo-main>.photo-list").exist()) {
+		// 从分享相册新鲜事的相册封面照片进入的
+		var baseURL="http://share.renren.com"+document.location.pathname+"?curpage=%%";
+		var album=$("div.photo-list");
+		var items=$(".number-photo");
 	} else {
 		var baseURL="http://photo.renren.com/getalbum.do?id=##&owner=@@&curpage=%%&t=**";
 		var album=$("div.photo-list");
@@ -1791,14 +1796,16 @@ function showImagesInOnePage() {
 			}
 			try {
 				if($("#single-column table.photoList").exist()) {
-					var photoList=/(<table .*?class="photoList".*?>[\s\S]+?<\/table>)/.exec(res)[1];
+					var photoList=/(<table\s[^>]*?class="photoList"[^>]*?>[\s\S]+?<\/table>)/.exec(res)[1];
 				} else if(XNR.url.indexOf("/photo/ap/")!=-1) {
-					var photoList=/<div .*?class="photo-list clearfix".*?>([\s\S]+?)<\/div>/.exec(res)[1];
+					var photoList=/<div\s[^>]*?class="photo-list clearfix"[^>]*?>([\s\S]+?)<\/div>/.exec(res)[1];
 				} else if($(".all-photos>.photo-list").exist()) {
-					var photoList=/<div .*?class="photo-list".*?>\s*(<ul>[\S\s]+?<\/ul>)/.exec(res)[1];
+					var photoList=/<div\s[^>]*?class="photo-list"[^>]*?>\s*(<ul>[\s\S]+?<\/ul>)/.exec(res)[1];
+				} else if($(".share-photo-main>.photo-list").exist()) {
+					var photoList=/<div\s[^>]*?class="photo-list clearfix"[^>]*?>\s*(<ul>[\S\s]+?<\/ul>)/.exec(res)[1];
 				} else {
-					var photoList=/<div .*?class="photo-list clearfix".*?>([\s\S]+?)<\/div>/.exec(res)[1];
-					var storyList=/<!--start storyList mode-->\s*<div .*?class="story-pic clearfix".*?>([\s\S]+?)<\/div>\s*<!--story mode end-->/.exec(res)[1];
+					var photoList=/<div\s[^>]*?class="photo-list clearfix"[^>]*?>([\s\S]+?)<\/div>/.exec(res)[1];
+					var storyList=/<!--start storyList mode-->\s*<div\s[^>]*?class="story-pic clearfix"[^>]*?>([\s\S]+?)<\/div>\s*<!--story mode end-->/.exec(res)[1];
 				}
 				var pos;
 				if(page>parseInt(album.child(-1).attr("page"))) {
@@ -1837,6 +1844,9 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 	var downLink=$node("a").attr({"style":'background-image:none;padding-left:10px;padding-right:10px',"href":'javascript:;'}).text("下载当前页图片");
 	if($(".function-nav.bottom-operate ul.nav-btn").exist()) {
 		$(".function-nav.bottom-operate ul.nav-btn").eq(-1).add($node("li").attr("class","pipe").text("|")).add($node("li").add(downLink));
+	} else if($(".share-operations").exist()) {
+		// 从分享相册新鲜事中的相册封面图片进入
+		$(".share-operations").add($node("span").attr("class","pipe").text("|")).add(downLink);
 	} else {
 		$(".pager-bottom,.pagerbottom").add(downLink.css("lineHeight","22px"),0);
 	}
@@ -1984,7 +1994,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 								}
 							} else {
 								for(var i=0;i<album.unknown.length;i++) {
-									html+="<a href=\""+album.unknown[i]+"\">"+album.unknown[i]+"</a>";
+									html+="<a href=\""+album.unknown[i]+"\">"+album.unknown[i]+"</a><br/>";
 								}
 							}
 							html+="<p/>";
@@ -2227,6 +2237,17 @@ function showFullSizeImage(evt,indirect) {
 			pageURL="http://photo.renren.com/getalbumprofile.do?owner="+/id=(\d+)/.exec(pageURL)[1];
 		}
 
+		if($page("share",pageURL)) {
+			if(pageURL.indexOf("ref=newsfeed")>0) {
+				// 分享相册新鲜事的相册封面
+				_loadImage("album",false,evt,imgId,pageURL,imageDate);
+			} else if(pageURL.match("photoId=")) {
+				// 从分享相册新鲜事中的相册封面图片进入
+				_loadImage("image",false,evt,imgId,pageURL,imageDate);
+			}
+			return;
+		}
+
 		// 相册封面图片或头像图片
 		if($page("album",pageURL)) {
 			if(pageURL.match("page.renren.com") || pageURL.match("/photo/ap/")) {
@@ -2381,7 +2402,7 @@ function showFullSizeImage(evt,indirect) {
 			try {
 				// 搜索ID匹配的大图
 				var res=null;
-				var reg=new RegExp("<a .*?href=\"(.*?)\".*?>[^<]*?<img (.*?src=\"http://.+?large_.*?"+imgId+"\"[^>]*?)>","ig");
+				var reg=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://[^\"]+?large_.*?"+imgId+"\"[^>]*?)>","ig");
 				while(res=reg.exec(html)) {
 					if(res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
 						res=/src="(.*?)"/.exec(res[2])[1];
@@ -2393,27 +2414,27 @@ function showFullSizeImage(evt,indirect) {
 				}
 				// 搜索ID匹配的图片
 				res=null;
-				reg=new RegExp("<a .*?href=\"(.*?)\".*?>[^<]*?<img (.*?src=\"http://.+?"+imgId+"\"[^>]*?)>","ig");
+				reg=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://[^\"]+?"+imgId+"\"[^>]*?)>","ig");
 				while(res=reg.exec(html)) {
-					if(res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
+					if(!res[2].match("\"http://[^\"]+tiny_") && res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
 						res=res[1];
 						break;
 					}
 				}
 				// 当ID不匹配且为搜索小头像时，搜索时间标记匹配的图片
 				if(!res && imgDate) {
-					reg=new RegExp("<a .*?href=\"(.*?)\".*?>[^<]*?<img (src=\"http://.*?/"+imgDate+"/.*?\"[^>]*?)>","ig");
+					reg=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://[^\"]+?/"+imgDate+"/.*?\"[^>]*?)>","ig");
 					while(res=reg.exec(html)) {
-						if(res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
+						if(!res[2].match("\"http://[^\"]+tiny_") && res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
 							res=res[1];
 							break;
 						}
 					}
 					// 还没有的话，只限定日期试试。误差较大，但愿能准确匹配
 					if(!res) {
-						reg=new RegExp("<a .*?href=\"(.*?)\".*?>[^<]*?<img (src=\"http://.*?/"+/[0-9]{8}/.exec(imgDate)+"/.*?\".*?)>","ig");
+						reg=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://.*?/"+/[0-9]{8}/.exec(imgDate)+"/.*?\"[^>]*?)>","ig");
 						while(res=reg.exec(html)) {
-							if(res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
+							if(!res[2].match("\"http://[^\"]+tiny_") && res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
 								res=res[1];
 								break;
 							}
@@ -4252,7 +4273,7 @@ function main(savedOptions) {
 						fire:true
 					}]
 				}],
-				page:"album"
+				page:"album,share"
 			},{
 				text:"##允许下载相册图片####仅生成图片链接##替换模式##",
 				ctrl:[
@@ -4282,7 +4303,7 @@ function main(savedOptions) {
 					}
 				],
 				master:0,
-				page:"album"
+				page:"album,share"
 			},{
 				text:"##当鼠标在照片上时隐藏圈人框##",
 				ctrl:[
@@ -5391,7 +5412,7 @@ function $node(name) {
  *   [String]category:页面类别，可能的值参考函数内pages常量
  *   [String]url:默认为当前页面地址
  * 返回值
- *   [Boolean]:属于返回true，否则false。如果category非法，返回true。
+ *   [Boolean]:属于返回true，否则false。如果category非法，返回false。
  */
 function $page(category,url) {
 	const pages={
@@ -5413,7 +5434,7 @@ function $page(category,url) {
 	if(!url) {
 		url=XNR.url;
 	}
-	return pages[category]==null || url.match(pages[category])!=null;
+	return pages[category]!=null && url.match(pages[category])!=null;
 };
 
 /*
