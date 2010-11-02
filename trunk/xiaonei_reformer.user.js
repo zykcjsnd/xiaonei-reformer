@@ -5775,7 +5775,7 @@ function $error(func,error) {
 	if(typeof func=="function") {
 		func=/function (.*?)\(/.exec(func.toString())[1];
 	}
-	var msg;
+	var msg="";
 	if(typeof error=="object") {
 		if(error) {
 			if(error.name!=null) {
