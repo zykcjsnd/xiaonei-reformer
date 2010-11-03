@@ -2117,7 +2117,7 @@ function showFullSizeImage(evt,indirect) {
 				break;
 		}
 		if(!thumbnail || thumbnail.match("/large|_large|large_|/photos/0/0/|/page_pic/|/homeAd/|/[sa]\\.xnimg\\.cn/")) {
-			// 大图/默认空白头像/公共主页图像
+			// 大图/默认空白头像/公共主页图像/网站自身图片
 			if($allocated("image_viewer")) {
 				if(t!=$alloc("image_viewer").viewer && t!=$alloc("image_viewer").image) {
 					// 不是在显示的图像上
@@ -2128,7 +2128,6 @@ function showFullSizeImage(evt,indirect) {
 			}
 			return;
 		}
-
 		imgId=thumbnail.substring(thumbnail.lastIndexOf("_"));
 
 		// 早期的图片（http://fm071.img.renren.com/pic001/20070201/2002/H[0-9]+[A-Z]+.jpg），改imgId
@@ -2194,9 +2193,11 @@ function showFullSizeImage(evt,indirect) {
 			return;
 		}
 
-		// 公共主页上其他公共主页的链接
-		if(pageURL.match("/page\\.renren\\.com/[^/]+$")) {
-			_loadImage("album",false,evt,imgId,"http://page.renren.com/photo/album?owner="+/page\.renren\.com\/([0-9]+)/.exec(pageURL)[1]+"&h=1");
+		// 公共主页头像
+		if(thumbnail.match("tiny_|head_") && /\/page\.renren\.com\/([0-9]{9})\?/.test(pageURL)) {
+			pageURL="http://page.renren.com/"+RegExp.$1+"/album?head";
+			imageDate=/\/([0-9]{8}\/[0-9]+)\//.exec(thumbnail)[1];
+			_loadImage("album",false,evt,imgId,pageURL,imageDate);
 			return;
 		}
 
@@ -2211,6 +2212,7 @@ function showFullSizeImage(evt,indirect) {
 			_loadImage("image",false,evt,imgId,pageURL);
 			return;
 		}
+
 		// 非常古老的头像（http://head.xiaonei.com/photos/20070201/1111/head[0-9]+.jpg），其head后的[0-9]+可能有变，以时间为准
 		if(thumbnail.match(/head\.xiaonei\.com\/photos\/[0-9]{8}\/[0-9]+\/head[0-9]+\./)) {
 			imageDate=/photos\/([0-9]{8}\/[0-9]+)/.exec(thumbnail)[1];
@@ -2227,10 +2229,10 @@ function showFullSizeImage(evt,indirect) {
 				} catch(ex) {
 				}
 			}
-			// 公共主页目前还在6000xxxxx阶段，以后可能会更多
-			if(/profile\.do\?id=6000\d{5}/.test(pageURL)) {
+			// 公共主页目前还在600xxxxxx阶段，以后可能会更多
+			if(/profile\.do\?id=600\d{6}/.test(pageURL)) {
 				// 公共主页头像相册
-				pageURL="http://page.renren.com/photo/album?h=1&owner="+/id=(\d+)/.exec(pageURL)[1];
+				pageURL="http://page.renren.com/"+/id=(\d+)/.exec(pageURL)[1]+"/album?head";
 			} else {
 				// 一般头像相册
 				pageURL="http://photo.renren.com/getalbumprofile.do?owner="+/id=(\d+)/.exec(pageURL)[1];
@@ -2253,7 +2255,7 @@ function showFullSizeImage(evt,indirect) {
 
 		// 相册封面图片或头像图片
 		if($page("album",pageURL)) {
-			if(pageURL.match("page.renren.com") || pageURL.match("/photo/ap/")) {
+			if(pageURL.match("page\\.renren\\.com") || pageURL.match("/photo/ap/")) {
 				// 公共主页相册和外链地址相册不会记入最近来访。2010/07/01测试
 				_loadImage("album",false,evt,imgId,pageURL,imageDate);
 			} else {
