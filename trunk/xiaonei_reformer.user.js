@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.2.20101102
-// @miniver        380
+// @version        3.2.2.20101103
+// @miniver        381
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -47,8 +47,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.2.20101102";
-XNR.miniver=380;
+XNR.version="3.2.2.20101103";
+XNR.miniver=381;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1844,6 +1844,9 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 	var downLink=$node("a").attr({"style":'background-image:none;padding-left:10px;padding-right:10px',"href":'javascript:;'}).text("下载当前页图片");
 	if($(".function-nav.bottom-operate ul.nav-btn").exist()) {
 		$(".function-nav.bottom-operate ul.nav-btn").eq(-1).add($node("li").attr("class","pipe").text("|")).add($node("li").add(downLink));
+	} else if($(".function-nav.photolist-pager").exist()) {
+		// 外链相册
+		$node("div").add(downLink).move("before",$(".function-nav.photolist-pager"));
 	} else if($(".share-operations").exist()) {
 		// 从分享相册新鲜事中的相册封面图片进入
 		$(".share-operations").add($node("span").attr("class","pipe").text("|")).add(downLink);
@@ -5930,7 +5933,7 @@ function $feedType(feed) {
 				// 等级提升:2801
 				return "levelup";
 			case 80:
-				// 团购/品牌调查:8002，保持联络:8006，成为好友:8007
+				// 团购/品牌调查等等活动:8002，保持联络:8006，成为好友:8007
 				if(ntype==8006) {
 					return "contact";
 				} else if(ntype==8007) {
