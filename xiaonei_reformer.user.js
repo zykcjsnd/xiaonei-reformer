@@ -543,7 +543,9 @@ function disableAutoLoadFeeds() {
 		"if(window._eventListeners&&window._eventListeners.scroll){"+
 			"var e=window._eventListeners.scroll;"+
 			"for(var i=0;i<e.length;i++){"+
-				"e[i].called=2"+
+				"if(e[i].toString().indexOf(\".scrollTop\")>0){"+
+					"window.removeEventListener(\"scroll\",e[i],false);"+
+				"}"+
 			"}"+
 		"}else{"+
 			"setTimeout(arguments.callee,200)"+
@@ -5903,6 +5905,12 @@ function $feedType(feed) {
 			case 8:
 				// 收到礼物:801, 收到活动礼物(?):802
 				return "gift";
+			case 10:
+				// 今日热点投票:1008
+				if(ntype==1008) {
+					return "poll";
+				}
+				break;
 			case 15:
 				// 看过电影:1502
 				return "movie";
