@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.2.20101105
-// @miniver        383
+// @version        3.2.2.20101107
+// @miniver        384
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -47,8 +47,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.2.20101105";
-XNR.miniver=383;
+XNR.version="3.2.2.20101107";
+XNR.miniver=384;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -544,13 +544,14 @@ function disableAutoLoadFeeds() {
 			"var e=window._eventListeners.scroll;"+
 			"for(var i=0;i<e.length;i++){"+
 				"if(e[i].toString().indexOf(\".scrollTop\")>0){"+
-					"window.removeEventListener(\"scroll\",e[i],false);"+
+					"window.removeEventListener(\"scroll\",e.splice(i,1)[0],false);"+
+					"return"+
 				"}"+
 			"}"+
-		"}else{"+
-			"setTimeout(arguments.callee,200)"+
 		"}"+
+		"setTimeout(arguments.callee,200)"+
 	"})()";
+	//window.newsfeed.autoLoad
 	$script(code);
 };
 
@@ -831,7 +832,7 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 
 // 定时刷新新鲜事列表
 function autoReloadFeeds(interval) {
-	const code='setInterval(function(){asyncHTMLManager.open(asyncHTMLManager.location.href)},'+parseInt(interval)*1000+')';
+	const code='setInterval(window.newsfeed.reload,'+parseInt(interval)*1000+')';
 	$script(code);
 };
 
@@ -980,6 +981,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".like-video .terminal .video-title,.like-video .combox_share dl.replies dt.digged{color:"+FCOLOR+"}",
 				"#closePublisherSkin:hover,#dressPublisherSkin:hover{background-color:"+FCOLOR+"}",
 				".pymk .comefrom,.statuscmtitem,.mincmt-diggers,.panel.bookmarks,.user-data,.friend-birthday-window .bless-msg{background-color:"+SCOLOR+"}",
+				".feed-module .category-filter menu a:hover,.news-feed-types a.news-feed-type:hover{background-color:"+BCOLOR+"}",
 			],
 			"webpager-std-min.css":[
 				".webpager ul.icon a:hover .tooltip{background-color:"+FCOLOR+"}",
@@ -2677,6 +2679,7 @@ function enableShortcutMenu(evt) {
 			"Ta的公共主页":"http://page.renren.com/home/friendspages/view?uid=@@",
 			"Ta的情侣空间ID":"http://page.renren.com/getLoverSpace?uid=@@",
 			"Ta的名片资料":"http://friend.renren.com/showcard?friendID=@@",
+			"Ta的联系方式":"http://friend.renren.com/getprofilecontact/@@",
 		};
 		var html="<ul>";
 		for(var i in pages) {
@@ -2955,14 +2958,14 @@ function showPhotoAuthorComment() {
 
 // 检查更新
 function checkUpdate(evt,checkLink,updateLink,lastCheck) {
-	var today=new Date();
-	lastCheck=new Date(lastCheck);
-	if(isNaN(lastCheck.valueOf())) {
-		$save("lastUpdate",today.valueOf());
-		lastCheck=today;
+	var today=new Date().getTime();
+	lastCheck=new Date(lastCheck).getTime();
+	if(isNaN(lastCheck)) {
+		// 数据出错？
+		lastCheck=0;
 	}
 	//一天只检查一次
-	if(!evt && (today-lastCheck)<3600000*24) {
+	if(!evt && (today-lastCheck)<86400000) {
 		return;
 	}
 	if(evt) {
@@ -2975,7 +2978,7 @@ function checkUpdate(evt,checkLink,updateLink,lastCheck) {
 				window.alert("无法检测最新版本");
 				$(evt.target).attr({disabled:null,value:"立即检查"});
 			}
-			$save("lastUpdate",today.valueOf());
+			$save("lastUpdate",today);
 			return;
 		}
 		try {
@@ -2992,7 +2995,7 @@ function checkUpdate(evt,checkLink,updateLink,lastCheck) {
 			}
 
 			$(".xnr_op #lastUpdate").text($formatDate(today));
-			$save("lastUpdate",today.valueOf());
+			$save("lastUpdate",today);
 
 			if(evt) {
 				$(evt.target).attr({disabled:null,value:"立即检查"});
@@ -3051,7 +3054,7 @@ function setParam() {
 // 导入设置
 function importConfig() {
 	try {
-		var value=JSON.parse($(".xnr_op #configuration").val());
+		var value=JSON.parse($(".xnr_op #configuration").val().replace(/\n/g,""));
 		if(typeof value!="object") {
 			throw 0;
 		}
@@ -3139,7 +3142,7 @@ function main(savedOptions) {
 	//     [Object]attr:{属性名:属性值,...}。属性。可选
 	//     [String]style:样式。可选
 	//     [Boolean]readonly:控件只读。可选
-	//     [String]format:值格式。显示时会自动转换。目前只支持"date"。
+	//     [String]format:值格式。显示时会自动转换。目前只支持"date"。注意：一旦设置了format，点击保存按钮时将*不会*保存控件的值，故仅将其用于label类型控件
 	//     [Array]fn:处理函数。可选
 	//   },
 	//   {
@@ -3592,7 +3595,7 @@ function main(savedOptions) {
 					}
 				]
 			},{
-				text:"##自动屏蔽所有应用邀请##",
+				text:"##自动将发来邀请的应用列入屏蔽名单##",
 				ctrl:[
 					{
 						id:"blockAppRequest",
@@ -4259,7 +4262,7 @@ function main(savedOptions) {
 						}]
 					},{
 						type:"info",
-						value:"访问人人网的绝大多数页面时，会利用Google Analytics功能向网站发送一些包含你浏览习惯的统计信息。如果你不想让网站获取这些统计信息，可以启用本功能。（目前只对ID最后一位是6的用户搜集这些信息）"
+						value:"访问人人网的绝大多数页面时，会利用Google Analytics功能向网站发送一些包含你浏览习惯的统计信息。如果你不想让网站获取这些统计信息，可以启用本功能。（目前只对ID最后一位是6的用户收集这些信息）"
 					}
 				]
 			},{
@@ -4389,7 +4392,7 @@ function main(savedOptions) {
 						}]
 					},{
 						type:"info",
-						value:"要想让别人看不到自己的橙名，请到“设置”->“隐私设置”->“橙名显示”中进行设置"
+						value:"要想让别人看不到自己的橙名，请到导航栏上“设置”->“隐私设置”->“橙名显示”中进行设置"
 					}
 				]
 			},{
@@ -4679,7 +4682,7 @@ function main(savedOptions) {
 					},{
 						id:"diagnosisInfo",
 						type:"edit",
-						style:"width:99%;height:230px;margin-top:5px",
+						style:"width:99%;height:230px;margin-top:5px;word-wrap:break-word",
 						readonly:true,
 					}
 				],
@@ -5208,7 +5211,7 @@ function main(savedOptions) {
 				var changed=false;
 				for(var item in group) {
 					var c=menu.find("#"+op+"_"+item);
-					if(c.empty()) {
+					if(c.empty() || c.prop("disabled")==true) {
 						continue;
 					} else {
 						var newValue=c.val();
@@ -5223,7 +5226,7 @@ function main(savedOptions) {
 				}
 			} else {
 				var c=menu.find("#"+op);
-				if(c.empty()) {
+				if(c.empty() || c.prop("disabled")==true || c.attr("fmt")) {
 					continue;
 				} else {
 					var newValue=c.val();
@@ -6098,7 +6101,7 @@ function $formatDate(d) {
 			d=new Date(d);
 		}
 	}
-	if(isNaN(d.getYear())) {
+	if(isNaN(d.getTime())) {
 		return "未知";
 	}
 	var formats={
