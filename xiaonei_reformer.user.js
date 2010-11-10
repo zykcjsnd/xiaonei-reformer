@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.2.20101109
-// @miniver        385
+// @version        3.2.2.20101110
+// @miniver        386
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -47,8 +47,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.2.20101109";
-XNR.miniver=385;
+XNR.version="3.2.2.20101110";
+XNR.miniver=386;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -501,14 +501,31 @@ function blockAppNotification() {
 };
 
 // 隐藏特定类型/标题新鲜事
-function hideFeeds(evt,feeds,mark,forbiddenTitle) {
+function hideFeeds(evt,feeds,mark,forbiddenTitle,hideOld,hideDays) {
 	if(evt && evt.target.tagName!="ARTICLE") {
 		return;
+	}
+	if(hideOld) {
+		// 先算出截止时间，减少重复计算量
+		var deadline=new Date(new Date()-hideDays*86400000);
+		var d={m:deadline.getMonth()+1,d:deadline.getDate()};
+		hideDays=parseInt(hideDays);
 	}
 	(evt?$(evt.target):$("div.feed-list>article")).filter(function(elem) {
 		var feed=$(elem);
 		if(forbiddenTitle && feed.find("h3").text().replace(/\s/g,"").match(forbiddenTitle)) {
 			return true;
+		}
+		if(hideOld) {
+			var time=feed.find(".duration").text();
+			if(/([0-9]+)天前/.test(time) && parseInt(RegExp.$1)>=hideDays) {
+				return true;
+			} else if(/([0-9]{1,2})-([0-9]{1,2})\s+[0-9]{1,2}:[0-9]{1,2}/.test(time)) {
+				var t={m:parseInt(RegExp.$1),d:parseInt(RegExp.$2)};
+				if(t.m<d.m || (t.m==d.m && t.d<=d.d)) {
+					return true;
+				}
+			}
 		}
 		var type=$feedType(feed);
 		return (type!="" && feeds[type]==true);
@@ -557,6 +574,10 @@ function disableAutoLoadFeeds() {
 
 // 在新鲜事中标记在线好友
 function markOnlineFriend(evt) {
+	if(evt && evt.target.tagName!="ARTICLE") {
+		return;
+	}
+
 	if($allocated("onlineFriends")) {
 		mark($alloc("onlineFriends").list);
 		return;
@@ -578,14 +599,13 @@ function markOnlineFriend(evt) {
 	});
 
 	function mark(list) {
-		$(".feed-list>article>h3").each(function() {
-			var elem=this;
-			$(elem).find("a[href*='profile.do?']").each(function() {
+		(evt?$(evt.target):$(".feed-list>article")).each(function() {
+			$(this).find("h3>a[href*='profile.do?']").each(function() {
 				var id=/id=([0-9]+)/.exec(this.href)[1];
 				if(id && list[id]) {
 					if($(this).superior().find("img.on-line[mark='"+id+"']").empty()) {
 						// 还没标记过
-						elem.insertBefore($("@img").attr({"class":"on-line",height:"12",width:"13",onclick:"javascript:talkto("+id+",'"+list[id]+"');return false;",title:"点此和"+list[id]+"聊天",src:"http://xnimg.cn/imgpro/icons/online_1.gif?ver=$revxxx$",style:"vertical-align:baseline;cursor:pointer","mark":id}).get(),this);
+						$("@img").attr({"class":"on-line",height:"12",width:"13",onclick:"javascript:talkto("+id+",'"+list[id]+"');return false;",title:"点此和"+list[id]+"聊天",src:"http://xnimg.cn/imgpro/icons/online_1.gif?ver=$revxxx$",style:"vertical-align:baseline;cursor:pointer","mark":id}).move("before",this);
 					}
 				}
 			});
@@ -650,7 +670,7 @@ function showFeedToolbar() {
 };
 
 // 自动检查提醒新鲜事更新
-function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
+function autoCheckFeeds(interval,feedFilter,forbiddenTitle,hideOld,hideDays) {
 	// 在bottombar上建立一个新的接收区域
 	if($("#bottombar").exist()) {
 		(function(evt) {
@@ -716,17 +736,37 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle) {
 			try {
 				// 获取新鲜事列表
 				var feedList=$("@ul").html(r[0].replace(/onload=".*?"/g,"").replace(/<script.*?<\/script>/g,"").replace(/src="http:\/\/s\.xnimg\.cn\/a\.gif"/g,"").replace(/lala=/g,"src="));
+				// 先算出截止时间，减少重复计算量
+				if(hideOld) {
+					var deadline=new Date(new Date()-hideDays*86400000);
+					var d={m:deadline.getMonth()+1,d:deadline.getDate()};
+					hideDays=parseInt(hideDays);
+				}
 				// 滤除被屏蔽的新鲜事类型
 				for(var i=feedList.heirs()-1;i>=0;i--) {
-					if(forbiddenTitle && feedList.child(i).find("h3").text().replace(/\s/g,"").match(forbiddenTitle)) {
+					var c=feedList.child(i);
+					if(forbiddenTitle && c.find("h3").text().replace(/\s/g,"").match(forbiddenTitle)) {
 						// 按标题滤除
-						feedList.child(i).remove();
-					} else {
-						// 按类型滤除
-						var feedType=$feedType(feedList.child(i));
-						if(feedType && feedFilter[feedType]) {
-							feedList.child(i).remove();
+						c.remove();
+						continue;
+					}
+					if(hideOld) {
+						// 按日期滤除
+						var time=c.find(".duration").text();
+						if(/([0-9]+)天前/.test(time) && parseInt(RegExp.$1)>=hideDays) {
+							return true;
+						} else if(/([0-9]{1,2})-([0-9]{1,2})\s+[0-9]{1,2}:[0-9]{1,2}/.test(time)) {
+							var t={m:parseInt(RegExp.$1),d:parseInt(RegExp.$2)};
+							if(t.m<d.m || (t.m==d.m && t.d<=d.d)) {
+								c.remove();
+								continue;
+							}
 						}
+					}
+					// 按类型滤除
+					var feedType=$feedType(c);
+					if(feedType && feedFilter[feedType]) {
+						c.remove();
 					}
 				}
 
@@ -3076,7 +3116,7 @@ function sendReq() {
 		if(window.confirm("解析回应数据？")) {
 			document.documentElement.innerHTML=html;
 		}
-		$debug(html);
+		$debug(html,0);
 	},null,method.toUpperCase());
 };
 
@@ -3662,7 +3702,7 @@ function main(savedOptions) {
 					fn:[{
 						name:hideFeeds,
 						stage:1,
-						args:[null,"@feedGroup","@markFeedAsRead","@forbiddenFeedTitle"],
+						args:[null,"@feedGroup","@markFeedAsRead","@forbiddenFeedTitle","@hideOldFeeds","@oldFeedDays"],
 						trigger:{"div.feed-list":"DOMNodeInserted"},
 					}],
 				}],
@@ -3730,6 +3770,10 @@ function main(savedOptions) {
 						text:"##交友",
 						value:false
 					},{
+						id:"xiaozu",
+						text:"##小组",
+						value:false
+					},{
 						id:"vip",
 						text:"##VIP相关",
 						value:false
@@ -3775,6 +3819,24 @@ function main(savedOptions) {
 					}
 				],
 				page:"feed,profile"
+			},{
+				text:"##隐藏##天前的新鲜事##",
+				ctrl:[
+					{
+						id:"hideOldFeeds",
+						value:false,
+					},{
+						id:"oldFeedDays",
+						type:"input",
+						value:"7",
+						style:"width:20px;margin:0 3px",
+						verify:{"^[1-9][0-9]*$":"请在新鲜事天数处输入大于0的数字！"}
+					},{
+						type:"warn",
+						value:"以前的新鲜事也可能是由于有新的回复而出现在新鲜事列表中，请慎重考虑"
+					}
+				],
+				master:0
 			},{
 				text:"##将隐藏的新鲜事设为已读",
 				ctrl:[{
@@ -3868,14 +3930,14 @@ function main(savedOptions) {
 							name:autoCheckFeeds,
 							stage:3,
 							fire:true,
-							args:["@checkFeedInterval","@feedGroup","@forbiddenFeedTitle"]
+							args:["@checkFeedInterval","@feedGroup","@forbiddenFeedTitle","@hideOldFeeds","@oldFeedDays"]
 						}]
 					},{
 						id:"checkFeedInterval",
 						type:"input",
 						value:"120",
 						verify:{"^[3-9][0-9]$|^[1-9][0-9]{2,}$":"检查新鲜事间隔时间不得小于30秒"},
-						style:"width:30px;margin-left:3px;margin-right:3px"
+						style:"width:30px;margin:0 3px"
 					}
 				],
 				master:0,
@@ -3897,7 +3959,7 @@ function main(savedOptions) {
 						type:"input",
 						value:"180",
 						verify:{"^[6-9][0-9]$|^[1-9][0-9]{2,}$":"刷新新鲜事列表间隔时间不得小于60秒"},
-						style:"width:30px;margin-left:3px;margin-right:3px"
+						style:"width:30px;margin:0 3px"
 					},{
 						type:"warn",
 						value:"刷新时会导致正在回复的内容遗失，请慎重启用"
@@ -4686,17 +4748,18 @@ function main(savedOptions) {
 			{
 				text:"如果您不了解以下功能的用处，请不要使用！",
 			},{
-				text:"##输出调试信息",
+				text:"##",
 				ctrl:[{
-					id:"debug",
-					value:false
+					id:"debuglv",	// 用于设置调试信息输出等级
+					type:"hidden",
+					value:0
 				}]
 			},{
 				text:"##",		// 用于设置在部分页面不启用，不在界面提供直接修改途径，仅通过下面的参数设置功能设置
 				ctrl:[{
-						id:"blacklist",
-						type:"hidden",
-						value:"",
+					id:"blacklist",
+					type:"hidden",
+					value:"",
 				}]
 			},{
 				text:"##：## = ##",
@@ -5051,20 +5114,20 @@ function main(savedOptions) {
 		}
 	}
 
-	$debug("#0");
+	$debug("#0",1);
 	// 执行优先级为0的函数
 	for(var iPage in fnQueue) {
 		if(iPage=="*" || $page(iPage)) {
 			for(var i=0;i<fnQueue[iPage][0].length;i++) {
 				var fn=fnQueue[iPage][0][i];
-				$debug("^",fn.name);
+				$debug("^",1,fn.name);
 				try {
 					fn.name.apply(null,fn.args);
 					fn.name.rf=true;
 				} catch(ex) {
 					$error(fn.name,ex);
 				}
-				$debug("$",fn.name);
+				$debug("$",1,fn.name);
 			}
 		}
 	}
@@ -5269,7 +5332,7 @@ function main(savedOptions) {
 	// 执行剩下三个优先级的函数
 	for(var p=1;p<=3;p++) {
 		$wait(p,function (stage) {
-			$debug("#"+stage);
+			$debug("#"+stage,1);
 			if(stage==2) {
 				// 添加菜单入口项在页面DOM构建完毕后执行
 				entry.addTo($(".nav-body .nav-other"),0);
@@ -5289,7 +5352,9 @@ function main(savedOptions) {
 									try {
 										var args=func.args.slice(0);
 										args[0]=evt;
+										$debug("^~",3,func.name);
 										func.name.apply(null,args);
+										$debug("$~",3,func.name);
 									} catch(ex) {
 										$error(func.name,ex);
 									}
@@ -5298,14 +5363,14 @@ function main(savedOptions) {
 						}
 					} else {
 						// 一般功能
-						$debug("^",fn.name);
+						$debug("^",1,fn.name);
 						try {
 							fn.name.apply(null,fn.args);
 							fn.name.rf=true;
 						} catch(ex) {
 							$error(fn.name,ex);
 						}
-						$debug("$",fn.name);
+						$debug("$",1,fn.name);
 					}
 				}
 			}
@@ -5319,7 +5384,7 @@ function main(savedOptions) {
 			evt.stopPropagation();
 			XNR.url=document.location.href;
 
-			$debug("async @ "+XNR.url);
+			$debug("async @ "+XNR.url,2);
 
 			for(var p=0;p<=3;p++) {
 				for(var iPage in fnQueue) {
@@ -5350,14 +5415,14 @@ function main(savedOptions) {
 								continue;
 							}
 							// 一般功能
-							$debug("^=",fn.name);
+							$debug("^=",2,fn.name);
 							try {
 								fn.name.apply(null,fn.args);
 								fn.name.rf=true;
 							} catch(ex) {
 								$error(fn.name,ex);
 							}
-							$debug("$=",fn.name);
+							$debug("$=",2,fn.name);
 						}
 					}
 				}
@@ -5804,11 +5869,16 @@ function $error(func,error) {
  * 输出调试信息
  * 参数
  *   [String]msg:调试信息
+ *   [Number]level:信息等级
+ *   [Function]func:所在函数,可选
  * 返回值
  *   无
  */
-function $debug(msg,func) {
-	if(XNR.options.debug===false) {
+function $debug(msg,level,func) {
+	if(level==null) {
+		level=0;
+	}
+	if(XNR.options.debuglv<level) {
 		return;
 	}
 	if(typeof func=="function") {
@@ -5817,7 +5887,7 @@ function $debug(msg,func) {
 	if(func) {
 		msg=func+" "+msg;
 	}
-	msg="["+new Date().valueOf()+"]:"+msg;
+	msg="["+new Date().getTime()+"]:"+msg;
 	console.log(msg);
 };
 
@@ -5856,6 +5926,12 @@ function $feedType(feed) {
 			case 1:
 				// 分享好友:101, 分享日志:102, 分享照片:103, 分享相册:104, 分享链接:107, 分享视频:110
 				return "share";
+			case 2:
+				// 参加小组:210
+				if(ntype==210) {
+					return "xiaozu";
+				}
+				break;
 			case 4:
 				// 赞助商活动广告(？):401
 				return "ads";
@@ -5900,7 +5976,9 @@ function $feedType(feed) {
 				}
 			case 20:
 				// 在公共主页留言:2001, 成为公共主页好友:2002, 分享公共主页日志:2003, 分享公共主页图片:2004, 分享公共分享链接:2005, 分享公共分享视频:2006, 公共主页发状态:2008, 公共主页发日志:2012, 公共主页发照片:2013, 公共主页改头像:2015, 公共主页发回复:2016, 分享公共主页:2017, 情侣空间发状态:2024, 情侣空间发日志:2025, 情侣空间发照片:2026
-				if(ntype>=2024 && ntype<=2026) {
+				if(ntype>=2003 && ntype<=2006) {
+					return "share";
+				} else if(ntype>=2024 && ntype<=2026) {
 					return "lover";
 				} else {
 					return "page";
@@ -5918,7 +5996,7 @@ function $feedType(feed) {
 				// 等级提升:2801
 				return "levelup";
 			case 80:
-				// 团购/品牌调查等等活动:8002，保持联络:8006，成为好友:8007
+				// 团购/品牌调查等等活动:8002，广告:8004，人人网:8005，保持联络:8006，成为好友:8007
 				if(ntype==8006) {
 					return "contact";
 				} else if(ntype==8007) {
@@ -5984,6 +6062,7 @@ function $feedType(feed) {
 		"vip":		{t:/^更换了主页模板皮肤|^更换了主页装扮|^成为了人人网[\s\S]*VIP会员特权|^收到好友赠送的[\s\S]*VIP会员特权|^开启了人人网VIP个性域名|^更换了大头贴头像/},
 		"music":	{t:/^上传了音乐/},
 		"poll":		{l:/\/abc\.renren\.com\//},
+		"xiaozu":	{l:/\/xiaozu\.renren\.com\//},
 		"group":	{l:/\/group\.renren\.com\//},
 		"levelup":	{t:/^等级升至/},
 		"event":	{l:/\/event\.renren\.com\//},
