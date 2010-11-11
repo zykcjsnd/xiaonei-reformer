@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.2.20101110
-// @miniver        386
+// @version        3.2.2.20101111
+// @miniver        387
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -47,8 +47,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.2.20101110";
-XNR.miniver=386;
+XNR.version="3.2.2.20101111";
+XNR.miniver=387;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -537,21 +537,48 @@ function hideFeeds(evt,feeds,mark,forbiddenTitle,hideOld,hideDays) {
 			} catch(ex) {
 				$error("hideFeeds::get",ex);
 			}
-			$(this).remove();
-		} else {
-			$(this).hide();
+			// 发送请求后只隐藏不删除。因为添加到页面后有一句eval_inner_JS()，如果在此之前删除的话会导致异常
 		}
+		$(this).hide();
 	});
 };
 
 // 首页默认显示特别关注
 function showAttentionFeeds() {
-	// 不能只修改hash，从个人主页会来时会失效
-	if(document.location.pathname=="/home") {
-		document.location.hash="/homeAttention?from=homeleft";
-	} else {
-		document.location.href="http://www.renren.com/home#/homeAttention?from=homeleft";
+	if((XNR.acore==PRESTO && XNR.loadStage==0) || (XNR.acore!=PRESTO && document.readyState=="loading")) {
+		document.location.href="http://www.renren.com/homeAttention#/homeAttention?from=homeleft";
+		return;
 	}
+	// 不能只修改hash，从个人主页会来时会失效
+	switch(document.location.pathname) {
+		case "/home":
+		case "/homeAttention":
+			document.location.hash="/homeAttention?from=homeleft";
+			break;
+		case "/guide":
+			document.location.hash="//www/homeAttention?from=homeleft";
+			break;
+		default:
+			document.location.href="http://www.renren.com/home#/homeAttention?from=homeleft";
+			break;
+	}
+};
+
+// 加载更多页新鲜事
+function loadMoreFeeds(pages) {
+	// 只要当前页数比预定页数少，就不断加载下一页
+	const code="(function(){"+
+		"var nf=window.newsfeed,ahm=window.asyncHTMLManager;"+
+		"if(!nf||!nf.data||nf.data.length==0||nf.data.loading||(ahm&&ahm.rendering)){"+
+			"setTimeout(arguments.callee,200);"+
+			"return"+
+		"}"+
+		"if(nf.data.length/(nf.itemsPerPage||20)<"+pages+"){"+
+			"nf.append();"+
+			"setTimeout(arguments.callee,1000)"+
+		"}"+
+	"})()";
+	$script(code);
 };
 
 // 禁止在窗口滚动到底部时自动加载下一页新鲜事
@@ -1440,7 +1467,6 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(蜜蜂)":	{t:"小蜜蜂",		s:"/imgpro/icons/statusface/bee.gif"},
 	//	"(bee)":	{t:"小蜜蜂",		s:"/imgpro/icons/statusface/bee.gif"},
 		"(fl)":		{t:"花仙子",		s:"/imgpro/icons/statusface/hanago.gif"},
-		"(zz)":		{t:"粽子",			s:"/imgpro/icons/statusface/zongzi.gif"},
 		"(cap)":	{t:"学位帽",		s:"/imgpro/icons/statusface/mortarboard.gif"},
 		"(ice)":	{t:"冰棍儿",		s:"/imgpro/icons/statusface/ice-cream.gif"},
 		"(gs)":		{t:"园丁",			s:"/imgpro/icons/statusface/growing-sapling.gif"},
@@ -1473,12 +1499,14 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(mg)":		{t:"七彩玫瑰",		s:"/imgpro/icons/statusface/rose.gif"},
 		"(hzd)":	{t:"划重点",		s:"/imgpro/icons/statusface/huazhongdian.gif"},
 		"(dm)":		{t:"点名",			s:"/imgpro/icons/statusface/dianming.gif"},
-		"(yb)":		{t:"月饼",			s:"/imgpro/icons/statusface/mooncake.gif"},
 		"(bs)":		{t:"秋高气爽",		s:"/imgpro/icons/statusface/bluesky.gif"},
 		"(ly)":		{t:"落叶",			s:"/imgpro/icons/statusface/autumn-leaves.gif"},
 		"(cy2)":	{t:"登高",			s:"/imgpro/icons/statusface/09double9.gif"},
 		"(cy3)":	{t:"饮菊酒",		s:"/imgpro/icons/statusface/09double9-2.gif"},
 		"(dx)":		{t:"雪人",			s:"/imgpro/icons/statusface/snowman.gif"},
+		"(ugl)":	{t:"不给力",		s:"/imgpro/icons/statusface/ungelivable.gif"},
+		"(hcn)":	{t:"花痴男",		s:"/imgpro/icons/statusface/hcn.gif"},
+		"(hcv)":	{t:"花痴女",		s:"/imgpro/icons/statusface/hcnv.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
@@ -1514,6 +1542,8 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(socks)":	{t:"圣诞袜",		s:"/imgpro/icons/statusface/stocking.gif"},
 		"(nrj)":	{t:"女人节",		s:"/imgpro/icons/statusface/lipstick.gif"},
 		"(zsj)":	{t:"植树节",		s:"/imgpro/icons/statusface/trees.gif"},
+		"(yb)":		{t:"月饼",			s:"/imgpro/icons/statusface/mooncake.gif"},
+		"(zz)":		{t:"粽子",			s:"/imgpro/icons/statusface/zongzi.gif"},
 		"(hjr)":	{t:"世界环境日",	s:"/imgpro/icons/statusface/earthday.gif"},
 	//	"(虎年)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
 		"(tiger)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
@@ -3399,7 +3429,7 @@ function main(savedOptions) {
 						value:false,
 					},{
 						id:"publicPageAdmin",
-						text:"##公共主页管理",
+						text:"##公共主页/情侣空间管理",
 						value:false,
 					},{
 						id:"birthday",
@@ -3855,6 +3885,33 @@ function main(savedOptions) {
 						once:true
 					}]
 				}],
+				page:"feed"
+			},{
+				text:"##默认显示##页新鲜事##",
+				ctrl:[
+					{
+						id:"loadMoreFeeds",
+						value:false,
+						fn:[{
+							name:loadMoreFeeds,
+							stage:2,
+							fire:true,
+							args:["@loadFeedPage"],
+							once:true
+						}]
+					},{
+						id:"loadFeedPage",
+						type:"input",
+						value:"2",
+						style:"width:15px;margin-left:3px;margin-right:3px",
+						verify:{"^[2-9]$":"新鲜事页数只能为2~9"}
+					},{
+						type:"warn",
+						value:"进入首页时会很卡"
+					}
+				],
+				master:0,
+				login:true,
 				page:"feed"
 			},{
 				text:"##页面滚动到底部时不加载下一页新鲜事",
@@ -5158,7 +5215,7 @@ function main(savedOptions) {
 	var icons_safari='data:image/png;base64,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%3D';
 	var icons_opera='data:image/png;base64,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%3D';
 	// 生成选项菜单
-	var menuHTML='<style type="text/css">.xnr_op{width:500px;position:fixed;z-index:200000;color:black;font-size:12px;background:rgba(0,0,0,0.5);padding:10px;-moz-border-radius:8px;border-radius:8px}.xnr_op *{padding:0;margin:0;line-height:normal}.xnr_op h1{font-size:18px;font-weight:bold}.xnr_op a{color:#3B5990}.xnr_op table{width:100%}.xnr_op>div{background:#FFFFFA}.xnr_op .title{padding:4px;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none;cursor:default}.xnr_op .btns{background:#F0F5F8;text-align:right;border-top:1px solid lightgray}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px;cursor:pointer}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .ok:active{border-color:#124680 #B8D4E8 #B8D4E8 #124680}.xnr_op .cancel{background:#F0F0F0;border-color:white #848484 #848484 white;color:black}.xnr_op .cancel:active{border-color:#848484 white white #848484}.xnr_op .options{height:300px}.xnr_op .category{width:119px;border-right:1px solid lightgray;overflow-x:hidden;overflow-y:auto;height:300px;float:left}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages{width:380px;float:right}.xnr_op .p{overflow:auto;height:280px;padding:10px}.xnr_op .p>div{min-height:19px;padding:2px 0;width:100%}.xnr_op .p>div *{vertical-align:middle}.xnr_op .group{margin-left:5px;margin-top:3px;table-layout:fixed}.xnr_op .group td{padding:2px 0}.xnr_op input[type="checkbox"]{margin-right:4px;cursor:pointer}.xnr_op button{background-color:#EFEFEF;background:-moz-linear-gradient(top,#FDFCFB,#E7E2DB);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#E7E2DB));color:black;border-color:#877C6C #A99D8C #A99D8C;border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;font-size:12px;padding:'+(XNR.acore==GECKO?1:3)+'px}.xnr_op button[disabled]{color:grey}.xnr_op button:active:not([disabled]){background:#DAD3C8;background:-moz-linear-gradient(top,#DAD3C8,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#DAD3C8),to(#CCC4B9))}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op .p span{cursor:default}.xnr_op span[tooltip]{margin:0 2px;height:16px;width:16px;display:inline-block;cursor:help}.xnr_op span.info{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAuUlEQVQ4y2NgoDbQ9upiiK5eznD17sv/yDi2ajlYDi9wSZ+NoREdu2bNxa7ZJnkWXHPepH1YMUzeNnU6prPRNaMDdEOU3boRBoSWLWXApxmbIRHlyxAG4LIdFx+mHqcByBifNwgagE0zWQbgig24AWFogUgIgxNW7QpEIIKiBJsr8DlfxXMSalpwTpuJPyFN2ItIjXlzsKdGx9h2gknZLqYFf37gktJmCM2dhGFQaE4/A6eYKtUzLwMAfM0C2p5qSS4AAAAASUVORK5CYII%3D")}.xnr_op span.warn{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA1ElEQVQ4y2NgoCVYz8BgsJyBwYQszUCNsv8ZGP6D8FIGBlWSDYBphmGSNC9jYNAGabqUkvL/cmYm2IAlDAympNsOA6S4YjUDgxVI8dX8fLj+6+XlYAPWsbB4kGQ7hMtAvCvWsrN7gxRdq6jAMOBWSwvYgE1sbJFE+x3FBUiuaGBgYMKp+Xpz839c4P7UqWA1QJfmomgGmYgR8thcgOSKmQwMrBi23+js/E8IPJ47FyNAudBTHbEY7gJjBgbdDgaG7k4GhqmEcDcDw2Qg7ogA5hWq5FgAlMwfVWL5pDoAAAAASUVORK5CYII%3D")}.xnr_op input:not([type]){border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;padding:1px;border-color:#877C6C #A99D8C #A99D8C}.xnr_op input:not([type]):focus{border-color:#3A6389}.xnr_op textarea{resize:none;-moz-resize:none}.xnr_op .fp{text-align:center;vertical-align:middle;width:400px;height:300px;display:table-cell}.xnr_op .fp>*{padding:5px}.xnr_op .icons>a{margin:8px}.xnr_op .icons img{width:29px}.xnr_op .icons img:hover{-webkit-transform:scale(1.1);-moz-transform:scale(1.1);-o-transform:scale(1.1)}</style>';
+	var menuHTML='<style type="text/css">.xnr_op{width:500px;position:fixed;z-index:200000;color:black;font-size:12px;background:rgba(0,0,0,0.5);padding:10px;-moz-border-radius:8px;border-radius:8px}.xnr_op *{padding:0;margin:0;line-height:normal}.xnr_op h1{font-size:18px;font-weight:bold}.xnr_op a{color:#3B5990}.xnr_op table{width:100%}.xnr_op .title{padding:4px;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none;cursor:default}.xnr_op .btns{background:#F0F5F8;text-align:right;border-top:1px solid lightgray}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px;cursor:pointer}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .ok:active{border-color:#124680 #B8D4E8 #B8D4E8 #124680}.xnr_op .cancel{background:#F0F0F0;border-color:white #848484 #848484 white;color:black}.xnr_op .cancel:active{border-color:#848484 white white #848484}.xnr_op .options{height:300px;background:#FFFFFA}.xnr_op .category{width:119px;border-right:1px solid lightgray;overflow-x:hidden;overflow-y:auto;height:300px;float:left}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages{width:380px;float:right}.xnr_op .p{overflow:auto;height:280px;padding:10px}.xnr_op .p>div{min-height:19px;padding:2px 0;width:100%}.xnr_op .p>div *{vertical-align:middle}.xnr_op .group{margin-left:5px;margin-top:3px;table-layout:fixed}.xnr_op .group td{padding:2px 0}.xnr_op input[type="checkbox"]{margin-right:4px;cursor:pointer}.xnr_op button{background-color:#EFEFEF;background:-moz-linear-gradient(top,#FDFCFB,#E7E2DB);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#E7E2DB));color:black;border-color:#877C6C #A99D8C #A99D8C;border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;font-size:12px;padding:'+(XNR.acore==GECKO?1:3)+'px}.xnr_op button[disabled]{color:grey}.xnr_op button:active:not([disabled]){background:#DAD3C8;background:-moz-linear-gradient(top,#DAD3C8,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#DAD3C8),to(#CCC4B9))}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op .p span{cursor:default}.xnr_op span[tooltip]{margin:0 2px;height:16px;width:16px;display:inline-block;cursor:help}.xnr_op span.info{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAuUlEQVQ4y2NgoDbQ9upiiK5eznD17sv/yDi2ajlYDi9wSZ+NoREdu2bNxa7ZJnkWXHPepH1YMUzeNnU6prPRNaMDdEOU3boRBoSWLWXApxmbIRHlyxAG4LIdFx+mHqcByBifNwgagE0zWQbgig24AWFogUgIgxNW7QpEIIKiBJsr8DlfxXMSalpwTpuJPyFN2ItIjXlzsKdGx9h2gknZLqYFf37gktJmCM2dhGFQaE4/A6eYKtUzLwMAfM0C2p5qSS4AAAAASUVORK5CYII%3D")}.xnr_op span.warn{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA1ElEQVQ4y2NgoCVYz8BgsJyBwYQszUCNsv8ZGP6D8FIGBlWSDYBphmGSNC9jYNAGabqUkvL/cmYm2IAlDAympNsOA6S4YjUDgxVI8dX8fLj+6+XlYAPWsbB4kGQ7hMtAvCvWsrN7gxRdq6jAMOBWSwvYgE1sbJFE+x3FBUiuaGBgYMKp+Xpz839c4P7UqWA1QJfmomgGmYgR8thcgOSKmQwMrBi23+js/E8IPJ47FyNAudBTHbEY7gJjBgbdDgaG7k4GhqmEcDcDw2Qg7ogA5hWq5FgAlMwfVWL5pDoAAAAASUVORK5CYII%3D")}.xnr_op input:not([type]){border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;padding:1px;border-color:#877C6C #A99D8C #A99D8C}.xnr_op input:not([type]):focus{border-color:#3A6389}.xnr_op textarea{resize:none;-moz-resize:none}.xnr_op .fp{text-align:center;vertical-align:middle;width:400px;height:300px;display:table-cell}.xnr_op .fp>*{padding:5px}.xnr_op .icons>a{margin:8px}.xnr_op .icons img{width:29px}.xnr_op .icons img:hover{-webkit-transform:scale(1.1);-moz-transform:scale(1.1);-o-transform:scale(1.1)}</style>';
 	menuHTML+='<div class="title">改造选项</div><div class="options"><div class="category"><ul>'+categoryHTML+'</ul></div><div class="pages"><div class="fp"><h1>人人网改造器</h1><p><b>'+XNR.version+' ('+XNR.miniver+')</b></p><p><b>Copyright © 2008-2010</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p><p class="icons"><a href="http://userscripts.org/scripts/show/45836" title="GreaseMonkey脚本" target="_blank"><img src="'+icons_gm+'"/></a><a href="https://chrome.google.com/extensions/detail/bafellppfmjodafekndapfceggodmkfc" title="Chrome/Chromium扩展" target="_blank"><img src="'+icons_chrome+'"/></a><a href="https://addons.mozilla.org/firefox/addon/162178" title="Firefox扩展" target="_blank"><img src="'+icons_fx+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Safari扩展" target="_blank"><img src="'+icons_safari+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Opera用户脚本" target="_blank"><img src="'+icons_opera+'"/></a></p></div></div></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div>';
 
 	var menu=$("@div").attr("class","xnr_op").css("display","none").html(menuHTML).addTo(document.documentElement);
@@ -5464,7 +5521,7 @@ function $cookie(name,def) {
 function $page(category,url) {
 	const pages={
 		home:"renren\\.com/[hH]ome|guide\\.renren\\.com/[Gg]uide",	// 首页，后面的是新注册用户的首页
-		feed:"renren\\.com/[hH]ome#?$|renren\\.com/[hH]ome.*#nogo$|renren\\.com/[hH]ome\?[^#]*$|#/home|/guide\\.renren\\.com/[Gg]uidexf",	// 首页新鲜事，后面的是新注册用户的首页
+		feed:"renren\\.com/[hH]ome#?$|renren\\.com/[hH]ome.*#nogo$|renren\\.com/[hH]ome\?[^#]*$|#/home|/homeAttention#*$|/homeAttention[^#]*$|/guide\\.renren\\.com/[Gg]uide#?$|#/guide",	// 首页新鲜事，后面的是新注册用户的首页
 		profile:"renren\\.com/[Pp]rofile|/[a-zA-Z0-9_]{5,}\\.renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|renren.com/[a-zA-Z0-9_]{4,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personalLink.do
 		blog:"/blog\\.renren\\.com/|#//blog/",	// 日志
 		club:"/club\\.renren\\.com/",	// 论坛
@@ -5875,20 +5932,16 @@ function $error(func,error) {
  *   无
  */
 function $debug(msg,level,func) {
-	if(level==null) {
-		level=0;
+	if(XNR.options.debuglv>level) {
+		if(typeof func=="function") {
+			func=/function (.*?)\(/.exec(func.toString())[1];
+		}
+		if(func) {
+			msg=func+" "+msg;
+		}
+		msg="["+new Date().getTime()+"]:"+msg;
+		console.log(msg);
 	}
-	if(XNR.options.debuglv<level) {
-		return;
-	}
-	if(typeof func=="function") {
-		func=/function (.*?)\(/.exec(func.toString())[1];
-	}
-	if(func) {
-		msg=func+" "+msg;
-	}
-	msg="["+new Date().getTime()+"]:"+msg;
-	console.log(msg);
 };
 
 /*
@@ -6261,7 +6314,7 @@ PageKit.prototype={
 	// 删除对象所有的DOM节点。如果safe为true，只有当其无子节点时才删除
 	remove:function(safe) {
 		this.each(function() {
-			if(!safe || this.childElementCount==0) {
+			if((!safe || this.childElementCount==0) && this.parentNode) {
 				this.parentNode.removeChild(this);
 			}
 		});
