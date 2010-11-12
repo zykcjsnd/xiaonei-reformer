@@ -1,4 +1,4 @@
-var myListener={
+var xnrListener={
 	onLocationChange: function(aBrowser, aProgress, aRequest, aURI) {
 		if(checkLocation(aBrowser.contentWindow.location.href)) {
 			if(aBrowser.contentDocument.readyState == "loading") {
@@ -7,7 +7,7 @@ var myListener={
 						injectScript(aBrowser.contentWindow);
 					} else {
 						// since 3.7a5pre
-						setTimeout(arguments.callee, 50);
+						setTimeout(arguments.callee, 10);
 					}
 				})();
 			}
@@ -25,13 +25,13 @@ var myListener={
 };
 
 window.addEventListener("load", function() {
-	gBrowser.addTabsProgressListener(myListener);
+	gBrowser.addTabsProgressListener(xnrListener);
 	gBrowser.addEventListener("DOMContentLoaded", onframeLoaded, true);
 }, false);
 
 window.addEventListener("unload", function() {
 	gBrowser.removeEventListener("DOMContentLoaded", onframeLoaded, true);
-	gBrowser.removeTabsProgressListener(myListener);
+	gBrowser.removeTabsProgressListener(xnrListener);
 }, false);
 
 
