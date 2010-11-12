@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.2.20101111
-// @miniver        387
+// @version        3.2.2.20101112
+// @miniver        388
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -566,14 +566,15 @@ function showAttentionFeeds() {
 
 // 加载更多页新鲜事
 function loadMoreFeeds(pages) {
-	// 只要当前页数比预定页数少，就不断加载下一页
 	const code="(function(){"+
 		"var nf=window.newsfeed,ahm=window.asyncHTMLManager;"+
-		"if(!nf||!nf.data||nf.data.length==0||nf.data.loading||(ahm&&ahm.rendering)){"+
+		"if(!nf||!nf.data||nf.data.length==0||nf.data.loading||!ahm||ahm.rendering){"+
 			"setTimeout(arguments.callee,200);"+
 			"return"+
 		"}"+
-		"if(nf.data.length/(nf.itemsPerPage||20)<"+pages+"){"+
+		// 只要还有多的新鲜事且当前页数比预定页数少，就不断加载下一页
+		"if(nf.olen!=nf.data.length&&nf.data.length/(nf.itemsPerPage||20)<"+pages+"){"+
+			"nf.olen=nf.data.length;"+
 			"nf.append();"+
 			"setTimeout(arguments.callee,1000)"+
 		"}"+

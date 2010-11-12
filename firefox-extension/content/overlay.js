@@ -2,7 +2,14 @@ var myListener={
 	onLocationChange: function(aBrowser, aProgress, aRequest, aURI) {
 		if(checkLocation(aBrowser.contentWindow.location.href)) {
 			if(aBrowser.contentDocument.readyState == "loading") {
-				injectScript(aBrowser.contentWindow);
+				(function() {
+					if(aBrowser.contentDocument.documentElement !== null) {
+						injectScript(aBrowser.contentWindow);
+					} else {
+						// since 3.7a5pre
+						setTimeout(arguments.callee, 50);
+					}
+				})();
 			}
 		}
 	},
@@ -20,12 +27,12 @@ var myListener={
 window.addEventListener("load", function() {
 	gBrowser.addTabsProgressListener(myListener);
 	gBrowser.addEventListener("DOMContentLoaded", onframeLoaded, true);
-},false);
+}, false);
 
 window.addEventListener("unload", function() {
 	gBrowser.removeEventListener("DOMContentLoaded", onframeLoaded, true);
 	gBrowser.removeTabsProgressListener(myListener);
-},false);
+}, false);
 
 
 function onframeLoaded (evt) {
@@ -52,17 +59,7 @@ function injectScript (contentWindow) {
 	// can't use mozIJSSubScriptLoader due to https://bugzilla.mozilla.org/show_bug.cgi?id=377498
 	var script=getUrlContents("chrome://xiaonei-reformer/content/xiaonei_reformer.user.js");
 
-	if(sandbox.document.documentElement!=null) {
-		Components.utils.evalInSandbox(script,sandbox);
-	} else {
-		// since 3.7a5pre
-		window.addEventListener("DOMSubtreeModified", function() {
-			if(sandbox.document.documentElement != null) {
-				window.removeEventListener("DOMSubtreeModified", arguments.callee, true);
-				Components.utils.evalInSandbox(script, sandbox);
-			}
-		},true);
-	}
+	Components.utils.evalInSandbox(script, sandbox);
 }
 
 function checkLocation(url) {
