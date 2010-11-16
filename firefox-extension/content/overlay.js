@@ -1,70 +1,57 @@
-var xnrListener={
-	onLocationChange: function(aBrowser, aProgress, aRequest, aURI) {
-		if(checkLocation(aBrowser.contentWindow.location.href)) {
-			if(aBrowser.contentDocument.readyState == "loading") {
-				(function() {
-					if(aBrowser.contentDocument.documentElement !== null) {
-						injectScript(aBrowser.contentWindow);
-					} else {
-						// since 3.7a5pre
-						setTimeout(arguments.callee, 10);
-					}
-				})();
-			}
+function XNR_Observer() {
+	this.register();
+}
+XNR_Observer.prototype = {
+	observe: function(subject, topic, data) {
+		var url = (data || subject.location).toString();
+		const whitelist="^https?://.*\\.renren\\.com($|/)|^https?://renren\\.com($|/)";
+		const blacklist="^http://wpi\\.renren\\.com|ajaxproxy";
+		if(!url.match(whitelist) || url.match(blacklist)) {
+			return;
 		}
+
+		(function() {
+			if(subject.document.documentElement==null) {
+				setTimeout(arguments.callee, 10);
+				return;
+			}
+			Components.utils.import("resource://xiaonei-reformer/base.js");
+			Components.utils.import("resource://xiaonei-reformer/readfile.js");
+
+			var wrapper=new XPCNativeWrapper(subject);
+			var sandbox = new Components.utils.Sandbox(wrapper);
+			sandbox.window = wrapper;
+			sandbox.document = wrapper.document;
+			sandbox.__proto__ = wrapper;
+
+			importMethods(sandbox);
+
+			// can't use mozIJSSubScriptLoader due to https://bugzilla.mozilla.org/show_bug.cgi?id=377498
+			var script=getUrlContents("chrome://xiaonei-reformer/content/xiaonei_reformer.user.js");
+
+			Components.utils.evalInSandbox(script, sandbox);
+
+		})();
 	},
-	onProgressChange: function(aBrowser, aWebProgress, aRequest, curSelf, maxSelf, curTot, maxTot) {},
-	onStateChange: function(aBrowser, aWebProgress, aRequest, aFlag, aStatus) {},  
-	onStatusChange: function(aBrowser, aWebProgress, aRequest, aStatus, aMessage) {},
-	onSecurityChange: function(aBrowser, aWebProgress, aRequest, aState) {},
-	onRefreshAttempted: function(aBrowser, aWebProgress, aRefreshURI, aMillis,aSameURI) {
-		// must return true. or the refresh action will be blocked
-		return true;
+	register: function() {
+		var observerService = Components.classes["@mozilla.org/observer-service;1"]
+                          .getService(Components.interfaces.nsIObserverService);
+		observerService.addObserver(this, "content-document-global-created", false);
 	},
-	onLinkIconAvailable: function(aBrowser) {}
+	unregister: function() {
+		var observerService = Components.classes["@mozilla.org/observer-service;1"]
+                            .getService(Components.interfaces.nsIObserverService);
+		observerService.removeObserver(this, "content-document-global-created");
+	}
 };
 
+var observer;
+
 window.addEventListener("load", function() {
-	gBrowser.addTabsProgressListener(xnrListener);
-	gBrowser.addEventListener("DOMContentLoaded", onframeLoaded, true);
+	observer = new XNR_Observer();
 }, false);
 
 window.addEventListener("unload", function() {
-	gBrowser.removeEventListener("DOMContentLoaded", onframeLoaded, true);
-	gBrowser.removeTabsProgressListener(xnrListener);
+	observer.unregister();
 }, false);
-
-
-function onframeLoaded (evt) {
-	var content=evt.target.defaultView.window;
-	if(content == content.top || !checkLocation(content.location.href)) {
-		return;
-	} else {
-		injectScript(content);
-	}
-}
-
-function injectScript (contentWindow) {
-	Components.utils.import("resource://xiaonei-reformer/base.js");
-	Components.utils.import("resource://xiaonei-reformer/readfile.js");
-
-	var wrapper=new XPCNativeWrapper(contentWindow);
-	var sandbox = new Components.utils.Sandbox(wrapper);
-	sandbox.window = wrapper;
-	sandbox.document = wrapper.document;
-	sandbox.__proto__ = wrapper;
-
-	importMethods(sandbox);
-
-	// can't use mozIJSSubScriptLoader due to https://bugzilla.mozilla.org/show_bug.cgi?id=377498
-	var script=getUrlContents("chrome://xiaonei-reformer/content/xiaonei_reformer.user.js");
-
-	Components.utils.evalInSandbox(script, sandbox);
-}
-
-function checkLocation(url) {
-	const whitelist="^https?://.*\\.renren\\.com/|^https?://renren\\.com/";
-	const blacklist="^http://wpi\\.renren\\.com/|ajaxproxy";
-	return url.match(whitelist) && !url.match(blacklist);
-}
 
