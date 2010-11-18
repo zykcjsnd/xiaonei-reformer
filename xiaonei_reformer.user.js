@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.3.20101116
-// @miniver        389
+// @version        3.2.4.20101118
+// @miniver        390
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -47,8 +47,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.3.20101116";
-XNR.miniver=389;
+XNR.version="3.2.4.20101118";
+XNR.miniver=390;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -501,7 +501,7 @@ function blockAppNotification() {
 };
 
 // 隐藏特定类型/标题新鲜事
-function hideFeeds(evt,feeds,mark,forbiddenTitle,hideOld,hideDays) {
+function hideFeeds(evt,feeds,mark,forbiddenTitle,forbiddenIds,hideOld,hideDays) {
 	if(evt && evt.target.tagName!="ARTICLE") {
 		return;
 	}
@@ -511,9 +511,13 @@ function hideFeeds(evt,feeds,mark,forbiddenTitle,hideOld,hideDays) {
 		var d={m:deadline.getMonth()+1,d:deadline.getDate()};
 		hideDays=parseInt(hideDays);
 	}
+	if(forbiddenIds && feeds.share==false) {
+		var idFilter="a[href*='profile.do?id="+forbiddenIds.split("|").join("'],a[href*='profile.do?id=")+"']";
+	}
 	(evt?$(evt.target):$("div.feed-list>article")).filter(function(elem) {
 		var feed=$(elem);
-		if(forbiddenTitle && feed.find("h3").text().replace(/\s/g,"").match(forbiddenTitle)) {
+		var fh3=feed.find("h3");
+		if(forbiddenTitle && fh3.text().replace(/\s/g,"").match(forbiddenTitle)) {
 			return true;
 		}
 		if(hideOld) {
@@ -528,7 +532,7 @@ function hideFeeds(evt,feeds,mark,forbiddenTitle,hideOld,hideDays) {
 			}
 		}
 		var type=$feedType(feed);
-		return (type!="" && feeds[type]==true);
+		return (type!="" && feeds[type]==true) || (type=="share" && forbiddenIds && fh3.filter(idFilter).exist())
 	}).each(function() {
 		if(mark) {
 			try {
@@ -646,7 +650,17 @@ function flodFeedComment() {
 	// 先隐藏起来
 	var p=$patchCSS(".feed-list .details>.replies{display:none}");
 	// 修改loadJSON方法，loadJSON原方法最后会调用show强制显示
-	var code="var count=0;(function(){try{var code=XN.app.status.replyEditor.prototype.loadJSON.toString().replace(/function *\\(json\\) *{/,'').replace(/}$/,'').replace(/this.show\\([^\\)]*\\)/,'this.hide()')}catch(e){count++;if(count<5){setTimeout(arguments.callee,500)};return};XN.app.status.replyEditor.prototype.loadJSON=new Function('json',code)})()";
+	var code="var count=0;"+
+	"(function(){"+
+		"try{"+
+			"var code=window.XN.app.status.replyEditor.prototype.loadJSON.toString().replace(/function *\\(json\\) *{/,'').replace(/}$/,'').replace(/this.show\\([^\\)]*\\)/,'this.hide()');"+
+			"window.XN.app.status.replyEditor.prototype.loadJSON=new Function('json',code)"+
+		"}catch(e){"+
+			"count++;"+
+			"if(count<5)"+
+				"setTimeout(arguments.callee,500);"+
+		"}"+
+	"})()";
 	$script(code);
 	$wait(1,function() {
 		var list=[];
@@ -698,7 +712,7 @@ function showFeedToolbar() {
 };
 
 // 自动检查提醒新鲜事更新
-function autoCheckFeeds(interval,feedFilter,forbiddenTitle,hideOld,hideDays) {
+function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,hideDays) {
 	// 在bottombar上建立一个新的接收区域
 	if($("#bottombar").exist()) {
 		(function(evt) {
@@ -770,10 +784,14 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle,hideOld,hideDays) {
 					var d={m:deadline.getMonth()+1,d:deadline.getDate()};
 					hideDays=parseInt(hideDays);
 				}
+				if(forbiddenIds && feedFilter.share==false) {
+					var idFilter="a[href*='profile.do?id="+forbiddenIds.split("|").join("'],a[href*='profile.do?id=")+"']";
+				}
 				// 滤除被屏蔽的新鲜事类型
 				for(var i=feedList.heirs()-1;i>=0;i--) {
 					var c=feedList.child(i);
-					if(forbiddenTitle && c.find("h3").text().replace(/\s/g,"").match(forbiddenTitle)) {
+					var ch3=c.find("h3");
+					if(forbiddenTitle && ch3.text().replace(/\s/g,"").match(forbiddenTitle)) {
 						// 按标题滤除
 						c.remove();
 						continue;
@@ -794,6 +812,8 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle,hideOld,hideDays) {
 					// 按类型滤除
 					var feedType=$feedType(c);
 					if(feedType && feedFilter[feedType]) {
+						c.remove();
+					} else if(feedType=="share" && forbiddenIds && ch3.filter(idFilter).exist()) {
 						c.remove();
 					}
 				}
@@ -1555,6 +1575,7 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
 		"(kxl)":	{t:"开学啦",		s:"/imgpro/icons/statusface/kaixuela-wide.gif",w:true},
 		"(jz)":		{t:"捐建小学",		s:"/imgpro/icons/statusface/grass.gif"},
+		"(nasa)":	{t:"NASA",			s:"/imgpro/icons/statusface/nasa.gif"},
 	};
 	var fEmList={
 		"(mj)":		{t:"迈克尔.杰克逊",	s:"/imgpro/icons/statusface/mj.gif"},
@@ -3732,7 +3753,7 @@ function main(savedOptions) {
 					fn:[{
 						name:hideFeeds,
 						stage:1,
-						args:[null,"@feedGroup","@markFeedAsRead","@forbiddenFeedTitle","@hideOldFeeds","@oldFeedDays"],
+						args:[null,"@feedGroup","@markFeedAsRead","@forbiddenFeedTitle","@forbiddenFeedId","@hideOldFeeds","@oldFeedDays"],
 						trigger:{"div.feed-list":"DOMNodeInserted"},
 					}],
 				}],
@@ -3846,6 +3867,23 @@ function main(savedOptions) {
 						value:"",
 						type:"input",
 						style:"margin-left:5px;width:310px"
+					}
+				],
+				page:"feed,profile"
+			},{
+				text:"隐藏与以下ID有关的分享新鲜事######",
+				ctrl:[
+					{
+						type:"info",
+						value:"包括分享者和内容来源者。ID是对方个人主页地址中id=后面的数字。多个ID用|分隔"
+					},{
+						type:"br"
+					},{
+						id:"forbiddenFeedId",
+						value:"",
+						type:"input",
+						style:"margin-left:5px;width:310px",
+						verify:{"^$|^([0-9]+\\|)*[0-9]+$":"格式错误！请检查ID是否正确，是否采用|分隔以及是否有多余的空格"}
 					}
 				],
 				page:"feed,profile"
@@ -3987,7 +4025,7 @@ function main(savedOptions) {
 							name:autoCheckFeeds,
 							stage:3,
 							fire:true,
-							args:["@checkFeedInterval","@feedGroup","@forbiddenFeedTitle","@hideOldFeeds","@oldFeedDays"]
+							args:["@checkFeedInterval","@feedGroup","@forbiddenFeedTitle","@forbiddenFeedID","@hideOldFeeds","@oldFeedDays"]
 						}]
 					},{
 						id:"checkFeedInterval",
