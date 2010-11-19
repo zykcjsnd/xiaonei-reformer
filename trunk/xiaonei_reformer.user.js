@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.4.20101118
-// @miniver        390
+// @version        3.2.4.20101119
+// @miniver        391
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -47,8 +47,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.4.20101118";
-XNR.miniver=390;
+XNR.version="3.2.4.20101119";
+XNR.miniver=391;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -133,7 +133,7 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280']";
 	$ban(ads);
 	$script("const ad_js_version=null",true);
 	$wait(1,function() {
@@ -142,6 +142,19 @@ function removeAds() {
 		// 其他的横幅广告。如2010-06的 kfc-banner
 		$("div[class$='-banner']").filter("a[target='_blank']>img").filter({childElementCount:1}).remove();
 		$script("window.load_jebe_ads=function(){}");
+
+		// 人人网在ad_syshome.js的beginLoad()中，间隔10ms检查Flash是否加载完毕。当PercentLoaded()无效时导致异常发生，未能终止定时器
+		// 似乎用了改造器PercentLoaded()就会未定义，原因不明
+		var count=0;
+		(function() {
+			var t=$("#jebe_con_load");
+			if(t.exist()) {
+				t.remove();
+			} else if(count<40) {	// 只检查20秒。网速过慢，超过20秒buildAD还没有被执行的情况有吗？
+				count++;
+				setTimeout(arguments.callee,500);
+			}
+		})();
 	});
 };
 
@@ -1787,26 +1800,31 @@ function showImagesInOnePage() {
 		var baseURL="http://page.renren.com/@@/album/##?curpage=%%";
 		var album=$("#single-column");
 		var items=$(".pager-top>span");
+		var pagerInfo=$("div.pager-top");
 	} else if(XNR.url.indexOf("/photo/ap/")!=-1) {
 		// 外链相册
 		var baseURL="http://photo.renren.com"+document.location.pathname+"?curpage=%%";
 		var album=$("div.photo-list");
 		var items=$(".number-photo");
+		var pagerInfo=$("div.pager-nav");
 	} else if($(".all-photos>.photo-list").exist()) {
 		// 线上活动相册
 		var baseURL="http://event.renren.com"+document.location.pathname+"?curpage=%%";
 		var album=$("div.photo-list");
 		var items=$();	// 没有总数
+		var pagerInfo=$("div.pagertop");
 	} else if ($(".share-photo-main>.photo-list").exist()) {
 		// 从分享相册新鲜事的相册封面照片进入的
 		var baseURL="http://share.renren.com"+document.location.pathname+"?curpage=%%";
 		var album=$("div.photo-list");
 		var items=$(".number-photo");
+		var pagerInfo=$("div.pager-top");
 	} else {
 		var baseURL="http://photo.renren.com/getalbum.do?id=##&owner=@@&curpage=%%&t=**";
 		var album=$("div.photo-list");
 		var album2=$("div.story-pic");
 		var items=$(".number-photo");
+		var pagerInfo=$("div.pager-top");
 	}
 
 	if(album.empty()) {
@@ -1837,7 +1855,7 @@ function showImagesInOnePage() {
 	}
 	baseURL=baseURL.replace("@@",ownerId).replace("##",albumId);
 
-	var pager=$pager($(".pager-nav,.all-photos>.pagertop").eq());
+	var pager=$pager(pagerInfo);
 	// 当前页数
 	var curPage=pager.current;
 	// 总页数
@@ -6215,6 +6233,7 @@ function $pager(pager) {
 	if(pager.exist() && pager.find("li").exist()) {
 		try {
 			curpage=parseInt(pager.find("ol.pagerpro li.current a").text())-1;
+			// 在线活动相册的总数是放在注释中的
 			var p=pager.find("ol.pagerpro").get();
 			for(var i=0;i<p.childNodes.length;i++) {
 				if(p.childNodes[i].nodeType==8) {
@@ -6319,7 +6338,7 @@ PageKit.prototype={
 				this.nodes=this.nodes.concat(s);
 			} else if(s instanceof PageKit) {
 				// 其他PageKit对象
-				this.nodes=this.nodes.concat(o.nodes);
+				this.nodes=this.nodes.concat(s.nodes);
 			} else {
 				// 其他的东西，有可能是NodeList，全部包在Array里
 				this.nodes=this.nodes.concat(Array.prototype.slice.call(s));
