@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.4.20101119
-// @miniver        391
+// @version        3.2.4.20101120
+// @miniver        392
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -47,8 +47,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.4.20101119";
-XNR.miniver=391;
+XNR.version="3.2.4.20101120";
+XNR.miniver=392;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -144,7 +144,7 @@ function removeAds() {
 		$script("window.load_jebe_ads=function(){}");
 
 		// 人人网在ad_syshome.js的beginLoad()中，间隔10ms检查Flash是否加载完毕。当PercentLoaded()无效时导致异常发生，未能终止定时器
-		// 似乎用了改造器PercentLoaded()就会未定义，原因不明
+		// 只要将其设置为隐藏，PercentLoaded()就会变成未定义
 		var count=0;
 		(function() {
 			var t=$("#jebe_con_load");
@@ -1524,7 +1524,7 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(ct)":		{t:"锄头",			s:"/imgpro/icons/statusface/chutou.gif"},
 		"(bbt)":	{t:"棒棒糖",		s:"/imgpro/icons/statusface/bbt.gif"},
 		"(xr)":		{t:"儿时回忆",		s:"/imgpro/icons/statusface/sm.gif"},
-		"(qf)":		{t:"祈福",			s:"/imgpro/icons/statusface/candle.gif"},
+		"(qf)":		{t:"默哀",			s:"/imgpro/icons/statusface/candle.gif"},
 		"(hot)":	{t:"烈日",			s:"/imgpro/icons/statusface/hot.gif"},
 		"(feng)":	{t:"风扇",			s:"/imgpro/icons/statusface/fan.gif"},
 		"(by)":		{t:"下雨",			s:"/imgpro/icons/statusface/rain.gif"},
