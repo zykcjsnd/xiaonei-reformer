@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.4.20101122
-// @miniver        393
+// @version        3.2.4.20101128
+// @miniver        394
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // ==/UserScript==
@@ -47,8 +47,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.4.20101122";
-XNR.miniver=393;
+XNR.version="3.2.4.20101128";
+XNR.miniver=394;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -142,20 +142,20 @@ function removeAds() {
 		// 其他的横幅广告。如2010-06的 kfc-banner
 		$("div[class$='-banner']").filter("a[target='_blank']>img").filter({childElementCount:1}).remove();
 		$script("window.load_jebe_ads=function(){}");
-
-		// 人人网在ad_syshome.js的beginLoad()中，间隔10ms检查Flash是否加载完毕。当PercentLoaded()无效时导致异常发生，未能终止定时器
-		// 只要将其设置为隐藏，PercentLoaded()就会变成未定义
-		var count=0;
-		(function() {
-			var t=$("#jebe_con_load");
-			if(t.exist()) {
-				t.remove();
-			} else if(count<40) {	// 只检查20秒。网速过慢，超过20秒buildAD还没有被执行的情况有吗？
-				count++;
-				setTimeout(arguments.callee,500);
-			}
-		})();
 	});
+
+	// 人人网在ad_syshome.js的beginLoad()中，间隔10ms检查Flash是否加载完毕。当PercentLoaded()无效时导致异常发生，未能终止定时器
+	// 只要将其设置为隐藏，PercentLoaded()就会变成未定义
+	var count=0;
+	(function() {
+		var t=$("#jebe_con_load");
+		if(t.exist()) {
+			t.remove();
+		} else if(count<40) {	// 只检查20秒。网速过慢，超过20秒buildAD还没有被执行的情况有吗？
+			count++;
+			setTimeout(arguments.callee,500);
+		}
+	})();
 };
 
 // 去除页面模板
@@ -1366,6 +1366,17 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 			],
 			"music-box.":[	// music-home.[0-9]+.css 人人爱听
 				".song-list .search,.music-box .reply-list ul,.music-box .reply-editor{background-color:"+SCOLOR+"}",
+			],
+			"job.css":[
+				".page-tabs .tabpanel a,.page-tabs .tabpanel a:visited{color:"+FCOLOR+"}",
+				".page-tabs .tabpanel li.addtab a:hover{color:"+FCOLOR+"}",
+				".resume-preview .qzhx-header{background-color:"+FCOLOR+"}",
+				".pjb-sidenav .nav-list li.selected a{background-color:"+FCOLOR+" !important}",
+				".qzhx-edit .confirm input{background-color:"+FCOLOR+" !important}",
+				".home-nav .c a,.home-nav .c a:hover{background-color:"+FCOLOR+"}",
+				".home-nav .exp a,.home-nav .exp a:hover{background-color:"+FCOLOR+"}",
+				".home-nav .exp .type-list a,.home-nav .exp .type-list a:hover{color:"+FCOLOR+"}",
+				"#mycomment h3{color:"+FCOLOR+"}",
 			]
 		};
 		var style="";
@@ -1582,6 +1593,8 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(ugl)":	{t:"不给力",		s:"/imgpro/icons/statusface/ungelivable.gif"},
 		"(hcn)":	{t:"花痴男",		s:"/imgpro/icons/statusface/hcn.gif"},
 		"(hcv)":	{t:"花痴女",		s:"/imgpro/icons/statusface/hcnv.gif"},
+		"(cb)":		{t:"蟹蟹",			s:"/imgpro/icons/statusface/crab.gif"},
+		"(qt)":		{t:"蜻蜓",			s:"/imgpro/icons/statusface/qingt.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
@@ -1615,6 +1628,7 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(hh)":		{t:"圣诞花环",		s:"/imgpro/icons/statusface/garland.gif"},
 		"(stick)":	{t:"拐杖糖",		s:"/imgpro/icons/statusface/stick.gif"},
 		"(socks)":	{t:"圣诞袜",		s:"/imgpro/icons/statusface/stocking.gif"},
+		"(tk)":		{t:"火鸡",			s:"/imgpro/icons/statusface/turkey.gif"},
 		"(nrj)":	{t:"女人节",		s:"/imgpro/icons/statusface/lipstick.gif"},
 		"(zsj)":	{t:"植树节",		s:"/imgpro/icons/statusface/trees.gif"},
 		"(yb)":		{t:"月饼",			s:"/imgpro/icons/statusface/mooncake.gif"},
@@ -1647,7 +1661,7 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(zg)":		{t:"整蛊作战",		s:"/imgpro/icons/statusface/tomato.png"},
 		"(abao)":	{t:"功夫熊猫",		s:"/imgpro/icons/statusface/panda.gif"},
 		"(nuomi)":	{t:"糯米",			s:"/imgpro/icons/new-statusface/nuomi2.gif"},
-		"(草莓)":	{t:"愉悦一刻 ",		s:"/imgpro/icons/statusface/mzy.gif"},
+	//	"(草莓)":	{t:"愉悦一刻 ",		s:"/imgpro/icons/statusface/mzy.gif"},
 		"(愉悦一刻)":{t:"果粒奶优,愉悦一刻",s:"/imgpro/icons/statusface/mzynew.gif"},
 		"(LG)":		{t:"LG棒棒糖",		s:"/imgpro/activity/lg-lolipop/faceicon_2.gif"},
 	};
@@ -1997,8 +2011,18 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 	} else if($(".share-operations").exist()) {
 		// 从分享相册新鲜事中的相册封面图片进入
 		$(".share-operations").add($("@span").attr("class","pipe").text("|")).add(downLink);
-	} else {
+	} else if($(".pager-bottom,.pagerbottom").exist()) {
 		$(".pager-bottom,.pagerbottom").add(downLink.css("lineHeight","22px"),0);
+	} else if($("table.photoList").exist()) {
+		// 公共主页相册
+		var ap=$("table.photoList").superior();
+		if(ap.child(-1).tag()=="DIV" && ap.find("div>p>span").exist()) {
+			ap.find("div>p>span").superior().add(downLink);
+		} else {
+			ap.add(downLink.attr("style",null));
+		}
+	} else {
+		return;
 	}
 	downLink.bind("click",function(evt) {
 		if(downLink.text().match("分析中")) {
@@ -3135,7 +3159,7 @@ function checkUpdate(evt,checkLink,updateLink,lastCheck) {
 				});
 			} else if(evt) {
 				// 手动点击检查更新按钮时要弹出提示
-				window.alert("最新版本为："+ver+" ("+miniver+")\n当前版本为："+XNR.version+" ("+XNR.miniver+")\n\n已经是最新版本");
+				window.alert("最新发布版："+ver+" ("+miniver+")\n当前使用版："+XNR.version+" ("+XNR.miniver+")\n\n无需更新");
 			}
 
 			$(".xnr_op #lastUpdate").text($formatDate(today));
@@ -6675,17 +6699,22 @@ PageKit.prototype={
 				};
 				return this;
 			case "string":
-				if(v!=null) {
-					this.each(function() {
-						this.setAttribute(o,v);
-					});
-					return this;
-				} else {
+				if(v===undefined) {
 					try {
 						return this.get().getAttribute(o);
 					} catch(ex) {
 						return null;
 					}
+				} else if(v===null) {
+					this.each(function() {
+						this.removeAttribute(o);
+					});
+					return this;
+				} else {
+					this.each(function() {
+						this.setAttribute(o,v);
+					});
+					return this;
 				}
 		}
 		return this;
@@ -6701,17 +6730,17 @@ PageKit.prototype={
 				};
 				return this;
 			case "string":
-				if(v!=null) {
-					this.each(function() {
-						this[o]=v;
-					});
-					return this;
-				} else {
+				if(v===undefined) {
 					try {
 						return this.get()[o];
 					} catch(ex) {
 						return null;
 					}
+				} else {
+					this.each(function() {
+						this[o]=v;
+					});
+					return this;
 				}
 		}
 		return this;
