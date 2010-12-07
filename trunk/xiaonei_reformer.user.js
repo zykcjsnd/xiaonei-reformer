@@ -6,10 +6,11 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.4.20101128
-// @miniver        394
+// @version        3.2.4.20101207
+// @miniver        395
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
+// @run-at         document-start
 // ==/UserScript==
 //
 // Copyright (C) 2008-2010 Xu Zhen
@@ -30,6 +31,14 @@
 
 (function(){
 
+try {
+	var test1=document.location.href; // since Firefox 4.0b7
+	var test2=document.documentElement.id;	// since Firefox 3.7a5
+} catch(ex) {
+	setTimeout(arguments.callee,50);
+	return;
+}
+
 if (window.self != window.top) {
 	if(document.designMode=="on") {
 		// 不在内容可以编辑的frame中运行
@@ -47,8 +56,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.4.20101128";
-XNR.miniver=394;
+XNR.version="3.2.4.20101207";
+XNR.miniver=395;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -198,6 +207,9 @@ function removePageTheme() {
 			logo.attr({height:null,width:null,src:logo.attr("src").replace("viplogo-renren.png","logo-renren.png")});
 		}
 	}
+	// 五周年模板
+	$ban(".skin-action");
+	$("body").removeClass("skin5th");
 };
 
 // 去除升级星级用户提醒
@@ -1106,6 +1118,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".menu-dropdown .menu-item a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .optionmenu li a:hover{background-color:"+FCOLOR+"}",
 				".site-menu-nav .nav-item li.selected,.site-menu-nav .nav-item .item-title.selected{background-color:"+BCOLOR+"}",
+				"a.skin-action,a.skin-action:hover{color:white;background-color:"+FCOLOR+"}",
 			],
 			"home-all-min.css":[
 				".a-feed .details a.share:hover{color:"+FCOLOR+"}",
@@ -1548,6 +1561,8 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(jh)":		{t:"秋菊",			s:"/imgpro/icons/statusface/chrysanthemum.gif"},
 		"(cold)":	{t:"降温",			s:"/imgpro/icons/statusface/cold.gif"},
 		"(bw)":		{t:"暖暖被窝",		s:"/imgpro/icons/statusface/sleep.gif"},
+		"(gl)":		{t:"给力",			s:"/imgpro/icons/statusface/geili.gif"},
+		"(bgl)":	{t:"不给力",		s:"/imgpro/icons/statusface/bugeili.gif"},
 		"(s)":		{t:"大兵",			s:"/imgpro/icons/statusface/soldier.gif"},
 		"(NBA)":	{t:"篮球",			s:"/imgpro/icons/statusface/basketball4.gif"},
 		"(蜜蜂)":	{t:"小蜜蜂",		s:"/imgpro/icons/statusface/bee.gif"},
@@ -1563,15 +1578,11 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(bh)":		{t:"破碎的心",		s:"/imgpro/icons/statusface/broken-heart.gif"},
 		"(4)":		{t:"4周年",			s:"/imgpro/icons/statusface/4-years.gif"},
 		"(cake)":	{t:"周年蛋糕",		s:"/imgpro/icons/statusface/4-birthday.gif"},
-		"(ny)":		{t:"布老虎",		s:"/imgpro/icons/statusface/tiger2.gif"},
-		"(boy)":	{t:"男孩",			s:"/imgpro/icons/statusface/boy.gif"},
-		"(girl)":	{t:"女孩",			s:"/imgpro/icons/statusface/girl.gif"},
 		"(earth)":	{t:"地球",			s:"/imgpro/icons/statusface/wwf-earth.gif"},
 		"(earth1)":	{t:"地球",			s:"/imgpro/icons/statusface/earth.gif"},
 		"(ty)":		{t:"汤圆",			s:"/imgpro/icons/statusface/tang-yuan.gif"},
 		"(rainy)":	{t:"雨",			s:"/imgpro/icons/statusface/rainy.gif"},
 	//	"(rain)":	{t:"雨",			s:"/imgpro/icons/statusface/rainy.gif"},
-		"(jq)":		{t:"坚强",			s:"/imgpro/icons/statusface/quake.gif"},
 		"(read)":	{t:"读书日",		s:"/imgpro/icons/statusface/reading.gif"},
 		"(ct)":		{t:"锄头",			s:"/imgpro/icons/statusface/chutou.gif"},
 		"(bbt)":	{t:"棒棒糖",		s:"/imgpro/icons/statusface/bbt.gif"},
@@ -1585,16 +1596,14 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(mg)":		{t:"七彩玫瑰",		s:"/imgpro/icons/statusface/rose.gif"},
 		"(hzd)":	{t:"划重点",		s:"/imgpro/icons/statusface/huazhongdian.gif"},
 		"(dm)":		{t:"点名",			s:"/imgpro/icons/statusface/dianming.gif"},
-		"(bs)":		{t:"秋高气爽",		s:"/imgpro/icons/statusface/bluesky.gif"},
 		"(ly)":		{t:"落叶",			s:"/imgpro/icons/statusface/autumn-leaves.gif"},
-		"(cy2)":	{t:"登高",			s:"/imgpro/icons/statusface/09double9.gif"},
-		"(cy3)":	{t:"饮菊酒",		s:"/imgpro/icons/statusface/09double9-2.gif"},
 		"(dx)":		{t:"雪人",			s:"/imgpro/icons/statusface/snowman.gif"},
 		"(ugl)":	{t:"不给力",		s:"/imgpro/icons/statusface/ungelivable.gif"},
 		"(hcn)":	{t:"花痴男",		s:"/imgpro/icons/statusface/hcn.gif"},
 		"(hcv)":	{t:"花痴女",		s:"/imgpro/icons/statusface/hcnv.gif"},
 		"(cb)":		{t:"蟹蟹",			s:"/imgpro/icons/statusface/crab.gif"},
 		"(qt)":		{t:"蜻蜓",			s:"/imgpro/icons/statusface/qingt.gif"},
+		"(sn)":		{t:"雪花",			s:"/imgpro/icons/statusface/snow.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
@@ -1620,6 +1629,8 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(qx)":		{t:"七夕",			s:"/imgpro/icons/statusface/qixi.gif"},
 		"(qx2)":	{t:"七夕",			s:"/imgpro/icons/statusface/qixi2.gif"},
 		"(cy1)":	{t:"重阳节",		s:"/imgpro/icons/statusface/09double9-3.gif"},
+		"(cy2)":	{t:"登高",			s:"/imgpro/icons/statusface/09double9.gif"},
+		"(cy3)":	{t:"饮菊酒",		s:"/imgpro/icons/statusface/09double9-2.gif"},
 		"(dad)":	{t:"父亲节",		s:"/imgpro/icons/statusface/love-father.gif"},
 		"(hp)":		{t:"杰克灯",		s:"/imgpro/icons/statusface/halloween-pumpkin.gif"},
 		"(ngd)":	{t:"南瓜灯",		s:"/imgpro/icons/statusface/pumpkin.gif"},
@@ -1634,8 +1645,12 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(yb)":		{t:"月饼",			s:"/imgpro/icons/statusface/mooncake.gif"},
 		"(zz)":		{t:"粽子",			s:"/imgpro/icons/statusface/zongzi.gif"},
 		"(hjr)":	{t:"世界环境日",	s:"/imgpro/icons/statusface/earthday.gif"},
+		"(bs)":		{t:"秋高气爽",		s:"/imgpro/icons/statusface/bluesky.gif"},
 	//	"(虎年)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
 		"(tiger)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
+		"(ny)":		{t:"布老虎",		s:"/imgpro/icons/statusface/tiger2.gif"},
+		"(boy)":	{t:"男孩",			s:"/imgpro/icons/statusface/boy.gif"},
+		"(girl)":	{t:"女孩",			s:"/imgpro/icons/statusface/girl.gif"},
 		"(eclipse)":{t:"日全食",		s:"/imgpro/icons/statusface/eclipse.gif"},
 		"(gk)":		{t:"高考",			s:"/imgpro/icons/statusface/gaokao.gif"},
 		"(pass)":	{t:"CET必过",		s:"/imgpro/icons/statusface/cet46.gif"},
@@ -1644,6 +1659,9 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(kxl)":	{t:"开学啦",		s:"/imgpro/icons/statusface/kaixuela-wide.gif",w:true},
 		"(jz)":		{t:"捐建小学",		s:"/imgpro/icons/statusface/grass.gif"},
 		"(nasa)":	{t:"NASA",			s:"/imgpro/icons/statusface/nasa.gif"},
+		"(jq)":		{t:"坚强",			s:"/imgpro/icons/statusface/quake.gif"},
+		"(rr)":		{t:"红丝带",		s:"/imgpro/icons/statusface/red-ribbon.gif"},
+		"(five)":	{t:"人人网5周年",	s:"/imgpro/icons/statusface/5years.gif"},
 	};
 	var fEmList={
 		"(mj)":		{t:"迈克尔.杰克逊",	s:"/imgpro/icons/statusface/mj.gif"},
@@ -2287,7 +2305,7 @@ function showFullSizeImage(evt,indirect) {
 				}
 				break;
 		}
-		if(!thumbnail || thumbnail.match("/large|_large|large_|/photos/0/0/|/page_pic/|/homeAd/|/[sa]\\.xnimg\\.cn/")) {
+		if(!thumbnail || thumbnail.match("/large|_large|large_|/photos/0/0/|/page_pic/|/homeAd/|/[sa]\\.xnimg\\.cn/|app\\.xnimg\\.cn|/L[^/]+$")) {
 			// 大图/默认空白头像/公共主页图像/网站自身图片
 			if($allocated("image_viewer")) {
 				if(t!=$alloc("image_viewer").viewer && t!=$alloc("image_viewer").image) {
@@ -2375,6 +2393,9 @@ function showFullSizeImage(evt,indirect) {
 		// 日志新鲜事中的图片
 		if(pageURL.indexOf("blog.renren.com/GetEntry.do?")!=-1) {
 			_loadImage("blog",indirect,evt,imgId,pageURL);
+			return;
+		} else if(pageURL.match("page\\.renren\\.com/\\d+/note/\\d+")) {
+			_loadImage("blog",false,evt,imgId,pageURL);
 			return;
 		}
 
@@ -3934,6 +3955,10 @@ function main(savedOptions) {
 					},{
 						id:"lover",
 						text:"##情侣空间",
+						value:false
+					},{
+						id:"newbie",
+						text:"##新人注册",
 						value:false
 					}
 				]
@@ -6193,6 +6218,9 @@ function $feedType(feed) {
 				// 连接网站:8185
 				return "connect";
 		}
+	} else if(stats==="NF_People") {
+		// 同学XX注册了人人。
+		return "newbie";
 	}
 	
 	// blog/status/photo/share/album 的充分条件
@@ -6250,7 +6278,8 @@ function $feedType(feed) {
 		"group":	{l:/\/group\.renren\.com\//},
 		"levelup":	{t:/^等级升至/},
 		"event":	{l:/\/event\.renren\.com\//},
-		"lover":	{l:/\/lover\.renren\.com\//}
+		"lover":	{l:/\/lover\.renren\.com\//},
+		"newbie":	{t:/注册了人人$/}
 	};
 
 	// 删除所有链接子节点，只留下文本节点
