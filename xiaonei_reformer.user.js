@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.4.20101207
-// @miniver        395
+// @version        3.2.5.20101210
+// @miniver        396
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -56,8 +56,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.4.20101207";
-XNR.miniver=395;
+XNR.version="3.2.5.20101210";
+XNR.miniver=396;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -210,6 +210,7 @@ function removePageTheme() {
 	// 五周年模板
 	$ban(".skin-action");
 	$("body").removeClass("skin5th");
+	$patchCSS(".skin5th,.skin5th .site-nav .nav-body{background-image:none}");
 };
 
 // 去除升级星级用户提醒
@@ -1272,6 +1273,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"button,input[type=button]{background-color:"+FCOLOR+"}",
 				"td.pop_content .dialog_body a,td.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
 				"td.pop_content .dialog_buttons input{background-color:"+FCOLOR+" !important}",
+				"td.pop_content h2{background-color:"+FCOLOR+"}",
 				".navigation{background-color:"+XCOLOR+"}",
 				".menu-dropdown .menu-item li.show-more a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .menu-item a:hover{background-color:"+FCOLOR+"}",
@@ -1390,7 +1392,14 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".home-nav .exp a,.home-nav .exp a:hover{background-color:"+FCOLOR+"}",
 				".home-nav .exp .type-list a,.home-nav .exp .type-list a:hover{color:"+FCOLOR+"}",
 				"#mycomment h3{color:"+FCOLOR+"}",
-			]
+			],
+			"group-all-min.css":[
+				".phony_link{color:"+FCOLOR+"}",
+				".pagerpro li a:hover{background-color:"+FCOLOR+"}",
+				".pagerpro li.current a, .pagerpro li.current a:hover{color:"+FCOLOR+"}",
+				"a.share:hover{background-color:"+FCOLOR+"}",
+				".input-submit{background-color:"+FCOLOR+"}",
+			],
 		};
 		var style="";
 		for(var f in files) {
@@ -3929,8 +3938,16 @@ function main(savedOptions) {
 						text:"##小组",
 						value:false
 					},{
+						id:"forum",
+						text:"##论坛",
+						value:false
+					},{
 						id:"vip",
 						text:"##VIP相关",
+						value:false
+					},{
+						id:"club",
+						text:"##俱乐部",
 						value:false
 					},{
 						id:"group",
@@ -4346,7 +4363,7 @@ function main(savedOptions) {
 						value:"如果您将浏览器字体的最小大小设成大于12，可能会出现论坛的栏目导航栏和帖子正文偏右的错误。如果您遇到这个问题，请启用此功能。",
 					}
 				],
-				page:"club"
+				page:"forum"
 			},{
 				text:"##自定义页面样式######",
 				ctrl:[
@@ -5591,7 +5608,7 @@ function main(savedOptions) {
 	$wait(1,function() {
 		var eventId="XNR"+parseInt(parseInt(Math.random()*10000));
 		$("@script").text("if(window.asyncHTMLManager){window.asyncHTMLManager.addEvent('load',function(){var evt=document.createEvent('HTMLEvents');evt.initEvent('"+eventId+"',true,true);document.dispatchEvent(evt)})}").addTo(document.body).remove();
-		$(document).bind(eventId,function(evt) {
+		$(window).bind(eventId,function(evt) {
 			evt.stopPropagation();
 			XNR.url=document.location.href;
 
@@ -5680,7 +5697,7 @@ function $page(category,url) {
 		feed:"renren\\.com/[hH]ome#?$|renren\\.com/[hH]ome.*#nogo$|renren\\.com/[hH]ome\?[^#]*$|#/home|/homeAttention#*$|/homeAttention[^#]*$|/guide\\.renren\\.com/[Gg]uide#?$|#/guide",	// 首页新鲜事，后面的是新注册用户的首页
 		profile:"renren\\.com/[Pp]rofile|/[a-zA-Z0-9_]{5,}\\.renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|renren.com/[a-zA-Z0-9_]{6,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personal/link/
 		blog:"/blog\\.renren\\.com/|#//blog/",	// 日志
-		club:"/club\\.renren\\.com/",	// 论坛
+		forum:"/club\\.renren\\.com/",	// 论坛
 		pages:"/page\\.renren\\.com/",	// 公共主页
 		status:"/status\\.renren\\.com/|#//status/",	// 状态
 		photo:"/photo\\.renren\\.com/getphoto\\.do|/photo\\.renren\\.com/gettagphoto\\.do|/photo\\.renren\\.com/photo/sp/|/photo\\.renren\\.com/photo/[0-9]+/photo-|/page\\.renren\\.com/[^/]+/photo/|event\\.renren\\.com/event/[0-9]+/[0-9]+/photo/[0-9]+|lover\\.renren\\.com/photo/",	// 照片
@@ -6136,8 +6153,10 @@ function $feedType(feed) {
 				// 分享好友:101, 分享日志:102, 分享照片:103, 分享相册:104, 分享链接:107, 分享视频:110
 				return "share";
 			case 2:
-				// 参加小组:210
-				if(ntype==210) {
+				// 论坛发帖:204 参加小组:210
+				if(ntype==204) {
+					return "forum";
+				} else if(ntype==210) {
 					return "xiaozu";
 				}
 				break;
@@ -6192,6 +6211,9 @@ function $feedType(feed) {
 				} else {
 					return "page";
 				}
+			case 22:
+				// 加入俱乐部:2202
+				return "club";
 			case 23:
 				// 发起投票:2301, 参加投票:2303
 				return "poll";
@@ -6427,8 +6449,8 @@ PageKit.prototype={
 					// CSS选择语句
 					this.nodes=this.nodes.concat(Array.prototype.slice.call(document.querySelectorAll(s)));
 				}
-			} else if(s.nodeType) {
-				// DOM节点
+			} else if(s.nodeType || s.document) {
+				// DOM节点 或 window
 				this.nodes=this.nodes.concat(s);
 			} else if(s instanceof PageKit) {
 				// 其他PageKit对象
