@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.5.20101210
-// @miniver        396
+// @version        3.2.5.20101212
+// @miniver        397
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -56,8 +56,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.5.20101210";
-XNR.miniver=396;
+XNR.version="3.2.5.20101212";
+XNR.miniver=397;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -851,23 +851,23 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,
 						} else if(/([0-9]{1,2})-([0-9]{1,2})\s+[0-9]{1,2}:[0-9]{1,2}/.test(time)) {
 							var t={m:parseInt(RegExp.$1),d:parseInt(RegExp.$2)};
 							if(t.m<=curMonth) {
-								// 今年的
+								// 今年的新鲜事
 								if(d.m<=curMonth) {
-									// 截止日期是今年的
+									// 截止日期在今年
 									if(t.m<d.m || (t.m==d.m && t.d<=d.d)) {
 										c.remove();
 										continue;
 									}
 								}
-								// 截止日期是去年的就不用管
+								// 截止日期在去年，就不用管
 							} else {
-								// 去年的？
+								// 去年的新鲜事？
 								if(d.m<=curMonth) {
-									// 截止日期是今年的
+									// 截止日期在今年
 									c.remove();
 									continue;
 								} else {
-									// 截止日期也是去年的
+									// 截止日期也在去年
 									if(t.m<d.m || (t.m==d.m && t.d<=d.d)) {
 										c.remove();
 										continue;
@@ -902,26 +902,29 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,
 					var feedText=feedInfo.find("h3").html().replace(/^\s+|\s+$/,"");
 					var lastReply=0;
 
-					var replyText=feedInfo.find("script[status='1']").text();
-					if(replyText) {
-						var replyList=/"replyList":(\[[\S\s]+?\]),/.exec(replyText);
-						if(replyList) {
-							try {
-								// 里面有一处"type":'0'之类的，会导致parse出错
-								replyList=JSON.parse(replyList[1].replace(/"type":'(\d+)',/g,'"type":0,'));
-							} catch(ex) {
-								replyList=[];
-							}
-							if(replyList.length>0) {
-								var reply=replyList[replyList.length-1];
-								if(reply.id && reply.ubname && reply.ubid && reply.replyContent) {
-									lastReply=reply.id;
-									// 看作是回复者的新鲜事，用回复者头像替换
-									icon=reply.replyer_tinyurl;
-									// 修改新鲜事内容
-									feedText="<a href='http://renren.com/profile.do?id="+reply.ubid+"'>"+reply.ubname+"</a> ："+reply.replyContent+" @ "+feedText;
-								} else {
-									$error("autoCheckFeeds","回复列表结构发生变化");
+					// 如果是公共主页的新鲜事，忽略其回复
+					if($feedType(feedInfo)!="page") {
+						var replyText=feedInfo.find("script[status='1']").text();
+						if(replyText) {
+							var replyList=/"replyList":(\[[\S\s]+?\]),/.exec(replyText);
+							if(replyList) {
+								try {
+									// 里面有一处"type":'0'之类的，会导致parse出错
+									replyList=JSON.parse(replyList[1].replace(/"type":'(\d+)',/g,'"type":0,'));
+								} catch(ex) {
+									replyList=[];
+								}
+								if(replyList.length>0) {
+									var reply=replyList[replyList.length-1];
+									if(reply.id && reply.ubname && reply.ubid && reply.replyContent) {
+										lastReply=reply.id;
+										// 看作是回复者的新鲜事，用回复者头像替换
+										icon=reply.replyer_tinyurl;
+										// 修改新鲜事内容
+										feedText="<a href='http://renren.com/profile.do?id="+reply.ubid+"'>"+reply.ubname+"</a> ："+reply.replyContent+" @ "+feedText;
+									} else {
+										$error("autoCheckFeeds","回复列表结构发生变化");
+									}
 								}
 							}
 						}
@@ -5607,8 +5610,8 @@ function main(savedOptions) {
 
 	$wait(1,function() {
 		var eventId="XNR"+parseInt(parseInt(Math.random()*10000));
-		$("@script").text("if(window.asyncHTMLManager){window.asyncHTMLManager.addEvent('load',function(){var evt=document.createEvent('HTMLEvents');evt.initEvent('"+eventId+"',true,true);document.dispatchEvent(evt)})}").addTo(document.body).remove();
-		$(window).bind(eventId,function(evt) {
+		$("@script").text("if(window.asyncHTMLManager){window.asyncHTMLManager.addEvent('load',function(){var evt=document.createEvent('HTMLEvents');evt.initEvent('"+eventId+"',true,true);document.documentElement.dispatchEvent(evt)})}").addTo(document.body).remove();
+		$(document.documentElement).bind(eventId,function(evt) {
 			evt.stopPropagation();
 			XNR.url=document.location.href;
 
