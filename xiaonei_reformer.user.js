@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.5.20101212
-// @miniver        397
+// @version        3.2.5.20101224
+// @miniver        398
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -56,8 +56,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.5.20101212";
-XNR.miniver=397;
+XNR.version="3.2.5.20101224";
+XNR.miniver=398;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -241,6 +241,8 @@ function removeEnterCartoon() {
 	// 动画最上层div的z-index为1000001
 	const target="body>#mask,body>div[style*='1000001']";
 	$ban(target);
+	// 样式会将body的高度设为100%，overflow设成hidden
+	$patchCSS("html,body{height:auto;overflow:auto}");
 };
 
 // 去除日志信纸
@@ -1043,7 +1045,7 @@ function addNavItems(content) {
 		$("@div").html('<div class="menu-title"><a href="'+items[i+1]+'" target="_blank">'+items[i]+'</a></div>').attr("class","menu").addTo(nav);
 	}
 	//防止被自作主张改动链接
-	$script("try{var e=document.body.querySelectorAll('.nav-main .menu-title>a');for(var i in e){e[i]._ad_rd=true;}}catch(ex){}");
+	$script("try{var e=document.body.querySelectorAll('.nav-main .menu-title>a');for(var i=0;i<e.length;i++){e[i]._ad_rd=true}}catch(ex){}");
 };
 
 // 恢复深蓝主题
@@ -1575,6 +1577,7 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(bw)":		{t:"暖暖被窝",		s:"/imgpro/icons/statusface/sleep.gif"},
 		"(gl)":		{t:"给力",			s:"/imgpro/icons/statusface/geili.gif"},
 		"(bgl)":	{t:"不给力",		s:"/imgpro/icons/statusface/bugeili.gif"},
+		"(yl)":		{t:"鸭梨",			s:"/imgpro/icons/statusface/yali.gif"},
 		"(s)":		{t:"大兵",			s:"/imgpro/icons/statusface/soldier.gif"},
 		"(NBA)":	{t:"篮球",			s:"/imgpro/icons/statusface/basketball4.gif"},
 		"(蜜蜂)":	{t:"小蜜蜂",		s:"/imgpro/icons/statusface/bee.gif"},
@@ -1651,6 +1654,9 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(hh)":		{t:"圣诞花环",		s:"/imgpro/icons/statusface/garland.gif"},
 		"(stick)":	{t:"拐杖糖",		s:"/imgpro/icons/statusface/stick.gif"},
 		"(socks)":	{t:"圣诞袜",		s:"/imgpro/icons/statusface/stocking.gif"},
+		"(xmas)":	{t:"圣诞老人",		s:"/imgpro/icons/statusface/xmas-man.gif"},
+		"(ring)":	{t:"圣诞铃铛",		s:"/imgpro/icons/statusface/xmas-ring.gif"},
+		"(tree)":	{t:"圣诞树",		s:"/imgpro/icons/statusface/xmas-tree.gif"},
 		"(tk)":		{t:"火鸡",			s:"/imgpro/icons/statusface/turkey.gif"},
 		"(nrj)":	{t:"女人节",		s:"/imgpro/icons/statusface/lipstick.gif"},
 		"(zsj)":	{t:"植树节",		s:"/imgpro/icons/statusface/trees.gif"},
@@ -3570,7 +3576,7 @@ function main(savedOptions) {
 						value:false,
 					},{
 						id:"birthday",
-						text:"##好友生日",
+						text:"##好友生日/节日提醒",
 						value:false,
 					},{
 						id:"webFunction",
