@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.5.20101224
-// @miniver        398
+// @version        3.2.5.20101225
+// @miniver        399
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -207,10 +207,15 @@ function removePageTheme() {
 			logo.attr({height:null,width:null,src:logo.attr("src").replace("viplogo-renren.png","logo-renren.png")});
 		}
 	}
-	// 五周年模板
-	$ban(".skin-action");
-	$("body").removeClass("skin5th");
-	$patchCSS(".skin5th,.skin5th .site-nav .nav-body{background-image:none}");
+};
+function removeHomeTheme() {
+	// 特定节日模板
+	if($(".skin-action").exist()) {
+		if(/关闭/.test($(".skin-action").text())) {
+			$script($(".skin-action").attr("onclick"));
+		}
+		$ban(".skin-action");
+	}
 };
 
 // 去除升级星级用户提醒
@@ -3421,8 +3426,14 @@ function main(savedOptions) {
 						name:removePageTheme,
 						stage:1,
 						fire:true,
+						once:true
+					},{
+						name:removeHomeTheme,
+						stage:1,
+						fire:true,
 					}],
 				}],
+				page:"home,*",
 			},{
 				text:"##去除升级星级用户提示",
 				ctrl:[{
@@ -6199,6 +6210,9 @@ function $feedType(feed) {
 					return "poll";
 				}
 				break;
+			case 12:
+				// 成为好友:1201
+				return "friend";
 			case 15:
 				// 看过电影:1502
 				return "movie";
@@ -6246,8 +6260,14 @@ function $feedType(feed) {
 					return "ads";
 				}
 			case 81:
-				// 连接网站:8185
-				return "connect";
+				if(ntype==8182) {
+					// 正在玩XX游戏:8182
+					return "ads";
+				} else if(ntype==8185) {
+					// 连接网站:8185
+					return "connect";
+				}
+				break;
 		}
 	} else if(stats==="NF_People") {
 		// 同学XX注册了人人。
