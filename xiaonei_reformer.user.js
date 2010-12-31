@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.5.20101225
-// @miniver        399
+// @version        3.2.5.20101231
+// @miniver        400
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -56,8 +56,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.5.20101225";
-XNR.miniver=399;
+XNR.version="3.2.5.20101231";
+XNR.miniver=400;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -431,7 +431,8 @@ function rejectRequest(req,blockApp) {
 			}
 			// 一般应用
 			var command;
-			while(command=/ignore_all_request\((\d+),(\d+),'(.*?)'\)/g.exec(html)) {
+			var regexpr=/ignore_all_request\((\d+),(\d+),'(.*?)'\)/g;
+			while(command=regexpr.exec(html)) {
 				if(blockApp==true) {
 					// 屏蔽同时会清空当前的请求队列
 					$get("http://app.renren.com/req/blockAppRequest/block?action=block&type="+command[1]+"&appId="+command[2],null,null,"POST");
@@ -451,21 +452,24 @@ function rejectRequest(req,blockApp) {
 		// 圈人请求
 		if(req["tagRequest"]) {
 			var command;
-			while(command=/refusePhotoRequest\((\d+),\d+,'.*?',\d+,\d+\)/g.exec(html)) {
+			var regexpr=/refusePhotoRequest\((\d+),\d+,'.*?',\d+,\d+\)/g;
+			while(command=regexpr.exec(html)) {
 				$get("http://photo.renren.com/refuseptrequest.do?id="+command[1]);
 			}
 		}
 		// 好友推荐
 		if(req["recommendRequest"]) {
 			var command;
-			while(command=/rejectRecommend\((\d+),'.*?',\d+\)/g.exec(html)) {
+			var regexpr=/rejectRecommend\((\d+),'.*?',\d+\)/g;
+			while(command=regexpr.exec(html)) {
 				$get("http://friend.renren.com/RejectRecFriend.do?id="+command[1],null,null,"POST");
 			}
 		}
 		// 情侣请求，尚无全部拒绝功能
 		if(req["loverRequest"]) {
 			var command;
-			while(command=/ingoreLoversRequest\('.*?','.*?',\d+,'.*?',\d+,'(.*?)'\)/g.exec(html)) {
+			var regexpr=/ingoreLoversRequest\('.*?','.*?',\d+,'.*?',\d+,'(.*?)'\)/g;
+			while(command=regexpr.exec(html)) {
 				$get(command[1],null,null,"POST");
 			}
 		}
@@ -524,7 +528,8 @@ function blockAppNotification() {
 	$get("http://msg.renren.com/notify/notifications.do",function(html) {
 		var blocked=[];
 		var command;
-		while(command=/showDialog\(this,(\d+)\)/g.exec(html)) {
+		var regexpr=/showDialog\(this,(\d+)\)/g;
+		while(command=regexpr.exec(html)) {
 			if(!blocked[command[1]]) {
 				$get("http://msg.renren.com/notify/notifications.do?action=block&app_id="+command[1]);
 				blocked[command[1]]=true;
@@ -1671,7 +1676,6 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(bs)":		{t:"秋高气爽",		s:"/imgpro/icons/statusface/bluesky.gif"},
 	//	"(虎年)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
 		"(tiger)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
-		"(ny)":		{t:"布老虎",		s:"/imgpro/icons/statusface/tiger2.gif"},
 		"(boy)":	{t:"男孩",			s:"/imgpro/icons/statusface/boy.gif"},
 		"(girl)":	{t:"女孩",			s:"/imgpro/icons/statusface/girl.gif"},
 		"(eclipse)":{t:"日全食",		s:"/imgpro/icons/statusface/eclipse.gif"},
@@ -1685,6 +1689,8 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(jq)":		{t:"坚强",			s:"/imgpro/icons/statusface/quake.gif"},
 		"(rr)":		{t:"红丝带",		s:"/imgpro/icons/statusface/red-ribbon.gif"},
 		"(five)":	{t:"人人网5周年",	s:"/imgpro/icons/statusface/5years.gif"},
+		"(ny)":		{t:"新年好",		s:"/imgpro/icons/statusface/2011.gif"},
+		"(2011)":	{t:"2011",			s:"/imgpro/icons/statusface/2011g.gif"},
 	};
 	var fEmList={
 		"(mj)":		{t:"迈克尔.杰克逊",	s:"/imgpro/icons/statusface/mj.gif"},
@@ -2618,8 +2624,8 @@ function showFullSizeImage(evt,indirect) {
 			try {
 				// 搜索ID匹配的大图。可能是一般相册的故事模式，也可能是未能区分分享相册/照片的情况
 				var res=null;
-				var reg=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://[^\"]+?large_.*?"+imgId+"\"[^>]*?)>","ig");
-				while(res=reg.exec(html)) {
+				var regexpr=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://[^\"]+?large_.*?"+imgId+"\"[^>]*?)>","ig");
+				while(res=regexpr.exec(html)) {
 					if(res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
 						res=/src="(.*?)"/.exec(res[2])[1];
 						// 直接显示
@@ -2630,8 +2636,8 @@ function showFullSizeImage(evt,indirect) {
 				}
 				// 搜索ID匹配的图片
 				res=null;
-				reg=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://[^\"]+?"+imgId+"\"[^>]*?)>","ig");
-				while(res=reg.exec(html)) {
+				regexpr=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://[^\"]+?"+imgId+"\"[^>]*?)>","ig");
+				while(res=regexpr.exec(html)) {
 					if(!res[2].match("\"http://[^\"]+tiny_") && res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
 						res=res[1];
 						break;
@@ -2639,8 +2645,8 @@ function showFullSizeImage(evt,indirect) {
 				}
 				// 当ID不匹配且为搜索小头像时，搜索时间标记匹配的图片
 				if(!res && imgDate) {
-					reg=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://[^\"]+?/"+imgDate+"/.*?\"[^>]*?)>","ig");
-					while(res=reg.exec(html)) {
+					regexpr=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://[^\"]+?/"+imgDate+"/.*?\"[^>]*?)>","ig");
+					while(res=regexpr.exec(html)) {
 						if(!res[2].match("\"http://[^\"]+tiny_") && res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
 							res=res[1];
 							break;
@@ -2648,8 +2654,8 @@ function showFullSizeImage(evt,indirect) {
 					}
 					// 还没有的话，只限定日期试试。误差较大，但愿能准确匹配
 					if(!res) {
-						reg=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://.*?/"+/[0-9]{8}/.exec(imgDate)+"/.*?\"[^>]*?)>","ig");
-						while(res=reg.exec(html)) {
+						regexpr=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://.*?/"+/[0-9]{8}/.exec(imgDate)+"/.*?\"[^>]*?)>","ig");
+						while(res=regexpr.exec(html)) {
 							if(!res[2].match("\"http://[^\"]+tiny_") && res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
 								res=res[1];
 								break;
