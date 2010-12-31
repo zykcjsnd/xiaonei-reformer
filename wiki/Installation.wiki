@@ -90,3 +90,5 @@ Firefox扩展目前还未通过Mozilla官方审核，所以浏览器的检查扩
 http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_o1.png
 
 <font color="red">这一步非常重要，如果不修改，脚本将无法正常运行。</font>关于脚本存储的更多信息，参考[http://www.opera.com/docs/userjs/specs/#scriptstorage 这里]。
+==关于Opera 11的扩展==
+Opera 11增加了扩展机制。但目前这个机制还存在一个缺陷，导致改造器Opera扩展版本的众多功能无法正常执行。这个缺陷已经被列入了Opera的改进目标中，在其被解决之前，不会发布Opera扩展版本。
