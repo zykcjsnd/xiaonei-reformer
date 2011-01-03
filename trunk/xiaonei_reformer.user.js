@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.5.20101231
-// @miniver        400
+// @version        3.2.5.20110103
+// @miniver        401
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -379,6 +379,7 @@ function hideRequest(req) {
 		"loverRequest":"l-love",
 		"pageRequest":"l-page",
 		"addbookRequest":"l-friend-address",
+		"xiaozuRequest":"l-group-new",
 		"otherRequest":"iOther"
 	};
 	var box=$(".side-item.newrequests ul.icon");
@@ -444,7 +445,7 @@ function rejectRequest(req,blockApp) {
 	}
 
 	// 没有其他选项被启用，退出。
-	if(req["tagRequest"]==false && req["recommendRequest"]==false && req["loverRequest"]==false) {
+	if(req["tagRequest"]==false && req["recommendRequest"]==false && req["loverRequest"]==false && req["xiaozuRequest"]==false) {
 		return;
 	}
 
@@ -469,6 +470,14 @@ function rejectRequest(req,blockApp) {
 		if(req["loverRequest"]) {
 			var command;
 			var regexpr=/ingoreLoversRequest\('.*?','.*?',\d+,'.*?',\d+,'(.*?)'\)/g;
+			while(command=regexpr.exec(html)) {
+				$get(command[1],null,null,"POST");
+			}
+		}
+		// 小组邀请
+		if(req["xiaozuRequest"]) {
+			var command;
+			var regexpr=/refuseCircle\(\d+,'(.*?)',\d+\)/g;
 			while(command=regexpr.exec(html)) {
 				$get(command[1],null,null,"POST");
 			}
@@ -3756,6 +3765,10 @@ function main(savedOptions) {
 						text:"##通讯录请求",
 						value:false
 					},{
+						id:"xiaozuRequest",
+						text:"##小组邀请",
+						value:false
+					},{
 						id:"otherRequest",
 						text:"##其他请求",
 						value:false,
@@ -3815,6 +3828,10 @@ function main(savedOptions) {
 					},{
 						id:"addbookRequest",
 						text:"##通讯录请求",
+						value:false
+					},{
+						id:"xiaozuRequest",
+						text:"##小组邀请",
 						value:false
 					}
 				]
