@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.5.20110113
-// @miniver        402
+// @version        3.2.5.20110118
+// @miniver        403
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -304,6 +304,7 @@ function removeHomeGadgets(gadgetOpt) {
 		"publicPageAdmin":"#pageAdmin,.pymk.manage",	// 公共主页管理
 		"birthday":"#homeBirthdayPart",	// 好友生日
 		"survey":".side-item.sales-poll",	// 人人网调查
+		"friendPhoto":"#friendPhoto",	// 朋友的照片
 		"newStar":".star-new,#highSchoolStar",	// 人气之星
 		"contact":".side-item.get-touch"	// 联系朋友
 	};
@@ -349,7 +350,7 @@ function removeProfileGadgets(gadgetOpt) {
 		"visitors":"#visitors.mod",
 		"pages":"#pages.mod",
 		"friends":"#friends.mod",
-		"theme":".enter-paints,#paintother,#paintself",
+		"theme":"li.dressup,#dressup",
 		"invitation":".guide-find-friend,p.inviteguys",
 		"introduceFriends":"#commend-friends"
 	};
@@ -1022,7 +1023,7 @@ function autoReloadFeeds(interval) {
 // 去除导航栏项目
 function removeNavItems(navLinks) {
 	const links={
-		"theme":"i.renren.com/shop",
+		"theme":"i.renren.com/shop|tpl_free.action",
 		"app":"app.renren.com",
 		"game":"game.renren.com",
 		"vip":"i.renren.com/pay",
@@ -1033,7 +1034,11 @@ function removeNavItems(navLinks) {
 	var style="";
 	for(var l in navLinks) {
 		if(navLinks[l]) {
-			style+="div.nav-body .menu .menu-title a[href*='"+links[l]+"'],";
+			if(l=="theme") {
+				style+="div.nav-body .menu .menu-title a[href*='i.renren.com/shop'],div.nav-body .menu .menu-title a[href*='tpl_free.action'],";
+			} else {
+				style+="div.nav-body .menu .menu-title a[href*='"+links[l]+"'],";
+			}
 		}
 	}
 	if(style) {
@@ -1407,8 +1412,8 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".input-button, .input-submit{background-color:"+FCOLOR+"}",
 				".new-album .tabs,.song-list tr.selected,.statuscmtitem{background-color:"+SCOLOR+"}",
 			],
-			"music-box.":[	// music-home.[0-9]+.css 人人爱听
-				".song-list .search,.music-box .reply-list ul,.music-box .reply-editor{background-color:"+SCOLOR+"}",
+			"music-box.":[	// music-box.[0-9]+.css 人人爱听
+				".song-list .search,.music-box .reply-list ul,.music-box .reply-editor,.music-box .filter-list a:hover{background-color:"+SCOLOR+"}",
 			],
 			"job.css":[
 				".page-tabs .tabpanel a,.page-tabs .tabpanel a:visited{color:"+FCOLOR+"}",
@@ -1427,6 +1432,14 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".pagerpro li.current a, .pagerpro li.current a:hover{color:"+FCOLOR+"}",
 				"a.share:hover{background-color:"+FCOLOR+"}",
 				".input-submit{background-color:"+FCOLOR+"}",
+			],
+			"radio.":[	// radio.[0-9]+.css 人人电台
+				"a{color:"+FCOLOR+"}",
+				".music-operation label{color:"+FCOLOR+"}",
+				".pagerpro a:hover{background-color:"+FCOLOR+"}",
+				".pagerpro .current a,.pagerpro .current a:hover{color:"+FCOLOR+"}",
+				"td.pop_content h2{background-color:"+BCOLOR+"}",
+				".input-button, .input-submit{background-color:"+FCOLOR+"}",
 			],
 		};
 		var style="";
@@ -1726,42 +1739,6 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(愉悦一刻)":{t:"果粒奶优,愉悦一刻",s:"/imgpro/icons/statusface/mzynew.gif"},
 		"(LG)":		{t:"LG棒棒糖",		s:"/imgpro/activity/lg-lolipop/faceicon_2.gif"},
 	};
-	// 日志/照片回复表情列表，直接与序号/URL对应
-	var emList2={
-		"(不)":1,
-		"(谄笑)":2,
-		"(吃饭)":3,
-		"(调皮)":4,
-		"(尴尬)":5,
-		"(汗)":6,
-		"(惊恐)":7,
-		"(囧)":8,
-		"(可爱)":9,
-		"(酷)":10,
-		"(流口水)":11,
-		"(猫猫笑)":12,
-		"(色)":13,
-		"(生病)":14,
-		"(叹气)":15,
-		"(淘气)":16,
-		"(舔)":17,
-		"(偷笑)":18,
-		"(吐)":19,
-		"(吻)":20,
-		"(晕)":21,
-		"(猪猪头)":22,
-		"(住嘴)":23,
-		"(大笑)":24,
-		"(害羞)":25,
-		"(惊讶)":26,
-		"(口罩)":27,
-		"(哭)":28,
-		"(困)":29,
-		"(难过)":30,
-		"(生气)":31,
-		"(书呆子)":32,
-		"(微笑)":33
-	};
 
 	if(eEmo) {
 		for(var e in eEmList) {
@@ -1818,9 +1795,6 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 	var code="var count=0;(function(){if(!XN.app.status.emoJsonForNewsFeedStatus){if(count<10){setTimeout(arguments.callee,500)};count++;return}var list=JSON.parse('"+JSON.stringify(emList1)+"');var curList=JSON.parse(XN.app.status.emoJsonForNewsFeedStatus).ubbList;for(var i=0;i<curList.length;i++){var em=curList[i];if(list[em.ubb]){delete list[em.ubb]}};for(var e in list){var em=list[e];curList.push({alt:'('+em.t+')',id:0,src:em.s,position:1000,ubb:e,img:'<img src=\"http://xnimg.cn'+em.s+'\" alr=\"'+em.t+'\"'})};XN.app.status.emoJsonForNewsFeedStatus='{\"ubbList\":'+JSON.stringify(curList)+'}'})()";
 	$script(code);
 
-	// 处理照片/日志表情
-	var code="var count=0;(function(){if(!XN.app.status.emoJsonForNewsFeedCommon){if(count<10){setTimeout(arguments.callee,500)};count++;return}var list=JSON.parse('"+JSON.stringify(emList2)+"');var curList=JSON.parse(XN.app.status.emoJsonForNewsFeedCommon).ubbList;for(var i=0;i<curList.length;i++){var em=curList[i];if(em.types==0)continue;if(list[em.ubb]){delete list[em.ubb]}};for(var e in list){curList.push({alt:e.substring(1,e.length-1),id:0,kind:0,position:1000,size:1,src:'/imgpro/emotions/tie/'+list[e]+'.gif',types:9,ubb:e,img:'<img src=\"http://xnimg.cn/imgpro/emotions/tie/'+list[e]+'.gif\" alt=\"'+e.substring(1,e.length-1)+'\"/>'})};XN.app.status.emoJsonForNewsFeedCommon='{\"ubbList\":'+JSON.stringify(curList)+'}'})()";
-	$script(code);
 };
 
 // 在日志、相册中增加楼层计数
@@ -3002,7 +2976,7 @@ function searchShare() {
 			var curpage=pager.current;
 			var lastpage=pager.last;
 			var cache=false;
-			if(!$allocated("share_items")) {
+			if($("#content[cache]").empty()) {
 				if(lastpage<50) {
 					// 当页数小于50时（1000项），启用缓存模式，将所有搜索到的项目加入到页面
 					cache=true;
@@ -3033,9 +3007,9 @@ function searchShare() {
 				}
 			});
 			// lastpage为0时，缓存无意义
-			if(lastpage>0 && !$allocated("share_items")) {
+			if(lastpage>0 && $("#content[cache]").empty()) {
 				if(cache) {
-					$alloc("share_items");
+					$("#content").attr("cache","");
 				}
 				var link=$(".pager-top ol.pagerpro li:not(.current) a").prop("href").replace(/curpage=[0-9]+/,"").replace(/#.*$/,"");
 				if(link.indexOf("?")==-1) {
@@ -3101,7 +3075,7 @@ function searchShare() {
 			$error("searchShare::click",ex);
 		}
 	});
-	$("@span").text("多个关键字用半角空格隔开").addTo(searchBar);
+	$("@span").text("多个关键词请用半角空格隔开").addTo(searchBar);
 };
 
 // 禁止显示名片
@@ -3186,6 +3160,61 @@ function showPhotoAuthorComment() {
 			$error("showPhotoAuthorComment",ex);
 		}
 	});
+};
+
+// 显示歌曲文件地址
+function showMusicFileLink() {
+	var paramStr=$("#player param[name='flashvars']").attr("value");
+	if(!paramStr) {
+		$error("showMusicFileLink","无法获取播放内容，重试中...");
+		setTimeout(arguments.callee,100);
+		return;
+	}
+	var paramList=paramStr.split("&");
+	var src,name;
+	for(var i=0;i<paramList.length;i++) {
+		var param=paramList[i];
+		if(param.match("^name=")) {
+			name=param.substring(5);
+		} else if(param.match("^src=")) {
+			src=param.substring(4);
+		}
+		if(name && src) {
+			break;
+		}
+	}
+	if(!src) {
+		$error("showMusicFileLink","无法分析播放参数");
+		return;
+	}
+	if(name.length>10) {
+		name=name.substring(0,10)+"...";
+	}
+	if($("a#tabDownload").empty()) {
+		$("#tab ul.clearfix").add($("@li").add($("@a").attr({"id":"tabDownload","target":"_black"}).text("下载 "+name)));
+	}
+	$("a#tabDownload").attr("href",src);
+
+	var code="var m=window.musicComment;"+
+		"if(m.oa){"+
+			"return;"+
+		"};"+
+		"m.oa=m.buildCommentListAsync;"+
+		"m.buildCommentListAsync=function(mid){"+
+			"new XN.net.xmlhttp({url:'http://music.renren.com/musicbox/song/'+mid,method:'get',onSuccess:function(r){"+
+				"if(r.responseText){"+
+					"var rp=XN.json.parse(r.responseText);"+
+					"var t=document.getElementById('tabDownload');"+
+					"t.setAttribute('href',rp.src);"+
+					"if(rp.name.length>10){"+
+						"rp.name=rp.name.substring(0,10)+'...'"+
+					"}"+
+					"t.textContent='下载 '+rp.name;"+
+				"}"+
+			"}});"+
+			"this.oa(mid);"+
+		"};";
+	$script(code);
 };
 
 // 检查更新
@@ -3618,6 +3647,10 @@ function main(savedOptions) {
 						text:"##人人网调查",
 						value:false,
 					},{
+						id:"friendPhoto",
+						text:"##朋友的照片",
+						value:false,
+					},{
 						id:"newStar",
 						text:"##人气之星",
 						value:false,
@@ -4044,7 +4077,7 @@ function main(savedOptions) {
 				],
 				page:"feed,profile"
 			},{
-				text:"隐藏与以下ID有关的分享新鲜事######",
+				text:"隐藏与以下ID有关的分享######",
 				ctrl:[
 					{
 						type:"info",
@@ -4832,7 +4865,7 @@ function main(savedOptions) {
 						}]
 					},{
 						type:"info",
-						value:"可以通过标题/内容预览搜索自己或他人的分享"
+						value:"可以根据标题/内容预览中出现的文字搜索自己或他人的分享，支持多个关键词。不要和网站原有的分享搜索混用"
 					}
 				],
 				page:"share"
@@ -4866,6 +4899,18 @@ function main(savedOptions) {
 					}
 				],
 				page:"photo"
+			},{
+				text:"##在人人爱听播放器中显示音乐下载地址",
+				ctrl:[{
+					id:"showMusicFileLink",
+					value:false,
+					fn:[{
+						name:showMusicFileLink,
+						stage:2,
+						fire:true
+					}]
+				}],
+				page:"musicbox"
 			}
 		],
 		"自动更新":[
@@ -5755,6 +5800,8 @@ function $page(category,url) {
 		act:"/act\\.renren\\.com/",	// 活动
 		request:"/req\\.renren\\.com/",	// 请求
 		searchEx:"/browse\\.renren\\.com/searchEx\\.do",	// 搜索结果
+		musicbox:"/music.renren.com/musicbox",	// 人人爱听播放器
+		fm:"/music.renren.com/fm",	// 人人电台
 	};
 	if(!url) {
 		url=XNR.url;
