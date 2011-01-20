@@ -10,7 +10,7 @@
 .navigation-new .nav-main .menu-title a{font-weight:normal;padding:0 7px}
 .navigation-new .nav-main .drop-menu-btn:not([id]){display:none}
 .navigation-new .nav-main .drop-menu-btn, .navigation-new .with-drop-menu a:hover .drop-menu-btn, .navigation-new .with-drop-menu a.hover .drop-menu-btn{visibility:visible;width:10px;background-position:-5px -44px}
-/* 如果不需要显示下拉菜单，可以将上面两行换成
+/* 如果不需要显示下拉菜单，可以将上面后两行换成下面这行
 .navigation-new .nav-main .drop-menu-btn{display:none}
 */
 }}}
