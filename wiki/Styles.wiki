@@ -4,14 +4,12 @@
 
 <font color="red">将以下列出的页面样式复制粘贴到改造器中“改造界面”->"自定义页面样式"下的编辑框中</font>
 
-==隐藏“意见反馈”标签==
+==旧式风格的导航栏==
 {{{
-#feedback-box{display:none}
-}}}
-
-==去除亚运会金牌榜==
-{{{
-#asianGames{display:none !important}
+/* 缺陷：鼠标需要移动到箭头上才会弹出下拉菜单 */
+.navigation-new .nav-main .menu-title a{font-weight:normal;padding:0 7px}
+.navigation-new .nav-main .drop-menu-btn:not([id]){display:none}
+.navigation-new .nav-main .drop-menu-btn, .navigation-new .with-drop-menu a:hover .drop-menu-btn, .navigation-new .with-drop-menu a.hover .drop-menu-btn{visibility:visible;width:10px;background-position:-5px -44px}
 }}}
 
 ==Facebook风格的个人主页==
