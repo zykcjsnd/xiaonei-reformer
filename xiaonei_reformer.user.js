@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.5.20110118
-// @miniver        403
+// @version        3.2.5.20110120
+// @miniver        404
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -142,7 +142,7 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], a[href*='track.yx.renren.com']";
 	$ban(ads);
 	$script("const ad_js_version=null",true);
 	$wait(1,function() {
@@ -306,7 +306,8 @@ function removeHomeGadgets(gadgetOpt) {
 		"survey":".side-item.sales-poll",	// 人人网调查
 		"friendPhoto":"#friendPhoto",	// 朋友的照片
 		"newStar":".star-new,#highSchoolStar",	// 人气之星
-		"contact":".side-item.get-touch"	// 联系朋友
+		"contact":".side-item.get-touch",	// 联系朋友
+		"feedback":"#feedback-box"	// 意见反馈
 	};
 	const filters={
 		"webFunction":{t:".side-item",f:".web-function"},	// 站内功能
@@ -1070,7 +1071,7 @@ function addNavItems(content) {
 	}
 	var items=content.split("\n");
 	for(var i=0;i<items.length;i+=2) {
-		$("@div").html('<div class="menu-title"><a href="'+items[i+1]+'" target="_blank">'+items[i]+'</a></div>').attr("class","menu").addTo(nav);
+		$("@div").html('<div class="menu-title"><a href="'+items[i+1]+'" target="_blank">'+items[i]+'<span class="drop-menu-btn"></span></a></div>').attr("class","menu").addTo(nav);
 	}
 	//防止被自作主张改动链接
 	$script("try{var e=document.body.querySelectorAll('.nav-main .menu-title>a');for(var i=0;i<e.length;i++){e[i]._ad_rd=true}}catch(ex){}");
@@ -1147,12 +1148,13 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"td.pop_content h2{background-color:"+FCOLOR+"}",
 				"ul.square_bullets{color:"+FCOLOR+"}",
 				".navigation{background-color:"+XCOLOR+"}",
-				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
+				".navigation .menu-title a:hover,.navigation .menu-title a.hover{background-color:"+BCOLOR+"}",
 				".menu-dropdown .menu-item li.show-more a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .menu-item a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .optionmenu li a:hover{background-color:"+FCOLOR+"}",
 				".site-menu-nav .nav-item li.selected,.site-menu-nav .nav-item .item-title.selected{background-color:"+BCOLOR+"}",
 				"a.skin-action,a.skin-action:hover{color:white;background-color:"+FCOLOR+"}",
+				"#accountDropDownMenu a.logout:hover{background-color:"+FCOLOR+"}",
 			],
 			"home-all-min.css":[
 				".a-feed .details a.share:hover{color:"+FCOLOR+"}",
@@ -1184,7 +1186,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"td.pop_content h2{background-color:"+XCOLOR+"}",
 				"ul.square_bullets{color:"+FCOLOR+"}",
 				".navigation{background-color:"+XCOLOR+"}",
-				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
+				".navigation .menu-title a:hover,.navigation .menu-title a.hover{background-color:"+BCOLOR+"}",
 				".menu-dropdown .menu-item li.show-more a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .menu-item a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .optionmenu li a:hover{background-color:"+FCOLOR+"}",
@@ -1194,6 +1196,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"#pages-jump a{color:"+FCOLOR+"}",
 				"#pop-login h1{background-color:"+FCOLOR+"}",
 				".newpop .share_popup .toggle_tabs li a{color:"+FCOLOR+"}",
+				"#accountDropDownMenu a.logout:hover{background-color:"+FCOLOR+"}",
 			],
 			"news-feeds.css":[
 				"ul.richlist.feeds li div.details a.share:hover{color:"+FCOLOR+"}",
@@ -1220,6 +1223,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".page-tabs .tabpanel a,.page-tabs .tabpanel a:visited{color:"+FCOLOR+"}",
 				".page-tabs .tabpanel li.select a,.page-tabs .tabpanel li.addtab a:hover{color:"+FCOLOR+"}",
 				".stabs a,.stabs a:hover,.stabs a:visited{color:"+FCOLOR+"}",
+				".stabs a.current span,.stabs a.current span:hover{background-color:"+FCOLOR+"}",
 				"form.editDesc input{color:"+FCOLOR+"}",
 				".theme-panel a,.theme-panel a:link,.theme-panel a:hover,.theme-panel a:visited{color:"+FCOLOR+"}",
 				".thmc-action .del:hover{background-color:"+FCOLOR+"}",
@@ -1655,6 +1659,9 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(cb)":		{t:"蟹蟹",			s:"/imgpro/icons/statusface/crab.gif"},
 		"(qt)":		{t:"蜻蜓",			s:"/imgpro/icons/statusface/qingt.gif"},
 		"(sn)":		{t:"雪花",			s:"/imgpro/icons/statusface/snow.gif"},
+		"(tic)":	{t:"车票",			s:"/imgpro/icons/statusface/ticket.gif"},
+		"(tra)":	{t:"车头",			s:"/imgpro/icons/statusface/train.gif"},
+		"(trb)":	{t:"车厢",			s:"/imgpro/icons/statusface/trainbox.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
@@ -3658,6 +3665,10 @@ function main(savedOptions) {
 						id:"contact",
 						text:"##联系朋友",
 						value:false
+					},{
+						id:"feedback",
+						text:"##意见反馈",
+						value:false
 					}
 				],
 			},{
@@ -4348,7 +4359,7 @@ function main(savedOptions) {
 						id:"navItemsContent",
 						type:"edit",
 						style:"width:99%;height:80px;overflow:auto;word-wrap:normal;margin-top:5px",
-						value:"论坛\nhttp://club.renren.com/\n校园频道\nhttp://school.renren.com/"
+						value:"论坛\nhttp://club.renren.com/\n情侣空间\nhttp://lover.renren.com/dispatch\n"
 					}
 				],
 				master:0
