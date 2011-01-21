@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.5.20110120
-// @miniver        404
+// @version        3.2.5.20110121
+// @miniver        405
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -56,8 +56,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.5.20101231";
-XNR.miniver=400;
+XNR.version="3.2.5.20110121";
+XNR.miniver=405;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1058,6 +1058,34 @@ function widenNavBar() {
 	$wait(1,function() {
 		$("#navBar").move("before",$("body.layout_home3cols #container, body.layout_3cols #container"));
 	});
+};
+
+// 使用旧式风格导航栏
+function useOldStyleNav() {
+	var css=".navigation-new .nav-main .menu-title a{font-weight:normal;padding:0 7px}.navigation-new .nav-main .drop-menu-btn{visibility:hidden;width:0;margin:0}.navigation-new .nav-other .account-action .menu-title a{background:none;padding:0 5px}";
+	$wait(1,function() {
+		$(".navigation-new .nav-main .menu-title a").filter(".drop-menu-btn[id]").bind("mouseover",function(evt) {
+			var newEvt=document.createEvent('MouseEvents');
+			newEvt.initMouseEvent("mouseover",true,true,window,0,evt.screenX,evt.screenY,evt.clientX,evt.clientY,evt.altKey,evt.ctrlKey,evt.shiftKey,evt.metaKey,0,evt.target);
+			evt.target.firstElementChild.dispatchEvent(newEvt);
+		}, true).bind("mouseout",function(evt) {
+			if(evt.relatedTarget!=evt.target.firstElementChild) {
+				var newEvt=document.createEvent('MouseEvents');
+				newEvt.initMouseEvent("mouseout",true,true,window,0,evt.screenX,evt.screenY,evt.clientX,evt.clientY,evt.altKey,evt.ctrlKey,evt.shiftKey,evt.metaKey,0,evt.target);
+				evt.target.firstElementChild.dispatchEvent(newEvt);
+			}
+		}, true);
+	});
+	$patchCSS(css);
+};
+
+// 导航栏上增加退出按钮
+function addNavLogout() {
+	var nav=$("#accountMenu");
+	if(nav.empty()) {
+		return;
+	}
+	$("@div").attr("class","menu last").html('<div class="menu-title"><a href="http://www.renren.com/Logout.do">退出</a></div>').move("after",nav);
 };
 
 // 增加导航栏项目
@@ -4339,6 +4367,28 @@ function main(savedOptions) {
 					}],
 				}]
 			},{
+				text:"##使用旧式风格",
+				ctrl:[{
+					id:"useOldStyleNav",
+					value:false,
+					fn:[{
+						name:useOldStyleNav,
+						stage:0,
+						fire:true
+					}],
+				}]
+			},{
+				text:"##保留退出按钮",
+				ctrl:[{
+					id:"addNavLogout",
+					value:false,
+					fn:[{
+						name:addNavLogout,
+						stage:1,
+						fire:true
+					}],
+				}]
+			},{
 				text:"##增加导航栏项目######",
 				ctrl:[
 					{
@@ -4359,6 +4409,7 @@ function main(savedOptions) {
 						id:"navItemsContent",
 						type:"edit",
 						style:"width:99%;height:80px;overflow:auto;word-wrap:normal;margin-top:5px",
+						attr:{wrap:"off"},
 						value:"论坛\nhttp://club.renren.com/\n情侣空间\nhttp://lover.renren.com/dispatch\n"
 					}
 				],
@@ -4482,6 +4533,7 @@ function main(savedOptions) {
 						id:"myPageStyle",
 						type:"edit",
 						value:"/* 例子:浅灰->白渐变背景 */\nbody{background:-moz-linear-gradient(left,lightgray,white);background:-webkit-gradient(linear,left center,right center,from(lightgray),to(white))}",
+						attr:{wrap:"off"},
 						style:"width:99%;height:110px;margin-top:5px;"
 					}
 				],
@@ -4514,7 +4566,8 @@ function main(savedOptions) {
 					},{
 						id:"myPageLayout",
 						type:"edit",
-						value:"将个人主页上留言板移至新鲜事下方\nbody#profile .talk-box>.box>>>body#profile .talk-box",
+						attr:{wrap:"off"},
+						value:"例子：将个人主页上留言板移至新鲜事下方\nbody#profile .talk-box>.box>>>body#profile .talk-box",
 						style:"width:99%;height:110px;margin-top:5px;"
 					}
 				],
