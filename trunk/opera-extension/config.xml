@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<widget xmlns="http://www.w3.org/ns/widgets" version="3.2.5.400" id="extensions:xiaonei-reformer">
+<widget xmlns="http://www.w3.org/ns/widgets" version="3.2.5.405" id="extensions:xiaonei-reformer">
 	<name>Xiaonei Reformer</name>
 	<description>enhance your experience on renren.com (formerly xiaonei.com)</description>
 	<author href="http://xiaonei-reformer.googlecode.com/" email="xnreformer@gmail.com">xz</author>
