@@ -1062,7 +1062,7 @@ function widenNavBar() {
 
 // 使用旧式风格导航栏
 function useOldStyleNav() {
-	var css=".navigation-new .nav-main .menu-title a{font-weight:normal;padding:0 7px}.navigation-new .nav-main .drop-menu-btn{visibility:hidden;width:0;margin:0}.navigation-new .nav-other .account-action .menu-title a{background:none;padding:0 5px}";
+	var css=".navigation-new .nav-main .menu-title a{font-weight:normal;padding:0 7px}.navigation-new .nav-main .drop-menu-btn{visibility:hidden !important;width:"+(XNR.acore==PRESTO?"1":"0")+"px;margin:0}.navigation-new .nav-other .account-action .menu-title a{background:none;padding:0 5px}";
 	$wait(1,function() {
 		$(".navigation-new .nav-main .menu-title a").filter(".drop-menu-btn[id]").bind("mouseover",function(evt) {
 			var newEvt=document.createEvent('MouseEvents');
