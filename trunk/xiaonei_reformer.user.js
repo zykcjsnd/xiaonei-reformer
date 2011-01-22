@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.5.20110121
-// @miniver        405
+// @version        3.2.5.20110123
+// @miniver        406
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -1827,9 +1827,38 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 	}
 
 	// 新鲜事回复表情
-	var code="var count=0;(function(){if(!XN.app.status.emoJsonForNewsFeedStatus){if(count<10){setTimeout(arguments.callee,500)};count++;return}var list=JSON.parse('"+JSON.stringify(emList1)+"');var curList=JSON.parse(XN.app.status.emoJsonForNewsFeedStatus).ubbList;for(var i=0;i<curList.length;i++){var em=curList[i];if(list[em.ubb]){delete list[em.ubb]}};for(var e in list){var em=list[e];curList.push({alt:'('+em.t+')',id:0,src:em.s,position:1000,ubb:e,img:'<img src=\"http://xnimg.cn'+em.s+'\" alr=\"'+em.t+'\"'})};XN.app.status.emoJsonForNewsFeedStatus='{\"ubbList\":'+JSON.stringify(curList)+'}'})()";
+	var code="var count=0;"+
+	"(function(){"+
+		"function addEmo(){"+
+			"var list=JSON.parse('"+JSON.stringify(emList1)+"');"+
+			"var status=JSON.parse(XN.app.status.emoJsonForNewsFeedStatus);"+
+			"for(var i=0;i<status.ubbList.length;i++){"+
+				"var em=status.ubbList[i];"+
+				"if(list[em.ubb]){"+
+					"delete list[em.ubb]"+
+				"}"+
+			"}"+
+			"for(var e in list){"+
+				"var em=list[e];"+
+				"status.ubbList.push({alt:'('+em.t+')',id:0,src:em.s,position:1000,ubb:e,img:'<img src=\"http://xnimg.cn'+em.s+'\" alr=\"'+em.t+'\"'})"+
+			"}"+
+			"XN.app.status.emoJsonForNewsFeedStatus=JSON.stringify(status)"+
+		"}"+
+		"try{"+
+			"if(!XN.app.status.emoJsonForNewsFeedStatus){"+
+				"XN.app.status.replyEditor.prototype.getNewsFeedEmoJsonStatus(addEmo);"+
+			"}else{"+
+				"addEmo()"+
+			"}"+
+		"}catch(ex){"+
+			"if(count<10){"+
+				"setTimeout(arguments.callee,500)"+
+			"}"+
+			"count++;"+
+			"return"+
+		"}"+
+	"})()";
 	$script(code);
-
 };
 
 // 在日志、相册中增加楼层计数
