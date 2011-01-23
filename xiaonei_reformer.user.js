@@ -146,6 +146,7 @@ function removeAds() {
 	$ban(ads);
 	$script("const ad_js_version=null",true);
 	$wait(1,function() {
+		$script("window.XN.jebe=1");
 		// .blank-holder在游戏大厅game.renren.com不能删
 		$(".blank-holder").remove(true);
 		// 其他的横幅广告。如2010-06的 kfc-banner
@@ -1473,6 +1474,10 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"td.pop_content h2{background-color:"+BCOLOR+"}",
 				".input-button, .input-submit{background-color:"+FCOLOR+"}",
 			],
+			"love-home.css":[
+				"a:link,a:visited,.mod a,.page-status a{color:"+FCOLOR+"}",
+				".richlist h3 a{color:"+FCOLOR+"}",
+			],
 		};
 		var style="";
 		for(var f in files) {
@@ -1863,52 +1868,100 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 
 // 在日志、相册中增加楼层计数
 function addFloorCounter(evt) {
-	if(evt && !/^replies/.test(evt.target.className)) {
-		return;
-	}
-	var replyAmount;	//回复总数
-	if($page("blog")) {
-		if($("p.stat-article").empty()) {
-			return;
-		}
-		replyAmount=parseInt(/评论\((\d+)\)/.exec($("p.stat-article").text())[1]);
-	} else {
-		replyAmount=parseInt($("#allComCount").text());
-		if(isNaN(replyAmount)) {
-			replyAmount=parseInt($("#commentCount").text());
-			if(isNaN(replyAmount)) {
+	if($page("pages")) {
+		if(XNR.url.match("/fdoing/\\d+")) {
+			// 状态
+			var page=/curpage=(\d+)/.exec(XNR.url);
+			var start=0;
+			if(page) {
+				start=parseInt(page[1])*100;
+			}
+			$("dl#comment_list>dd>.info").each(function(index) {
+				$(this).add($("@span").text((index+1+start)+"楼"),0);
+			});
+		} else if(XNR.url.match("/photo/\\d+")) {
+			// 图片
+			if(evt) {
+				if($("#pageBar").exist()) {
+					if(evt.relatedNode.id!="pageBar") {
+						return;
+					}
+				} else if(evt.target.className!="replies") {
+					return;
+				}
+			}
+			if($("#commContainer>dl.replies>dd>.info").empty()) {
 				return;
 			}
+			if($("#commContainer>dl.replies[fl]").exist()) {
+				return;
+			} else {
+				$("#commContainer>dl.replies").attr("fl","");
+			}
+			var page=$("#pageBar>a.current").text() || "1";
+			var start=(parseInt(page)-1)*30;
+			$("#commContainer>dl.replies>dd>.info").each(function(index) {
+				$(this).add($("@span").text((index+1+start)+"楼 "),0);
+			});
+		} else if(XNR.url.match("/note/\\d+")) {
+			// 日志
+			var page=/curpage=(\d+)/.exec(XNR.url);
+			var start=0;
+			if(page) {
+				start=parseInt(page[1])*100;
+			}
+			$("ol#commentlist>li>.comment>.info").each(function(index) {
+				$(this).add($("@span").css("float","left").text((index+1+start)+"楼"),0);
+			});
 		}
-	}
-	//已显示的回复
-	var shownReplies=$("dl.replies>dd[id^='talk']");
-
-	//显示的回复的开始楼层
-	var replyStartFloor=replyAmount-shownReplies.size();
-	if(shownReplies.empty() || replyStartFloor<0) {
-		//没有回复或出错
-		return;
-	}
-	shownReplies.each(function(index) {
-		var info=$(this).find(".info");
-		if(info.child(0).attr("class")!="fc") {
-			$("@span").text((replyStartFloor+parseInt(index)+1)+"楼 ").attr("class","fc").css("color","grey").addTo(info,0);
+	} else {
+		if(evt && !/^replies/.test(evt.target.className)) {
+			return;
+		}
+		var replyAmount;	//回复总数
+		if($page("blog")) {
+			if($("p.stat-article").empty()) {
+				return;
+			}
+			replyAmount=parseInt(/评论\((\d+)\)/.exec($("p.stat-article").text())[1]);
 		} else {
-			//添加过了，不再继续
-			return true;
+			replyAmount=parseInt($("#allComCount").text());
+			if(isNaN(replyAmount)) {
+				replyAmount=parseInt($("#commentCount").text());
+				if(isNaN(replyAmount)) {
+					return;
+				}
+			}
 		}
-	});
-
-	// 点击显示更多评论后隐藏其链接，防止重复点击
-	if(!$allocated("show-all-id")) {
-		$alloc("show-all-id");
-		$("#show-all-id").bind("DOMNodeInserted",function(evt) {
-			$("#showMoreComments").hide();
-			$dealloc("show-all-id");
-		}).bind("DOMNodeRemoved",function(evt) {
-			$("#showMoreComments").show();
+		//已显示的回复
+		var shownReplies=$("dl.replies>dd[id^='talk']");
+	
+		//显示的回复的开始楼层
+		var replyStartFloor=replyAmount-shownReplies.size();
+		if(shownReplies.empty() || replyStartFloor<0) {
+			//没有回复或出错
+			return;
+		}
+		shownReplies.each(function(index) {
+			var info=$(this).find(".info");
+			if(info.child(0).attr("class")!="fc") {
+				$("@span").text((replyStartFloor+parseInt(index)+1)+"楼 ").attr("class","fc").css("color","grey").addTo(info,0);
+			} else {
+				//添加过了，不再继续
+				return true;
+			}
 		});
+	
+		// 点击显示更多评论后隐藏其链接，防止重复点击
+		if(!$allocated("show-all-id")) {
+			$alloc("show-all-id");
+			$("#show-all-id").bind("DOMNodeInserted",function(evt) {
+				$("#showMoreComments").hide();
+				$dealloc("show-all-id");
+			}).bind("DOMNodeRemoved",function(evt) {
+				$("#showMoreComments").show();
+			});
+		}
 	}
 };
 
@@ -1925,6 +1978,33 @@ function preventClickTracking() {
 		"try{"+
 			"XN.app.statsMaster.init=function(){};"+
 			"XN.app.statsMaster.destroy()"+
+		"}catch(ex){"+
+			"if(count<10)"+
+				"setTimeout(arguments.callee,500);"+
+			"count++"+
+		"}"+
+	"})()";
+	$script(code);
+};
+
+// 阻止焦点跟踪
+function preventFocusTracking() {
+	const code="var count=0;"+
+	"(function(){"+
+		"try{"+
+			"if(!window.statisFocusEventAdded || !window.statisBlurEventAdded){"+
+				"window.statisFocusEventAdded=true;"+
+				"window.statisBlurEventAdded=true;"+
+				"return;"+
+			"}"+
+			"if(XN.JSON.pft_build)"+
+				"return;"+
+			"XN.JSON.pft_build=XN.JSON.build;"+
+			"XN.JSON.build=function(){"+
+				"if(arguments.callee.caller.toString().indexOf('focus?J=')>0)"+
+					"throw 'focus tracking prevented';"+
+				"return XN.JSON.pft_build.apply(this,arguments)"+
+			"}"+
 		"}catch(ex){"+
 			"if(count<10)"+
 				"setTimeout(arguments.callee,500);"+
@@ -4651,7 +4731,7 @@ function main(savedOptions) {
 					}
 				],
 				login:true,
-				page:"blog,photo"
+				page:"blog,photo,pages"
 			},{
 				text:"##允许在日志中添加HTTPS/FTP协议的链接",
 				ctrl:[{
@@ -4666,7 +4746,7 @@ function main(savedOptions) {
 				login:true,
 				page:"blog"
 			},{
-				text:"##阻止点击跟踪##",
+				text:"##禁止点击跟踪##",
 				ctrl:[
 					{
 						id:"preventClickTracking",
@@ -4682,7 +4762,23 @@ function main(savedOptions) {
 					}
 				]
 			},{
-				text:"##阻止访问统计##",
+				text:"##禁止焦点跟踪##",
+				ctrl:[
+					{
+						id:"preventFocusTracking",
+						value:false,
+						fn:[{
+							name:preventFocusTracking,
+							stage:2,
+							fire:true
+						}]
+					},{
+						type:"info",
+						value:"可能是出于收集分析用户行为的目的，当你在人人网的绝大多数页面进行了任何使页面得到/失去焦点的操作时，会在后台向网站发送你的ID/所在页面等相关信息。如果你不想让网站获取这些信息，可以启用本功能。"
+					}
+				]
+			},{
+				text:"##禁止访问统计##",
 				agent:FIREFOX | CHROME | SAFARI | OPERA_UJS | OPERA_EXT,
 				ctrl:[
 					{
@@ -4699,7 +4795,7 @@ function main(savedOptions) {
 					}
 				]
 			},{
-				text:"##阻止Google Analytics##",
+				text:"##禁止Google Analytics##",
 				agent:FIREFOX | CHROME | SAFARI | OPERA_UJS | OPERA_EXT,
 				ctrl:[
 					{
@@ -7001,23 +7097,29 @@ PageKit.prototype={
 					var nn=n.replace(/-[a-z]/g,function(m){
 						return m.substring(1).toUpperCase();
 					});
+					if(nn=="float") {
+						nn="cssFloat";
+					}
 					this.each(function() {
 						this.style[nn]=o[n];
 					});
 				};
 				return this;
 			case "string":
-				var o=o.replace(/-[a-z]/g,function(m){
+				var oo=o.replace(/-[a-z]/g,function(m){
 					return m.substring(1).toUpperCase();
 				});
+				if(oo=="float") {
+					oo="cssFloat";
+				}
 				if(v!=null) {
 					this.each(function() {
-						this.style[o]=v;
+						this.style[oo]=v;
 					});
 					return this;
 				} else {
 					try {
-						return this.get().style[o];
+						return this.get().style[oo];
 					} catch (ex) {
 						return null;
 					}
