@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.5.20110123
-// @miniver        406
+// @version        3.2.5.20110127
+// @miniver        407
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -142,7 +142,7 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], a[href*='track.yx.renren.com']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], a[href*='track.yx.renren.com'], img[src*='/adimgs/']";
 	$ban(ads);
 	$script("const ad_js_version=null",true);
 	$wait(1,function() {
@@ -1971,9 +1971,18 @@ function extendBlogLinkSupport() {
 	$script(code);
 };
 
-// 阻止点击跟踪
-function preventClickTracking() {
-	const code="var count=0;"+
+// 阻止统计信息
+function preventTracking0() {
+	var code="const COMSCORE=null;";
+	$script(code,true);
+	// 阻止Google Analytics
+	var code="const urchinTracker=null";
+	$script(code,true);
+};
+
+// 阻止点击跟踪和焦点跟踪
+function preventTracking2() {
+	var code="var count=0;"+
 	"(function(){"+
 		"try{"+
 			"XN.app.statsMaster.init=function(){};"+
@@ -1985,11 +1994,8 @@ function preventClickTracking() {
 		"}"+
 	"})()";
 	$script(code);
-};
 
-// 阻止焦点跟踪
-function preventFocusTracking() {
-	const code="var count=0;"+
+	var code="var count=0;"+
 	"(function(){"+
 		"try{"+
 			"if(!window.statisFocusEventAdded || !window.statisBlurEventAdded){"+
@@ -2012,18 +2018,6 @@ function preventFocusTracking() {
 		"}"+
 	"})()";
 	$script(code);
-};
-
-// 阻止统计信息
-function preventScorecardResearch() {
-	const code="const COMSCORE=null";
-	$script(code,true);
-};
-
-// 阻止Google Analytics
-function preventGoogleAnalytics() {
-	const code="const urchinTracker=null";
-	$script(code,true);
 };
 
 // 将相册中所有照片放在一页中显示
@@ -4511,7 +4505,7 @@ function main(savedOptions) {
 						}],
 					},{
 						type:"info",
-						value:"每两行描述一项。第一行为显示的名称，第二行为对应的链接地址。链接地址请用包含协议名的完整形式，如http://a.com，不要仅填写a.com"
+						value:"每两行描述一项。第一行为显示的名称，第二行为对应的链接地址。链接地址请用包含协议名的完整形式，如http://g.cn，不要仅填写g.cn"
 					},{
 						type:"br"
 					},{
@@ -4746,69 +4740,25 @@ function main(savedOptions) {
 				login:true,
 				page:"blog"
 			},{
-				text:"##禁止点击跟踪##",
+				text:"##禁止跟踪统计##",
 				ctrl:[
 					{
-						id:"preventClickTracking",
+						id:"preventTracking",
 						value:false,
-						fn:[{
-							name:preventClickTracking,
-							stage:2,
-							fire:true
-						}]
+						fn:[
+							{
+								name:preventTracking0,
+								stage:0,
+								fire:true
+							},{
+								name:preventTracking2,
+								stage:2,
+								fire:true
+							}
+						]
 					},{
 						type:"info",
-						value:"可能是出于收集分析用户行为的目的，当你在人人网的绝大多数页面点击鼠标时，会在后台向网站发送你的ID/点击的位置/所在页面等相关信息。如果你不想让网站获取这些信息，可以启用本功能。"
-					}
-				]
-			},{
-				text:"##禁止焦点跟踪##",
-				ctrl:[
-					{
-						id:"preventFocusTracking",
-						value:false,
-						fn:[{
-							name:preventFocusTracking,
-							stage:2,
-							fire:true
-						}]
-					},{
-						type:"info",
-						value:"可能是出于收集分析用户行为的目的，当你在人人网的绝大多数页面进行了任何使页面得到/失去焦点的操作时，会在后台向网站发送你的ID/所在页面等相关信息。如果你不想让网站获取这些信息，可以启用本功能。"
-					}
-				]
-			},{
-				text:"##禁止访问统计##",
-				agent:FIREFOX | CHROME | SAFARI | OPERA_UJS | OPERA_EXT,
-				ctrl:[
-					{
-						id:"preventScorecardResearch",
-						value:false,
-						fn:[{
-							name:preventScorecardResearch,
-							stage:0,
-							fire:true
-						}]
-					},{
-						type:"info",
-						value:"访问人人网的绝大多数页面时，会向scorecardresearch.com发送一些包含你访问过页面的统计信息，这在一定程度上降低了访问速度。如果你不想让网站获取这些统计信息，可以启用本功能。"
-					}
-				]
-			},{
-				text:"##禁止Google Analytics##",
-				agent:FIREFOX | CHROME | SAFARI | OPERA_UJS | OPERA_EXT,
-				ctrl:[
-					{
-						id:"preventGoogleAnalytics",
-						value:false,
-						fn:[{
-							name:preventGoogleAnalytics,
-							stage:0,
-							fire:true
-						}]
-					},{
-						type:"info",
-						value:"访问人人网的绝大多数页面时，会利用Google Analytics功能向网站发送一些包含你浏览习惯的统计信息。如果你不想让网站获取这些统计信息，可以启用本功能。（目前只对ID最后一位是6的用户收集这些信息）"
+						value:"在访问人人网的绝大多数页面时，会自动向人人网和第三方网站发送包含你浏览习惯的信息。这些信息可能会被用在统计分析用户行为方面。如果你不想让其获取这些信息，可以启用本功能。"
 					}
 				]
 			},{
