@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.5.20110127
-// @miniver        407
+// @version        3.2.6.20110130
+// @miniver        408
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -32,7 +32,7 @@
 (function(){
 
 try {
-	var test1=document.location.href; // since Firefox 4.0b7
+	var test1=document.location.href; // Firefox 4.0b7 ~ b8
 	var test2=document.documentElement.id;	// since Firefox 3.7a5
 } catch(ex) {
 	setTimeout(arguments.callee,50);
@@ -926,8 +926,9 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,
 					var feedInfo=feedList.child(i);
 
 					var id=feedInfo.attr("id");
-					var icon=feedInfo.find("a.avatar img").attr("src");
+					var icon=feedInfo.find(".newsfeed-user>a>img").attr("src");
 					var feedText=feedInfo.find("h3").html().replace(/^\s+|\s+$/,"");
+					var publisher=feedInfo.find("h3>a").eq().attr("href");
 					var lastReply=0;
 
 					// 如果是公共主页的新鲜事，忽略其回复
@@ -961,7 +962,11 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,
 					var oldFeeds=$alloc("xnr_feed");
 					if(!firstTime) {
 						// 排除已有，如果 lastReply=0 & oldFeeds[id]>0，feed系统出错？
-						if(lastReply==oldFeeds[id] || (lastReply==0 && oldFeeds[id]!=0)) {
+						if(oldFeeds[id]!=null && (lastReply==oldFeeds[id] || (lastReply==0 && oldFeeds[id]!=0))) {
+							continue;
+						}
+						// 自己发布的
+						if(publisher.indexOf("profile.do?id="+XNR.userId+"&")>0) {
 							continue;
 						}
 						feedArray.push({id:id,icon:icon,text:feedText});
@@ -1202,6 +1207,8 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"#closePublisherSkin:hover,#dressPublisherSkin:hover{background-color:"+FCOLOR+"}",
 				".pymk .comefrom,.statuscmtitem,.mincmt-diggers,.panel.bookmarks,.user-data,.friend-birthday-window .bless-msg{background-color:"+SCOLOR+"}",
 				".feed-module .category-filter menu a:hover,.news-feed-types a.news-feed-type:hover{background-color:"+BCOLOR+"}",
+				".feed-module .feed-header-new .types label{color:"+FCOLOR+"}",
+				".feed-module .feed-header-new .category-filter:hover .text, .feed-module .feed-header-new .category-filter_hover .text, .feed-module .feed-header-new .feed-attention:hover .text, .feed-module .feed-header-new .feed-attention_hover .text{color:"+FCOLOR+"}",
 			],
 			"webpager-std-min.css":[
 				".webpager ul.icon a:hover .tooltip{background-color:"+FCOLOR+"}",
@@ -1478,6 +1485,12 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"a:link,a:visited,.mod a,.page-status a{color:"+FCOLOR+"}",
 				".richlist h3 a{color:"+FCOLOR+"}",
 			],
+			"rr-connect.css":[
+				"a{color:"+FCOLOR+"}",
+				".button-blue{background-color:"+FCOLOR+"}",
+				".header{background-color:"+XCOLOR+"}",
+				"td.xn_pop_content h2{background-color:"+XCOLOR+"}",
+			]
 		};
 		var style="";
 		for(var f in files) {
@@ -1496,6 +1509,11 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 			prepatch.remove();
 		}
 	});
+
+	// 谷歌人人小工具
+	if(XNR.url.indexOf("http://www.connect.renren.com/igadget/renren/index.html")==0) {
+		$patchCSS("a,a:link,a:visited,a:hover,.font1,.box .textArea .textNow,.box .tabMenu a,.box .pageBox a{color:"+FCOLOR+"}.box .item ul li.over .btn{background-color:"+FCOLOR+"}.box .head{background-color:"+XCOLOR+"}");
+	}
 };
 
 // 去除页面字体限制
@@ -1695,6 +1713,8 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(tic)":	{t:"车票",			s:"/imgpro/icons/statusface/ticket.gif"},
 		"(tra)":	{t:"车头",			s:"/imgpro/icons/statusface/train.gif"},
 		"(trb)":	{t:"车厢",			s:"/imgpro/icons/statusface/trainbox.gif"},
+		"(bon)":	{t:"年终奖",		s:"/imgpro/icons/statusface/award.gif"},
+		"(pt)":		{t:"派对，干杯",	s:"/imgpro/icons/statusface/partycup.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
@@ -1742,6 +1762,9 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(bs)":		{t:"秋高气爽",		s:"/imgpro/icons/statusface/bluesky.gif"},
 	//	"(虎年)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
 		"(tiger)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
+		"(ra1)":	{t:"拜年兔",		s:"/imgpro/icons/statusface/rabbit.gif"},
+		"(ra2)":	{t:"拜年兔",		s:"/imgpro/icons/statusface/rabbit2.gif"},
+		"(fu)":		{t:"福",			s:"/imgpro/icons/statusface/fu.gif"},
 		"(boy)":	{t:"男孩",			s:"/imgpro/icons/statusface/boy.gif"},
 		"(girl)":	{t:"女孩",			s:"/imgpro/icons/statusface/girl.gif"},
 		"(eclipse)":{t:"日全食",		s:"/imgpro/icons/statusface/eclipse.gif"},
@@ -4223,7 +4246,7 @@ function main(savedOptions) {
 				ctrl:[
 					{
 						type:"info",
-						value:"包括分享者和内容来源者。ID是对方个人主页地址中id=后面的数字。多个ID用|分隔"
+						value:"包括分享者和内容来源者。ID是对方个人主页地址中id=后面的数字。多个ID用|分隔。如果要屏蔽某人全部的新鲜事，请使用网站自身的忽略名单功能"
 					},{
 						type:"br"
 					},{
@@ -4236,7 +4259,7 @@ function main(savedOptions) {
 				],
 				page:"feed,profile"
 			},{
-				text:"##隐藏##天前的新鲜事##",
+				text:"##隐藏##天前的新鲜事",
 				ctrl:[
 					{
 						id:"hideOldFeeds",
@@ -4247,9 +4270,6 @@ function main(savedOptions) {
 						value:"7",
 						style:"width:20px;margin:0 3px",
 						verify:{"^[1-9][0-9]*$":"请在新鲜事天数处输入大于0的数字！"}
-					},{
-						type:"warn",
-						value:"以前的新鲜事也可能是由于有新的回复而出现在新鲜事列表中，请慎重考虑"
 					}
 				],
 				master:0
@@ -6369,9 +6389,9 @@ function $master(master) {
 };
 
 /*
- * 判断新鲜事类型，feed为article经XNR包装
+ * 判断新鲜事类型
  * 参数
- *   [Node]feed:新鲜事li节点
+ *   [XNR]feed:新鲜事article节点
  * 返回值
  *   [String]:新鲜事类型文本。无符合的返回""
  */
