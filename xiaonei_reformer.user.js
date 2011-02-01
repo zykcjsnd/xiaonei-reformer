@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.6.20110130
-// @miniver        408
+// @version        3.2.6.20110201
+// @miniver        409
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -788,14 +788,11 @@ function showFeedToolbar() {
 function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,hideDays) {
 	// 在bottombar上建立一个新的接收区域
 	if($("#bottombar").exist()) {
-		(function(evt) {
+		(function() {
 			if($("#webpager #setting-panel").empty()) {
 				// 底部工具栏尚未建立完毕，继续等待
-				$("#bottombar").bind("DOMNodeInserted",arguments.callee);
+				setTimeout(arguments.callee,1000);
 				return;
-			} else if(evt) {
-				// 是通过DOMNodeInserted事件执行
-				$("#bottombar").unbind("DOMNodeInserted",arguments.callee);
 			}
 			var root=$("@div").attr("class","popupwindow notify-panel").addTo($("@div").attr({"class":"panel",id:"feed-panel"}).move("before",$("#webpager #setting-panel")));
 			var Btn=$("@div").attr("class","panelbarbutton").addTo(root);
@@ -836,21 +833,26 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,
 		})();
 	}
 
-	(function() {
+	(function(fTime) {
 		// 应该用post，不过get也行
-		$get("http://www.renren.com/feedretrieve2.do?p=0",function(html) {
+		$get("http://www.renren.com/feedretrieve2.do?p=0",function(html,url,firstTime) {
 			if(html==null) {
 				return;
 			}
-			var r=html.split("##@L#");
-			if(r.length<4 || !/^\d+$/.test(r[1])) {
-				// 回复结构变了
-				$error("autoCheckFeeds","获取新鲜事的页面结构发生变化");
-				return;
+			if(url.indexOf("feedretrieve2")>0) {
+				var r=html.split("##@L#");
+				if(r.length<4 || !/^\d+$/.test(r[1])) {
+					// 回复结构变了
+					$error("autoCheckFeeds","获取新鲜事的页面结构发生变化");
+					return;
+				}
+				r=r[0];
+			} else {
+				var r=html;
 			}
 			try {
 				// 获取新鲜事列表
-				var feedList=$("@ul").html(r[0].replace(/onload=".*?"/g,"").replace(/<script.*?<\/script>/g,"").replace(/src="http:\/\/s\.xnimg\.cn\/a\.gif"/g,"").replace(/lala=/g,"src="));
+				var feedList=$("@ul").html(r.replace(/onload=".*?"/g,"").replace(/<script.*?<\/script>/g,"").replace(/src="http:\/\/s\.xnimg\.cn\/a\.gif"/g,"").replace(/lala=/g,"src="));
 				// 先算出截止时间，减少重复计算量
 				if(hideOld) {
 					hideDays=parseInt(hideDays);
@@ -917,11 +919,9 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,
 					return;
 				}
 
-				// 首次运行
-				var firstTime=!$allocated("xnr_feed");
-
 				// 整理新鲜事内容
 				var feedArray=[];
+				var similarFeedArray=[];
 				for(var i=0;i<feedList.heirs();i++) {
 					var feedInfo=feedList.child(i);
 
@@ -931,6 +931,12 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,
 					var publisher=feedInfo.find("h3>a").eq().attr("href");
 					var lastReply=0;
 
+					// 被隐藏的相似新鲜事
+					similarFeedArray.push(feedInfo.find(".similar-feed a[data-similar-feeds]").attr("data-similar-feeds") || "");
+					// 自己发布的
+					if(publisher.indexOf("profile.do?id="+XNR.userId+"&")>0) {
+						continue;
+					}
 					// 如果是公共主页的新鲜事，忽略其回复
 					if($feedType(feedInfo)!="page") {
 						var replyText=feedInfo.find("script[status='1']").text();
@@ -960,13 +966,9 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,
 					}
 
 					var oldFeeds=$alloc("xnr_feed");
-					if(!firstTime) {
+					if(firstTime!==true) {
 						// 排除已有，如果 lastReply=0 & oldFeeds[id]>0，feed系统出错？
 						if(oldFeeds[id]!=null && (lastReply==oldFeeds[id] || (lastReply==0 && oldFeeds[id]!=0))) {
-							continue;
-						}
-						// 自己发布的
-						if(publisher.indexOf("profile.do?id="+XNR.userId+"&")>0) {
 							continue;
 						}
 						feedArray.push({id:id,icon:icon,text:feedText});
@@ -974,7 +976,13 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,
 					oldFeeds[id]=lastReply;
 				}
 
-				if(firstTime || feedArray.length==0) {
+				// 处理相似新鲜事
+				var similarIds=similarFeedArray.join("");
+				if(similarIds) {
+					$get("http://www.renren.com/retrievefeedid.do?id="+similarIds+"&isNewHome=true",arguments.callee,firstTime);
+				}
+
+				if(firstTime===true || feedArray.length==0) {
 					return;
 				}
 
@@ -1015,10 +1023,10 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,
 			} catch(ex) {
 				$error("autoCheckFeeds",ex);
 			}
-		});
+		},fTime);
 		// 定时检查
 		setTimeout(arguments.callee,parseInt(interval)*1000);
-	})();
+	})(true);
 };
 
 // 定时刷新新鲜事列表
@@ -1208,6 +1216,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".pymk .comefrom,.statuscmtitem,.mincmt-diggers,.panel.bookmarks,.user-data,.friend-birthday-window .bless-msg{background-color:"+SCOLOR+"}",
 				".feed-module .category-filter menu a:hover,.news-feed-types a.news-feed-type:hover{background-color:"+BCOLOR+"}",
 				".feed-module .feed-header-new .types label{color:"+FCOLOR+"}",
+				".feed-module .feed-header-new label.s, .feed-module .feed-header-new .category-filter:hover label.s, .feed-module .feed-header-new .category-filter_hover label.s, .feed-module .feed-header-new .feed-attention:hover label.s, .feed-module .feed-header-new .feed-attention_hover label.s{color:#333333}",
 				".feed-module .feed-header-new .category-filter:hover .text, .feed-module .feed-header-new .category-filter_hover .text, .feed-module .feed-header-new .feed-attention:hover .text, .feed-module .feed-header-new .feed-attention_hover .text{color:"+FCOLOR+"}",
 			],
 			"webpager-std-min.css":[
@@ -3773,7 +3782,7 @@ function main(savedOptions) {
 						value:false,
 					},{
 						id:"levelBar",
-						text:"##个人等级栏",
+						text:"##头像等级栏",
 						value:false,
 					},{
 						id:"footprint",
