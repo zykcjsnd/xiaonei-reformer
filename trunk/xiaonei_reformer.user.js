@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.6.20110201
-// @miniver        409
+// @version        3.2.6.20110217
+// @miniver        410
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -56,8 +56,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.5.20110121";
-XNR.miniver=405;
+XNR.version="3.2.6.20110217";
+XNR.miniver=410;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -142,7 +142,7 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], a[href*='track.yx.renren.com'], img[src*='/adimgs/']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], a[href*='track.yx.renren.com'], img[src*='/adimgs/'], .sec.promotion";
 	$ban(ads);
 	$script("const ad_js_version=null",true);
 	$wait(1,function() {
@@ -225,12 +225,6 @@ function removeStarReminder() {
 	$ban(target);
 };
 
-// 删除音乐播放器，包括紫豆音乐播放器和日志里的附加音乐
-function removeMusicPlayer() {
-	const target="#zidou_music, #ZDMusicPlayer, .mplayer, embed[src*='player.swf'] , embed[src*='Player.swf'], div.mod.music";
-	$ban(target);
-};
-
 // 去除页面漂浮物
 function removeFloatObject() {
 	const target="#floatBox";
@@ -279,6 +273,12 @@ function removeBlogLinks() {
 			o.tag("span");
 		}
 	});
+};
+
+// 删除日志里的附加音乐
+function removeBlogMusicPlayer() {
+	const target="embed[src*='player.swf'], embed[src*='Player.swf']";
+	$ban(target);
 };
 
 // 移除底部工具栏
@@ -354,7 +354,8 @@ function removeProfileGadgets(gadgetOpt) {
 		"friends":"#friends.mod",
 		"theme":"li.dressup,#dressup",
 		"invitation":".guide-find-friend,p.inviteguys",
-		"introduceFriends":"#commend-friends"
+		"introduceFriends":"#commend-friends",
+		"musicPlayer":"#zidou_music,#ZDMusicPlayer"
 	};
 	var patch="";
 	for(var g in gadgetOpt) {
@@ -555,7 +556,7 @@ function blockAppNotification() {
 };
 
 // 隐藏特定类型/标题新鲜事
-function hideFeeds(evt,feeds,mark,forbiddenTitle,forbiddenIds,hideOld,hideDays) {
+function hideFeeds(evt,feeds,mark,badTitles,badIds,goodIds,hideOld,hideDays) {
 	if(evt && evt.target.tagName!="ARTICLE") {
 		return;
 	}
@@ -566,13 +567,19 @@ function hideFeeds(evt,feeds,mark,forbiddenTitle,forbiddenIds,hideOld,hideDays) 
 		var curMonth=new Date().getMonth()+1;
 		var d={m:deadline.getMonth()+1,d:deadline.getDate()};
 	}
-	if(forbiddenIds && feeds.share==false) {
-		var idFilter="a[href*='profile.do?id="+forbiddenIds.split("|").join("'],a[href*='profile.do?id=")+"']";
+	if(badIds && feeds.share==false) {
+		var bidFilter="a[href*='profile.do?id="+badIds.split("|").join("'],a[href*='profile.do?id=")+"']";
+	}
+	if(goodIds) {
+		var gidFilter="a[href*='profile.do?id="+goodIds.split("|").join("'],a[href*='profile.do?id=")+"']";
 	}
 	(evt?$(evt.target):$("div.feed-list>article")).filter(function(elem) {
 		var feed=$(elem);
 		var fh3=feed.find("h3");
-		if(forbiddenTitle && fh3.text().replace(/\s/g,"").match(forbiddenTitle)) {
+		if(goodIds && fh3.filter(gidFilter).exist()) {
+			return false;
+		}
+		if(badTitles && fh3.text().replace(/\s/g,"").match(badTitles)) {
 			return true;
 		}
 		if(hideOld) {
@@ -605,7 +612,7 @@ function hideFeeds(evt,feeds,mark,forbiddenTitle,forbiddenIds,hideOld,hideDays) 
 			}
 		}
 		var type=$feedType(feed);
-		return (type!="" && feeds[type]==true) || (type=="share" && forbiddenIds && fh3.filter(idFilter).exist())
+		return (type!="" && feeds[type]==true) || (type=="share" && badIds && fh3.filter(bidFilter).exist())
 	}).each(function() {
 		if(mark) {
 			try {
@@ -785,7 +792,10 @@ function showFeedToolbar() {
 };
 
 // 自动检查提醒新鲜事更新
-function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,hideDays) {
+function autoCheckFeeds(feedFilter,badTitles,badIds,goodIds,checkReply) {
+	// 每隔90秒检查一次
+	const interval=90;
+
 	// 在bottombar上建立一个新的接收区域
 	if($("#bottombar").exist()) {
 		(function() {
@@ -853,64 +863,30 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,
 			try {
 				// 获取新鲜事列表
 				var feedList=$("@ul").html(r.replace(/onload=".*?"/g,"").replace(/<script.*?<\/script>/g,"").replace(/src="http:\/\/s\.xnimg\.cn\/a\.gif"/g,"").replace(/lala=/g,"src="));
-				// 先算出截止时间，减少重复计算量
-				if(hideOld) {
-					hideDays=parseInt(hideDays);
-					var deadline=new Date(new Date()-hideDays*86400000);
-					var curMonth=new Date().getMonth()+1;
-					var d={m:deadline.getMonth()+1,d:deadline.getDate()};
+				if(badIds && feedFilter.share==false) {
+					var bidFilter="a[href*='profile.do?id="+badIds.split("|").join("'],a[href*='profile.do?id=")+"']";
 				}
-				if(forbiddenIds && feedFilter.share==false) {
-					var idFilter="a[href*='profile.do?id="+forbiddenIds.split("|").join("'],a[href*='profile.do?id=")+"']";
+				if(goodIds) {
+					var gidFilter="a[href*='profile.do?id="+goodIds.split("|").join("'],a[href*='profile.do?id=")+"']";
 				}
-				// 滤除被屏蔽的新鲜事类型
+				// 滤除新鲜事
 				for(var i=feedList.heirs()-1;i>=0;i--) {
 					var c=feedList.child(i);
 					var ch3=c.find("h3");
-					if(forbiddenTitle && ch3.text().replace(/\s/g,"").match(forbiddenTitle)) {
+					if(goodIds && ch3.filter(gidFilter).exist()) {
+						// 在白名单上
+						continue;
+					}
+					if(badTitles && ch3.text().replace(/\s/g,"").match(badTitles)) {
 						// 按标题滤除
 						c.remove();
 						continue;
-					}
-					if(hideOld) {
-						// 按日期滤除
-						var time=c.find(".duration").text();
-						if(/([0-9]+)天前/.test(time) && parseInt(RegExp.$1)>=hideDays) {
-							c.remove();
-							continue;
-						} else if(/([0-9]{1,2})-([0-9]{1,2})\s+[0-9]{1,2}:[0-9]{1,2}/.test(time)) {
-							var t={m:parseInt(RegExp.$1),d:parseInt(RegExp.$2)};
-							if(t.m<=curMonth) {
-								// 今年的新鲜事
-								if(d.m<=curMonth) {
-									// 截止日期在今年
-									if(t.m<d.m || (t.m==d.m && t.d<=d.d)) {
-										c.remove();
-										continue;
-									}
-								}
-								// 截止日期在去年，就不用管
-							} else {
-								// 去年的新鲜事？
-								if(d.m<=curMonth) {
-									// 截止日期在今年
-									c.remove();
-									continue;
-								} else {
-									// 截止日期也在去年
-									if(t.m<d.m || (t.m==d.m && t.d<=d.d)) {
-										c.remove();
-										continue;
-									}
-								}
-							}
-						}
 					}
 					// 按类型滤除
 					var feedType=$feedType(c);
 					if(feedType && feedFilter[feedType]) {
 						c.remove();
-					} else if(feedType=="share" && forbiddenIds && ch3.filter(idFilter).exist()) {
+					} else if(feedType=="share" && badIds && ch3.filter(bidFilter).exist()) {
 						c.remove();
 					}
 				}
@@ -930,15 +906,27 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,
 					var feedText=feedInfo.find("h3").html().replace(/^\s+|\s+$/,"");
 					var publisher=feedInfo.find("h3>a").eq().attr("href");
 					var lastReply=0;
+					var lastReplyTime="";
+					var oldFeeds=$alloc("xnr_feed");
 
 					// 被隐藏的相似新鲜事
-					similarFeedArray.push(feedInfo.find(".similar-feed a[data-similar-feeds]").attr("data-similar-feeds") || "");
+					var simIds=feedInfo.find(".similar-feed a[data-similar-feeds]").attr("data-similar-feeds");
+					if(simIds) {
+						simIds=simIds.split(",");
+						for(var j=0;j<simIds.length;j++) {
+							var sid=simIds[j];
+							if(sid && oldFeeds[sid]==null) {
+								similarFeedArray.push(sid+",");
+							}
+						}
+					}
+
 					// 自己发布的
 					if(publisher.indexOf("profile.do?id="+XNR.userId+"&")>0) {
 						continue;
 					}
-					// 如果是公共主页的新鲜事，忽略其回复
-					if($feedType(feedInfo)!="page") {
+					// 如果是公共主页的新鲜事，也忽略其回复
+					if(checkReply && $feedType(feedInfo)!="page") {
 						var replyText=feedInfo.find("script[status='1']").text();
 						if(replyText) {
 							var replyList=/"replyList":(\[[\S\s]+?\]),/.exec(replyText);
@@ -953,6 +941,7 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,
 									var reply=replyList[replyList.length-1];
 									if(reply.id && reply.ubname && reply.ubid && reply.replyContent) {
 										lastReply=reply.id;
+										lastReplyTime=reply.replyTime;
 										// 看作是回复者的新鲜事，用回复者头像替换
 										icon=reply.replyer_tinyurl;
 										// 修改新鲜事内容
@@ -964,8 +953,32 @@ function autoCheckFeeds(interval,feedFilter,forbiddenTitle,forbiddenIds,hideOld,
 							}
 						}
 					}
+					// 按时间滤除非interval期间内的新鲜事
+					var time=c.find(".duration").text().replace(/\s/g,"");
+					if(time!="刚刚更新" && !time.match(/^[12]分钟前/)) {
+						if(!checkReply || !lastReplyTime) {
+							continue;
+						} else {
+							time=/(\d+)-(\d+)-(\d+) (\d+):(\d+)/.exec(lastReplyTime);
+							if(time) {
+								var time1=new Date();
+								var time2=new Date();
+								time1.setYear(parseInt(time[1]));
+								time1.setMonth(parseInt(time[2]));
+								time1.setDate(parseInt(time[3]));
+								time1.setHours(parseInt(time[4]));
+								time1.setMinutes(parseInt(time[5]));
+								// 由于有可能系统的时区和系统时间不一致。所以当回复日期在4小时前才认为是过时的
+								if(time1.getTime()-time2.getTime()>14400000) {
+									continue;
+								}
+							} else {
+								$error("autoCheckFeeds","回复时间格式发生变化");
+								continue;
+							}
+						}
+					}
 
-					var oldFeeds=$alloc("xnr_feed");
 					if(firstTime!==true) {
 						// 排除已有，如果 lastReply=0 & oldFeeds[id]>0，feed系统出错？
 						if(oldFeeds[id]!=null && (lastReply==oldFeeds[id] || (lastReply==0 && oldFeeds[id]!=0))) {
@@ -1121,10 +1134,13 @@ function addNavItems(content) {
 
 // 恢复深蓝主题
 function recoverOriginalTheme(evt,ignoreTheme) {
+	if(evt) {
+		console.log(evt.target.tagName);
+	}
 	if(evt && evt.target.tagName!="LINK") {
 		return;
 	}
-
+	
 	var FCOLOR="#3B5998";	//Facebook的深蓝色
 	var XCOLOR="#3B5888";	//校内原来的深蓝色
 	var BCOLOR="#5C75AA";	//原来的菜单背景色
@@ -1746,7 +1762,7 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(gq3)":	{t:"我爱中国",		s:"/imgpro/icons/statusface/national-day-i-love-zh.gif"},
 		"(元旦)":	{t:"元旦快乐",		s:"/imgpro/icons/statusface/gantan.gif"},
 		"(dl)":		{t:"灯笼",			s:"/imgpro/icons/statusface/lantern.gif"},
-		"(qx)":		{t:"七夕",			s:"/imgpro/icons/statusface/qixi.gif"},
+		"(va)":		{t:"情人节",		s:"/imgpro/icons/statusface/qixi.gif"},
 		"(qx2)":	{t:"七夕",			s:"/imgpro/icons/statusface/qixi2.gif"},
 		"(cy1)":	{t:"重阳节",		s:"/imgpro/icons/statusface/09double9-3.gif"},
 		"(cy2)":	{t:"登高",			s:"/imgpro/icons/statusface/09double9.gif"},
@@ -3665,17 +3681,6 @@ function main(savedOptions) {
 					}],
 				}],
 			},{
-				text:"##去除音乐播放器（包括日志中的）",
-				ctrl:[{
-					id:"removeMusicPlayer",
-					value:false,
-					fn:[{
-						name:removeMusicPlayer,
-						stage:0,
-						fire:true,
-					}],
-				}],
-			},{
 				text:"##去除VIP主页飘浮物",
 				ctrl:[{
 					id:"removeFloatObject",
@@ -3738,6 +3743,18 @@ function main(savedOptions) {
 					}],
 				}],
 				page:"blog",
+			},{
+				text:"##去除日志中音乐播放器",
+				ctrl:[{
+					id:"removeBlogMusicPlayer",
+					value:false,
+					fn:[{
+						name:removeBlogMusicPlayer,
+						stage:0,
+						fire:true,
+					}],
+				}],
+				page:"blog"
 			},{
 				text:"##去除底部工具栏",
 				ctrl:[{
@@ -3910,6 +3927,10 @@ function main(savedOptions) {
 						id:"invitation",
 						text:"##邀请朋友",
 						value:false,
+					},{
+						id:"musicPlayer",
+						text:"##音乐播放器",
+						value:false
 					}
 				]
 			}
@@ -4121,7 +4142,7 @@ function main(savedOptions) {
 					fn:[{
 						name:hideFeeds,
 						stage:1,
-						args:[null,"@feedGroup","@markFeedAsRead","@forbiddenFeedTitle","@forbiddenFeedId","@hideOldFeeds","@oldFeedDays"],
+						args:[null,"@feedGroup","@markFeedAsRead","@forbiddenFeedTitle","@forbiddenFeedId","@trustedFeedId","@hideOldFeeds","@oldFeedDays"],
 						trigger:{"div.feed-list":"DOMNodeInserted"},
 					}],
 				}],
@@ -4268,6 +4289,24 @@ function main(savedOptions) {
 				],
 				page:"feed,profile"
 			},{
+				text:"永不隐藏来自以下ID的新鲜事######",
+				ctrl:[
+					{
+						type:"info",
+						value:"ID是对方个人主页地址中id=后面的数字。多个ID用|分隔。"
+					},{
+						type:"br"
+					},{
+						id:"trustedFeedId",
+						value:"",
+						type:"input",
+						style:"margin-left:5px;width:310px",
+						verify:{"^$|^([0-9]+\\|)*[0-9]+$":"格式错误！请检查ID是否正确，是否采用|分隔以及是否有多余的空格"}
+					}
+				],
+				page:"feed,profile"
+
+			},{
 				text:"##隐藏##天前的新鲜事",
 				ctrl:[
 					{
@@ -4393,7 +4432,7 @@ function main(savedOptions) {
 				}],
 				page:"feed,profile"
 			},{
-				text:"##自动检查并提醒新的新鲜事，每隔##秒检查一次",
+				text:"##自动检查并提醒新的新鲜事##在有新的回复时也进行提醒##",
 				ctrl:[
 					{
 						id:"autoCheckFeeds",
@@ -4402,14 +4441,15 @@ function main(savedOptions) {
 							name:autoCheckFeeds,
 							stage:3,
 							fire:true,
-							args:["@checkFeedInterval","@feedGroup","@forbiddenFeedTitle","@forbiddenFeedID","@hideOldFeeds","@oldFeedDays"]
+							args:["@feedGroup","@forbiddenFeedTitle","@forbiddenFeedId","@trustedFeedId","@checkFeedReply"]
 						}]
 					},{
-						id:"checkFeedInterval",
-						type:"input",
-						value:"120",
-						verify:{"^[3-9][0-9]$|^[1-9][0-9]{2,}$":"检查新鲜事间隔时间不得小于30秒"},
-						style:"width:30px;margin:0 3px"
+						id:"checkFeedReply",
+						type:"subcheck",
+						value:false
+					},{
+						type:"info",
+						value:"如果一件新鲜事有多条新回复，只会提醒最后一条"
 					}
 				],
 				master:0,
@@ -5482,8 +5522,7 @@ function main(savedOptions) {
 									if(!fnQueue[p[iPage]]) {
 										fnQueue[p[iPage]]=[[],[],[],[]];
 									}
-									// 只有等到DOM建立后页面节点才能保证可访问。所以优先级最小为1
-									fnQueue[p[iPage]][(fn.stage==0?1:fn.stage)].push({name:fn.name,args:fn.args,trigger:fn.trigger});
+									fnQueue[p[iPage]][fn.stage].push({name:fn.name,args:fn.args,trigger:fn.trigger});
 								}
 							}
 						}
@@ -5601,14 +5640,43 @@ function main(savedOptions) {
 		if(iPage=="*" || $page(iPage)) {
 			for(var i=0;i<fnQueue[iPage][0].length;i++) {
 				var fn=fnQueue[iPage][0][i];
-				$debug("^",1,fn.name);
-				try {
-					fn.name.apply(null,fn.args);
-					fn.name.rf=true;
-				} catch(ex) {
-					$error(fn.name,ex);
+				if(fn.trigger) {
+					// 触发器
+					for(var t in fn.trigger) {
+						// 将fn包在一个匿名函数中确保事件触发时能得到对应的fn
+						(function(func) {
+							(function() {
+								var node=$(t);
+								// 对象尚未存在
+								if(node.empty()) {
+									setTimeout(arguments.callee,500);
+									return;
+								}
+								node.bind(func.trigger[t],function(evt) {	
+									try {
+										var args=func.args.slice(0);
+										args[0]=evt;
+										$debug("^~",3,func.name);
+										func.name.apply(null,args);
+										$debug("$~",3,func.name);
+									} catch(ex) {
+										$error(func.name,ex);
+									}
+								});
+							})();
+						})(fn);
+					}
+				} else {
+					// 一般功能
+					$debug("^",1,fn.name);
+					try {
+						fn.name.apply(null,fn.args);
+						fn.name.rf=true;
+					} catch(ex) {
+						$error(fn.name,ex);
+					}
+					$debug("$",1,fn.name);
 				}
-				$debug("$",1,fn.name);
 			}
 		}
 	}
