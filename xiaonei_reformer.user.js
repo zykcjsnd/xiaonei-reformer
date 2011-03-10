@@ -1512,7 +1512,10 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".button-blue{background-color:"+FCOLOR+"}",
 				".header{background-color:"+XCOLOR+"}",
 				"td.xn_pop_content h2{background-color:"+XCOLOR+"}",
-			]
+			],
+			"talk.css":[
+				".super-menu li a:hover{background-color:"+FCOLOR+"}",
+			],
 		};
 		var style="";
 		for(var f in files) {
@@ -3316,6 +3319,32 @@ function searchShare() {
 	$("@span").text("多个关键词请用半角空格隔开").addTo(searchBar);
 };
 
+// 清空分享
+function delAllShares() {
+	if($(".page-title>h1").text().indexOf("我的分享")<0) {
+		return;
+	}
+	$("@a").text("清空列出的分享").addTo($("@div").css({padding:"5px","text-align":"center"}).move("before",$(".j-share-list"))).bind("click",function() {
+		if($(".share-itembox").empty()) {
+			return;
+		}
+		if(!window.confirm("确实要删除所有在这里显示的分享？")) {
+			return;
+		}
+		var del=false;
+		$(".share-itembox").each(function() {
+			if($(this).css("display")!="none") {
+				var id=this.id.match("\\d+");
+				$get("http://share.renren.com/share/EditShare.do?action=del&sid="+id+"&type="+XNR.userId,null,null,"POST");
+				del=true;
+			}
+		});
+		if(del) {
+			window.location.reload();
+		}
+	});
+};
+
 // 禁止显示名片
 function removeNameCard() {
 	const code="window.NameCard=null";
@@ -3453,6 +3482,27 @@ function showMusicFileLink() {
 			"this.oa(mid);"+
 		"};";
 	$script(code);
+};
+
+// 清空留言板
+function delAllNotes() {
+	$("@a").text("清空列出的留言").addTo($("@div").css({padding:"5px","text-align":"center"}).move("before",$("#talk"))).bind("click",function() {
+		if($("#talk .comment").empty()) {
+			return;
+		}
+		if(!window.confirm("确实要删除所有在这里显示的留言？")) {
+			return;
+		}
+		var del=false;
+		$("#talk .comment").each(function() {
+			var id=this.id.match("\\d+");
+			$get("http://gossip.renren.com/delgossip.do?age=recent&id="+id+"&owner="+XNR.userId,null,null,"POST");
+			del=true;
+		});
+		if(del) {
+			window.location.reload();
+		}
+	});
 };
 
 // 检查更新
@@ -5130,6 +5180,18 @@ function main(savedOptions) {
 				],
 				page:"share"
 			},{
+				text:"##增加批量清理分享功能",
+				ctrl:[{
+					id:"delAllShares",
+					value:false,
+					fn:[{
+						name:delAllShares,
+						stage:2,
+						fire:true
+					}]
+				}],
+				page:"share"
+			},{
 				text:"##禁止鼠标悬停在用户头像/名称时显示名片##",
 				ctrl:[{
 					id:"removeNameCard",
@@ -5171,6 +5233,18 @@ function main(savedOptions) {
 					}]
 				}],
 				page:"musicbox"
+			},{
+				text:"##增加批量清理留言板功能",
+				ctrl:[{
+					id:"delAllNotes",
+					value:false,
+					fn:[{
+						name:delAllNotes,
+						stage:2,
+						fire:true
+					}]
+				}],
+				page:"gossip"
 			}
 		],
 		"自动更新":[
@@ -6091,6 +6165,7 @@ function $page(category,url) {
 		musicbox:"/music\\.renren\\.com/musicbox",	// 人人爱听播放器
 		fm:"/music\\.renren\\.com/fm",	// 人人电台
 		xiaozu:"/xiaozu\\.renren\\.com/",	// 小组
+		gossip:"/gossip\\.renren\\.com/",	// 留言板
 	};
 	if(!url) {
 		url=XNR.url;
