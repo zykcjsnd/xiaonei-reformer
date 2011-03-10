@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.6.20110217
-// @miniver        410
+// @version        3.2.6.20110310
+// @miniver        411
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -1134,9 +1134,6 @@ function addNavItems(content) {
 
 // 恢复深蓝主题
 function recoverOriginalTheme(evt,ignoreTheme) {
-	if(evt) {
-		console.log(evt.target.tagName);
-	}
 	if(evt && evt.target.tagName!="LINK") {
 		return;
 	}
@@ -1652,10 +1649,10 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 	//	":(":		{t:"难过",			s:"/imgpro/icons/statusface/6.gif"},
 		"(难过)":	{t:"难过",			s:"/imgpro/icons/statusface/6.gif"},
 	//	":-p":		{t:"吐舌头",		s:"/imgpro/icons/statusface/7.gif"},
-		":a":		{t:"爱",			s:"/imgpro/icons/statusface/8.gif"},
+		"(l)":		{t:"爱",			s:"/imgpro/icons/statusface/8.gif"},
 	//	"(v)":		{t:"花儿",			s:"/imgpro/icons/statusface/9.gif"},
 		"(花)":		{t:"花儿",			s:"/imgpro/icons/statusface/9.gif"},
-		"(38)":		{t:"校内女人",		s:"/imgpro/icons/statusface/10.gif"},
+		"(ns)":		{t:"女生节",		s:"/imgpro/icons/statusface/10.gif"},
 	//	"8-|":		{t:"书呆子",		s:"/imgpro/icons/statusface/13.gif"},
 		"(书呆子)":	{t:"书呆子",		s:"/imgpro/icons/statusface/13.gif"},
 	//	"|-)":		{t:"困",			s:"/imgpro/icons/statusface/14.gif"},
@@ -1664,6 +1661,7 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(大笑)":	{t:"大笑",			s:"/imgpro/icons/statusface/16.gif"},
 	//	":d":		{t:"大笑",			s:"/imgpro/icons/statusface/16.gif"},
 		"(口罩)":	{t:"防流感",		s:"/imgpro/icons/statusface/17.gif"},
+		"(不)":		{t:"不",			s:"/imgpro/emotions/tie/1.gif"},
 	//	"(奸笑)":	{t:"奸笑",			s:"/imgpro/emotions/tie/2.gif"},
 		"(谄笑)":	{t:"谄笑",			s:"/imgpro/emotions/tie/2.gif"},
 		"(吃饭)":	{t:"吃饭",			s:"/imgpro/emotions/tie/3.gif"},
@@ -1680,7 +1678,10 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(色)":		{t:"色迷迷",		s:"/imgpro/emotions/tie/13.gif"},
 	//	"(病)":		{t:"生病",			s:"/imgpro/emotions/tie/14.gif"},
 		"(生病)":	{t:"生病",			s:"/imgpro/emotions/tie/14.gif"},
+		"(叹气)":	{t:"叹气",			s:"/imgpro/emotions/tie/15.gif"},
 		"(淘气)":	{t:"淘气",			s:"/imgpro/emotions/tie/16.gif"},
+		"(舔)":		{t:"舔",			s:"/imgpro/emotions/tie/17.gif"},
+		"(偷笑)":	{t:"偷笑",			s:"/imgpro/emotions/tie/18.gif"},
 		"(吐)":		{t:"呕吐",			s:"/imgpro/emotions/tie/19.gif"},
 		"(吻)":		{t:"吻",			s:"/imgpro/emotions/tie/20.gif"},
 		"(晕)":		{t:"晕",			s:"/imgpro/emotions/tie/21.gif"},
@@ -1752,7 +1753,6 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(yeah)":	{t:"哦耶",			s:"/img/ems/yeah.gif"},
 		"(good)":	{t:"牛",			s:"/img/ems/good.gif"},
 		"(f)":		{t:"拳头",			s:"/img/ems/fist.gif"},
-	//	"(l)":		{t:"爱",			s:"/img/ems/love.gif"}, 与:a相同
 		"(t)":		{t:"火炬",			s:"/img/ems/torch.gif"}
 	};
 	var eEmList={
@@ -2095,6 +2095,12 @@ function showImagesInOnePage() {
 		var album=$("div.photo-list");
 		var items=$(".number-photo");
 		var pagerInfo=$("div.pager-top");
+	} else if($(".group-home>.album-list").exist()){
+		// 小组相册
+		var baseURL="http://xiaozu.renren.com"+document.location.pathname+"?curpage=%%";
+		var album=$("@div").move("before",$("ul.album-list")).add($("ul.album-list"));
+		var items=$(".group-home>.pagerbox>span");
+		var pagerInfo=$("#pageTopPanel");
 	} else {
 		var baseURL="http://photo.renren.com/getalbum.do?id=##&owner=@@&curpage=%%&t=**";
 		var album=$("div.photo-list");
@@ -2107,21 +2113,24 @@ function showImagesInOnePage() {
 		return;
 	}
 	// 获取相册信息
-	var ownerId,albumId;
-	$("head script:not([src])").each(function() {
-		var text=$(this).text();
-		if(text.match("albumId:[0-9]+,")) {
-			albumId=/albumId:([0-9]+),/.exec(text)[1];
-			ownerId=/ownerId:([0-9]+),/.exec(text)[1];
-			return false;
-		} else if(text.match("XN\\.page\\.data\\s*=\\s*{[^}]*id:[0-9]+")) {
-			albumId=/album\/([0-9]+)/.exec(XNR.url)[1];
-			ownerId=/XN\.page\.data\s*=\s*{[^}]*id:([0-9]+)/.exec(text)[1];
-			return false;
+	if(baseURL.indexOf("##")>0 || baseURL.indexOf("@@")>0) {
+		var ownerId,albumId;
+		$("head script:not([src])").each(function() {
+			var text=$(this).text();
+			if(text.match("albumId:[0-9]+,")) {
+				albumId=/albumId:([0-9]+),/.exec(text)[1];
+				ownerId=/ownerId:([0-9]+),/.exec(text)[1];
+				return false;
+			} else if(text.match("XN\\.page\\.data\\s*=\\s*{[^}]*id:[0-9]+")) {
+				albumId=/album\/([0-9]+)/.exec(XNR.url)[1];
+				ownerId=/XN\.page\.data\s*=\s*{[^}]*id:([0-9]+)/.exec(text)[1];
+				return false;
+			}
+		});
+		if(baseURL.indexOf("@@")>0 && !ownerId) {
+			return;
 		}
-	});
-	if(baseURL.indexOf("@@")>0 && !ownerId) {
-		return;
+		baseURL=baseURL.replace("@@",ownerId).replace("##",albumId);
 	}
 	// 加密相册密码
 	if(new RegExp("[?&]t=([0-9a-z]{32})").test(XNR.url)) {
@@ -2129,7 +2138,6 @@ function showImagesInOnePage() {
 	} else {
 		baseURL=baseURL.replace("&t=**","");
 	}
-	baseURL=baseURL.replace("@@",ownerId).replace("##",albumId);
 
 	var pager=$pager(pagerInfo);
 	// 当前页数
@@ -2143,7 +2151,7 @@ function showImagesInOnePage() {
 		for(var i=0;i<this.childNodes.length;i++) {
 			// TextNode
 			if(this.childNodes[i].nodeType==3) {
-				var photoAmount=this.childNodes[i].nodeValue.match(/共\s*[0-9]+\s*张/);
+				var photoAmount=this.childNodes[i].nodeValue.match(/共\s*[0-9]+\s*[张个]/);
 				if(photoAmount) {
 					origText=this.childNodes[i].nodeValue;
 					this.childNodes[i].nodeValue=photoAmount;
@@ -2154,6 +2162,7 @@ function showImagesInOnePage() {
 	});
 
 	album.child(0).attr("page",curPage);
+
 	if(typeof album2!="undefined") {
 		$("@div").add(album2.find(".story-pic-list")).addTo(album2);
 	}
@@ -2180,14 +2189,16 @@ function showImagesInOnePage() {
 				if($("#single-column table.photoList").exist()) {
 					var photoList=/(<table\s[^>]*?class="photoList"[^>]*?>[\s\S]+?<\/table>)/.exec(res)[1];
 				} else if(XNR.url.indexOf("/photo/ap/")!=-1) {
-					var photoList=/<div\s[^>]*?class="photo-list clearfix"[^>]*?>([\s\S]+?)<\/div>/.exec(res)[1];
+					var photoList=/<div\s[^>]*?class="photo-list [^"]*clearfix"[^>]*?>([\s\S]+?)<\/div>/.exec(res)[1];
 				} else if($(".all-photos>.photo-list").exist()) {
 					var photoList=/<div\s[^>]*?class="photo-list"[^>]*?>\s*(<ul>[\s\S]+?<\/ul>)/.exec(res)[1];
 				} else if($(".share-photo-main>.photo-list").exist()) {
-					var photoList=/<div\s[^>]*?class="photo-list clearfix"[^>]*?>\s*(<ul>[\S\s]+?<\/ul>)/.exec(res)[1];
+					var photoList=/<div\s[^>]*?class="photo-list [^"]*clearfix"[^>]*?>\s*(<ul>[\S\s]+?<\/ul>)/.exec(res)[1];
+				} else if($(".group-home>div>.album-list").exist()) {
+					var photoList=/(<ul\s[^>]*?class="album-list [^"]*clearfix">[\s\S]+?<\/ul>)/.exec(res)[1];
 				} else {
-					var photoList=/<div\s[^>]*?class="photo-list clearfix"[^>]*?>([\s\S]+?)<\/div>/.exec(res)[1];
-					var storyList=/<!--start storyList mode-->\s*<div\s[^>]*?class="story-pic clearfix"[^>]*?>([\s\S]+?)<\/div>\s*<!--story mode end-->/.exec(res)[1];
+					var photoList=/<div\s[^>]*?class="photo-list [^"]*clearfix"[^>]*?>([\s\S]+?)<\/div>/.exec(res)[1];
+					var storyList=/<!--start storyList mode-->\s*<div\s[^>]*?class="story-pic [^"]*clearfix"[^>]*?>([\s\S]+?)<\/div>\s*<!--story mode end-->/.exec(res)[1];
 				}
 				var pos;
 				if(page>parseInt(album.child(-1).attr("page"))) {
@@ -2220,7 +2231,7 @@ function showImagesInOnePage() {
 // 在相册中添加生成下载页链接
 // 压力测试：http://photo.renren.com/photo/242786354/album-236660334
 function addDownloadAlbumLink(linkOnly,repMode) {
-	if($(".photo-list,table.photoList").empty()) {
+	if($(".photo-list,table.photoList,ul.album-list").empty()) {
 		return;
 	}
 	var downLink=$("@a").attr({"style":'background-image:none;padding-left:10px;padding-right:10px',"href":'javascript:;'}).text("下载当前页图片");
@@ -2232,8 +2243,6 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 	} else if($(".share-operations").exist()) {
 		// 从分享相册新鲜事中的相册封面图片进入
 		$(".share-operations").add($("@span").attr("class","pipe").text("|")).add(downLink);
-	} else if($(".pager-bottom,.pagerbottom").exist()) {
-		$(".pager-bottom,.pagerbottom").add(downLink.css("lineHeight","22px"),0);
 	} else if($("table.photoList").exist()) {
 		// 公共主页相册
 		var ap=$("table.photoList").superior();
@@ -2242,6 +2251,11 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 		} else {
 			ap.add(downLink.attr("style",null));
 		}
+	} else if($(".group-home ul.album-list").exist()) {
+		// 小组相册
+		downLink.move("before",$(".group-home>.pagerbox").eq(-1));
+	} else if($(".pager-bottom,.pagerbottom").exist()) {
+		$(".pager-bottom,.pagerbottom").add(downLink.css("lineHeight","22px"),0);
 	} else {
 		return;
 	}
@@ -2273,7 +2287,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 				}
 			});
 		} else {
-			var links=$(".photo-list span.img a, table.photoList td.photoPan>a, .photo-list>ul>li>a.cover");
+			var links=$(".photo-list span.img a, table.photoList td.photoPan>a, .photo-list>ul>li>a.cover, ul.album-list>li>a.photo-box");
 			var totalImage=links.size();
 			if(totalImage==0) {
 				return;
@@ -2608,6 +2622,19 @@ function showFullSizeImage(evt,indirect) {
 			return;
 		}
 
+		// 小组相册图片
+		if(pageURL.match(/xiaozu\.renren\.com\/xiaozu\/\d+\/album\/\d+\/photo\/\d+$/)) {
+			_loadImage("image",false,evt,imgId,pageURL);
+			return;
+		}
+
+		// 小组头像
+		if(pageURL.match(/xiaozu\.renren\.com\/xiaozu\/\d+$/)) {
+			_loadImage("xiaozu",false,evt,imgId,pageURL);
+			return;
+		}
+
+
 		// 非常古老的头像（http://head.xiaonei.com/photos/20070201/1111/head[0-9]+.jpg），其head后的[0-9]+可能有变，以时间为准
 		if(thumbnail.match(/head\.xiaonei\.com\/photos\/[0-9]{8}\/[0-9]+\/head[0-9]+\./)) {
 			imageDate=/photos\/([0-9]{8}\/[0-9]+)/.exec(thumbnail)[1];
@@ -2707,6 +2734,9 @@ function showFullSizeImage(evt,indirect) {
 					break;
 				case "blog":
 					_getBlogImage(pageURL,imgId);
+					break;
+				case "xiaozu":
+					_getXiaozuImage(pageURL,imgId);
 					break;
 			}
 		} else {
@@ -2929,6 +2959,28 @@ function showFullSizeImage(evt,indirect) {
 			}
 		});
 	};
+	//获取小组头像图片并显示出来
+	function _getXiaozuImage(pageURL,imgId) {
+		$get(pageURL,function(html) {
+			try {
+				if(!html || html.search("<body id=\"errorPage\">")!=-1) {
+					_showViewer(null,"error",imgId);
+					return;
+				}
+				var src=new RegExp("<div class=\"group-photo\">\\s*<img [^>]*?url\\((.*?)\\).*?>").exec(html);
+				if(src) {
+					src=src[1];
+					_imageCache(imgId,src);
+					_showViewer(null,src,imgId);
+				} else {
+					showViewer(null,"error",imgId);
+				}
+			} catch(ex) {
+				$error("_getXiaozuImage",ex);
+			}
+		});
+	};
+
 };
 
 // 清除大图地址缓存
@@ -4841,7 +4893,7 @@ function main(savedOptions) {
 						fire:true
 					}]
 				}],
-				page:"album,share"
+				page:"album,share,xiaozu"
 			},{
 				text:"##允许下载相册图片####仅生成图片链接##替换模式##",
 				ctrl:[
@@ -4871,7 +4923,7 @@ function main(savedOptions) {
 					}
 				],
 				master:0,
-				page:"album,share"
+				page:"album,share,xiaozu"
 			},{
 				text:"##当鼠标在照片上时隐藏圈人框##",
 				ctrl:[
@@ -6036,8 +6088,9 @@ function $page(category,url) {
 		act:"/act\\.renren\\.com/",	// 活动
 		request:"/req\\.renren\\.com/",	// 请求
 		searchEx:"/browse\\.renren\\.com/searchEx\\.do",	// 搜索结果
-		musicbox:"/music.renren.com/musicbox",	// 人人爱听播放器
-		fm:"/music.renren.com/fm",	// 人人电台
+		musicbox:"/music\\.renren\\.com/musicbox",	// 人人爱听播放器
+		fm:"/music\\.renren\\.com/fm",	// 人人电台
+		xiaozu:"/xiaozu\\.renren\\.com/",	// 小组
 	};
 	if(!url) {
 		url=XNR.url;
@@ -6679,7 +6732,7 @@ function $feedType(feed) {
 /*
  * 从翻页控件（div.pager-nav或div.pager-top）中取得当前页与最后页（序号从0开始）
  * 参数
- *   [HTMLOListElement]pager:翻页控件
+ *   [HTMLDivElement]pager:翻页控件
  * 返回值
  *   [Object]:{current:当前页,last:最后页}
  */
