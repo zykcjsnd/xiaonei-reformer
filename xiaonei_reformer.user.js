@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.7.20110310
-// @miniver        411
+// @version        3.2.7.20110311
+// @miniver        412
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -3496,7 +3496,8 @@ function delAllNotes() {
 		var del=false;
 		$("#talk .comment").each(function() {
 			var id=this.id.match("\\d+");
-			$get("http://gossip.renren.com/delgossip.do?age=recent&id="+id+"&owner="+XNR.userId,null,null,"POST");
+			var cmd=/delComment\('.*?','(.*?)','.*?',\d+\)/.exec($(this).find("a[onclick^='delComment']").attr("onclick"));
+			$get("http://gossip.renren.com/delgossip.do?age=recent&id="+id+"&owner="+(cmd?cmd[1]:XNR.userId),null,null,"POST");
 			del=true;
 		});
 		if(del) {
