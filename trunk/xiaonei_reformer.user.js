@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.7.20110311
-// @miniver        412
+// @version        3.2.7.20110318
+// @miniver        413
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -262,14 +262,14 @@ function removeBlogLinks() {
 	$("#blogContent a,#shareBody a").each(function() {
 		var o=$(this);
 		// 链接到其他日志
-		if($page("blog",this.href)) {
+		if($page("blog",this.href) || $page("page_blog",this.href)) {
 			if(o.text().length>70) {
 				o.tag("span");
 			}
 			return;
 		}
-		// 只处理链接到个人主页或外部链接中非ASCII文字大于20个的。
-		if($page("profile",this.href) || o.text().match(/[\u0100-\uffff]{20,}/)) {
+		// 只处理链接到个人主页/公共主页或外部链接中非ASCII文字大于20个的。
+		if($page("profile",this.href) || $page("page_home",this.href) || o.text().match(/[\u0100-\uffff]{20,}/)) {
 			o.tag("span");
 		}
 	});
@@ -576,10 +576,14 @@ function hideFeeds(evt,feeds,mark,badTitles,badIds,goodIds,hideOld,hideDays) {
 	(evt?$(evt.target):$("div.feed-list>article")).filter(function(elem) {
 		var feed=$(elem);
 		var fh3=feed.find("h3");
+		var fstatus=feed.find(".content .original-stauts");
 		if(goodIds && fh3.filter(gidFilter).exist()) {
 			return false;
 		}
 		if(badTitles && fh3.text().replace(/\s/g,"").match(badTitles)) {
+			return true;
+		}
+		if(badTitles && fstatus.exist() && fstatus.text().replace(/\s/g,"").match(badTitles)) {
 			return true;
 		}
 		if(hideOld) {
@@ -871,23 +875,29 @@ function autoCheckFeeds(feedFilter,badTitles,badIds,goodIds,checkReply) {
 				}
 				// 滤除新鲜事
 				for(var i=feedList.heirs()-1;i>=0;i--) {
-					var c=feedList.child(i);
-					var ch3=c.find("h3");
-					if(goodIds && ch3.filter(gidFilter).exist()) {
+					var feed=feedList.child(i);
+					var fh3=feed.find("h3");
+					var fstatus=feed.find(".content .original-stauts");
+					if(goodIds && fh3.filter(gidFilter).exist()) {
 						// 在白名单上
 						continue;
 					}
-					if(badTitles && ch3.text().replace(/\s/g,"").match(badTitles)) {
+					if(badTitles && fh3.text().replace(/\s/g,"").match(badTitles)) {
 						// 按标题滤除
-						c.remove();
+						feed.remove();
+						continue;
+					}
+					if(badTitles && fstatus.exist() && fstatus.text().replace(/\s/g,"").match(badTitles)) {
+						// 转发的状态也算做标题
+						feed.remove();
 						continue;
 					}
 					// 按类型滤除
-					var feedType=$feedType(c);
+					var feedType=$feedType(feed);
 					if(feedType && feedFilter[feedType]) {
-						c.remove();
-					} else if(feedType=="share" && badIds && ch3.filter(bidFilter).exist()) {
-						c.remove();
+						feed.remove();
+					} else if(feedType=="share" && badIds && fh3.filter(bidFilter).exist()) {
+						feed.remove();
 					}
 				}
 
@@ -954,7 +964,7 @@ function autoCheckFeeds(feedFilter,badTitles,badIds,goodIds,checkReply) {
 						}
 					}
 					// 按时间滤除非interval期间内的新鲜事
-					var time=c.find(".duration").text().replace(/\s/g,"");
+					var time=feedInfo.find(".duration").text().replace(/\s/g,"");
 					if(time!="刚刚更新" && !time.match(/^[12]分钟前/)) {
 						if(!checkReply || !lastReplyTime) {
 							continue;
@@ -1210,6 +1220,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".site-menu-nav .nav-item li.selected,.site-menu-nav .nav-item .item-title.selected{background-color:"+BCOLOR+"}",
 				"a.skin-action,a.skin-action:hover{color:white;background-color:"+FCOLOR+"}",
 				"#accountDropDownMenu a.logout:hover{background-color:"+FCOLOR+"}",
+				".site-menu-apps .apps-item .item-title.selected, .site-menu-apps .apps-item .item-title.selected:hover{background-color:"+BCOLOR+"}",
 			],
 			"home-all-min.css":[
 				".a-feed .details a.share:hover{color:"+FCOLOR+"}",
@@ -1744,6 +1755,8 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(trb)":	{t:"车厢",			s:"/imgpro/icons/statusface/trainbox.gif"},
 		"(bon)":	{t:"年终奖",		s:"/imgpro/icons/statusface/award.gif"},
 		"(pt)":		{t:"派对，干杯",	s:"/imgpro/icons/statusface/partycup.gif"},
+		"(hz)":		{t:"传递爱心",		s:"/imgpro/icons/statusface/cdax.gif"},
+		"(sbq)":	{t:"伤不起",		s:"/imgpro/icons/statusface/shangbuqi.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
@@ -1784,6 +1797,8 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(tk)":		{t:"火鸡",			s:"/imgpro/icons/statusface/turkey.gif"},
 		"(nrj)":	{t:"女人节",		s:"/imgpro/icons/statusface/lipstick.gif"},
 		"(zsj)":	{t:"植树节",		s:"/imgpro/icons/statusface/trees.gif"},
+		"(rs)":		{t:"白色情人节",	s:"/imgpro/icons/statusface/rose0314.gif"},
+		"(315)":	{t:"消费者权益保护日",s:"/imgpro/icons/statusface/20110315.gif"},
 		"(yb)":		{t:"月饼",			s:"/imgpro/icons/statusface/mooncake.gif"},
 		"(zz)":		{t:"粽子",			s:"/imgpro/icons/statusface/zongzi.gif"},
 		"(hjr)":	{t:"世界环境日",	s:"/imgpro/icons/statusface/earthday.gif"},
@@ -3017,6 +3032,9 @@ function removeBestFriendRestriction() {
 // 允许修改昵称
 function removeNicknameRestriction() {
 	try {
+		if($("#feedInfoAjaxDiv").empty()) {
+			return;
+		}
 		var input=$("#nkname");
 		if(input.empty()) {
 			if($("#basicInfo_form>p>#name").empty()) {
@@ -3040,7 +3058,7 @@ function removeNicknameRestriction() {
 		const code="window.XN.page.ProfileEdit.basicInfo.checkNkName=function(){}";
 		$script(code);
 	} catch(ex) {
-		$("removeNicknameRestriction",ex);
+		$error("removeNicknameRestriction",ex);
 	}
 };
 
@@ -3062,6 +3080,7 @@ function showLoginInfo(lastHash) {
 	$save("lastSid",hash.toString(16));
 	$get("http://safe.renren.com/alarm/alarmIndex/info/",function(data) {
 		if(data==null) {
+			$error("showLoginInfo","地址改变？");
 			return;
 		}
 		data=data.replace(/<(\/?)a[^>]*>/g,"<$1span>").replace("<dt>当前登录信息</dt>","");
@@ -3845,7 +3864,7 @@ function main(savedOptions) {
 						fire:true,
 					}],
 				}],
-				page:"blog",
+				page:"blog,page_blog",
 			},{
 				text:"##去除日志中音乐播放器",
 				ctrl:[{
@@ -4363,7 +4382,7 @@ function main(savedOptions) {
 				ctrl:[
 					{
 						type:"info",
-						value:"忽略标题中的空格。多个关键字用|分隔。如“星座|教程”，即可屏蔽所有标题包含星座或教程的新鲜事。可以用于屏蔽某些人的分享，比如“张三分享”即可将所有张三的分享新鲜事屏蔽。实际上是正则表达式，如果你不懂正则表达式，就尽量不要使用特殊符号"
+						value:"也会检查转发的状态内容。忽略内容中的空格。多个关键字用|分隔。如“星座|教程”，即可屏蔽所有标题包含星座或教程的新鲜事。可以用于屏蔽某些人的分享，比如“张三分享”即可将所有张三的分享新鲜事屏蔽。实际上是正则表达式，如果你不懂正则表达式，就尽量不要使用特殊符号"
 					},{
 						type:"br"
 					},{
@@ -5060,7 +5079,7 @@ function main(savedOptions) {
 						}]
 					},{
 						type:"info",
-						value:"要想让别人看不到自己的橙名，请到导航栏上“设置”->“隐私设置”->“橙名显示”中进行设置"
+						value:"要想让别人看不到自己的橙名，请到导航栏上“帐号”->“帐户设置”->“隐私设置”->“橙名显示”中进行设置"
 					}
 				]
 			},{
@@ -5086,11 +5105,11 @@ function main(savedOptions) {
 							name:removeNicknameRestriction,
 							stage:3,
 							fire:"trigger",
-							trigger:{"#feedInfoAjaxDiv":"DOMNodeInserted"}
+							trigger:{"#ajaxContainer":"DOMNodeInserted"}
 						}]
 					},{
 						type:"info",
-						value:"启用本功能后，在导航栏“设置”->“资料编辑”->“基本信息”中编辑昵称"
+						value:"启用本功能后，在个人主页“资料”->“资料编辑”->“基本信息”中编辑昵称"
 					}
 				],
 				page:"profile",
@@ -6063,7 +6082,14 @@ function main(savedOptions) {
 
 	$wait(1,function() {
 		var eventId="XNR"+parseInt(parseInt(Math.random()*10000));
-		$("@script").text("if(window.asyncHTMLManager){window.asyncHTMLManager.addEvent('load',function(){var evt=document.createEvent('HTMLEvents');evt.initEvent('"+eventId+"',true,true);document.documentElement.dispatchEvent(evt)})}").addTo(document.body).remove();
+		const code="if(window.asyncHTMLManager){"+
+			"window.asyncHTMLManager.addEvent('load',function(){"+
+				"var evt=document.createEvent('HTMLEvents');"+
+				"evt.initEvent('"+eventId+"',true,true);"+
+				"document.documentElement.dispatchEvent(evt)"+
+			"})"+
+		"}";
+		$script(code);
 		$(document.documentElement).bind(eventId,function(evt) {
 			evt.stopPropagation();
 			XNR.url=document.location.href;
@@ -6155,6 +6181,8 @@ function $page(category,url) {
 		blog:"/blog\\.renren\\.com/|#//blog/",	// 日志
 		forum:"/club\\.renren\\.com/",	// 论坛
 		pages:"/page\\.renren\\.com/",	// 公共主页
+		page_home:"/page\\.renren\\.com/[^/]+$|/page\\.renren\\.com/\\d+/index",	// 公共主页首页 FIXME 准确否??
+		page_blog:"/page\\.renren\\.com/\\d+/note/\\d+",	// 公共主页日志
 		status:"/status\\.renren\\.com/|#//status/",	// 状态
 		photo:"/photo\\.renren\\.com/getphoto\\.do|/photo\\.renren\\.com/gettagphoto\\.do|/photo\\.renren\\.com/photo/sp/|/photo\\.renren\\.com/photo/[0-9]+/photo-|/page\\.renren\\.com/[^/]+/photo/|event\\.renren\\.com/event/[0-9]+/[0-9]+/photo/[0-9]+|lover\\.renren\\.com/photo/",	// 照片
 		album:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|/photo/album\\?|photo\\.renren\\.com/photo/ap/|event\\.renren\\.com/event/[0-9]+/photos|event\\.renren\\.com/event/[0-9]+/stars|lover\\.renren\\.com/album/",	// 相册
