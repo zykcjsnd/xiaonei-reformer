@@ -2039,15 +2039,22 @@ function extendBlogLinkSupport() {
 
 // 阻止统计信息
 function preventTracking0() {
-	var code="const COMSCORE=null;";
+	var code="const COMSCORE=null";
 	$script(code,true);
 	// 阻止Google Analytics
 	var code="const urchinTracker=null";
 	$script(code,true);
+	// 阻止得到/失去焦点时发送信息
+	var code="window.statisFocusEventAdded=true;window.statisBlurEventAdded=true";
+	$script(code);
+	// 阻止滚动到底部时发送信息
+	var code="window.statisBottomEventAdded=true";
+	$script(code);
 };
 
-// 阻止点击跟踪和焦点跟踪
+// 阻止统计信息
 function preventTracking2() {
+	// 阻止点击鼠标时发送信息
 	var code="var count=0;"+
 	"(function(){"+
 		"try{"+
@@ -2061,21 +2068,36 @@ function preventTracking2() {
 	"})()";
 	$script(code);
 
+	// 阻止得到/失去焦点时与滚动底部时发送信息
 	var code="var count=0;"+
 	"(function(){"+
 		"try{"+
-			"if(!window.statisFocusEventAdded || !window.statisBlurEventAdded){"+
-				"window.statisFocusEventAdded=true;"+
-				"window.statisBlurEventAdded=true;"+
-				"return;"+
-			"}"+
 			"if(XN.JSON.pft_build)"+
 				"return;"+
 			"XN.JSON.pft_build=XN.JSON.build;"+
+			"XN.JSON.build_c=0;"+
 			"XN.JSON.build=function(){"+
-				"if(arguments.callee.caller.toString().indexOf('focus?J=')>0)"+
-					"throw 'focus tracking prevented';"+
-				"return XN.JSON.pft_build.apply(this,arguments)"+
+				"var f=arguments.callee.caller;"+
+				"var fs=f.toString();"+
+				"var e,t=0;"+
+				"if(fs.indexOf('unfocus?J=')>0){"+
+					"e='blur'"+
+				"}else if(fs.indexOf('focus?J=')>0){"+
+					"e='focus'"+
+				"}else if(fs.indexOf('scrollbottom?J=')>0){"+
+					"e='scrollbottom';t=1"+
+				"}else{"+
+					"return XN.JSON.pft_build.apply(this,arguments)"+
+				"}"+
+				"if(t){"+
+					"XN.events.delEvent(e,f);"+
+				"}else{"+
+					"XN.event.delEvent(window,e,f);"+
+				"}"+
+				"XN.JSON.build_c++;"+
+				"if(XN.JSON.build_c>=3)"+
+					"XN.JSON.build=XN.JSON.pft_build;"+
+				"throw e+' tracking disabled';"+
 			"}"+
 		"}catch(ex){"+
 			"if(count<10)"+
