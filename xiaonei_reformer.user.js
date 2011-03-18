@@ -56,8 +56,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.7.20110310";
-XNR.miniver=411;
+XNR.version="3.2.7.20110318";
+XNR.miniver=413;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1102,11 +1102,13 @@ function useOldStyleNav() {
 	var css=".navigation-new .nav-main .menu-title a{font-weight:normal;padding:0 7px}.navigation-new .nav-main .drop-menu-btn{visibility:hidden !important;width:"+(XNR.acore==PRESTO?"1":"0")+"px;margin:0}.navigation-new .nav-other .account-action .menu-title a{background:none;padding:0 5px}";
 	$wait(1,function() {
 		$(".navigation-new .nav-main .menu-title a").filter(".drop-menu-btn[id]").bind("mouseover",function(evt) {
-			var newEvt=document.createEvent('MouseEvents');
-			newEvt.initMouseEvent("mouseover",true,true,window,0,evt.screenX,evt.screenY,evt.clientX,evt.clientY,evt.altKey,evt.ctrlKey,evt.shiftKey,evt.metaKey,0,evt.target);
-			evt.target.firstElementChild.dispatchEvent(newEvt);
+			if(evt.target.tagName=="A") {
+				var newEvt=document.createEvent('MouseEvents');
+				newEvt.initMouseEvent("mouseover",true,true,window,0,evt.screenX,evt.screenY,evt.clientX,evt.clientY,evt.altKey,evt.ctrlKey,evt.shiftKey,evt.metaKey,0,evt.target);
+				evt.target.firstElementChild.dispatchEvent(newEvt);
+			}
 		}, true).bind("mouseout",function(evt) {
-			if(evt.relatedTarget!=evt.target.firstElementChild) {
+			if(evt.target.tagName=="A" && evt.relatedTarget!=evt.target.firstElementChild) {
 				var newEvt=document.createEvent('MouseEvents');
 				newEvt.initMouseEvent("mouseout",true,true,window,0,evt.screenX,evt.screenY,evt.clientX,evt.clientY,evt.altKey,evt.ctrlKey,evt.shiftKey,evt.metaKey,0,evt.target);
 				evt.target.firstElementChild.dispatchEvent(newEvt);
