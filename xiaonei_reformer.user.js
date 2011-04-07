@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.7.20110318
-// @miniver        413
+// @version        3.2.8.20110408
+// @miniver        415
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -186,19 +186,12 @@ function removePageTheme() {
 			return true;
 		}
 	});
-	// 恢复被注释了的原始模板
-	var nodes=$("head").get().childNodes;
-	for(var i=0;i<nodes.length;i++) {
-		// COMMENT_NODE
-		if(nodes[i].nodeType!=8) {
-			continue;
-		}
-		if(nodes[i].nodeValue.indexOf("profile-skin.css")!=-1) {
-			var file=/href=["'](.*?)["']/.exec(nodes[i].nodeValue);
-			if(file) {
-				$("head").add($("@link").attr({media:"all",type:"text/css",rel:"stylesheet",href:file[1]}));
-			}
-			break;
+	// 恢复原始模板
+	if($page("profile") && !$page("pages")) {
+		var skin=$("head>link[href*='profile-skin.css']");
+		if(skin.empty()) {
+			// FIXME:hardcoded href
+			$("@link").attr({type:"text/css",rel:"stylesheet",href:"http://s.xnimg.cn/a8112/csspro/apps/profile-skin.css"}).addTo($("head"));
 		}
 	}
 	// 修复Logo
@@ -1128,6 +1121,22 @@ function addNavLogout() {
 	$("@div").attr("class","menu last").html('<div class="menu-title"><a href="http://www.renren.com/Logout.do">退出</a></div>').move("after",nav);
 };
 
+// 浮动导航栏
+function useFloatingNav() {
+	var nav=$("#container>#header,body>#navBar,#container>#navBar").eq();
+	// 将导航栏复制一份放在原来的位置，防止排版出错
+	var fake=nav.clone().css("visibility","hidden").attr("fake","").move("after",nav);
+	nav.attr("style","position:fixed;top:0;z-index:1003;margin:0 auto;padding-bottom:0 !important");
+	if(nav.attr("id")=="navBar") {
+		nav.css("width","100%");
+	}
+	// 部分页面（如 http://pay.renren.com/index.do）下会如此
+	if(nav.curCSS("width")!=fake.curCSS("width")) {
+		nav.attr("style",null);
+		fake.remove();
+	}
+};
+
 // 增加导航栏项目
 function addNavItems(content) {
 	if(!content) {
@@ -1287,6 +1296,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".page-titletabs a.add-msg{background-color:"+FCOLOR+"}",
 				".inputbutton,.inputsubmit,.subbutton,.canbutton,.button-group button{background-color:"+FCOLOR+"}",
 				".messages .next_message:hover,.messages .previous_message:hover{background-color:"+FCOLOR+"}",
+				".message_rows .new_message{background-color:"+SCOLOR+"}",
 			],
 			"dialogpro.css":[
 				"ul.square_bullets{color:"+FCOLOR+"}",
@@ -1531,6 +1541,17 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 			"talk.css":[
 				".super-menu li a:hover{background-color:"+FCOLOR+"}",
 			],
+			"pay-min.css":[
+				"a:link, a:visited{color:"+FCOLOR+"}",
+				".renren{background-color:"+XCOLOR+"}",
+				".user-info .user-name{color:"+FCOLOR+"}",
+				".button{background-color:"+FCOLOR+"}",
+				".paging a:hover{background-color:"+FCOLOR+"}",
+				".record-table .trade-code, .record-table .recipient{color:"+FCOLOR+"}",
+				".task-list li .draw{background-color:"+FCOLOR+"}",
+				".topUserInfo .userInfo strong{color:"+FCOLOR+"}",
+				".pay-list2 li.current a{background-color:"+XCOLOR+"}",
+			]
 		};
 		var style="";
 		for(var f in files) {
@@ -4731,6 +4752,17 @@ function main(savedOptions) {
 						stage:1,
 						fire:true
 					}],
+				}]
+			},{
+				text:"##使用浮动方式",
+				ctrl:[{
+					id:"useFloatingNav",
+					value:false,
+					fn:[{
+						name:useFloatingNav,
+						stage:1,
+						fire:true
+					}]
 				}]
 			},{
 				text:"##增加导航栏项目######",
