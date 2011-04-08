@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.7.20110318
-// @miniver        413
+// @version        3.2.8.20110408
+// @miniver        415
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -56,8 +56,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.7.20110318";
-XNR.miniver=413;
+XNR.version="3.2.8.20110408";
+XNR.miniver=415;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -142,7 +142,7 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], a[href*='track.yx.renren.com'], img[src*='/adimgs/'], .sec.promotion";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], a[href*='track.yx.renren.com'], img[src*='/adimgs/'], .sec.promotion, iframe[src*='adsupport.renren.com']";
 	$ban(ads);
 	$script("const ad_js_version=null",true);
 	$wait(1,function() {
@@ -186,19 +186,12 @@ function removePageTheme() {
 			return true;
 		}
 	});
-	// 恢复被注释了的原始模板
-	var nodes=$("head").get().childNodes;
-	for(var i=0;i<nodes.length;i++) {
-		// COMMENT_NODE
-		if(nodes[i].nodeType!=8) {
-			continue;
-		}
-		if(nodes[i].nodeValue.indexOf("profile-skin.css")!=-1) {
-			var file=/href=["'](.*?)["']/.exec(nodes[i].nodeValue);
-			if(file) {
-				$("head").add($("@link").attr({media:"all",type:"text/css",rel:"stylesheet",href:file[1]}));
-			}
-			break;
+	// 恢复原始模板
+	if($page("profile") && !$page("pages")) {
+		var skin=$("head>link[href*='profile-skin.css']");
+		if(skin.empty()) {
+			// FIXME:hardcoded href
+			$("@link").attr({type:"text/css",rel:"stylesheet",href:"http://s.xnimg.cn/a8112/csspro/apps/profile-skin.css"}).addTo($("head"));
 		}
 	}
 	// 修复Logo
@@ -299,6 +292,7 @@ function removeHomeGadgets(gadgetOpt) {
 		"topNotice":".notice-holder, #notice_system",		// 顶部通知
 		"levelBar":".site-menu-user-box",	// 个人等级
 		"footprint":"#footPrint",	// 最近来访
+		"recommendApp":".site-menu-apps.recommend",	// 推荐应用
 		"newFriends":".pymk:not(.manage),.find-friend-box,#myknowfriend_user",	// 好友推荐，后面2个是新注册用户页面上的
 		"schoolBeauty":"#schoolBeautyBox",	// 校花校草
 		"sponsors":"#sponsorsWidget,.wide-sponsors",	// 赞助商内容
@@ -308,7 +302,6 @@ function removeHomeGadgets(gadgetOpt) {
 		"friendPhoto":"#friendPhoto",	// 朋友的照片
 		"newStar":".star-new,#highSchoolStar",	// 人气之星
 		"contact":".side-item.get-touch",	// 联系朋友
-		"feedback":"#feedback-box"	// 意见反馈
 	};
 	const filters={
 		"webFunction":{t:".side-item",f:".web-function"},	// 站内功能
@@ -341,7 +334,7 @@ function removeHomeGadgets(gadgetOpt) {
 function removeProfileGadgets(gadgetOpt) {
 	const gadgets={
 		"levelBar":"#userPoint.mod",
-		"album":"#album.mod",
+		"album":"#album.mod, #latestPhotos",
 		"blog":"#blog.mod",
 		"share":"#share.mod",
 		"gift":"#gift.mod",
@@ -1127,6 +1120,22 @@ function addNavLogout() {
 	$("@div").attr("class","menu last").html('<div class="menu-title"><a href="http://www.renren.com/Logout.do">退出</a></div>').move("after",nav);
 };
 
+// 浮动导航栏
+function useFloatingNav() {
+	var nav=$("#container>#header,body>#navBar,#container>#navBar").eq();
+	// 将导航栏复制一份放在原来的位置，防止排版出错
+	var fake=nav.clone().css("visibility","hidden").attr("fake","").move("after",nav);
+	nav.attr("style","position:fixed;top:0;z-index:1003;margin:0 auto;padding-bottom:0 !important");
+	if(nav.attr("id")=="navBar") {
+		nav.css("width","100%");
+	}
+	// 部分页面（如 http://pay.renren.com/index.do）下会如此
+	if(nav.curCSS("width")!=fake.curCSS("width")) {
+		nav.attr("style",null);
+		fake.remove();
+	}
+};
+
 // 增加导航栏项目
 function addNavItems(content) {
 	if(!content) {
@@ -1274,6 +1283,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 			],
 			"profilepro.css":[
 				".imgbtn-1{background-color:"+FCOLOR+"}",
+				".latest-photos .footer .more, .latest-photos .footer .loading, .latest-photos .footer .nomore{background-color:"+SCOLOR+"}",
 			],
 			"profile-skin.css":[
 				".tabs-holder .tabpanel a:visited,.tabs-holder .tabpanel a{color:"+FCOLOR+"}",
@@ -1285,6 +1295,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".page-titletabs a.add-msg{background-color:"+FCOLOR+"}",
 				".inputbutton,.inputsubmit,.subbutton,.canbutton,.button-group button{background-color:"+FCOLOR+"}",
 				".messages .next_message:hover,.messages .previous_message:hover{background-color:"+FCOLOR+"}",
+				".message_rows .new_message{background-color:"+SCOLOR+"}",
 			],
 			"dialogpro.css":[
 				"ul.square_bullets{color:"+FCOLOR+"}",
@@ -1529,6 +1540,17 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 			"talk.css":[
 				".super-menu li a:hover{background-color:"+FCOLOR+"}",
 			],
+			"pay-min.css":[
+				"a:link, a:visited{color:"+FCOLOR+"}",
+				".renren{background-color:"+XCOLOR+"}",
+				".user-info .user-name{color:"+FCOLOR+"}",
+				".button{background-color:"+FCOLOR+"}",
+				".paging a:hover{background-color:"+FCOLOR+"}",
+				".record-table .trade-code, .record-table .recipient{color:"+FCOLOR+"}",
+				".task-list li .draw{background-color:"+FCOLOR+"}",
+				".topUserInfo .userInfo strong{color:"+FCOLOR+"}",
+				".pay-list2 li.current a{background-color:"+XCOLOR+"}",
+			]
 		};
 		var style="";
 		for(var f in files) {
@@ -1650,7 +1672,7 @@ function customizePageLayout(layouts) {
 };
 
 // 增加更多表情
-function addExtraEmotions(eEmo,fEmo,aEmo) {
+function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 	// 状态表情列表
 	var emList1={
 	//	":)":		{t:"开心",			s:"/imgpro/icons/statusface/1.gif"},
@@ -1726,11 +1748,7 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(bh)":		{t:"破碎的心",		s:"/imgpro/icons/statusface/broken-heart.gif"},
 		"(4)":		{t:"4周年",			s:"/imgpro/icons/statusface/4-years.gif"},
 		"(cake)":	{t:"周年蛋糕",		s:"/imgpro/icons/statusface/4-birthday.gif"},
-		"(earth)":	{t:"地球",			s:"/imgpro/icons/statusface/wwf-earth.gif"},
-		"(earth1)":	{t:"地球",			s:"/imgpro/icons/statusface/earth.gif"},
 		"(ty)":		{t:"汤圆",			s:"/imgpro/icons/statusface/tang-yuan.gif"},
-		"(rainy)":	{t:"雨",			s:"/imgpro/icons/statusface/rainy.gif"},
-	//	"(rain)":	{t:"雨",			s:"/imgpro/icons/statusface/rainy.gif"},
 		"(read)":	{t:"读书日",		s:"/imgpro/icons/statusface/reading.gif"},
 		"(ct)":		{t:"锄头",			s:"/imgpro/icons/statusface/chutou.gif"},
 		"(bbt)":	{t:"棒棒糖",		s:"/imgpro/icons/statusface/bbt.gif"},
@@ -1738,20 +1756,15 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(qf)":		{t:"默哀",			s:"/imgpro/icons/statusface/candle.gif"},
 		"(hot)":	{t:"烈日",			s:"/imgpro/icons/statusface/hot.gif"},
 		"(feng)":	{t:"风扇",			s:"/imgpro/icons/statusface/fan.gif"},
-		"(by)":		{t:"下雨",			s:"/imgpro/icons/statusface/rain.gif"},
-		"(ng)":		{t:"否",			s:"/imgpro/icons/statusface/nogood.gif"},
 		"(bb)":		{t:"便便",			s:"/imgpro/icons/statusface/shit.gif"},
 		"(mg)":		{t:"七彩玫瑰",		s:"/imgpro/icons/statusface/rose.gif"},
 		"(hzd)":	{t:"划重点",		s:"/imgpro/icons/statusface/huazhongdian.gif"},
 		"(dm)":		{t:"点名",			s:"/imgpro/icons/statusface/dianming.gif"},
-		"(ly)":		{t:"落叶",			s:"/imgpro/icons/statusface/autumn-leaves.gif"},
-		"(dx)":		{t:"雪人",			s:"/imgpro/icons/statusface/snowman.gif"},
 		"(ugl)":	{t:"不给力",		s:"/imgpro/icons/statusface/ungelivable.gif"},
 		"(hcn)":	{t:"花痴男",		s:"/imgpro/icons/statusface/hcn.gif"},
 		"(hcv)":	{t:"花痴女",		s:"/imgpro/icons/statusface/hcnv.gif"},
 		"(cb)":		{t:"蟹蟹",			s:"/imgpro/icons/statusface/crab.gif"},
 		"(qt)":		{t:"蜻蜓",			s:"/imgpro/icons/statusface/qingt.gif"},
-		"(sn)":		{t:"雪花",			s:"/imgpro/icons/statusface/snow.gif"},
 		"(tic)":	{t:"车票",			s:"/imgpro/icons/statusface/ticket.gif"},
 		"(tra)":	{t:"车头",			s:"/imgpro/icons/statusface/train.gif"},
 		"(trb)":	{t:"车厢",			s:"/imgpro/icons/statusface/trainbox.gif"},
@@ -1759,23 +1772,38 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(pt)":		{t:"派对，干杯",	s:"/imgpro/icons/statusface/partycup.gif"},
 		"(hz)":		{t:"传递爱心",		s:"/imgpro/icons/statusface/cdax.gif"},
 		"(sbq)":	{t:"伤不起",		s:"/imgpro/icons/statusface/shangbuqi.gif"},
+		"(ymy)":	{t:"有木有",		s:"/imgpro/icons/statusface/youmuyou.gif"},
+		"(th)":		{t:"惊叹号",		s:"/imgpro/icons/statusface/exclamation.gif"},
+		"(三行情书)":{t:"三行情书",		s:"/imgpro/icons/statusface/xin.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
 		"(yc)":		{t:"黄牌",			s:"/imgpro/icons/new-statusface/yellowCard.gif"},
 		"(^)":		{t:"蛋糕",			s:"/imgpro/icons/3years.gif"},
-		"(h)":		{t:"小草",			s:"/imgpro/icons/philips.jpg"},
 		"(r)":		{t:"火箭",			s:"/imgpro/icons/ico_rocket.gif"},
 		"(w)":		{t:"宇航员",		s:"/imgpro/icons/ico_spacewalker.gif"},
 		"(i)":		{t:"电灯泡",		s:"/img/ems/bulb.gif"},
 		"(yeah)":	{t:"哦耶",			s:"/img/ems/yeah.gif"},
 		"(good)":	{t:"牛",			s:"/img/ems/good.gif"},
-		"(f)":		{t:"拳头",			s:"/img/ems/fist.gif"},
-		"(t)":		{t:"火炬",			s:"/img/ems/torch.gif"}
+		"(ng)":		{t:"否",			s:"/imgpro/icons/statusface/nogood.gif"},
+		"(f)":		{t:"拳头",			s:"/img/ems/fist.gif"}
+	};
+	var nEmList={
+		"(earth)":	{t:"地球",			s:"/imgpro/icons/statusface/wwf-earth.gif"},
+		"(earth1)":	{t:"地球",			s:"/imgpro/icons/statusface/earth.gif"},
+		"(rainy)":	{t:"雨",			s:"/imgpro/icons/statusface/rainy.gif"},
+	//	"(rain)":	{t:"雨",			s:"/imgpro/icons/statusface/rainy.gif"},
+		"(by)":		{t:"下雨",			s:"/imgpro/icons/statusface/rain.gif"},
+		"(ly)":		{t:"落叶",			s:"/imgpro/icons/statusface/autumn-leaves.gif"},
+		"(dx)":		{t:"雪人",			s:"/imgpro/icons/statusface/snowman.gif"},
+		"(sn)":		{t:"雪花",			s:"/imgpro/icons/statusface/snow.gif"},
+		"(fz)":		{t:"风筝",			s:"/imgpro/icons/statusface/kite.gif"},
+		"(lt)":		{t:"柳枝",			s:"/imgpro/icons/statusface/willow.gif"},
+		"(bs)":		{t:"秋高气爽",		s:"/imgpro/icons/statusface/bluesky.gif"},
+		"(h)":		{t:"小草",			s:"/imgpro/icons/philips.jpg"},
 	};
 	var eEmList={
 		"(gq)":		{t:"国庆快乐",		s:"/imgpro/icons/statusface/nationalday2010.gif"},
-		"(gq1)":	{t:"国庆六十周年",	s:"/imgpro/icons/statusface/national-day-60-firework.gif"},
 		"(gq2)":	{t:"国庆快乐",		s:"/imgpro/icons/statusface/national-day-balloon.gif"},
 		"(gq3)":	{t:"我爱中国",		s:"/imgpro/icons/statusface/national-day-i-love-zh.gif"},
 		"(元旦)":	{t:"元旦快乐",		s:"/imgpro/icons/statusface/gantan.gif"},
@@ -1799,12 +1827,12 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(tk)":		{t:"火鸡",			s:"/imgpro/icons/statusface/turkey.gif"},
 		"(nrj)":	{t:"女人节",		s:"/imgpro/icons/statusface/lipstick.gif"},
 		"(zsj)":	{t:"植树节",		s:"/imgpro/icons/statusface/trees.gif"},
-		"(rs)":		{t:"白色情人节",	s:"/imgpro/icons/statusface/rose0314.gif"},
+		"(rs)":		{t:"玫瑰花",		s:"/imgpro/icons/statusface/rose0314.gif"},
 		"(315)":	{t:"消费者权益保护日",s:"/imgpro/icons/statusface/20110315.gif"},
 		"(yb)":		{t:"月饼",			s:"/imgpro/icons/statusface/mooncake.gif"},
 		"(zz)":		{t:"粽子",			s:"/imgpro/icons/statusface/zongzi.gif"},
 		"(hjr)":	{t:"世界环境日",	s:"/imgpro/icons/statusface/earthday.gif"},
-		"(bs)":		{t:"秋高气爽",		s:"/imgpro/icons/statusface/bluesky.gif"},
+		"(eh)":		{t:"地球一小时",	s:"/imgpro/icons/statusface/onehour2011.gif"},
 	//	"(虎年)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
 		"(tiger)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
 		"(ra1)":	{t:"拜年兔",		s:"/imgpro/icons/statusface/rabbit.gif"},
@@ -1822,10 +1850,9 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(nasa)":	{t:"NASA",			s:"/imgpro/icons/statusface/nasa.gif"},
 		"(jq)":		{t:"坚强",			s:"/imgpro/icons/statusface/quake.gif"},
 		"(rr)":		{t:"红丝带",		s:"/imgpro/icons/statusface/red-ribbon.gif"},
-		"(five)":	{t:"人人网5周年",	s:"/imgpro/icons/statusface/5years.gif"},
 		"(ny)":		{t:"新年好",		s:"/imgpro/icons/statusface/2011.gif"},
-		"(2011)":	{t:"2011",			s:"/imgpro/icons/statusface/2011g.gif"},
 		"(lb)":		{t:"腊八粥",		s:"/imgpro/icons/statusface/laba.gif"},
+		"(t)":		{t:"火炬",			s:"/img/ems/torch.gif"}
 	};
 	var fEmList={
 		"(mj)":		{t:"迈克尔.杰克逊",	s:"/imgpro/icons/statusface/mj.gif"},
@@ -1847,7 +1874,18 @@ function addExtraEmotions(eEmo,fEmo,aEmo) {
 		"(愉悦一刻)":{t:"果粒奶优,愉悦一刻",s:"/imgpro/icons/statusface/mzynew.gif"},
 		"(LG)":		{t:"LG棒棒糖",		s:"/imgpro/activity/lg-lolipop/faceicon_2.gif"},
 	};
+	// 下面是内容过时的表情，不列出
+	var odEmList={
+		"(gq1)":	{t:"国庆六十周年",	s:"/imgpro/icons/statusface/national-day-60-firework.gif"},
+		"(2011)":	{t:"2011",			s:"/imgpro/icons/statusface/2011g.gif"},
+		"(five)":	{t:"人人网5周年",	s:"/imgpro/icons/statusface/5years.gif"},
+	};
 
+	if(nEmo) {
+		for(var e in nEmList) {
+			emList1[e]=nEmList[e];
+		}
+	}
 	if(eEmo) {
 		for(var e in eEmList) {
 			emList1[e]=eEmList[e];
@@ -3135,17 +3173,21 @@ function enableShortcutMenu(evt) {
 		if(t.tagName=="SPAN" && t.childElementCount==0 && !t.nextElementSibling && !t.previousElementSibling && t.parentNode.tagName=="A") {
 			t=t.parentNode;
 		}
-		if(t.tagName!="A" || !/\/profile\.do/.test(t.href)) {
+		if(t.tagName!="A" || (!/\/profile\.do\?/.test(t.href) && !/\/\/www\.renren\.com\/g\//.test(t.href))) {
 			return;
 		}
 		if(t.id || /#|&v=/.test(t.href) || t.style.backgroundImage) {
 			return;
 		}
 		var text=$(t).text().replace(/[ \t\n\r]/g,"");
-		if(text=="" || text.length>=15) {	// 名字长度<=12
+		if(text=="" || text.length>=15) {	// 名字长度<=12,可能前面有@
 			return;
 		}
-		var id=/[&?]id=([0-9]+)/.exec(t.href)[1];
+		if(/\/\/www\.renren\.com\/g\//.test(t.href)) {
+			var id=/\/g\/([0-9]+)/.exec(t.href)[1];
+		} else {
+			var id=/[&?]id=([0-9]+)/.exec(t.href)[1];
+		}
 		if(XNR.userId==id) {
 			return;
 		}
@@ -3948,6 +3990,10 @@ function main(savedOptions) {
 						text:"##头像等级栏",
 						value:false,
 					},{
+						id:"recommendApp",
+						text:"##推荐应用",
+						value:false,
+					},{
 						id:"footprint",
 						text:"##最近来访",
 						value:false,
@@ -3990,10 +4036,6 @@ function main(savedOptions) {
 					},{
 						id:"contact",
 						text:"##联系朋友",
-						value:false
-					},{
-						id:"feedback",
-						text:"##意见反馈",
 						value:false
 					}
 				],
@@ -4707,6 +4749,17 @@ function main(savedOptions) {
 					}],
 				}]
 			},{
+				text:"##使用浮动方式",
+				ctrl:[{
+					id:"useFloatingNav",
+					value:false,
+					fn:[{
+						name:useFloatingNav,
+						stage:1,
+						fire:true
+					}]
+				}]
+			},{
 				text:"##增加导航栏项目######",
 				ctrl:[
 					{
@@ -4894,7 +4947,7 @@ function main(savedOptions) {
 		],
 		"辅助功能":[
 			{
-				text:"##启用隐藏表情项##启用节日事件表情##启用人物表情##启用商业广告表情",
+				text:"##启用隐藏表情项##包括自然风光表情##包括节日事件表情##包括人物表情##包括商业广告表情",
 				ctrl:[
 					{
 						id:"addExtraEmotions",
@@ -4902,9 +4955,13 @@ function main(savedOptions) {
 						fn:[{
 							name:addExtraEmotions,
 							stage:2,
-							args:["@eventEmo","@figureEmo","@advEmo"],
+							args:["@natureEmo","@eventEmo","@figureEmo","@advEmo"],
 							fire:true
 						}],
+					},{
+						type:"subcheck",
+						id:"natureEmo",
+						value:true
 					},{
 						type:"subcheck",
 						id:"eventEmo",
@@ -6665,10 +6722,10 @@ function $feedType(feed) {
 				// 分享好友:101, 分享日志:102, 分享照片:103, 分享相册:104, 分享链接:107, 分享视频:110
 				return "share";
 			case 2:
-				// 论坛发帖:204 参加小组:210
+				// 论坛发帖:204 小组发帖:209 参加小组:210
 				if(ntype==204) {
 					return "forum";
-				} else if(ntype==210) {
+				} else if(ntype==209 || ntype==210) {
 					return "xiaozu";
 				}
 				break;
