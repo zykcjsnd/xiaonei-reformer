@@ -7,7 +7,7 @@
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
 // @version        3.2.8.20110408
-// @miniver        415
+// @miniver        417
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -57,7 +57,7 @@ var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
 XNR.version="3.2.8.20110408";
-XNR.miniver=415;
+XNR.miniver=417;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1093,6 +1093,7 @@ function widenNavBar() {
 // 使用旧式风格导航栏
 function useOldStyleNav() {
 	var css=".navigation-new .nav-main .menu-title a{font-weight:normal;padding:0 7px}.navigation-new .nav-main .drop-menu-btn{visibility:hidden !important;width:"+(XNR.acore==PRESTO?"1":"0")+"px;margin:0}.navigation-new .nav-other .account-action .menu-title a{background:none;padding:0 5px}";
+	$patchCSS(css);
 	$wait(1,function() {
 		$(".navigation-new .nav-main .menu-title a").filter(".drop-menu-btn[id]").bind("mouseover",function(evt) {
 			if(evt.target.tagName=="A") {
@@ -1108,7 +1109,6 @@ function useOldStyleNav() {
 			}
 		}, true);
 	});
-	$patchCSS(css);
 };
 
 // 导航栏上增加退出按钮
@@ -1134,6 +1134,28 @@ function useFloatingNav() {
 		nav.attr("style",null);
 		fake.remove();
 	}
+	// 下拉菜单是绝对定位的，需要处理
+	const code="var s=XN.ui.fixPositionElement.prototype;"+
+		"if(s.r_show){"+
+			"return"+
+		"}"+
+		"s.r_show=s.show;"+
+		"s.show=function(){"+
+			"this.r_show();"+
+			"var m=this.frame;"+
+			"if(m.className=='menu-dropdown'){"+
+				"var t=this.alignWith;"+
+				"if(t && t.className.match(/^menu$|^menu | menu$/)){"+
+					"t=t.children[0]"+
+				"}else{"+
+					"while(t && t.tagName!='body' && !t.className.match(/\\bmenu-title\\b/)){"+
+						"t=t.parentNode"+
+					"}"+
+				"}"+
+				"m.style.top=parseInt(window.scrollY+(t?t.getBoundingClientRect().bottom:0))+'px'"+
+			"}"+
+		"};";
+	$script(code);
 };
 
 // 增加导航栏项目
