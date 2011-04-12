@@ -56,8 +56,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.8.418";
-XNR.miniver=418;
+XNR.version="3.2.8.419";
+XNR.miniver=419;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -2108,7 +2108,7 @@ function extendBlogLinkSupport() {
 
 // 在编辑日志时添加直接编辑HTML代码按钮
 function addBlogHTMLEditor() {
-	if(!XNR.url.match(/\/editBlog\b/)) {
+	if(!XNR.url.match(/\/editBlog\b|\/NewEntry\.do/i)) {
 		return;
 	}
 	var last=$("#editor_toolbar1 td.mceToolbarEndButton");
@@ -2130,24 +2130,25 @@ function addBlogHTMLEditor() {
 	$("#editor_editcode").bind("click",function() {
 		// 由于跨域，无法使用内置的编辑器，必须自己创建一个编辑框
 		// tinyMCE.execInstanceCommand("editor","mceCodeEditor",false)
-		var code='var dialog = new XN.ui.dialog({modal:true});'+
-        	'dialog.hide();'+
-			'dialog.setWidth("auto");'+
-			'dialog.setHeight("auto");'+
-	        'dialog.header.setContent("编辑HTML代码");'+
-    	    'dialog.body.setContent("<textarea style=\'width:600px;height:280px\'></textarea>");'+
-			'dialog.addButton({text:"\u786e\u5b9a", onclick:function(){'+
-				'tinyMCE.get("editor").setContent(dialog.frame.querySelector("textarea").value);'+
+		var code='var dlg = new XN.ui.dialog({modal:true});'+
+        	'dlg.hide();'+
+			'dlg.setWidth("auto");'+
+			'dlg.setHeight("auto");'+
+			'dlg.header.setContent("编辑HTML代码");'+
+			'dlg.body.setContent("<textarea style=\'width:600px;height:280px\'></textarea>");'+
+			'dlg.addButton({text:"\u786e\u5b9a", onclick:function(){'+
+				'tinyMCE.get("editor").setContent(dlg.frame.querySelector("textarea").value);'+
 			'}});'+
-	        'dialog.addButton({text:"\u53d6\u6d88"});'+
-    	    'dialog.getButton("\u53d6\u6d88").addClass("gray");'+
-	        'dialog.show();'+
+			'dlg.addButton({text:"\u53d6\u6d88"});'+
+			'dlg.getButton("\u53d6\u6d88").addClass("gray");'+
+			'dlg.frame.querySelector("table").style.display = "block";'+	// 不加此句webkit显示会乱掉
+			'dlg.show();'+
 			'var editor = tinyMCE.get("editor");'+
-        	'var pos = XN.form.getRichEditorPos(editor);'+
-    	    'dialog.moveTo(pos.x, pos.y-120);'+
-			'var textarea = dialog.frame.querySelector("textarea");'+
+			'var pos = XN.form.getRichEditorPos(editor);'+
+			'dlg.moveTo(pos.x, pos.y-120);'+
+			'var textarea = dlg.frame.querySelector("textarea");'+
 			'textarea.value = editor.getContent();'+
-        	'textarea.focus();';
+			'textarea.focus();';
 		$script(code);
 	});
 };
@@ -3731,7 +3732,7 @@ function updatedNotify(notify,lastVersion) {
 	if(notify) {
 		// 0为首次运行。。？
 		if(lastVer>0 && lastVer<XNR.miniver) {
-			$popup(null,'<div style="color:black">人人网改造器已经更新到:<br/>'+XNR.version+'</div><div><a href="http://code.google.com/p/xiaonei-reformer/source/browse/trunk/Release.txt" style="padding-top:5px;padding-bottom:5px;float:right" target="_blank">查看更新内容</a></div>',null,20,5);
+			$popup(null,'<div style="color:black">人人网改造器已经更新到 '+XNR.version+'</div><div><a href="http://code.google.com/p/xiaonei-reformer/source/browse/trunk/Release.txt" style="padding-top:5px;padding-bottom:5px;float:right" target="_blank">查看更新内容</a></div>',null,20,5);
 		}
 	}
 	$save("lastVersion",XNR.miniver);
