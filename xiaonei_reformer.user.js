@@ -1125,7 +1125,8 @@ function useFloatingNav() {
 	var nav=$("#container>#header,body>#navBar,#container>#navBar").eq();
 	// 将导航栏复制一份放在原来的位置，防止排版出错
 	var fake=nav.clone().css("visibility","hidden").attr("fake","").move("after",nav);
-	nav.attr("style","position:fixed;top:0;z-index:10000;margin:0 auto;padding-bottom:0 !important");
+	// z-index应小于XN.ui.dialog的半透明背景的2000
+	nav.attr("style","position:fixed;top:0;z-index:1999;margin:0 auto;padding-bottom:0 !important");
 	if(nav.attr("id")=="navBar") {
 		nav.css("width","100%");
 	}
@@ -2103,6 +2104,52 @@ function addFloorCounter(evt) {
 function extendBlogLinkSupport() {
 	const code='var f=window.tinyMCE.editors.editor.plugins.xnLink.update.toString().replace("/^http:/","/^https?:|^ftp:/").replace(/function\\s*\\S*?\\(\\)\\s*{/,"").replace(/}$/,"");window.tinyMCE.editors.editor.plugins.xnLink.update=new Function(f);';
 	$script(code);
+};
+
+// 在编辑日志时添加直接编辑HTML代码按钮
+function addBlogHTMLEditor() {
+	if(!XNR.url.match(/\/editBlog\b/)) {
+		return;
+	}
+	var last=$("#editor_toolbar1 td.mceToolbarEndButton");
+	if(last.empty()) {
+		setTimeout(arguments.callee, 500);
+		return;
+	}
+	
+	if($("script[src*='/editor/tiny_mce_popup.js']").empty()) {
+		$("script").attr({type:"text/javascript",src:$("script[src*='/editor/tiny_mce.js']").attr("src").replace("tiny_mce.js","tiny_mce_popup.js")});
+	}
+
+	const css="#editor_editcode{background-position:0 -196px; padding:2px; background-image:url(http://a.xnimg.cn/imgpro/editor/editor.gif); height:24px}#editor_editcode:hover{background-position:0 0}";
+	$patchCSS(css);
+
+	$("@td").add($("@span").addClass("mceSeparator")).move("before",last);
+	$("@td").html('<a title="编辑HTML" onclick="return false;" onmousedown="return false;" class="mceButton mceButtonEnabled" href="javascript:;" id="editor_editcode"><span class="mceIcon mce_code"></span></a>').move("before",last);
+
+	$("#editor_editcode").bind("click",function() {
+		// 由于跨域，无法使用内置的编辑器，必须自己创建一个编辑框
+		// tinyMCE.execInstanceCommand("editor","mceCodeEditor",false)
+		var code='var dialog = new XN.ui.dialog({modal:true});'+
+        	'dialog.hide();'+
+			'dialog.setWidth("auto");'+
+			'dialog.setHeight("auto");'+
+	        'dialog.header.setContent("编辑HTML代码");'+
+    	    'dialog.body.setContent("<textarea style=\'width:600px;height:280px\'></textarea>");'+
+			'dialog.addButton({text:"\u786e\u5b9a", onclick:function(){'+
+				'tinyMCE.get("editor").setContent(dialog.frame.querySelector("textarea").value);'+
+			'}});'+
+	        'dialog.addButton({text:"\u53d6\u6d88"});'+
+    	    'dialog.getButton("\u53d6\u6d88").addClass("gray");'+
+	        'dialog.show();'+
+			'var editor = tinyMCE.get("editor");'+
+        	'var pos = XN.form.getRichEditorPos(editor);'+
+    	    'dialog.moveTo(pos.x, pos.y-120);'+
+			'var textarea = dialog.frame.querySelector("textarea");'+
+			'textarea.value = editor.getContent();'+
+        	'textarea.focus();';
+		$script(code);
+	});
 };
 
 // 阻止统计信息
@@ -5034,6 +5081,19 @@ function main(savedOptions) {
 					fn:[{
 						name:extendBlogLinkSupport,
 						stage:3,
+						fire:true
+					}]
+				}],
+				login:true,
+				page:"blog"
+			},{
+				text:"##允许直接编辑日志HTML代码",
+				ctrl:[{
+					id:"addBlogHTMLEditor",
+					value:false,
+					fn:[{
+						name:addBlogHTMLEditor,
+						stage:2,
 						fire:true
 					}]
 				}],
