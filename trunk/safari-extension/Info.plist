@@ -11,9 +11,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.2.8.417</string>
+	<string>3.2.9.420</string>
 	<key>CFBundleVersion</key>
-	<string>417</string>
+	<string>420</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Global Page</key>
