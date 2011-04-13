@@ -2120,10 +2120,6 @@ function addBlogHTMLEditor() {
 		return;
 	}
 	
-	if($("script[src*='/editor/tiny_mce_popup.js']").empty()) {
-		$("script").attr({type:"text/javascript",src:$("script[src*='/editor/tiny_mce.js']").attr("src").replace("tiny_mce.js","tiny_mce_popup.js")});
-	}
-
 	const css="#editor_editcode{background-position:0 -196px; padding:2px; background-image:url(http://a.xnimg.cn/imgpro/editor/editor.gif); height:24px}#editor_editcode:hover{background-position:0 0}";
 	$patchCSS(css);
 
