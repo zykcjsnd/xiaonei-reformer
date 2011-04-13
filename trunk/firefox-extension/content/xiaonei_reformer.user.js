@@ -6918,8 +6918,8 @@ function $feedType(feed) {
 					return "ads";
 				}
 			case 81:
-				if(ntype==8182) {
-					// 正在玩XX游戏:8182
+				if(ntype==8182 || ntype >= 8190) {
+					// 正在玩XX游戏:8182, 小小战争广告:8190
 					return "ads";
 				} else if(ntype==8185) {
 					// 连接网站:8185
