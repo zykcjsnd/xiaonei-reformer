@@ -56,8 +56,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.8.419";
-XNR.miniver=419;
+XNR.version="3.2.8.420";
+XNR.miniver=420;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1154,6 +1154,7 @@ function useFloatingNav() {
 				"}"+
 				"m.style.position='fixed';"+
 				"var r=t.getBoundingClientRect();"+
+				"m.style.top=parseInt(r.bottom)+'px';"+	// opera的定位会出错，必须有这句
 				"m.style.left=parseInt(this.alignType=='3-2'?r.right-m.offsetWidth:r.left)+'px'"+
 			"}"+
 		"}";
@@ -1574,6 +1575,13 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".task-list li .draw{background-color:"+FCOLOR+"}",
 				".topUserInfo .userInfo strong{color:"+FCOLOR+"}",
 				".pay-list2 li.current a{background-color:"+XCOLOR+"}",
+			],
+			"full_nav.css":[
+				".navigation{background-color:"+XCOLOR+"}",
+				".navigation .nav-main .menu-title a, .navigation #searchMenu .menu-title a, .navigation .nav-other .menu-title a{color:"+FCOLOR+"}",
+				".navigation .nav-main .menu-title a:hover, .navigation .menu-title a:hover{background-color:transparent;color:"+FCOLOR+"}",
+				".navigation .nav-main .menu-title a.searchcolor{color:"+FCOLOR+"}",
+				"#footer a{color:"+FCOLOR+"}",
 			]
 		};
 		var style="";
