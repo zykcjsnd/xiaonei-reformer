@@ -20,6 +20,8 @@ body#profile .tabs-holder .tabpanel li:not(.current) a:hover{background-color:#6
 }}}
 
 ==将底部工具栏移到页面顶部==
+<font color="red">注意：</font>
+  # 此例子会和改造器中的使用浮动方式导航栏功能冲突，不要同时使用
 {{{
 #bottombar{top:0;bottom:auto}
 body:not(.login) #header:nth-child(1){margin-top:24px}
@@ -46,7 +48,7 @@ javascript:document.documentElement.textContent=document.querySelector("#hometpl
 
 <font color="red">注意：</font>
   # 这只是针对* 首页换肤 *功能，对VIP会员的* 主页皮肤 *无效
-  # 在3.2.9.420以及更早的版本中，启用了“去除页面模板”功能会导致首页换肤功能无法使用
+  # 如果启用了“去除页面模板”功能，会导致首页换肤功能无法使用。可暂时将其禁用。去除模板功能不会影响到自定义页面样式功能
   # 由于首页换肤本身只对原始宽度的导航栏提供了皮肤图片，如果你同时启用了加宽导航栏功能，导航栏会比较难看
   # 使用这种方法，会对所有页面生效，而不仅仅是在首页
 
