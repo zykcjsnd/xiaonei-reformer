@@ -20,8 +20,7 @@ body#profile .tabs-holder .tabpanel li:not(.current) a:hover{background-color:#6
 }}}
 
 ==将底部工具栏移到页面顶部==
-<font color="red">注意：</font>
-  # 此例子会和改造器中的使用浮动方式导航栏功能冲突，不要同时使用
+<font color="red">注意</font>：此例子会和改造器中的使用浮动方式导航栏功能冲突，不要同时使用
 {{{
 #bottombar{top:0;bottom:auto}
 body:not(.login) #header:nth-child(1){margin-top:24px}
