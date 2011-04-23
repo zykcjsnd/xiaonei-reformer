@@ -1589,7 +1589,20 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 			],
 			"friends.css":[
 				".friends-main .friends-sidebar ul.CategoryList .select span.sub a.select,.friends-main .friends-sidebar ul.CategoryList .select span.sub a{color:"+FCOLOR+"}",
-				"div.bobBox input.button{background-color:"+FCOLOR+" !important}"
+				"div.bobBox input.button{background-color:"+FCOLOR+" !important}",
+				".friends-main .friends-listbox .Fast-seekfriend .show-more a:hover{background-color:"+SCOLOR+"}"
+			],
+			"search-new.css":[
+				".input-filter,.sidebar,.condition-show,.no-result-box h4{background-color:"+SCOLOR+"}",
+				".sidebar li.selected,.sidebar li.selected a:hover{background-color:"+FCOLOR+"}",
+				".input-filter .subbutton{background-color:"+FCOLOR+"}",
+			],
+			"school-selector.css":[
+				"#univlist_provinces td.activetab a{background-color:"+FCOLOR+"}",
+				"#univlist_univs li a:hover{background-color:"+FCOLOR+"}",
+				"#searchlist_school li a:hover{background-color:"+FCOLOR+"}",
+				"li.active a, li.active a{background-color:"+FCOLOR+"}",
+				"#popup-unis li a:hover, #popup-unis-hs li a:hover{background-color:"+FCOLOR+"}",
 			]
 		};
 		var style="";
