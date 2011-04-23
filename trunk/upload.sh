@@ -15,11 +15,9 @@ VER1=`sed -n ${VER1L}p xiaonei_reformer.user.js | sed -E 's/ +/ /g' | cut -d' ' 
 VER2L=`head -n 20 xiaonei_reformer.user.js | sed -n '/@miniver/='`
 VER2=`sed -n ${VER2L}p xiaonei_reformer.user.js | sed -E 's/ +/ /g' | cut -d' ' -f 3`
 
-VERSION="$VER1.$VER2"
-
 project="-p xiaonei-reformer -u xnreformer -w $passwd"
-type1="-l Featured,OpSys-All,$VERSION"
-type2="-l OpSys-All,$VERSION"
+type1="-l Featured,OpSys-All,$VER1"
+type2="-l OpSys-All,$VER1"
 type3="-l Deprecated"
 
 ./googlecode_upload.py -s "Opera用户脚本" $project $type2 xiaonei_reformer.min.js
