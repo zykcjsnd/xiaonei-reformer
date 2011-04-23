@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.9.420
-// @miniver        420
+// @version        3.2.10.421
+// @miniver        421
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -170,12 +170,15 @@ function removeAds() {
 
 // 去除页面模板
 function removePageTheme() {
-	const themes=["head link[rel='stylesheet'][href*='/csspro/themes/'][href*='.css']", //节日模板
-				"#hometpl_style",	// 首页模板
-			//	"head link[rel='stylesheet'][href*='zidou_nav.css']",	// 紫豆导航栏
-				"#domain_wrapper",	// 个人域名提示栏
-				"#themeLink"];		// 公共主页模板
+	const themes=[
+		"head link[rel='stylesheet'][href*='/csspro/themes/'][href*='.css']", //节日模板
+	//	"#hometpl_style",	// 首页模板（直接去除会导致首页换肤功能出错）
+	//	"head link[rel='stylesheet'][href*='zidou_nav.css']",	// 紫豆导航栏
+		"#domain_wrapper",	// 个人域名提示栏
+		"#themeLink"	// 公共主页模板
+	];
 	$(themes.join(",")).remove();
+	
 	// 删除紫豆模板
 	$("head style").each(function() {
 		var theme=$(this);
@@ -609,7 +612,7 @@ function hideFeeds(evt,feeds,mark,badTitles,badIds,goodIds,hideOld,hideDays) {
 			}
 		}
 		var type=$feedType(feed);
-		return (type!="" && feeds[type]==true) || (type=="share" && badIds && fh3.filter(bidFilter).exist())
+		return (type!="" && feeds[type]==true) || (type.match("^share") && badIds && fh3.filter(bidFilter).exist())
 	}).each(function() {
 		if(mark) {
 			try {
@@ -884,7 +887,7 @@ function autoCheckFeeds(feedFilter,badTitles,badIds,goodIds,checkReply) {
 					var feedType=$feedType(feed);
 					if(feedType && feedFilter[feedType]) {
 						feed.remove();
-					} else if(feedType=="share" && badIds && fh3.filter(bidFilter).exist()) {
+					} else if(feedType.match("^share") && badIds && fh3.filter(bidFilter).exist()) {
 						feed.remove();
 					}
 				}
@@ -1257,6 +1260,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"a.skin-action,a.skin-action:hover{color:white;background-color:"+FCOLOR+"}",
 				"#accountDropDownMenu a.logout:hover{background-color:"+FCOLOR+"}",
 				".site-menu-apps .apps-item .item-title.selected, .site-menu-apps .apps-item .item-title.selected:hover{background-color:"+BCOLOR+"}",
+				".site-menu-nav .nav-item li.selected, .site-menu-apps .apps-item li.selected{background-color:"+BCOLOR+"}",
 			],
 			"home-all-min.css":[
 				".a-feed .details a.share:hover{color:"+FCOLOR+"}",
@@ -1582,6 +1586,10 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".navigation .nav-main .menu-title a:hover, .navigation .menu-title a:hover{background-color:transparent;color:"+FCOLOR+"}",
 				".navigation .nav-main .menu-title a.searchcolor{color:"+FCOLOR+"}",
 				"#footer a{color:"+FCOLOR+"}",
+			],
+			"friends.css":[
+				".friends-main .friends-sidebar ul.CategoryList .select span.sub a.select,.friends-main .friends-sidebar ul.CategoryList .select span.sub a{color:"+FCOLOR+"}",
+				"div.bobBox input.button{background-color:"+FCOLOR+" !important}"
 			]
 		};
 		var style="";
@@ -1845,9 +1853,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		"(cy2)":	{t:"登高",			s:"/imgpro/icons/statusface/09double9.gif"},
 		"(cy3)":	{t:"饮菊酒",		s:"/imgpro/icons/statusface/09double9-2.gif"},
 		"(dad)":	{t:"父亲节",		s:"/imgpro/icons/statusface/love-father.gif"},
-		"(hp)":		{t:"杰克灯",		s:"/imgpro/icons/statusface/halloween-pumpkin.gif"},
 		"(ngd)":	{t:"南瓜灯",		s:"/imgpro/icons/statusface/pumpkin.gif"},
-		"(hg)":		{t:"小鬼",			s:"/imgpro/icons/statusface/halloween-ghost.gif"},
 		"(xg)":		{t:"小鬼",			s:"/imgpro/icons/statusface/ghost.gif"},
 		"(hh)":		{t:"圣诞花环",		s:"/imgpro/icons/statusface/garland.gif"},
 		"(stick)":	{t:"拐杖糖",		s:"/imgpro/icons/statusface/stick.gif"},
@@ -3481,10 +3487,10 @@ function searchShare() {
 
 // 清空分享
 function delAllShares() {
-	if($(".page-title>h1").text().indexOf("我的分享")<0) {
+	if(!$(".page-title>h1").text().match("我的分享|我的收藏")) {
 		return;
 	}
-	$("@a").text("清空列出的分享").addTo($("@div").css({padding:"5px","text-align":"center"}).move("before",$(".j-share-list"))).bind("click",function() {
+	$("@a").text("清空列出的分享").addTo($("@div").css({padding:"5px","text-align":"center",cursor:"pointer"}).move("before",$(".j-share-list"))).bind("click",function() {
 		if($(".share-itembox").empty()) {
 			return;
 		}
@@ -3646,7 +3652,7 @@ function showMusicFileLink() {
 
 // 清空留言板
 function delAllNotes() {
-	$("@a").text("清空列出的留言").addTo($("@div").css({padding:"5px","text-align":"center"}).move("before",$("#talk"))).bind("click",function() {
+	$("@a").text("清空列出的留言").addTo($("@div").css({padding:"5px","text-align":"center",cursor:"pointer"}).move("before",$("#talk"))).bind("click",function() {
 		if($("#talk .comment").empty()) {
 			return;
 		}
@@ -3658,6 +3664,30 @@ function delAllNotes() {
 			var id=this.id.match("\\d+");
 			var cmd=/delComment\('.*?','(.*?)','.*?',\d+\)/.exec($(this).find("a[onclick^='delComment']").attr("onclick"));
 			$get("http://gossip.renren.com/delgossip.do?age=recent&id="+id+"&owner="+(cmd?cmd[1]:XNR.userId),null,null,"POST");
+			del=true;
+		});
+		if(del) {
+			window.location.reload();
+		}
+	});
+};
+
+// 清空状态
+function delAllStatus() {
+	if(!XNR.url.match("\\?id="+XNR.userId)) {
+		return;
+	}
+	$("@a").text("清空列出的状态").addTo($("@div").css({padding:"5px","text-align":"center",cursor:"pointer"}).addTo($("ul.status-list"),0)).bind("click",function() {
+		if($("ul.status-list li a[onclick*='delMyDoing(']").empty()) {
+			return;
+		}
+		if(!window.confirm("确实要删除所有在这里显示的状态？")) {
+			return;
+		}
+		var del=false;
+		$("ul.status-list li a[onclick*='delMyDoing(']").each(function() {
+			var cmd=/delMyDoing\(.*?,'(\d+)'\)/.exec($(this).attr("onclick"));
+			$get("http://status.renren.com/doing/deleteDoing.do?id="+cmd[1],null,null,"POST");
 			del=true;
 		});
 		if(del) {
@@ -4453,8 +4483,20 @@ function main(savedOptions) {
 						text:"##头像",
 						value:false
 					},{
-						id:"share",
-						text:"##分享",
+						id:"share_blog",
+						text:"##日志分享",
+						value:false
+					},{
+						id:"share_photo",
+						text:"##图片分享",
+						value:false
+					},{
+						id:"share_video",
+						text:"##视频分享",
+						value:false
+					},{
+						id:"share_other",
+						text:"##其他分享",
 						value:false
 					},{
 						id:"film",
@@ -5048,7 +5090,7 @@ function main(savedOptions) {
 					},{
 						type:"subcheck",
 						id:"natureEmo",
-						value:true
+						value:false
 					},{
 						type:"subcheck",
 						id:"eventEmo",
@@ -5446,6 +5488,18 @@ function main(savedOptions) {
 					}]
 				}],
 				page:"gossip"
+			},{
+				text:"##增加批量清理状态功能",
+				ctrl:[{
+					id:"delAllStatus",
+					value:false,
+					fn:[{
+						name:delAllStatus,
+						stage:2,
+						fire:true
+					}]
+				}],
+				page:"status"
 			}
 		],
 		"自动更新":[
@@ -6823,12 +6877,20 @@ function $feedType(feed) {
 				return "comment";
 			case 1:
 				// 分享好友:101, 分享日志:102, 分享照片:103, 分享相册:104, 分享链接:107, 分享视频:110
-				return "share";
+				if(ntype==102) {
+					return "share_blog";
+				} else if(ntype==103 || ntype==104) {
+					return "share_photo";
+				} else if(ntype==110) {
+					return "share_video";
+				} else {
+					return "share_other";
+				}
 			case 2:
-				// 论坛发帖:204 小组发帖:209 参加小组:210
+				// 论坛发帖:204 小组发帖:209 参加小组:210 小组推荐帖子 213
 				if(ntype==204) {
 					return "forum";
-				} else if(ntype==209 || ntype==210) {
+				} else if(ntype>=209 && ntype<=213) {
 					return "xiaozu";
 				}
 				break;
@@ -6884,9 +6946,17 @@ function $feedType(feed) {
 				// 喜欢(照片？):1901
 				return "like";
 			case 20:
-				// 在公共主页留言:2001, 成为公共主页好友:2002, 分享公共主页日志:2003, 分享公共主页图片:2004, 分享公共分享链接:2005, 分享公共分享视频:2006, 公共主页发状态:2008, 公共主页发日志:2012, 公共主页发照片:2013, 公共主页改头像:2015, 公共主页发回复:2016, 分享公共主页:2017, 开通情侣空间:2023, 情侣空间发状态:2024, 情侣空间发日志:2025, 情侣空间发照片:2026
-				if(ntype>=2003 && ntype<=2006) {
-					return "share";
+				// 在公共主页留言:2001, 成为公共主页好友:2002, 分享公共主页日志:2003, 分享公共主页图片:2004, 分享公共分享链接:2005, 分享公共分享视频:2006, 公共主页发状态:2008, 分享公共主页相册:2009, 公共主页发日志:2012, 公共主页发照片:2013, 公共主页改头像:2015, 公共主页发回复:2016, 分享公共主页:2017, 开通情侣空间:2023, 情侣空间发状态:2024, 情侣空间发日志:2025, 情侣空间发照片:2026
+				if((ntype>=2003 && ntype<=2006) || ntype==2009 || ntype==2017) {
+					if(ntype==2003) {
+						return "share_blog";
+					} else if(ntype==2004 || ntype==2009) {
+						return "share_photo";
+					} else if(ntype==2006) {
+						return "share_video";
+					} else {
+						return "share_other";
+					}
 				} else if(ntype>=2023 && ntype<=2026) {
 					return "lover";
 				} else {
@@ -6931,96 +7001,6 @@ function $feedType(feed) {
 		// 同学XX注册了人人。
 		return "newbie";
 	}
-	
-	// blog/status/photo/share/album 的充分条件
-	var script=feed.find(".details script[status='1']");
-	if(script.exist()) {
-		var stype=/"type":"(.*?)"/.exec(script.text());
-		if(stype) {
-			switch(stype[1]) {
-				case "share":
-				case "status":
-				case "photo":
-				case "blog":
-					return stype[1];
-				case "album":
-					return "photo";
-				case "edm":
-					return "ads";
-			}
-		}
-	}
-
-	// 以下是根据新鲜事内容进行判断
-	// 广告
-	if(feed.find("a[href^='http://gamestat.renren.com/']").exist() ||
-		feed.find("img[src^='http://edm.renren.com/']").exist() ||
-		feed.find("a[href^='http://edm.renren.com/']").exist() ||
-		// 人人桌面
-		feed.find("a[href^='http://im.renren.com/'][href*='.exe']").exist() ||
-		// 手机人人网
-		feed.find("div.no-interact").exist() ||
-		feed.find("a[href^='http://track.']").exist() ||
-		feed.find("a[href^='http://imoptj.renren.com/']").exist()) {
-			return "ads";
-	}
-
-	var types={
-		// t:标题文本，l:标题/footer中链接地址，c:有无content
-		"share":	{t:/^分享/},
-		"page":		{l:/\/page.renren.com\//},
-		"status":	{t:/^:/,c:false},	// 如果是纯表情状态，:后面的空格会被去除
-		"blog":		{t:/^发表日志/},
-		"photo":	{t:/^上传了\d+张照片至|^的照片|美化了一张照片$|^:/,c:true},
-		"contact":	{t:/^你和.*和好朋友保持联络$/},
-		"profile":	{t:/^修改了头像/},
-		"app":		{l:/\/apps?\.renren\.com\//},
-		"gift":		{l:/\/gift\.renren\.com\//},
-		"tag":		{t:/照片中被圈出来了$/},
-		"movie":	{l:/\/movie\.(xiaonei|renren)\.com\//},
-		"connect":	{l:/\/www\.connect\.renren\.com\//},
-		"friend":	{t:/^[和、][\s\S]*成为了好友。/},
-		"vip":		{t:/^更换了主页模板皮肤|^更换了主页装扮|^成为了人人网[\s\S]*VIP会员特权|^收到好友赠送的[\s\S]*VIP会员特权|^开启了人人网VIP个性域名|^更换了大头贴头像/},
-		"music":	{t:/^上传了音乐/},
-		"poll":		{l:/\/abc\.renren\.com\//},
-		"xiaozu":	{l:/\/xiaozu\.renren\.com\//},
-		"group":	{l:/\/group\.renren\.com\//},
-		"levelup":	{t:/^等级升至/},
-		"event":	{l:/\/event\.renren\.com\//},
-		"lover":	{l:/\/lover\.renren\.com\//},
-		"newbie":	{t:/注册了人人$/}
-	};
-
-	// 删除所有链接子节点，只留下文本节点
-	var feedTitle=feed.find("h3").clone();
-	feedTitle.find("a:not(.text)").remove();
-
-	var feedLinks=feed.find("h3>a,.details>.legend>a");
-
-	var hasContent=feed.find("div.content").exist();
-
-	for(var i in types) {
-		var cond=types[i];
-		if(cond.t && !cond.t.test(feedTitle.text().replace(/\s/g,""))) {
-			continue;
-		}
-		if(cond.l) {
-			var match=false;
-			feedLinks.each(function() {
-				if(cond.l.test(this.href)) {
-					return match=true;
-				}
-			});
-			if(!match) {
-				continue;
-			}
-		}
-		if(cond.c!=null && hasContent!=cond.c) {
-			continue;
-		}
-		return i;
-	}
-	return "";
 };
 
 /*
