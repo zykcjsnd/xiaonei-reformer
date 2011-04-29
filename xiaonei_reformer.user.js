@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.10.421
-// @miniver        421
+// @version        3.2.10.422
+// @miniver        422
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -1272,6 +1272,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"ul.square_bullets{color:"+FCOLOR+"}",
 				".m-chat .chatnote a,.m-chat .chatnote em{color:"+FCOLOR+"}",
 				".publisher .status-publisher input.submit{background-color:"+FCOLOR+"}",
+				".status-inputer .submit{background-color:"+FCOLOR+"}",
 				"#newUserGuide div.users span.button button span{color:"+FCOLOR+"}",
 				".app-box .common-app h1 .open{color:"+FCOLOR+"}",
 				".like .favors,.reply .col-center .favors{color:"+FCOLOR+"}",
@@ -1786,6 +1787,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		"(gl)":		{t:"给力",			s:"/imgpro/icons/statusface/geili.gif"},
 		"(bgl)":	{t:"不给力",		s:"/imgpro/icons/statusface/bugeili.gif"},
 		"(yl)":		{t:"鸭梨",			s:"/imgpro/icons/statusface/yali.gif"},
+		"(dli)":	{t:"冻梨",			s:"/imgpro/icons/statusface/dl.gif"},
 		"(s)":		{t:"大兵",			s:"/imgpro/icons/statusface/soldier.gif"},
 		"(NBA)":	{t:"篮球",			s:"/imgpro/icons/statusface/basketball4.gif"},
 		"(蜜蜂)":	{t:"小蜜蜂",		s:"/imgpro/icons/statusface/bee.gif"},
@@ -1822,7 +1824,6 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		"(trb)":	{t:"车厢",			s:"/imgpro/icons/statusface/trainbox.gif"},
 		"(bon)":	{t:"年终奖",		s:"/imgpro/icons/statusface/award.gif"},
 		"(pt)":		{t:"派对，干杯",	s:"/imgpro/icons/statusface/partycup.gif"},
-		"(hz)":		{t:"传递爱心",		s:"/imgpro/icons/statusface/cdax.gif"},
 		"(sbq)":	{t:"伤不起",		s:"/imgpro/icons/statusface/shangbuqi.gif"},
 		"(ymy)":	{t:"有木有",		s:"/imgpro/icons/statusface/youmuyou.gif"},
 		"(th)":		{t:"惊叹号",		s:"/imgpro/icons/statusface/exclamation.gif"},
@@ -1862,6 +1863,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		"(dl)":		{t:"灯笼",			s:"/imgpro/icons/statusface/lantern.gif"},
 		"(va)":		{t:"情人节",		s:"/imgpro/icons/statusface/qixi.gif"},
 		"(qx2)":	{t:"七夕",			s:"/imgpro/icons/statusface/qixi2.gif"},
+		"(wy)":		{t:"劳动节",		s:"/imgpro/icons/statusface/wuyi.gif"},
 		"(cy1)":	{t:"重阳节",		s:"/imgpro/icons/statusface/09double9-3.gif"},
 		"(cy2)":	{t:"登高",			s:"/imgpro/icons/statusface/09double9.gif"},
 		"(cy3)":	{t:"饮菊酒",		s:"/imgpro/icons/statusface/09double9-2.gif"},
@@ -1898,6 +1900,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		"(kxl)":	{t:"开学啦",		s:"/imgpro/icons/statusface/kaixuela-wide.gif",w:true},
 		"(jz)":		{t:"捐建小学",		s:"/imgpro/icons/statusface/grass.gif"},
 		"(nasa)":	{t:"NASA",			s:"/imgpro/icons/statusface/nasa.gif"},
+		"(hz)":		{t:"传递爱心",		s:"/imgpro/icons/statusface/cdax.gif"},
 		"(jq)":		{t:"坚强",			s:"/imgpro/icons/statusface/quake.gif"},
 		"(rr)":		{t:"红丝带",		s:"/imgpro/icons/statusface/red-ribbon.gif"},
 		"(ny)":		{t:"新年好",		s:"/imgpro/icons/statusface/2011.gif"},
@@ -1971,21 +1974,45 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		$patchCSS(".publisher-new .emotion li.wider{width:50px}.publisher-new .emotion li.wider a{width:46px}.publisher-new .emotion img{margin:0;vertical-align:baseline}");
 	}
 
-	// 首页的状态表情列表
-	var list=$("#publisher_emotion > ul");
-	if(list.exist()) {
-		// 已经有的表情列表
-		var curlist=[];
-		list.find("img").each(function() {
-			curlist[this.getAttribute("emotion")]=1;
-		});
-		for (var e in emList1) {
-			var el=emList1[e];
-			// 不在已有列表中
-			if(!curlist[e]) {
-				$("@li").attr(el.w?{"class":"wider",style:"width:50px"}:{}).add($("@a").attr("href","javascript:;").add($("@img").attr({title:el.t,alt:el.t,emotion:e,src:"http://xnimg.cn"+el.s,rsrc:"http://xnimg.cn"+el.s}))).addTo(list);
-			}
+	if($page("feed")) {
+		if($("head>script[src*='xn.ui.emoticons.js']").empty()) {
+			$script("XN.loadFiles(['http://s.xnimg.cn/jspro/xn.ui.emoticons.js'])");
 		}
+		// 首页的状态表情列表
+		var code="var count=0;"+
+		"(function(){"+
+			"try{"+
+				"var p=XN.ui.emotions.prototype;"+
+				"if(p.o_buildPanelHtml){"+
+					"return"+
+				"}"+
+				"p.o_buildPanelHtml=p.buildPanelHtml;"+
+				"p.buildPanelHtml=function(){"+
+					"XN.ui.emotions.prototype.o_buildPanelHtml.apply(this,arguments);"+
+					"var emList={};"+
+					"var ul=document.querySelector('ul.emo-list');"+
+					"var em=ul.querySelectorAll('img[emotion]');"+
+					"for(var i=0;i<em.length;i++){"+
+						"emList[em[i].getAttribute('emotion')]=1"+
+					"}"+
+					"var newEmo='';"+
+					"var list=JSON.parse('"+JSON.stringify(emList1)+"');"+
+					"for(var i in list){"+
+						"if(!emList[i]){"+
+							"newEmo+=\"<li title='\"+list[i].t+\"'><img forvip='0' preview='0' emotion='\"+i+\"' alt='\"+list[i].t+\"' src='http://xnimg.cn\"+list[i].s+\"'/></li>\""+
+						"}"+
+					"}"+
+					"ul.innerHTML+=newEmo"+
+				"}"+
+			"}catch(ex){"+
+				"if(count<10){"+
+					"setTimeout(arguments.callee,500)"+
+				"}"+
+				"count++;"+
+				"return"+
+			"}"+
+		"})()";
+		$script(code);
 	}
 
 	// 新鲜事回复表情
