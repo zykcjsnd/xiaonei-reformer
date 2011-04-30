@@ -1,4 +1,4 @@
-var EXPORTED_SYMBOLS = ["Services", "Instances"];
+var EXPORTED_SYMBOLS = [ "XNRCommon", "Ci", "Cc" ];
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
@@ -10,25 +10,24 @@ const cSupportString = Cc["@mozilla.org/supports-string;1"];
 const cUnicodeConverter = Cc["@mozilla.org/intl/scriptableunicodeconverter"];
 const cXHR = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"];
 
-var Services = {};
-
-XPCOMUtils.defineLazyServiceGetter(Services, "io", "@mozilla.org/network/io-service;1", "nsIIOService2");
-XPCOMUtils.defineLazyServiceGetter(Services, "instream", "@mozilla.org/scriptableinputstream;1", "nsIScriptableInputStream"); 
-XPCOMUtils.defineLazyServiceGetter(Services, "console", "@mozilla.org/consoleservice;1", "nsIConsoleService");
-XPCOMUtils.defineLazyServiceGetter(Services, "wm", "@mozilla.org/appshell/window-mediator;1", "nsIWindowMediator");
-XPCOMUtils.defineLazyGetter(Services, "prefs", function () {
-	return cPref.getService(Ci.nsIPrefService).QueryInterface(Ci.nsIPrefBranch2);
-});
-
-var Instances = {
-	supportString: function () {
+var XNRCommon = {
+	get supportString () {
 		return cSupportString.createInstance(Ci.nsISupportsString);
 	},
-	unicodeConverter: function () {
+	get unicodeConverter () {
 		return cUnicodeConverter.createInstance(Ci.nsIScriptableUnicodeConverter);
 	},
-	xmlHttpRequest: function () {
+	get xmlHttpRequest () {
 		return cXHR.createInstance(Ci.nsIXMLHttpRequest);
 	}
 };
+
+XPCOMUtils.defineLazyServiceGetter(XNRCommon, "io", "@mozilla.org/network/io-service;1", "nsIIOService2");
+XPCOMUtils.defineLazyServiceGetter(XNRCommon, "instream", "@mozilla.org/scriptableinputstream;1", "nsIScriptableInputStream"); 
+XPCOMUtils.defineLazyServiceGetter(XNRCommon, "console", "@mozilla.org/consoleservice;1", "nsIConsoleService");
+XPCOMUtils.defineLazyServiceGetter(XNRCommon, "wm", "@mozilla.org/appshell/window-mediator;1", "nsIWindowMediator");
+XPCOMUtils.defineLazyGetter(XNRCommon, "prefs", function () {
+	return cPref.getService(Ci.nsIPrefService).QueryInterface(Ci.nsIPrefBranch2);
+});
+
 
