@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.10.422
-// @miniver        422
+// @version        3.2.10.423
+// @miniver        423
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -32,8 +32,7 @@
 (function(){
 
 try {
-	var test1=document.location.href; // Firefox 4.0b7 ~ b8
-	var test2=document.documentElement.id;	// since Firefox 3.7a5
+	var test1=document.documentElement.id;	// since Firefox 3.7a5
 } catch(ex) {
 	setTimeout(arguments.callee,50);
 	return;
@@ -56,8 +55,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.9.420";
-XNR.miniver=420;
+XNR.version="3.2.10.423";
+XNR.miniver=423;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1990,7 +1989,12 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 				"p.buildPanelHtml=function(){"+
 					"XN.ui.emotions.prototype.o_buildPanelHtml.apply(this,arguments);"+
 					"var emList={};"+
-					"var ul=document.querySelector('ul.emo-list');"+
+					"var ul=document.querySelectorAll('ul.emo-list');"+
+					"if(ul.length!=1){"+
+						"return"+
+					"}else{"+
+						"ul=ul[0]"+
+					"}"+
 					"var em=ul.querySelectorAll('img[emotion]');"+
 					"for(var i=0;i<em.length;i++){"+
 						"emList[em[i].getAttribute('emotion')]=1"+
@@ -2005,7 +2009,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 					"ul.innerHTML+=newEmo"+
 				"}"+
 			"}catch(ex){"+
-				"if(count<10){"+
+				"if(count<5){"+
 					"setTimeout(arguments.callee,500)"+
 				"}"+
 				"count++;"+
