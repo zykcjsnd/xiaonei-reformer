@@ -3850,6 +3850,11 @@ function importConfig() {
 	}
 };
 
+// 导出设置
+function exportConfig() {
+	$(".xnr_op #configuration").val(JSON.stringify(XNR.options));
+};
+
 // 发送请求
 function sendReq() {
 	var method=$(".xnr_op input#req_m").val();
@@ -5728,13 +5733,20 @@ function main(savedOptions) {
 					}
 				]
 			},{
-				text:"##：####",
+				text:"## ##：####",
 				ctrl:[
 					{
 						type:"button",
 						value:"导入选项",
 						fn:[{
 							name:importConfig,
+							fire:"click",
+						}]
+					},{
+						type:"button",
+						value:"导出选项",
+						fn:[{
+							name:exportConfig,
 							fire:"click",
 						}]
 					},{
