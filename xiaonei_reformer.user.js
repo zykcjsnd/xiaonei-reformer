@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.10.423
-// @miniver        423
+// @version        3.2.10.424
+// @miniver        424
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -192,8 +192,7 @@ function removePageTheme() {
 	if($page("profile") && !$page("pages")) {
 		var skin=$("head>link[href*='profile-skin.css']");
 		if(skin.empty()) {
-			// FIXME:hardcoded href
-			$("@link").attr({type:"text/css",rel:"stylesheet",href:"http://s.xnimg.cn/a8112/csspro/apps/profile-skin.css"}).addTo($("head"));
+			$("@link").attr({type:"text/css",rel:"stylesheet",href:"http://s.xnimg.cn/csspro/apps/profile-skin.css"}).addTo($("head"));
 		}
 	}
 	// 修复Logo
@@ -1974,11 +1973,10 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 	}
 
 	if($page("feed")) {
-		if($("head>script[src*='xn.ui.emoticons.js']").empty()) {
-			$script("XN.loadFiles(['http://s.xnimg.cn/jspro/xn.ui.emoticons.js'])");
-		}
 		// 首页的状态表情列表
 		var code="var count=0;"+
+		"XN.ui.emotions=null;"+	// 清除原有的才能在异步刷新重建XN.ui.emotions并正确修改
+		"XN.loadFiles(['http://s.xnimg.cn/jspro/xn.ui.emoticons.js']);"+
 		"(function(){"+
 			"try{"+
 				"var p=XN.ui.emotions.prototype;"+
@@ -2728,13 +2726,19 @@ function showFullSizeImage(evt,indirect) {
 				break;
 		}
 		if(!thumbnail || thumbnail.match("/large|_large|large_|/photos/0/0/|/page_pic/|/homeAd/|/[sa]\\.xnimg\\.cn/|app\\.xnimg\\.cn|/L[^/]+$")) {
-			// 大图/默认空白头像/公共主页图像/网站自身图片
-			if($allocated("image_viewer")) {
-				if(t!=$alloc("image_viewer").viewer && t!=$alloc("image_viewer").image) {
-					// 不是在显示的图像上
-					$alloc("image_viewer").viewer.css("display","none");
-					// 仅仅将src设成""会有一些2B浏览器去读取当前页面。可能是造成出现浏览满100人警告的原因
-					$alloc("image_viewer").image.attr({src:null,lid:""});
+			if(/large/.test(thumbnail) && t.tagName=="IMG" && /fixImage/.test($(t).attr("onload"))) {
+				// 已经是大图了，只是被限制了大小
+				imgId=thumbnail.substring(thumbnail.lastIndexOf("_"));
+				_showViewer(evt.pageX,thumbnail,imgId,true);
+			} else {
+				// 大图/默认空白头像/公共主页图像/网站自身图片
+				if($allocated("image_viewer")) {
+					if(t!=$alloc("image_viewer").viewer && t!=$alloc("image_viewer").image) {
+						// 不是在显示的图像上
+						$alloc("image_viewer").viewer.css("display","none");
+						// 仅仅将src设成""会有一些2B浏览器去读取当前页面。可能是造成出现浏览满100人警告的原因
+						$alloc("image_viewer").image.attr({src:null,lid:""});
+					}
 				}
 			}
 			return;
