@@ -1,3 +1,9 @@
+425:
+fix:PageKit在传入document时，包装document.documentElement
+fix:拖动选项窗口时禁止webkit核心的浏览器选择文本
+fix:修改Firefox版的实现
+fix:更新状态表情
+
 424:
 fix:修正首页异步刷新后启用隐藏表情功能失效BUG
 fix:显示大图功能能够处理被限制了大小的图片
