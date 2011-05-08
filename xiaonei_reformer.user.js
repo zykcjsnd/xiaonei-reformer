@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.10.424
-// @miniver        424
+// @version        3.2.11.425
+// @miniver        425
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -32,7 +32,7 @@
 (function(){
 
 try {
-	var test1=document.documentElement.id;	// since Firefox 3.7a5
+	document.documentElement.id;	// since Firefox 3.7a5
 } catch(ex) {
 	setTimeout(arguments.callee,50);
 	return;
@@ -55,8 +55,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.10.423";
-XNR.miniver=423;
+XNR.version="3.2.11.425";
+XNR.miniver=425;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1826,6 +1826,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		"(ymy)":	{t:"有木有",		s:"/imgpro/icons/statusface/youmuyou.gif"},
 		"(th)":		{t:"惊叹号",		s:"/imgpro/icons/statusface/exclamation.gif"},
 		"(三行情书)":{t:"三行情书",		s:"/imgpro/icons/statusface/xin.gif"},
+		"(knx)":	{t:"康乃馨",		s:"/imgpro/icons/statusface/carnation.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
@@ -1866,6 +1867,8 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		"(cy2)":	{t:"登高",			s:"/imgpro/icons/statusface/09double9.gif"},
 		"(cy3)":	{t:"饮菊酒",		s:"/imgpro/icons/statusface/09double9-2.gif"},
 		"(dad)":	{t:"父亲节",		s:"/imgpro/icons/statusface/love-father.gif"},
+		"(safe)":	{t:"感恩母亲",		s:"/imgpro/icons/statusface/safeguard.gif"},
+		"(mom)":	{t:"母亲节",		s:"/imgpro/icons/statusface/ilovemom.gif"},
 		"(ngd)":	{t:"南瓜灯",		s:"/imgpro/icons/statusface/pumpkin.gif"},
 		"(xg)":		{t:"小鬼",			s:"/imgpro/icons/statusface/ghost.gif"},
 		"(hh)":		{t:"圣诞花环",		s:"/imgpro/icons/statusface/garland.gif"},
@@ -2637,7 +2640,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						if(repMode) {
 							// script通过innerHtml不会被执行
 							document.documentElement.innerHTML=html.replace(/<script>[\s\S]*<\/script>/,"");
-							$("@script").text(/<script>([\s\S]*)<\/script>/.exec(html)[1]).addTo(document.documentElement);
+							$("@script").text(/<script>([\s\S]*)<\/script>/.exec(html)[1]).addTo(document);
 						} else {
 							window.open("javascript:'"+html+"'");
 						}
@@ -2973,7 +2976,7 @@ function showFullSizeImage(evt,indirect) {
 			}
 		}
 		node.css({left:parseInt(rect.right-22+window.scrollX)+"px",top:parseInt(rect.bottom-22+window.scrollY)+"px"});
-		node.addTo(document.documentElement);
+		node.addTo(document);
 		$alloc("image_magnifier",node);
 		return node;
 	};
@@ -2988,7 +2991,7 @@ function showFullSizeImage(evt,indirect) {
 
 		// 如果图片显示框还没有创建，则先创建它
 		if(!$allocated("image_viewer")) {
-			$alloc("image_viewer").viewer=$("@div").attr("style","border:3px double #666666;display:none;background:#F6F6F6;top:2px;z-index:199999;right:2px;position:fixed;overflow-x:auto").addTo(document.documentElement);
+			$alloc("image_viewer").viewer=$("@div").attr("style","border:3px double #666666;display:none;background:#F6F6F6;top:2px;z-index:199999;right:2px;position:fixed;overflow-x:auto").addTo(document);
 			$alloc("image_viewer").image=$("@img").attr("onload","this.parentNode.style.overflowY=(parseInt(this.height)>parseInt(window.innerHeight)-10?'scroll':'auto')").addTo($alloc("image_viewer").viewer);
 		}
 
@@ -6151,7 +6154,7 @@ function main(savedOptions) {
 	var menuHTML='<style type="text/css">.xnr_op{width:500px;position:fixed;z-index:200000;color:black;font-size:12px;background:rgba(0,0,0,0.5);padding:10px;-moz-border-radius:8px;border-radius:8px}.xnr_op *{padding:0;margin:0;line-height:normal}.xnr_op h1{font-size:18px;font-weight:bold}.xnr_op a{color:#3B5990}.xnr_op table{width:100%;border-collapse:collapse}.xnr_op .title{padding:4px;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none;cursor:default}.xnr_op .btns{background:#F0F5F8;text-align:right;border-top:1px solid lightgray}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px;cursor:pointer}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .ok:active{border-color:#124680 #B8D4E8 #B8D4E8 #124680}.xnr_op .cancel{background:#F0F0F0;border-color:white #848484 #848484 white;color:black}.xnr_op .cancel:active{border-color:#848484 white white #848484}.xnr_op .options{height:300px;background:#FFFFFA}.xnr_op .category{width:119px;border-right:1px solid lightgray;overflow-x:hidden;overflow-y:auto;height:300px;float:left}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages{width:380px;float:right}.xnr_op .p{overflow:auto;height:280px;padding:10px}.xnr_op .p>div{min-height:19px;padding:2px 0;width:100%}.xnr_op .p>div *{vertical-align:middle}.xnr_op .group{margin-left:5px;margin-top:3px;table-layout:fixed}.xnr_op .group td{padding:2px 0}.xnr_op input[type="checkbox"]{margin-right:4px;cursor:pointer}.xnr_op button{background-color:#EFEFEF;background:-moz-linear-gradient(top,#FDFCFB,#E7E2DB);background:-o-linear-gradient(top,#FDFCFB,#E7E2DB);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#E7E2DB));color:black;border-color:#877C6C #A99D8C #A99D8C;border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;font-size:12px;padding:'+(XNR.acore==GECKO?1:3)+'px}.xnr_op button:hover:not([disabled]){background-color:#CCC4B9;background:-moz-linear-gradient(top,#FDFCFB,#CCC4B9);background:-o-linear-gradient(top,#FDFCFB,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#CCC4B9))}.xnr_op button[disabled]{color:grey}.xnr_op button:active:not([disabled]){background:#C1BDB6;background:-moz-linear-gradient(top,#C1BDB6,#CCC4B9);background:-o-linear-gradient(top,#C1BDB6,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#C1BDB6),to(#CCC4B9))}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op .p span{cursor:default}.xnr_op span[tooltip]{margin:0 2px;height:16px;width:16px;display:inline-block;cursor:help}.xnr_op span.info{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAuUlEQVQ4y2NgoDbQ9upiiK5eznD17sv/yDi2ajlYDi9wSZ+NoREdu2bNxa7ZJnkWXHPepH1YMUzeNnU6prPRNaMDdEOU3boRBoSWLWXApxmbIRHlyxAG4LIdFx+mHqcByBifNwgagE0zWQbgig24AWFogUgIgxNW7QpEIIKiBJsr8DlfxXMSalpwTpuJPyFN2ItIjXlzsKdGx9h2gknZLqYFf37gktJmCM2dhGFQaE4/A6eYKtUzLwMAfM0C2p5qSS4AAAAASUVORK5CYII%3D")}.xnr_op span.warn{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA1ElEQVQ4y2NgoCVYz8BgsJyBwYQszUCNsv8ZGP6D8FIGBlWSDYBphmGSNC9jYNAGabqUkvL/cmYm2IAlDAympNsOA6S4YjUDgxVI8dX8fLj+6+XlYAPWsbB4kGQ7hMtAvCvWsrN7gxRdq6jAMOBWSwvYgE1sbJFE+x3FBUiuaGBgYMKp+Xpz839c4P7UqWA1QJfmomgGmYgR8thcgOSKmQwMrBi23+js/E8IPJ47FyNAudBTHbEY7gJjBgbdDgaG7k4GhqmEcDcDw2Qg7ogA5hWq5FgAlMwfVWL5pDoAAAAASUVORK5CYII%3D")}.xnr_op input:not([type]){border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;padding:1px;border-color:#877C6C #A99D8C #A99D8C}.xnr_op input:not([type]):focus{border-color:#3A6389}.xnr_op textarea{resize:none;-moz-resize:none}.xnr_op .fp{text-align:center;vertical-align:middle;width:400px;height:300px;display:table-cell}.xnr_op .fp>*{padding:5px}.xnr_op .icons>a{margin:8px}.xnr_op .icons img{width:29px}.xnr_op .icons img:hover{-webkit-transform:scale(1.1);-moz-transform:scale(1.1);-o-transform:scale(1.1)}</style>';
 	menuHTML+='<div class="title">改造选项</div><div class="options"><div class="category"><ul>'+categoryHTML+'</ul></div><div class="pages"><div class="fp"><h1>人人网改造器 '+XNR.version+'</h1><p><b>Copyright © 2008-2011</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p><p class="icons"><a href="http://userscripts.org/scripts/show/45836" title="GreaseMonkey脚本" target="_blank"><img src="'+icons_gm+'"/></a><a href="https://chrome.google.com/extensions/detail/bafellppfmjodafekndapfceggodmkfc" title="Chrome/Chromium扩展" target="_blank"><img src="'+icons_chrome+'"/></a><a href="https://addons.mozilla.org/firefox/addon/162178" title="Firefox扩展" target="_blank"><img src="'+icons_fx+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Safari扩展" target="_blank"><img src="'+icons_safari+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Opera用户脚本" target="_blank"><img src="'+icons_opera+'"/></a></p></div></div></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div>';
 
-	var menu=$("@div").attr("class","xnr_op").css("display","none").html(menuHTML).addTo(document.documentElement);
+	var menu=$("@div").attr("class","xnr_op").css("display","none").html(menuHTML).addTo(document);
 	// 添加类别页，绑定提示信息事件
 	menu.find(".pages").add($(categoryPages)).bind("mouseover",function(evt) {
 		var t=$(evt.target);
@@ -6170,7 +6173,7 @@ function main(savedOptions) {
 		for(var i=0;i<text.length;i++) {
 			$("@div").text(text[i]).addTo(tip);
 		}
-		tip.addTo(document.documentElement);
+		tip.addTo(document);
 	},true);
 
 	// 点击分类切换事件
@@ -6298,13 +6301,15 @@ function main(savedOptions) {
 		move.x=evt.clientX-menuRect.left;
 		move.y=evt.clientY-menuRect.top;
 		evt.target.style.cursor="move";
+		$(document).css("-khtml-user-select","none");
 	},true).bind("mouseup",function(evt) {
 		if($allocated("drag_optionMenu")) {
 			$dealloc("drag_optionMenu");
 			evt.target.style.cursor=null;
+			$(document).css("-khtml-user-select","");
 		}
 	},true);
-	$(document.documentElement).bind("mousemove",function(evt) {
+	$(document).bind("mousemove",function(evt) {
 		if($allocated("drag_optionMenu")) {
 			var move=$alloc("drag_optionMenu");
 			menu.css({left:(evt.clientX-move.x)+"px",top:(evt.clientY-move.y)+"px"});
@@ -6385,7 +6390,7 @@ function main(savedOptions) {
 			"})"+
 		"}";
 		$script(code);
-		$(document.documentElement).bind(eventId,function(evt) {
+		$(document).bind(eventId,function(evt) {
 			evt.stopPropagation();
 			XNR.url=document.location.href;
 
@@ -6680,7 +6685,7 @@ function $script(code,global) {
 	}
 	if(XNR.agent==CHROME || XNR.agent==SAFARI) {
 		// 如果chrome/safari用location方法，会发生各种各样奇怪的事。比如innerHTML失灵。。。万恶的webkit
-		$("@script").text(code).addTo(document.documentElement).remove();
+		$("@script").text(code).addTo(document).remove();
 	} else {
 		try {
 			document.location.href="javascript:"+code;
@@ -6701,10 +6706,10 @@ function $patchCSS(style) {
 	if($allocated("css_block")) {
 		var p=$alloc("css_block");
 	} else {
-		var p=$alloc("css_block",$("@div").addTo(document.documentElement));
+		var p=$alloc("css_block",$("@div").addTo(document));
 	}
 	// 永远保持在最后
-	p.addTo(document.documentElement);
+	p.addTo(document);
 	return $("@style").attr("type","text/css").text(style).addTo(p);
 };
 
@@ -6870,7 +6875,13 @@ function $error(func,error) {
 		msg=error.toString();
 	}
 	if(msg) {
-		console.log("在 "+func+"() 中发生了一个错误。\n"+msg);
+		var log = null;
+		if(XNR.agent==FIREFOX) {
+			log = XNR_log;
+		} else {
+			log = console.log;
+		}
+		log("在 "+func+"() 中发生了一个错误。\n"+msg);
 		var board=$(".xnr_op #diagnosisInfo");
 		if(board.exist()) {
 			board.val(board.val()+msg);
@@ -6896,7 +6907,13 @@ function $debug(msg,level,func) {
 			msg=func+" "+msg;
 		}
 		msg="["+new Date().getTime()+"]:"+msg;
-		console.log(msg);
+		var log = null;
+		if(XNR.agent==FIREFOX) {
+			log = XNR_log;
+		} else {
+			log = console.log;
+		}
+		log(msg);
 	}
 };
 
@@ -7176,7 +7193,9 @@ PageKit.prototype={
 					// CSS选择语句
 					this.nodes=this.nodes.concat(Array.prototype.slice.call(document.querySelectorAll(s)));
 				}
-			} else if(s.nodeType || s.document) {
+			} else if(s===document) {
+				this.nodes=this.nodes.concat(document.documentElement);
+			} else if(s.nodeType || s===window) {
 				// DOM节点 或 window
 				this.nodes=this.nodes.concat(s);
 			} else if(s instanceof PageKit) {
@@ -7392,7 +7411,7 @@ PageKit.prototype={
 	addTo:function(o,pos) {
 		if(o instanceof PageKit) {
 			o.add(this,pos);
-		} else if(o.nodeType==1) {
+		} else if(o===document || o.nodeType==1) {
 			PageKit(o).add(this,pos);
 		}
 		return this;

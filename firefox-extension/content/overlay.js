@@ -1,6 +1,8 @@
-if ("undefined" == typeof(XNRChrome)) {
-	var XNRChrome = {};
-};
+(function () {
+
+Components.utils.import("resource://xiaonei-reformer/utils.js");
+
+var XNRChrome = {};
 
 XNRChrome.eventListener = {
 	onLocationChange: function (aBrowser, aProgress, aRequest, aURI) {
@@ -31,16 +33,9 @@ XNRChrome.onframeLoaded = function (evt) {
 };
 
 XNRChrome.injectScript = function (contentWindow) {
-	Components.utils.import("resource://xiaonei-reformer/utils.js");
 
-	var wrapper = new XPCNativeWrapper(contentWindow);
-	var sandbox = new Components.utils.Sandbox(wrapper);
-	sandbox.window = wrapper;
-	sandbox.document = wrapper.document;
-	sandbox.__proto__ = wrapper;
-
-	XNRUtils.importMethods(sandbox);
-
+	var sandbox = XNRUtils.createSandbox(contentWindow);
+	
 	// can't use mozIJSSubScriptLoader due to https://bugzilla.mozilla.org/show_bug.cgi?id=377498
 	var script=XNRUtils.getUrlContents("chrome://xiaonei-reformer/content/xiaonei_reformer.user.js");
 
@@ -62,4 +57,6 @@ window.addEventListener("unload", function () {
 	gBrowser.removeEventListener("DOMContentLoaded", XNRChrome.onframeLoaded, true);
 	gBrowser.removeTabsProgressListener(XNRChrome.eventListener);
 }, false);
+
+})();
 

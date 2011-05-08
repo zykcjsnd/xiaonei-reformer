@@ -35,18 +35,24 @@ function XNR_album (data) {
 	mainWindow.gBrowser.selectedTab = mainWindow.gBrowser.addTab("chrome://xiaonei-reformer/content/album.html#"+encodeURIComponent(JSON.stringify(data)));
 }
 
-XNRUtils.importMethods = function (scope) {
-	scope.importFunction(XNR_save);
-	scope.importFunction(XNR_load);
-	scope.importFunction(XNR_get);
-	scope.importFunction(XNR_album);
-	if (!scope.console) {
-		scope.console = {
-			log: function (msg) {
-				XNRCommon.console.logStringMessage(msg);
-			}
-		};
-	}
+function XNR_log (msg) {
+	XNRCommon.console.logStringMessage(msg);
+}
+
+XNRUtils.createSandbox = function (content) {
+	var wrapper = new XPCNativeWrapper(content);
+	var sandbox = new Components.utils.Sandbox(wrapper);
+	sandbox.window = wrapper;
+	sandbox.document = wrapper.document;
+	sandbox.__proto__ = wrapper;
+
+	sandbox.importFunction(XNR_save);
+	sandbox.importFunction(XNR_load);
+	sandbox.importFunction(XNR_get);
+	sandbox.importFunction(XNR_album);
+	sandbox.importFunction(XNR_log);
+
+	return sandbox;
 }
 
 // getUrlContents adapted from Greasemonkey Compiler
