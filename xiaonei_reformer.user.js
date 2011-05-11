@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.11.425
-// @miniver        425
+// @version        3.2.11.426
+// @miniver        426
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -6821,18 +6821,22 @@ function $get(url,func,userData,method) {
 				$error("$get","未安装跨域支持脚本，使用非跨域模式");
 				var httpReq=new window.XMLHttpRequest();
 			}
-			httpReq.onload=function() {
-				func.call(window,(httpReq.status==200?httpReq.responseText:null),url,userData);
-			};
-			httpReq.onerror=function(e) {
-				func.call(window,null,url,userData);
-			};
+			if (func!=null) {
+				httpReq.onload=function() {
+					func.call(window,(httpReq.status==200?httpReq.responseText:null),url,userData);
+				};
+				httpReq.onerror=function(e) {
+					func.call(window,null,url,userData);
+				};
+			}
 			httpReq.open(method,url,true);
 			try {
 				httpReq.send();
 			} catch(ex) {
 				$error("$get",ex);
-				func.call(window,null,url,userData);
+				if (func!=null) {
+					func.call(window,null,url,userData);
+				}
 			}
 			break;
 		case OPERA_EXT:
@@ -6878,6 +6882,8 @@ function $error(func,error) {
 		var log = null;
 		if(XNR.agent==FIREFOX) {
 			log = XNR_log;
+		} else if(XNR.agent==USERSCRIPT) {
+			log = GM_log;	// Firefox 3.6 has no console.log
 		} else {
 			log = console.log;
 		}
@@ -6910,6 +6916,8 @@ function $debug(msg,level,func) {
 		var log = null;
 		if(XNR.agent==FIREFOX) {
 			log = XNR_log;
+		} else if(XNR.agent==USERSCRIPT) {
+			log = GM_log;	// Firefox 3.6 has no console.log
 		} else {
 			log = console.log;
 		}

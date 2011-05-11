@@ -1,0 +1,32 @@
+<html>
+<head>
+	<title>Title</title>
+	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+	<script>
+	function test() {
+		for(var c=0;c<5;c++) {
+			var a=[1,0x333333,"text","",null,new Date(),{a:1,b:"",c:null}];
+			var b;
+			var t1=new Date();
+			for(var i=0;i<500000;i++) {
+				b=a.concat();
+			}
+			var time1=(new Date()-t1);
+
+			var t1=new Date();
+			for(var i=0;i<500000;i++) {
+				b=a.slice(0);
+			}
+			var time2=(new Date()-t1);
+			document.getElementById("result").innerHTML+=time1+" : "+time2+"</br>"
+		}
+	}
+	</script>
+</head>
+<body onload="test()">
+	<p>Array.concat() : Array.slice(0)</p>
+	<span id="result">
+	</span>
+</body>
+
+</html>
