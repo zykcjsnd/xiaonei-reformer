@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.11.426
-// @miniver        426
+// @version        3.2.11.427
+// @miniver        427
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -1979,7 +1979,11 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		// 首页的状态表情列表
 		var code="var count=0;"+
 		"XN.ui.emotions=null;"+	// 清除原有的才能在异步刷新重建XN.ui.emotions并正确修改
-		"XN.loadFiles(['http://s.xnimg.cn/jspro/xn.ui.emoticons.js']);"+
+		"XN.loadFiles(['http://s.xnimg.cn/jspro/xn.ui.emoticons.js']);"+	
+		// To reviewer:
+		// s.xnimg.cn is a domain where renren.com (XiaoNei.com previously) hosts its javascript/css/image files.
+		// just like twimg.com of twitter.com. you can visit renren.com and see html source code.
+		// XN.loadFiles is defined in http://s.xnimg.cn/jspro/base.js
 		"(function(){"+
 			"try{"+
 				"var p=XN.ui.emotions.prototype;"+
