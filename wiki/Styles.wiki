@@ -43,7 +43,7 @@ Safari浏览器请输入
 javascript:document.documentElement.textContent=document.querySelector("#hometpl_style style").textContent.replace(/\/\*.*?\*\//g,"")
 }}}
 
-即可得到皮肤的页面样式，将其复制粘贴到改造器中自定义页面样式功能下的编辑框中，确定后即可生效。
+页面上将会显示出皮肤的页面样式，将其复制粘贴到改造器中自定义页面样式功能下的编辑框中，确定后即可生效。
 
 <font color="red">注意：</font>
   # 这只是针对* 首页换肤 *功能，对VIP会员的* 主页皮肤 *无效
