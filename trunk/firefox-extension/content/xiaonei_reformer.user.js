@@ -202,7 +202,7 @@ function removeHomeTheme() {
 		if(/关闭/.test(sa.text())) {
 			$script(sa.attr("onclick"));
 		}
-		$ban(".skin-action, #closeHomeSkin");
+		$ban(".skin-action, #closeHomeSkin, #useHomeSkin");
 	}
 	// 状态输入框皮肤
 	var sa = $("a[title='关闭皮肤']");
