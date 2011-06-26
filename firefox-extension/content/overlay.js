@@ -6,8 +6,8 @@ var XNRChrome = {};
 
 XNRChrome.eventListener = {
 	onLocationChange: function (aBrowser, aProgress, aRequest, aURI) {
-		if (XNRChrome.checkURL(aBrowser.contentWindow.location.href)) {
-			if (aBrowser.contentDocument.readyState == "loading") {
+		if (aBrowser.contentDocument.readyState == "loading") {
+			if (XNRChrome.checkURL(aBrowser.contentWindow.location.href)) {
 				XNRChrome.injectScript(aBrowser.contentWindow);
 			}
 		}
@@ -25,7 +25,7 @@ XNRChrome.eventListener = {
 
 XNRChrome.onframeLoaded = function (evt) {
 	var content = evt.target.defaultView.window;
-	if(content == content.top || !XNRChrome.checkURL(content.location.href)) {
+	if (content == content.top || !XNRChrome.checkURL(content.location.href)) {
 		return;
 	} else {
 		XNRChrome.injectScript(content);

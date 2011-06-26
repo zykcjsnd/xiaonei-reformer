@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.11.427
-// @miniver        427
+// @version        3.2.11.428
+// @miniver        428
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -55,8 +55,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.11.425";
-XNR.miniver=425;
+XNR.version="3.2.11.428";
+XNR.miniver=428;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -141,7 +141,7 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], a[href*='track.yx.renren.com'], img[src*='/adimgs/'], .sec.promotion, iframe[src*='adsupport.renren.com']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], a[href*='track.yx.renren.com'], img[src*='/adimgs/'], .sec.promotion, iframe[src*='adsupport.renren.com']";
 	$ban(ads);
 	$script("const ad_js_version=null",true);
 	$wait(1,function() {
@@ -152,19 +152,6 @@ function removeAds() {
 		$("div[class$='-banner']").filter("a[target='_blank']>img").filter({childElementCount:1}).remove();
 		$script("window.load_jebe_ads=function(){}");
 	});
-
-	// 人人网在ad_syshome.js的beginLoad()中，间隔10ms检查Flash是否加载完毕。当PercentLoaded()无效时导致异常发生，未能终止定时器
-	// 只要将其设置为隐藏，PercentLoaded()就会变成未定义
-	var count=0;
-	(function() {
-		var t=$("#jebe_con_load");
-		if(t.exist()) {
-			t.remove();
-		} else if(count<40) {	// 只检查20秒。网速过慢，超过20秒buildAD还没有被执行的情况有吗？
-			count++;
-			setTimeout(arguments.callee,500);
-		}
-	})();
 };
 
 // 去除页面模板
@@ -196,20 +183,31 @@ function removePageTheme() {
 		}
 	}
 	// 修复Logo
-	if($(".menu-bar").curCSS("backgroundImage")=="none") {
-		var logo=$("img[src*='viplogo-renren.png']");
-		if(logo.size()) {
-			logo.attr({height:null,width:null,src:logo.attr("src").replace("viplogo-renren.png","logo-renren.png")});
+	var bgImage = $(".menu-bar").curCSS("background-image");
+	if (bgImage == null || bgImage == "none") {
+		var logo = $("img[src*='viplogo-renren.png']");
+		if (logo.size()) {
+			logo.attr({
+				height: null,
+				width: null,
+				src: logo.attr("src").replace("viplogo-renren.png", "logo-renren.png"),
+			});
 		}
 	}
 };
 function removeHomeTheme() {
 	// 特定节日模板
-	if($(".skin-action").exist()) {
-		if(/关闭/.test($(".skin-action").text())) {
-			$script($(".skin-action").attr("onclick"));
+	var sa = $(".skin-action, #closeHomeSkin");
+	if(sa.exist()) {
+		if(/关闭/.test(sa.text())) {
+			$script(sa.attr("onclick"));
 		}
-		$ban(".skin-action");
+		$ban(".skin-action, #closeHomeSkin");
+	}
+	// 状态输入框皮肤
+	var sa = $("a[title='关闭皮肤']");
+	if (sa.length) {
+		$script(sa.attr("onclick"));
 	}
 };
 
@@ -253,7 +251,7 @@ function removeBlogTheme() {
 
 // 删除日志中整段的链接
 function removeBlogLinks() {
-	$("#blogContent a,#shareBody a").each(function() {
+	$("#blogContent a, #shareBody a").each(function() {
 		var o=$(this);
 		// 链接到其他日志
 		if($page("blog",this.href) || $page("page_blog",this.href)) {
@@ -1827,6 +1825,12 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		"(th)":		{t:"惊叹号",		s:"/imgpro/icons/statusface/exclamation.gif"},
 		"(三行情书)":{t:"三行情书",		s:"/imgpro/icons/statusface/xin.gif"},
 		"(knx)":	{t:"康乃馨",		s:"/imgpro/icons/statusface/carnation.gif"},
+		"(520)":	{t:"520",			s:"/imgpro/icons/statusface/heart.gif"},
+		"(bby)":	{t:"小男孩",		s:"/imgpro/icons/statusface/boy2011.gif"},
+		"(bgi)":	{t:"小女孩",		s:"/imgpro/icons/statusface/girl2011.gif"},
+		"(bal)":	{t:"气球",			s:"/imgpro/icons/statusface/balloon.gif"},
+		"(jy)":		{t:"加油",			s:"/imgpro/icons/statusface/2011gaokao.gif"},
+		"(see)":	{t:"看海",			s:"/imgpro/icons/statusface/seesea.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
@@ -1884,6 +1888,10 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		"(315)":	{t:"消费者权益保护日",s:"/imgpro/icons/statusface/20110315.gif"},
 		"(yb)":		{t:"月饼",			s:"/imgpro/icons/statusface/mooncake.gif"},
 		"(zz)":		{t:"粽子",			s:"/imgpro/icons/statusface/zongzi.gif"},
+		"(lot)":	{t:"龙头",			s:"/imgpro/icons/statusface/dwj_longtou.gif"},
+		"(huc)":	{t:"划船",			s:"/imgpro/icons/statusface/dwj_huachuan.gif"},
+		"(dag)":	{t:"打鼓",			s:"/imgpro/icons/statusface/dwj_dagu.gif"},
+		"(low)":	{t:"龙尾",			s:"/imgpro/icons/statusface/dwj_longwei.gif"},
 		"(hjr)":	{t:"世界环境日",	s:"/imgpro/icons/statusface/earthday.gif"},
 		"(eh)":		{t:"地球一小时",	s:"/imgpro/icons/statusface/onehour2011.gif"},
 	//	"(虎年)":	{t:"虎年",			s:"/imgpro/icons/statusface/tiger.gif"},
@@ -1928,6 +1936,9 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 	//	"(草莓)":	{t:"愉悦一刻 ",		s:"/imgpro/icons/statusface/mzy.gif"},
 		"(愉悦一刻)":{t:"果粒奶优,愉悦一刻",s:"/imgpro/icons/statusface/mzynew.gif"},
 		"(LG)":		{t:"LG棒棒糖",		s:"/imgpro/activity/lg-lolipop/faceicon_2.gif"},
+		"(crm)":	{t:"Google Chrome",	s:"/imgpro/icons/statusface/chrome.gif"},
+		"(360)":	{t:"360极速浏览器",	s:"/imgpro/icons/statusface/360chrome.gif"},
+		"(fes)":	{t:"枫树浏览器",	s:"/imgpro/icons/statusface/chromeplus.gif"},
 	};
 	// 下面是内容过时的表情，不列出
 	var odEmList={
@@ -1979,12 +1990,22 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		// 首页的状态表情列表
 		var code="var count=0;"+
 		"XN.ui.emotions=null;"+	// 清除原有的才能在异步刷新重建XN.ui.emotions并正确修改
-		"XN.loadFiles(['http://s.xnimg.cn/jspro/xn.ui.emoticons.js']);"+	
-		// To reviewer:
-		// s.xnimg.cn is a domain where renren.com (XiaoNei.com previously) hosts its javascript/css/image files.
-		// just like twimg.com of twitter.com. you can visit renren.com and see html source code.
-		// XN.loadFiles is defined in http://s.xnimg.cn/jspro/base.js
-		"(function(){"+
+		// sorry, AMO reviewers dislike you
+		//"XN.loadFiles(['http://s.xnimg.cn/jspro/xn.ui.emoticons.js']);"+
+		"var js=document.querySelector(\"script[src*='xn.ui.emoticons.js']\");"+
+		"if(js) {"+
+			"addEmo();"+
+		"} else if(!XN.o_loadFile) {"+
+			"XN.o_loadFile = XN.loadFile;"+
+			"XN.loadFile=function(a){"+
+				"var r=XN.o_loadFile.apply(this,arguments);"+
+				"if(a.indexOf('xn.ui.emoticons.js')>0){"+
+					"addEmo();"+
+				"}"+
+				"return r"+
+			"}"+
+		"}"+
+		"function addEmo(){"+
 			"try{"+
 				"var p=XN.ui.emotions.prototype;"+
 				"if(p.o_buildPanelHtml){"+
@@ -2020,7 +2041,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 				"count++;"+
 				"return"+
 			"}"+
-		"})()";
+		"}";
 		$script(code);
 	}
 
@@ -2211,9 +2232,6 @@ function addBlogHTMLEditor() {
 function preventTracking0() {
 	var code="const COMSCORE=null";
 	$script(code,true);
-	// 阻止Google Analytics
-	var code="const urchinTracker=null";
-	$script(code,true);
 	// 阻止得到/失去焦点时发送信息
 	var code="window.statisFocusEventAdded=true;window.statisBlurEventAdded=true";
 	$script(code);
@@ -2239,42 +2257,44 @@ function preventTracking2() {
 	$script(code);
 
 	// 阻止得到/失去焦点时与滚动底部时发送信息
-	var code="var count=0;"+
-	"(function(){"+
-		"try{"+
-			"if(XN.JSON.pft_build)"+
-				"return;"+
-			"XN.JSON.pft_build=XN.JSON.build;"+
-			"XN.JSON.build_c=0;"+
-			"XN.JSON.build=function(){"+
-				"var f=arguments.callee.caller;"+
-				"var fs=f.toString();"+
-				"var e,t=0;"+
-				"if(fs.indexOf('unfocus?J=')>0){"+
-					"e='blur'"+
-				"}else if(fs.indexOf('focus?J=')>0){"+
-					"e='focus'"+
-				"}else if(fs.indexOf('scrollbottom?J=')>0){"+
-					"e='scrollbottom';t=1"+
-				"}else{"+
-					"return XN.JSON.pft_build.apply(this,arguments)"+
-				"}"+
-				"if(t){"+
-					"XN.events.delEvent(e,f);"+
-				"}else{"+
-					"XN.event.delEvent(window,e,f);"+
-				"}"+
-				"XN.JSON.build_c++;"+
-				"if(XN.JSON.build_c>=3)"+
-					"XN.JSON.build=XN.JSON.pft_build;"+
-				"throw e+' tracking disabled';"+
-			"}"+
-		"}catch(ex){"+
-			"if(count<10)"+
-				"setTimeout(arguments.callee,500);"+
-			"count++"+
-		"}"+
-	"})()";
+	var checkCode = "var f = arguments.callee.caller;" +
+	"if (f) {" +
+		"var fs = f.toString();" +
+		"var e;" +
+		"if (fs.indexOf('unfocus?J=') > 0) {" +
+			"e = 'blur'" +
+		"} else if (fs.indexOf('focus?J=') > 0) {" +
+			"e = 'focus'" +
+		"} else if (fs.indexOf('scrollbottom?J=') > 0) {" +
+			"e = 'scrollbottom'" +
+		"}" +
+		"if (e) {" +
+			"if (e == 'scrollbottom') {" +
+				"XN.events.delEvent(e, f);" +
+			"} else {" +
+				"XN.event.delEvent(window, e, f);" +
+			"}" +
+			"throw e + ' tracking disabled'" +
+		"}" +
+	"}";
+	// safari的getter中arguments.callee.caller为null
+	if (XNR.agent != SAFARI) {
+		code = "if (XN.env.__defineGetter__) {" +
+			"XN.env.__defineGetter__('domain', function() {" +
+				checkCode +
+				"return 'renren.com'" +
+			"});" +
+		"}";
+	} else {
+		code = "if (Math._random) {" +
+			"return" +
+		"}" +
+		"Math._random = Math.random;" +
+		"Math.random = function() {" +
+			checkCode + 
+			"return Math._random.apply(this, arguments)"
+		"}";
+	}
 	$script(code);
 };
 
@@ -2417,7 +2437,7 @@ function showImagesInOnePage() {
 					// 二分查找法确定插入位置low
 					var low=0,high=album.heirs()-1;
 					while(low<=high) {
-						mid=parseInt((low+high)/2);
+						var mid=parseInt((low+high)/2);
 						if(page>parseInt(album.child(mid).attr("page"))) {
 							low=mid+1;
 						} else {
@@ -3216,7 +3236,7 @@ function useWhisper() {
 
 // 隐藏橙名
 function hideOrangeName() {
-	var color=$("body a:not([class])").curCSS("color");
+	var color=$("body a:not([class]):not([id]):not([style])").curCSS("color");
 	$patchCSS(".lively-user, a.lively-user:link, a.lively-user:visited{color:"+color+"}");
 };
 

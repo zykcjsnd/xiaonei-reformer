@@ -13,14 +13,13 @@
 	<script>
 		function getPhotos() {
 			try {
-				var reqId=/#(.*)$/.exec(location.href)[1];
-				var album=JSON.parse(localStorage.getItem("xnr_album_"+reqId));
-				localStorage.setItem("xnr_album_"+reqId,null);
-				if(album.title) {
-					document.title=album.title;
+				var data = /#(.*)$/.exec(location.href)[1];
+				var album = JSON.parse(data);
+				if (album.title) {
+					document.title = album.title;
 				}
-				var html="";
-				html+="<p><a target=\"_blank\" href=\"http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum\">下载指南</a></p>";
+				var html = "";
+				html += "<p><a target=\"_blank\" href=\"http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum\">下载指南</a></p>";
 				html+="<p>来源："+album.ref+"</p>";
 				if(album.unknown.length>0) {
 					html+="<p>未能取得以下地址的图片：</p>";
