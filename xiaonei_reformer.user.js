@@ -6,7 +6,7 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.11.428
+// @version        3.2.11.429
 // @miniver        428
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
@@ -125,7 +125,7 @@ if(XNR.acore==PRESTO) {
 			var response=JSON.parse(event.data);
 			if(XNR.msgHandlers[response.reqId]) {
 				XNR.msgHandlers[response.reqId].call(window,response.data);
-				XNR.msgHandlers[response.reqId]=null;
+				delete XNR.msgHandlers[response.reqId];
 			}
 		};
 	} else {
@@ -293,7 +293,7 @@ function removeHomeGadgets(gadgetOpt) {
 		"footprint":"#footPrint",	// 最近来访
 		"recommendApp":".site-menu-apps.recommend",	// 推荐应用
 		"newFriends":".pymk:not(.manage),.find-friend-box,#myknowfriend_user",	// 好友推荐，后面2个是新注册用户页面上的
-		"schoolBeauty":"#schoolBeautyBox",	// 校花校草
+		"schoolBeauty":"#schoolBeautyBox,#xiaoTaoHua",	// 校花校草
 		"sponsors":"#sponsorsWidget,.wide-sponsors",	// 赞助商内容
 		"publicPageAdmin":"#pageAdmin,.pymk.manage",	// 公共主页管理
 		"birthday":"#homeBirthdayPart",	// 好友生日
@@ -2864,8 +2864,15 @@ function showFullSizeImage(evt,indirect) {
 			return;
 		}
 
+		// 小组相册封面
+		if(pageURL.match(/xiaozu\.renren\.com\/xiaozu\/\d+\/album\/\d+$/)) {
+			imageDate=/\/([0-9]{8}\/[0-9]+)\//.exec(thumbnail)[1];
+			_loadImage("album",false,evt,imgId,pageURL,imageDate);
+			return;
+		}
+
 		// 小组头像
-		if(pageURL.match(/xiaozu\.renren\.com\/xiaozu\/\d+$/)) {
+		if(pageURL.match(/xiaozu\.renren\.com\/xiaozu\/\d+$|xiaozu\.renren\.com\/xiaozu\/\d+\?/)) {
 			_loadImage("xiaozu",false,evt,imgId,pageURL);
 			return;
 		}
