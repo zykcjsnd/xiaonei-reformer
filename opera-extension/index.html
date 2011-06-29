@@ -28,7 +28,8 @@
 					httpReq.send();
 					break;
 				case "album":
-					//chrome.tabs.create({url:chrome.extension.getURL("album.html")+"#"+encodeURIComponent(JSON.stringify(request.data))});
+					// FIXME:无法下载图片
+					opera.extension.tabs.create({focused:true, url:"album.html#"+encodeURIComponent(JSON.stringify(request.data))});
 					break;
 			}
 		};
