@@ -55,7 +55,7 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.11.428";
+XNR.version="3.2.11.429";
 XNR.miniver=428;
 
 // 存储空间，用于保存全局性变量
@@ -2674,6 +2674,8 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						chrome.extension.sendRequest({action:"album",data:album});
 					} else if(XNR.agent==SAFARI) {
 						safari.self.tab.dispatchMessage("xnr_album",album);
+					//} else if(XNR.agent==OPERA_EXT) {
+					//	XNR.oexSendRequest({action:"album",data:album});
 					}
 				}
 				$dealloc("download_album");
