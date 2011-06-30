@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.11.429
-// @miniver        428
+// @version        3.2.11.430
+// @miniver        430
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -55,8 +55,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.11.429";
-XNR.miniver=428;
+XNR.version="3.2.11.430";
+XNR.miniver=430;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1945,6 +1945,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		"(gq1)":	{t:"国庆六十周年",	s:"/imgpro/icons/statusface/national-day-60-firework.gif"},
 		"(2011)":	{t:"2011",			s:"/imgpro/icons/statusface/2011g.gif"},
 		"(five)":	{t:"人人网5周年",	s:"/imgpro/icons/statusface/5years.gif"},
+		"(jd)":		{t:"建党90周年",	s:"/imgpro/icons/statusface/party90.gif"},
 	};
 
 	if(nEmo) {
@@ -2621,7 +2622,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						unknown:failedImagesList,		// 失败/未知的数据
 						type:linkOnly					// 只显示链接
 					};
-					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS || XNR.agent==OPERA_EXT) {
+					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS) {
 						var html="<head><meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+album.title.replace("\\","\\\\").replace("'","\\'")+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style><script>function switchLink(){var links=document.querySelectorAll(\"a[title]:not([title=\\'\\'])\");for(var i=0;i<links.length;i++){if(links[i].textContent!=links[i].title){links[i].textContent=links[i].title}else{links[i].textContent=links[i].href}}};function switchIndex(add,max){var links=document.querySelectorAll(\"*[index]\");for(var i=0;i<links.length;i++){if(add){links[i].title=idx(parseInt(links[i].getAttribute(\"index\"))+1,max)+\" \"+links[i].title}else{links[i].title=links[i].title.replace(/^[0-9]+ /,\"\")}}};function idx(n,max){var i=0;for(;max>0;max=parseInt(max/10)){i++}n=\"00000\"+n;return n.substring(n.length-i,n.length)}</script></head><body>";
 						html+="<p><a target=\"_blank\" href=\"http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum\">下载指南</a>";
 						html+="</p><p>来源："+album.ref+"</p>";
@@ -2674,8 +2675,8 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						chrome.extension.sendRequest({action:"album",data:album});
 					} else if(XNR.agent==SAFARI) {
 						safari.self.tab.dispatchMessage("xnr_album",album);
-					//} else if(XNR.agent==OPERA_EXT) {
-					//	XNR.oexSendRequest({action:"album",data:album});
+					} else if(XNR.agent==OPERA_EXT) {
+						XNR.oexSendRequest({action:"album",data:album});
 					}
 				}
 				$dealloc("download_album");
@@ -6946,15 +6947,13 @@ function $debug(msg,level,func) {
 			msg=func+" "+msg;
 		}
 		msg="["+new Date().getTime()+"]:"+msg;
-		var log = null;
 		if(XNR.agent==FIREFOX) {
-			log = XNR_log;
+			XNR_log(msg);
 		} else if(XNR.agent==USERSCRIPT) {
-			log = GM_log;	// Firefox 3.6 has no console.log
+			GM_log(msg);	// Firefox 3.6 has no console.log
 		} else {
-			log = console.log;
+			console.log(msg);
 		}
-		log(msg);
 	}
 };
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<widget xmlns="http://www.w3.org/ns/widgets" version="3.2.11.428" id="extensions:xiaonei-reformer" defaultlocale="zh-cn">
+<widget xmlns="http://www.w3.org/ns/widgets" version="3.2.11.430" id="extensions:xiaonei-reformer" defaultlocale="zh-cn">
 	<name>Xiaonei Reformer</name>
 	<description xml:lang="en">enhance your experience on renren.com (formerly xiaonei.com)</description>
 	<description xml:lang="zh-cn">改造你的人人网！</description>
@@ -10,7 +10,7 @@
 	<access origin="http://renren.com" subdomains="true"/>
 	<access origin="http://rrimg.com" subdomains="true"/>
 	<access origin="http://xnimg.cn" subdomains="true"/>
-	<access origin="http://rrfnm.com" subdomains="true"/>
+	<access origin="http://rrfmn.com" subdomains="true"/>
 	<access origin="http://xnpic.com" subdomains="true"/>
 	<access origin="http://xiaonei-reformer.googlecode.com"/>
 </widget>
