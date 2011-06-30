@@ -19,6 +19,11 @@ body#profile .tabs-holder .tabpanel li:not(.current) a{background-color:#D8DFEA}
 body#profile .tabs-holder .tabpanel li:not(.current) a:hover{background-color:#627AAD;color:white}
 }}}
 
+==不显示导航栏上的logo==
+{{{
+#logo2{display:none}
+}}}
+
 ==将底部工具栏移到页面顶部==
 <font color="red">注意</font>：此例子会和改造器中的使用浮动方式导航栏功能冲突，不要同时使用
 {{{
