@@ -53,7 +53,7 @@ XNR_observer.prototype = {
 		XNRCommon.obs.addObserver(this, this._topic, false);
 	},
 	unregister: function() {
-    	XNRCommon.obs.removeObserver(this, this._topic);
+		XNRCommon.obs.removeObserver(this, this._topic);
 	}
 };
 

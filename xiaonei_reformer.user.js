@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.11.430
-// @miniver        430
+// @version        3.2.11.431
+// @miniver        431
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -30,13 +30,6 @@
 ///
 
 (function(){
-
-try {
-	document.documentElement.id;	// since Firefox 3.7a5
-} catch(ex) {
-	setTimeout(arguments.callee,50);
-	return;
-}
 
 if (window.self != window.top) {
 	if(document.designMode=="on") {
@@ -4609,6 +4602,10 @@ function main(savedOptions) {
 						text:"##小组",
 						value:false
 					},{
+						id:"xiaozhan",
+						text:"##小站",
+						value:false
+					},{
 						id:"forum",
 						text:"##论坛",
 						value:false
@@ -7026,7 +7023,7 @@ function $feedType(feed) {
 				// 发表日志:601
 				return "blog";
 			case 7:
-				// 上传1张照片:701, 圈人:702, XX的照片（有注释？）:708, 上传多张照片:709
+				// 上传1张照片:701, 圈人:702, XX的照片（有注释？）/XXX的照片被XXX评论了 :708, 上传多张照片:709
 				if(ntype==702) {
 					return "tag";
 				} else {
@@ -7094,8 +7091,14 @@ function $feedType(feed) {
 			case 28:
 				// 等级提升:2801
 				return "levelup";
+			case 29:
+				// XXX的日志被XXX评论了:2901 XXX的照片被XXX评论了:2902 XXX评论了XXX的日志:2907 XXX评论了XXX的照片:2908 XXX回复了XXX（的日志评论）:2910 XXX回复了XXX（的图片评论）:2911
+				return "comment";
+			case 37:
+				// 小站发布状态:3701 小站分享链接:3702 小站分享视频:3703 小站发布图片:3705 关注小站:3707 小站日志:3708
+				return "xiaozhan";
 			case 80:
-				// 团购/品牌调查等等活动:8002，广告:8004，人人网:8005，保持联络:8006，成为好友:8007
+				// 团购/品牌调查等等活动或游戏广告:8002，广告:8004，人人网:8005，保持联络:8006，成为好友:8007
 				if(ntype==8006) {
 					return "contact";
 				} else if(ntype==8007) {
@@ -7105,14 +7108,17 @@ function $feedType(feed) {
 					return "ads";
 				}
 			case 81:
-				if(ntype==8182 || ntype >= 8190) {
-					// 正在玩XX游戏:8182, 小小战争广告:8190
+				if(ntype<=8182 || ntype >= 8190) {
+					// 正在玩XX游戏:8181, 正在玩XX游戏:8182, 小小战争广告:8190
 					return "ads";
 				} else if(ntype==8185) {
 					// 连接网站:8185
 					return "connect";
 				}
 				break;
+			case 86:
+				// 人人音乐:8601
+				return "music";
 		}
 	} else if(stats==="NF_People") {
 		// 同学XX注册了人人。
