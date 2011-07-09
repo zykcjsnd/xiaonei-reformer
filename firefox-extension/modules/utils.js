@@ -18,7 +18,7 @@ function XNR_load () {
 
 function XNR_get (scope, url, func, data, method) {
 	var httpReq = XNRCommon.xmlHttpRequest;
-	if(func != null) {
+	if (func != null) {
 		httpReq.onload = function() {
 			func.call(scope, (httpReq.status==200?httpReq.responseText:null), url, data);
 		};
@@ -39,8 +39,30 @@ function XNR_log (msg) {
 	XNRCommon.console.logStringMessage(msg);
 }
 
+function XNR_observer (topic, callback) {
+	this._topic = topic;
+	this._callback = callback;
+}
+XNR_observer.prototype = {
+	observe: function(subject, topic, data) {
+		if (this._topic == topic) {
+			this._callback(subject, data);
+		}
+	},
+	register: function() {
+		XNRCommon.obs.addObserver(this, this._topic, false);
+	},
+	unregister: function() {
+    	XNRCommon.obs.removeObserver(this, this._topic);
+	}
+};
+
+
 XNRUtils.createSandbox = function (content) {
-	var wrapper = new XPCNativeWrapper(content);
+	var wrapper = content;
+	if (!wrapper.wrappedJSObject) {
+		wrapper = new XPCNativeWrapper(content);
+	}
 	var sandbox = new Components.utils.Sandbox(wrapper);
 	sandbox.window = wrapper;
 	sandbox.document = wrapper.document;
@@ -55,28 +77,11 @@ XNRUtils.createSandbox = function (content) {
 	return sandbox;
 }
 
-// getUrlContents adapted from Greasemonkey Compiler
-// http://www.letitblog.com/code/python/greasemonkey.py.txt
-// used under GPL permission
-//
-XNRUtils.getUrlContents = function (aUrl) {
-	var	ioService = XNRCommon.io;
-	var	scriptableStream = XNRCommon.instream;
-	var unicodeConverter = XNRCommon.unicodeConverter;
+XNRUtils.createObserver = function (topic, callback) {
+	return new XNR_observer(topic, callback);
+}
 
-	unicodeConverter.charset="UTF-8";
-
-	var	channel=ioService.newChannel(aUrl, "UTF-8", null);
-	var	input=channel.open();
-	scriptableStream.init(input);
-	var	str=scriptableStream.read(input.available());
-	scriptableStream.close();
-	input.close();
-
-	try {
-		return unicodeConverter.ConvertToUnicode(str);
-	} catch (e) {
-		return str;
-	}
+XNRUtils.loadScript = function (url, targetObj) {
+	XNRCommon.scriptloader.loadSubScript(url, targetObj, "utf8");
 }
 
