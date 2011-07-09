@@ -1,3 +1,7 @@
+431:
+fix:改进firefox扩展性能
+fix:完善新鲜事类型判断
+
 430:
 fix:修正chrome下$debug出错BUG
 fix:更新状态表情
