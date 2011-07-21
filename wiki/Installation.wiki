@@ -3,8 +3,7 @@
 鉴于有部分使用者（几乎都是Google Chrome用户）不知道如何安装，在此编写了这么一个安装向导。
 
 首先声明：
- * 目前以及在将来可预见的一段时间内，本程序只会支持Google Chrome/Chromium/Firefox/Safari浏览器，所以不要指望它能够在别的浏览器上正常安装/使用。
- * 至于Opera，只是出于娱乐目的增加了对它的部分支持。所以遇到什么功能有问题，不要奇怪。
+ * 目前以及在将来可预见的一段时间内，本程序只会支持Google Chrome/Chromium/Firefox/Safari/Opera浏览器，所以不要指望它能够在别的浏览器上正常安装/使用。
  * 如果你怀疑本程序有任何不良行为，请不要安装/自行卸载。你可以来信询问，但不欢迎质问。
 
 目录
@@ -91,4 +90,4 @@ http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_o1.png
 
 <font color="red">这一步非常重要，如果不修改，脚本将无法正常运行。</font>关于脚本存储的更多信息，参考[http://www.opera.com/docs/userjs/specs/#scriptstorage 这里]。
 ==关于Opera 11的扩展==
-Opera 11增加了扩展机制。但目前这个机制还存在一个缺陷，导致改造器Opera扩展版本的众多功能无法正常执行。这个缺陷已经被列入了Opera的改进目标中，在其被解决之前，不会发布Opera扩展版本。
+Opera 11增加了扩展机制。但是在11.50版之前，都存在一个缺陷，导致人人网改造器无法正常工作。目前人人网改造器的Opera扩展版本已经制作完成，但暂时不做发布。确实有兴趣的朋友可以来信想作者索取，或者自行从源码仓库中构建。
