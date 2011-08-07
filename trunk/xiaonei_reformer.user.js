@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.11.431
-// @miniver        431
+// @version        3.2.12.432
+// @miniver        432
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.11.430";
-XNR.miniver=430;
+XNR.version="3.2.12.432";
+XNR.miniver=432;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -356,65 +356,32 @@ function removeProfileGadgets(gadgetOpt) {
 
 // 隐藏请求
 function hideRequest(req) {
-	const table={
-		"appRequest":"l-app-invite",
-		"hotRequest":"l-hotnews",
-		"notifyRequest":"l-request",
-		"pokeRequest":"l-poke",
-		"recommendRequest":"l-recommend",
-		"friendRequest":"l-friend",
-		"tagRequest":"l-tag",
-		"loveRequest":"l-love-invite",
-		"loverRequest":"l-love",
-		"pageRequest":"l-page",
-		"addbookRequest":"l-friend-address",
-		"xiaozuRequest":"l-group-new",
-		"otherRequest":"iOther"
-	};
+	var rule = "";
+	if (req["appRequest"]) {
+		rule += "#appsItem_26{display:none !important}";
+	}
 
-	if(req["appRequest"]) {
-		$ban("#appsItem_26");
+	if (req["friendRequest"] && req["recommendRequest"]) {
+		rule += ".side-item.message-box .friend-new sup{display:none !important}, .message-box dt.friend-new{background-position:12px -28px}";
 	}
-	var box=$(".side-item.newrequests ul.icon");
-	if(box.empty()) {
-		return;
+
+	if (req["notifyRequest"] && req["pokeRequest"] && req["loverRequest"] && req["xiaozuRequest"]) {
+		rule += ".side-item.message-box .desire-new sup{display:none !important}, .message-box dt.desire-new{background-position:12px -98px}";
 	}
-	for(var r in req) {
-		if(req[r] && table[r]) {
-			box.find("li img."+table[r]).superior().remove();
-		}
+
+	if (req["addbookRequest"] && req["tagRequest"]) {
+		rule += ".side-item.message-box .remind-new sup{display:none !important}, .message-box dt.remind-new{background-position:12px -170px}";
 	}
-	if(box.heirs()==0) {
-		$(".side-item.newrequests").remove();
+
+	if (rule) {
+		$patchCSS(rule);
 	}
 };
-
 // 自动拒绝请求
 function rejectRequest(req,blockApp) {
 	// 好友申请
 	if(req["friendRequest"]) {
 		$get("http://www.renren.com/delallguestrequest.do?id="+XNR.userId);
-	}
-
-	// 招呼
-	if(req["pokeRequest"]) {
-		$get("http://www.renren.com/delallpoke.do");
-	}
-
-	// 热点动态
-	if(req["hotRequest"]) {
-		$get("http://notify.renren.com/hot/hotnews.html?request");
-	}
-
-	// 人气请求
-	if(req["loveRequest"]) {
-		$get("http://lover.renren.com/love/lovePageShare/clear");
-	}
-
-	// 通讯录请求
-	if(req["addbookRequest"]) {
-		// 可以加多个id，friendIds=1&friendIds=2。但不加似乎也有效
-		$get("http://friend.renren.com/ignorequest?friendIds=",null,null,"POST");
 	}
 
 	// 应用请求
@@ -438,91 +405,110 @@ function rejectRequest(req,blockApp) {
 	}
 
 	// 没有其他选项被启用，退出。
-	if(req["tagRequest"]==false && req["recommendRequest"]==false && req["loverRequest"]==false && req["xiaozuRequest"]==false) {
+	if(req["tagRequest"]==false && req["recommendRequest"]==false && req["loverRequest"]==false && req["xiaozuRequest"]==false && req["addbookRequest"]==false) {
 		return;
 	}
 
-	$get("http://req.renren.com/request/requestList.do",function(html) {
+	$get("http://req.renren.com/xmc/gmc", function(html) {
 		// 圈人请求
 		if(req["tagRequest"]) {
 			var command;
-			var regexpr=/refusePhotoRequest\((\d+),\d+,'.*?',\d+,\d+\)/g;
-			while(command=regexpr.exec(html)) {
-				$get("http://photo.renren.com/refuseptrequest.do?id="+command[1]);
+			var regexpr = /tagPhoto_refuse:(\d+)/g;
+			while (command = regexpr.exec(html)) {
+				$get("http://photo.renren.com/refuseptrequest.do?id=" + command[1],null,null,"POST");
 			}
 		}
 		// 好友推荐
 		if(req["recommendRequest"]) {
 			var command;
-			var regexpr=/rejectRecommend\((\d+),'.*?',\d+\)/g;
-			while(command=regexpr.exec(html)) {
-				$get("http://friend.renren.com/RejectRecFriend.do?id="+command[1],null,null,"POST");
+			var regexpr = /tuijian_refuse:(\d+),\S+?,(\d+)/g;
+			while (command = regexpr.exec(html)) {
+				$get("http://friend.renren.com/j_f_deny_rcd?r=" + command[1] + "&s=" + command[2],null,null,"POST");
 			}
 		}
 		// 情侣请求，尚无全部拒绝功能
 		if(req["loverRequest"]) {
 			var command;
-			var regexpr=/ingoreLoversRequest\('.*?','.*?',\d+,'.*?',\d+,'(.*?)'\)/g;
-			while(command=regexpr.exec(html)) {
-				$get(command[1],null,null,"POST");
+			var regexpr = /lover_ignore:.*?id=(\d+)/g;
+			while (command = regexpr.exec(html)) {
+				$get("http://lover.renren.com/love/request/accept?id=" + command[1],null,null,"POST");
 			}
 		}
 		// 小组邀请
 		if(req["xiaozuRequest"]) {
 			var command;
-			var regexpr=/refuseCircle\(\d+,'(.*?)',\d+\)/g;
-			while(command=regexpr.exec(html)) {
-				$get(command[1],null,null,"POST");
+			var regexpr = /xiaozu-i_refuse:.*?\/(\d+)\//g;
+			while (command = regexpr.exec(html)) {
+				$get("http://xiaozu.renren.com/xiaozu/" + command[1] + "/invite/refuse",null,null,"POST");
 			}
 		}
+		// 通讯录请求
+		if(req["addbookRequest"]) {
+			var command;
+			var regexpr = /addr_refuse:(\d+)/g;
+			while (command = regexpr.exec(html)) {
+				$get("http://www.renren.com/address/ignorecard?id=" + command[1],null,null,"POST");
+			}
+		}
+
 	});
 };
 
-// 允许接受全部好友申请
-function acceptAllFriendRequests() {
-	if($("#content div[id='601_ingoreAll_div']").empty()) {
-		return;
-	}
-	$("@a").attr({"href":"javascript:;","class":"operation"}).text("接受所有好友申请，慎用！").css("paddingLeft","10px").addTo($("#content div[id='601_ingoreAll_div']"),0).bind("click",function() {
-		if(!window.confirm("确实要接受所有列出的好友申请吗？")) {
-			return;
-		}
-		$("#content div.section[id^='friend_section_']").each(function() {
-			var fid=/[0-9]+/.exec(this.id);
-			$get("http://friend.renren.com/ApplyGuestRequest.do?friendId="+fid,null,null,"POST");
+// 允许批量处理请求
+function batchProcessRequest() {
+	// 好友申请
+	addLink("friend", "接受", "好友申请", "http://friend.renren.com/ApplyGuestRequest.do?friendId=${0}", /\d+/);
+	// 拒绝可一次完成，不用逐一拒绝
+	if ($("#requests_friend_header").length) {
+		$("@a").attr({"href":"javascript:;", "style":"margin-left:10px"}).text("全部拒绝").addTo($("#requests_friend_header")).bind("click", function() {
+			if (!window.confirm("确实要拒绝所有列出的好友申请吗？")) {
+				return;
+			}
+			$get("http://friend.renren.com/delallguestrequest.do?friendId=" + uid, null,null,"POST");
+			window.alert("已经拒绝了所有申请，将刷新页面……");
+			document.location.reload();
 		});
-		window.alert("已经接受了所有申请，将刷新页面……");
-		document.location.reload();
-	});
-};
+	}
 
-// 允许接受/拒绝全部好友推荐
-function acceptAllFriendRecommends() {
-	if($("#content #nonapp_position_701").empty()) {
-		return;
+	// 好友推荐
+	addLink("tuijian", "接受", "好友推荐", "http://friend.renren.com/ajax_request_friend.do?from=req.renren.com/xmc/gmc&codeFlag=0&code=&why=&id=${1}&matchmaker=${2}", /:(\d+),[^,]+,[^,]+,(\d+)/);
+	addLink("tuijian", "忽略", "好友推荐", "http://friend.renren.com/j_f_deny_rcd?r=${1}&s=${2}", /:(\d+),[^,]+,[^,]+,(\d+)/);
+
+	// 圈人请求
+	addLink("tagPhoto", "接受", "圈人请求", "http://photo.renren.com/acceptptrequest.do?id=${0}", /\d+/);
+	addLink("tagPhoto", "拒绝", "圈人请求", "http://photo.renren.com/refuseptrequest.do?id=${0}", /\d+/);
+
+	// 通讯录请求
+	addLink("addr", "接受", "交换名片请求", "http://www.renren.com/address/acceptcard?id=${0}", /\d+/);
+	addLink("addr", "拒绝", "交换名片请求", "http://www.renren.com/address/ignorecard?id=${0}", /\d+/);
+
+	// 小组邀请
+	addLink("xiaozu-i", "接受", "小组邀请", "http://xiaozu.renren.com/xiaozu/${1}/add", /\/(\d+)\//);
+	addLink("xiaozu-i", "忽略", "小组邀请", "http://xiaozu.renren.com/xiaozu/${1}/invite/refuse", /\/(\d+)\//);
+
+	function addLink(id, action, type, link, regexpr) {
+		var header = $("#requests_" + id + "_header");
+		if (header.size() != 1) {
+			return;
+		}
+		var a = $("@a").attr({"href":"javascript:;", "style":"margin-left:10px"});
+		a.text("全部" + action).addTo(header).bind("click", function() {
+			if (!window.confirm("确实要" + action + "所有列出的" + type + "吗？")) {
+				return;
+			}
+			$("#requests_" + id + "_list button[click^='" + id + "_accept:']").each(function() {
+				var param = regexpr.exec($(this).attr("click"));
+				if (param) {
+					for (var i = 0; i < param.length; i++) {
+						link = link.replace("${" + i + "}", param[i])
+					}
+					$get(link,null,null,"POST");
+				}
+			});
+			window.alert("已经" + action + "了所有" + type + "，将刷新页面……");
+			document.location.reload();
+		});
 	}
-	var header=$("@div").addTo($("#content #nonapp_position_701").superior());
-	$("@a").attr({"href":"javascript:;","class":"operation"}).text("对所有推荐的好友发送申请，慎用！").css("paddingLeft","10px").addTo(header).bind("click",function() {
-		if(!window.confirm("确实要向所有推荐的人发送好友申请吗？")) {
-			return;
-		}
-		$("#content div.section[id^='friend_recommend_section_']").each(function() {
-			var fid=/[0-9]+/.exec(this.id);
-			$get("http://friend.renren.com/ajax_request_friend.do?from=req.renren.com/request/requestList.do&codeFlag=0&code=&why=&id="+fid,null,null,"POST");
-		});
-		window.alert("已经发送了申请，将刷新页面……");
-		document.location.reload();
-	}).clone().text("忽略所有的好友推荐").addTo(header,0).bind("click",function() {
-		if(!window.confirm("确实要忽略所有好友推荐吗？")) {
-			return;
-		}
-		$("#content div.section[id^='friend_recommend_section_']").each(function() {
-			var fid=/[0-9]+/.exec(this.id);
-			$get("http://friend.renren.com/RejectRecFriend.do?id="+fid,null,null,"POST");
-		});
-		window.alert("已经忽略了所有推荐，将刷新页面……");
-		document.location.reload();
-	});
 };
 
 // 自动屏蔽应用通知
@@ -667,6 +653,11 @@ function disableAutoLoadFeeds() {
 	"})()";
 	$script(code);
 };
+
+// 不显示新鲜事发布方式
+function hideFeedSource() {
+	$patchCSS(".feed-list .details .legend span.from{display:none}");
+}
 
 // 在新鲜事中标记在线好友
 function markOnlineFriend(evt) {
@@ -1250,6 +1241,10 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"#accountDropDownMenu a.logout:hover{background-color:"+FCOLOR+"}",
 				".site-menu-apps .apps-item .item-title.selected, .site-menu-apps .apps-item .item-title.selected:hover{background-color:"+BCOLOR+"}",
 				".site-menu-nav .nav-item li.selected, .site-menu-apps .apps-item li.selected{background-color:"+BCOLOR+"}",
+				"#appsMenuPro .menu-apps-side{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .app-item a:hover{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .app-item em{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .my-fav-apps{background-color:"+SCOLOR+"}",
 			],
 			"home-all-min.css":[
 				".a-feed .details a.share:hover{color:"+FCOLOR+"}",
@@ -1272,6 +1267,14 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".feed-module .feed-header-new .types label{color:"+FCOLOR+"}",
 				".feed-module .feed-header-new label.s, .feed-module .feed-header-new .category-filter:hover label.s, .feed-module .feed-header-new .category-filter_hover label.s, .feed-module .feed-header-new .feed-attention:hover label.s, .feed-module .feed-header-new .feed-attention_hover label.s{color:#333333}",
 				".feed-module .feed-header-new .category-filter:hover .text, .feed-module .feed-header-new .category-filter_hover .text, .feed-module .feed-header-new .feed-attention:hover .text, .feed-module .feed-header-new .feed-attention_hover .text{color:"+FCOLOR+"}",
+				".message-box dt{color:"+FCOLOR+"}",
+				".message-box ul li.brand-new{background-color:#EFEDFF}",
+				".message-box div.handle button, .message-box div.handle a.accept{background-color:"+FCOLOR+"}",
+				".a-feed .card-privacy{background-color:"+SCOLOR+"}",
+				".mincmt-diggers{background-color:"+SCOLOR+"}",
+				".home .home-sidebar .pymk .comefrom{background-color:"+SCOLOR+"}",
+				".panel.bookmarks{background-color:"+SCOLOR+"}",
+				".user-data{background-color:"+SCOLOR+"}",
 			],
 			"webpager-std-min.css":[
 				".webpager ul.icon a:hover .tooltip{background-color:"+FCOLOR+"}",
@@ -1296,6 +1299,10 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"#pop-login h1{background-color:"+FCOLOR+"}",
 				".newpop .share_popup .toggle_tabs li a{color:"+FCOLOR+"}",
 				"#accountDropDownMenu a.logout:hover{background-color:"+FCOLOR+"}",
+				"#appsMenuPro .menu-apps-side{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .app-item a:hover{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .app-item em{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .my-fav-apps{background-color:"+SCOLOR+"}",
 			],
 			"news-feeds.css":[
 				"ul.richlist.feeds li div.details a.share:hover{color:"+FCOLOR+"}",
@@ -1418,8 +1425,9 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".menu-dropdown .search-menu li a:hover,.menu-dropdown .optionmenu li a:hover{background-color:"+FCOLOR+"}",
 				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
 			],
-			"requests.css":[
-				"ul.figureslist.requests button.accept,ul.figureslist.requests button.ignore{background-color:"+FCOLOR+"}",
+			"requests-all-min.css":[
+				".request div.btns button{background-color:"+FCOLOR+"}",
+				".requests-show-more{background-color:"+SCOLOR+"}",
 			],
 			"share.css":[
 				"ul.share-hot-list li div.legend a{color:"+FCOLOR+"}",
@@ -1441,6 +1449,14 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"ul.richlist.feeds li .details a.share:hover{color:"+FCOLOR+"}",
 				".app-box .common-app h1 .open{color:"+FCOLOR+"}",
 				".statuscmtitem{background-color:"+SCOLOR+"}",
+				".a-feed .card-privacy{background-color:"+SCOLOR+"}",
+				".mincmt-diggers{background-color:"+SCOLOR+"}",
+				".home .home-sidebar .pymk .comefrom{background-color:"+SCOLOR+"}",
+				".panel.bookmarks{background-color:"+SCOLOR+"}",
+				".user-data{background-color:"+SCOLOR+"}",
+				".message-box ul li.brand-new{background-color:#EFEDFF}",
+				".message-box dt{color:"+FCOLOR+"}",
+				".message-box div.handle button, .message-box div.handle a.accept{background-color:"+FCOLOR+"}",
 			],
 			"list-all-min.css":[
 				".pagerpro li a:hover{background-color:"+FCOLOR+"}",
@@ -1593,6 +1609,11 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"#searchlist_school li a:hover{background-color:"+FCOLOR+"}",
 				"li.active a, li.active a{background-color:"+FCOLOR+"}",
 				"#popup-unis li a:hover, #popup-unis-hs li a:hover{background-color:"+FCOLOR+"}",
+			],
+			"privacy-all-min.css":[
+				".tabs-holder .tabpanel a,.tabs-holder .tabpanel a:visited{color:"+FCOLOR+"}",
+				".user-info .link{color:"+FCOLOR+"}",
+				".input-button{background-color:"+FCOLOR+"}",
 			]
 		};
 		var style="";
@@ -1858,6 +1879,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		"(元旦)":	{t:"元旦快乐",		s:"/imgpro/icons/statusface/gantan.gif"},
 		"(dl)":		{t:"灯笼",			s:"/imgpro/icons/statusface/lantern.gif"},
 		"(va)":		{t:"情人节",		s:"/imgpro/icons/statusface/qixi.gif"},
+		"(qx)":		{t:"七夕",			s:"/imgpro/icons/statusface/qixi11.gif"},
 		"(qx2)":	{t:"七夕",			s:"/imgpro/icons/statusface/qixi2.gif"},
 		"(wy)":		{t:"劳动节",		s:"/imgpro/icons/statusface/wuyi.gif"},
 		"(cy1)":	{t:"重阳节",		s:"/imgpro/icons/statusface/09double9-3.gif"},
@@ -1932,6 +1954,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		"(crm)":	{t:"Google Chrome",	s:"/imgpro/icons/statusface/chrome.gif"},
 		"(360)":	{t:"360极速浏览器",	s:"/imgpro/icons/statusface/360chrome.gif"},
 		"(fes)":	{t:"枫树浏览器",	s:"/imgpro/icons/statusface/chromeplus.gif"},
+		"(camay)":	{t:"卡玫尔七夕",	s:"/imgpro/icons/statusface/camay.gif"},
 	};
 	// 下面是内容过时的表情，不列出
 	var odEmList={
@@ -4317,80 +4340,14 @@ function main(savedOptions) {
 				ctrl:[{
 					type:"hidden",
 					fn:[{
-						name:hideRequest,
-						stage:1,
-						args:["@hideRequestGroup"]
-					}],
-				}],
-				login:true,
-				page:"home",
-			},{
-				id:"hideRequestGroup",
-				text:"隐藏首页上以下类型的请求",
-				column:3,
-				ctrl:[
-					{
-						id:"appRequest",
-						text:"##应用邀请",
-						value:false,
-					},{
-						id:"hotRequest",
-						text:"##热点动态",
-						value:false,
-					},{
-						id:"notifyRequest",
-						text:"##通知",
-						value:false,
-					},{
-						id:"pokeRequest",
-						text:"##招呼",
-						value:false,
-					},{
-						id:"recommendRequest",
-						text:"##好友推荐",
-						value:false,
-					},{
-						id:"friendRequest",
-						text:"##好友申请",
-						value:false,
-					},{
-						id:"tagRequest",
-						text:"##圈人",
-						value:false,
-					},{
-						id:"loveRequest",
-						text:"##人气请求",
-						value:false,
-					},{
-						id:"loverRequest",
-						text:"##情侣请求",
-						value:false,
-					},{
-						id:"pageRequest",
-						text:"##主页推荐",
-						value:false,
-					},{
-						id:"addbookRequest",
-						text:"##通讯录请求",
-						value:false
-					},{
-						id:"xiaozuRequest",
-						text:"##小组邀请",
-						value:false
-					},{
-						id:"otherRequest",
-						text:"##其他请求",
-						value:false,
-					},
-				],
-			},{
-				text:"##",
-				ctrl:[{
-					type:"hidden",
-					fn:[{
 						name:rejectRequest,
 						stage:0,
 						args:["@rejectRequestGroup","@blockAppRequest"],
+						once:true
+					},{
+						name:hideRequest,
+						stage:1,
+						args:["@rejectRequestGroup"],
 						once:true
 					}],
 				}],
@@ -4399,7 +4356,6 @@ function main(savedOptions) {
 			},{
 				id:"rejectRequestGroup",
 				text:"自动拒绝以下类型的请求",
-				info:"由于是在后台拒绝，首页上可能仍然会显示有请求待处理",
 				column:3,
 				ctrl:[
 					{
@@ -4407,12 +4363,12 @@ function main(savedOptions) {
 						text:"##应用邀请",
 						value:false,
 					},{
-						id:"recommendRequest",
-						text:"##好友推荐",
-						value:false,
-					},{
 						id:"friendRequest",
 						text:"##好友申请",
+						value:false,
+					},{
+						id:"recommendRequest",
+						text:"##好友推荐",
 						value:false,
 					},{
 						id:"tagRequest",
@@ -4423,12 +4379,8 @@ function main(savedOptions) {
 						text:"##招呼",
 						value:false,
 					},{
-						id:"hotRequest",
-						text:"##热点动态",
-						value:false,
-					},{
-						id:"loveRequest",
-						text:"##人气请求",
+						id:"notifyRequest",
+						text:"##通知",
 						value:false,
 					},{
 						id:"loverRequest",
@@ -4456,37 +4408,16 @@ function main(savedOptions) {
 					}
 				],
 			},{
-				text:"##允许一次性接受全部好友申请##",
+				text:"##允许批量处理请求",
 				ctrl:[
 					{
-						id:"acceptAllFriendRequests",
-						value:false,
+						id:"batchProcessRequest",
+						value:true,
 						fn:[{
-							name:acceptAllFriendRequests,
+							name:batchProcessRequest,
 							stage:2,
 							fire:true
 						}]
-					},{
-						type:"info",
-						value:"在请求中心页面上“你有XX个好友申请”右侧"
-					}
-				],
-				page:"request",
-				login:true,
-			},{
-				text:"##允许一次性接受/拒绝全部好友推荐##",
-				ctrl:[
-					{
-						id:"acceptAllFriendRecommends",
-						value:false,
-						fn:[{
-							name:acceptAllFriendRecommends,
-							stage:2,
-							fire:true
-						}]
-					},{
-						type:"info",
-						value:"在请求中心页面上“你有XX个推荐的好友”右侧"
 					}
 				],
 				page:"request",
@@ -4784,6 +4715,19 @@ function main(savedOptions) {
 				}],
 				login:true,
 				page:"feed"
+			},{
+				text:"##不显示新鲜事发布方式",
+				ctrl:[{
+					id:"hideFeedSource",
+					value:false,
+					fn:[{
+						name:hideFeedSource,
+						stage:0,
+						fire:true,
+					}]
+				}],
+				login:true,
+				page:"feed",
 			},{
 				text:"##在新鲜事中标记在线好友",
 				ctrl:[{
@@ -6981,8 +6925,8 @@ function $master(master) {
 function $feedType(feed) {
 	// 不全，待补完
 	var stats=feed.find("a[stats]").attr("stats");
-	// 有些没有最后的数字，如保持联络
-	if(stats && (/_\d+_(\d+)_\d+$/.test(stats) || /_\d+_(\d+)_$/.test(stats))) {
+	// 有些没有最后的数字，如保持联络。热门型：hotnewsfeed&sfet=3709&fin=15&ff_id=
+	if(stats && (/_\d+_(\d+)_\d+$/.test(stats) || /_\d+_(\d+)_$/.test(stats) || /sfet=(\d+)/.test(stats))) {
 		var ntype=parseInt(RegExp.$1);
 		var mtype=parseInt(ntype/100);
 		switch(mtype) {
@@ -7095,7 +7039,7 @@ function $feedType(feed) {
 				// XXX的日志被XXX评论了:2901 XXX的照片被XXX评论了:2902 XXX评论了XXX的日志:2907 XXX评论了XXX的照片:2908 XXX回复了XXX（的日志评论）:2910 XXX回复了XXX（的图片评论）:2911
 				return "comment";
 			case 37:
-				// 小站发布状态:3701 小站分享链接:3702 小站分享视频:3703 小站发布图片:3705 关注小站:3707 小站日志:3708
+				// 小站发布状态:3701 小站分享链接:3702 小站分享视频:3703 小站发布图片:3705 关注小站:3707 小站日志:3708 小站分享小站日志 3709
 				return "xiaozhan";
 			case 80:
 				// 团购/品牌调查等等活动或游戏广告:8002，广告:8004，人人网:8005，保持联络:8006，成为好友:8007
@@ -7116,6 +7060,9 @@ function $feedType(feed) {
 					return "connect";
 				}
 				break;
+			case 83:
+				//在活动中送礼 8302
+				return "gift";
 			case 86:
 				// 人人音乐:8601
 				return "music";
@@ -7124,6 +7071,7 @@ function $feedType(feed) {
 		// 同学XX注册了人人。
 		return "newbie";
 	}
+	return "";
 };
 
 /*
