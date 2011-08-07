@@ -1,23 +1,23 @@
 var EXPORTED_SYMBOLS = [ "XNRUtils" ];
 
-Components.utils.import("resource://xiaonei-reformer/common.js");
+Components.utils.import("resource://gre/modules/Services.jsm");
 
-var XNRUtils = {};
-
+const Ci = Components.interfaces;
+const Cc = Components.classes;
 const opts = "extensions.xiaonei_reformer.xnr_options";
 
 function XNR_save (data) {
-	var str = XNRCommon.supportString;
+	var str = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
 	str.data = data;
-	XNRCommon.prefs.setComplexValue(opts, Ci.nsISupportsString, str);
+	Services.prefs.setComplexValue(opts, Ci.nsISupportsString, str);
 }
 
 function XNR_load () {
-	return XNRCommon.prefs.getComplexValue(opts, Ci.nsISupportsString).data;
+	return Services.prefs.getComplexValue(opts, Ci.nsISupportsString).data;
 }
 
 function XNR_get (scope, url, func, data, method) {
-	var httpReq = XNRCommon.xmlHttpRequest;
+	var httpReq = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
 	if (func != null) {
 		httpReq.onload = function() {
 			func.call(scope, (httpReq.status==200?httpReq.responseText:null), url, data);
@@ -31,12 +31,12 @@ function XNR_get (scope, url, func, data, method) {
 }
 
 function XNR_album (data) {
-	var mainWindow = XNRCommon.wm.getMostRecentWindow("navigator:browser");
+	var mainWindow = Services.wm.getMostRecentWindow("navigator:browser");
 	mainWindow.gBrowser.selectedTab = mainWindow.gBrowser.addTab("chrome://xiaonei-reformer/content/album.html#"+encodeURIComponent(JSON.stringify(data)));
 }
 
 function XNR_log (msg) {
-	XNRCommon.console.logStringMessage(msg);
+	Services.console.logStringMessage(msg);
 }
 
 function XNR_observer (topic, callback) {
@@ -50,13 +50,15 @@ XNR_observer.prototype = {
 		}
 	},
 	register: function() {
-		XNRCommon.obs.addObserver(this, this._topic, false);
+		Services.obs.addObserver(this, this._topic, false);
 	},
 	unregister: function() {
-		XNRCommon.obs.removeObserver(this, this._topic);
+		Services.obs.removeObserver(this, this._topic);
 	}
 };
 
+
+var XNRUtils = {};
 
 XNRUtils.createSandbox = function (content) {
 	var wrapper = content;
@@ -82,6 +84,6 @@ XNRUtils.createObserver = function (topic, callback) {
 }
 
 XNRUtils.loadScript = function (url, targetObj) {
-	XNRCommon.scriptloader.loadSubScript(url, targetObj, "utf8");
+	Services.scriptloader.loadSubScript(url, targetObj, "utf8");
 }
 

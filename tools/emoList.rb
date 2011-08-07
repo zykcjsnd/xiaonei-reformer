@@ -13,6 +13,12 @@ end
 
 begin
 	emoList = JSON.parse(getEmo())["ubbList"]
+rescue Errno::ENETUNREACH
+	exit 1
+rescue Errno::ETIMEDOUT
+	exit 1
+rescue SocketError
+	exit 1
 rescue JSON::ParserError
 	emoList = JSON.parse(getEmo())["ubbList"]
 end
@@ -32,5 +38,6 @@ emoList.each() {|emo|
 }
 
 file = File.open(filename,"w")
-file.puts(JSON.generate(a))
+file.puts(JSON.pretty_generate(a))
 file.close()
+
