@@ -26,9 +26,8 @@ end
 filename = File.dirname(__FILE__)+"/EMOTIONS"
 
 begin
-	file = File.open(filename,"r")
-	a = JSON.parse(file.gets())
-	file.close()
+	str = IO.read(filename)
+	a = JSON.parse(str)
 rescue Errno::ENOENT
 	a = Hash.new()
 end
