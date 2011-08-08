@@ -6,11 +6,11 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.12.432
-// @miniver        432
+// @version        3.2.12.433
+// @miniver        433
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
-// @run-at         document-start
+// @run-at         document-end
 // ==/UserScript==
 //
 // Copyright (C) 2008-2011 Xu Zhen
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.12.432";
-XNR.miniver=432;
+XNR.version="3.2.12.433";
+XNR.miniver=433;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -82,11 +82,11 @@ if(window.chrome) {
 		XNR.agent=OPERA_UJS;
 	}
 	XNR.acore=PRESTO;
-} else if (typeof GM_setValue=="function") {
-	XNR.agent=USERSCRIPT;
-	XNR.acore=GECKO;
 } else if (typeof XNR_save=="function") {
 	XNR.agent=FIREFOX;
+	XNR.acore=GECKO;
+} else if (typeof GM_setValue=="function") {
+	XNR.agent=USERSCRIPT;
 	XNR.acore=GECKO;
 }
 
@@ -2523,7 +2523,15 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 			var cur=0;
 			links.each(function(index) {
 				var t=$(this);
-				$alloc("download_album").push({i:index,src:(t.attr("lazy-src") || t.attr("src")),title:(t.attr("alt") || "")});
+				var title = t.attr("alt");
+				if (title == null) {
+					var pid = t.attr("cmdinfo");
+					title = $("#photoTitle_" + pid).text();
+				}
+				if (!title) {
+					title = "";
+				}
+				$alloc("download_album").push({i:index,src:(t.attr("lazy-src") || t.attr("src")),title:title});
 				cur++;
 				if(cur==totalImage) {
 					if(downLink.text().match("分析中")) {
@@ -6854,15 +6862,14 @@ function $error(func,error) {
 		msg=error.toString();
 	}
 	if(msg) {
-		var log = null;
+		var log = "在 "+func+"() 中发生了一个错误。\n"+msg;
 		if(XNR.agent==FIREFOX) {
-			log = XNR_log;
+			XNR_log(log);
 		} else if(XNR.agent==USERSCRIPT) {
-			log = GM_log;	// Firefox 3.6 has no console.log
+			GM_log(log);	// Firefox 3.6 has no console.log
 		} else {
-			log = console.log;
+			console.log(log);
 		}
-		log("在 "+func+"() 中发生了一个错误。\n"+msg);
 		var board=$(".xnr_op #diagnosisInfo");
 		if(board.exist()) {
 			board.val(board.val()+msg);
