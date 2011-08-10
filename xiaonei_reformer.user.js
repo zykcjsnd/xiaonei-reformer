@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.12.433
-// @miniver        433
+// @version        3.2.12.434
+// @miniver        434
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -1424,6 +1424,10 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".menu-dropdown .menu-item a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .search-menu li a:hover,.menu-dropdown .optionmenu li a:hover{background-color:"+FCOLOR+"}",
 				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
+				"#appsMenuPro .menu-apps-side{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .app-item a:hover{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .app-item em{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .my-fav-apps{background-color:"+SCOLOR+"}",
 			],
 			"requests-all-min.css":[
 				".request div.btns button{background-color:"+FCOLOR+"}",
@@ -2904,7 +2908,6 @@ function showFullSizeImage(evt,indirect) {
 			return;
 		}
 
-
 		// 非常古老的头像（http://head.xiaonei.com/photos/20070201/1111/head[0-9]+.jpg），其head后的[0-9]+可能有变，以时间为准
 		if(thumbnail.match(/head\.xiaonei\.com\/photos\/[0-9]{8}\/[0-9]+\/head[0-9]+\./)) {
 			imageDate=/photos\/([0-9]{8}\/[0-9]+)/.exec(thumbnail)[1];
@@ -3108,6 +3111,7 @@ function showFullSizeImage(evt,indirect) {
 						return;
 					}
 				}
+
 				// 搜索ID匹配的图片
 				res=null;
 				regexpr=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://[^\"]+?"+imgId+"\"[^>]*?)>","ig");
@@ -3117,6 +3121,17 @@ function showFullSizeImage(evt,indirect) {
 						break;
 					}
 				}
+				if (!res) {
+					// 换background-image模式搜索
+					regexpr=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?style=\"background-image:\\s+url\\(&quot;http://[^\"]+?main_.*?"+imgId+"\"[^>]*?)>","ig");
+					while(res=regexpr.exec(html)) {
+						if(res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
+							res=res[1];
+							break;
+						}
+					}
+				}
+
 				// 当ID不匹配且为搜索小头像时，搜索时间标记匹配的图片
 				if(!res && imgDate) {
 					regexpr=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://[^\"]+?/"+imgDate+"/.*?\"[^>]*?)>","ig");
@@ -3126,6 +3141,17 @@ function showFullSizeImage(evt,indirect) {
 							break;
 						}
 					}
+					if (!res) {
+						// 换background-image模式搜索
+						regexpr=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?style=\"background-image:\\s+url\\(&quot;http://[^\"]+?/"+imgDate+"/.*?\"[^>]*?)>","ig");
+						while(res=regexpr.exec(html)) {
+							if(!res[2].match("\"http://[^\"]+tiny_") && res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
+								res=res[1];
+								break;
+							}
+						}
+					}
+
 					// 还没有的话，只限定日期试试。误差较大，但愿能准确匹配
 					if(!res) {
 						regexpr=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://.*?/"+/[0-9]{8}/.exec(imgDate)+"/.*?\"[^>]*?)>","ig");
@@ -3133,6 +3159,16 @@ function showFullSizeImage(evt,indirect) {
 							if(!res[2].match("\"http://[^\"]+tiny_") && res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
 								res=res[1];
 								break;
+							}
+						}
+						if (!res) {
+							// 换background-image模式搜索
+							regexpr=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?style=\"background-image:\\s+url\\(&quot;http://.*?/"+/[0-9]{8}/.exec(imgDate)+"/.*?\"[^>]*?)>","ig");
+							while(res=regexpr.exec(html)) {
+								if(!res[2].match("\"http://[^\"]+tiny_") && res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
+									res=res[1];
+									break;
+								}
 							}
 						}
 					}
@@ -3173,6 +3209,17 @@ function showFullSizeImage(evt,indirect) {
 				return;
 			}
 			try {
+				// 一般相册
+				var src=/photosJson *= *({.*});?/.exec(html);
+				if(src) {
+					src=JSON.parse(src[1]);
+					if(src.currentPhoto && src.currentPhoto.large) {
+						_imageCache(imgId,src.currentPhoto.large);
+						_showViewer(null,src.currentPhoto.large,imgId);
+						return;
+					}
+				}
+				// 分享的一般相册
 				var src=/var photo *= *({.*});?/.exec(html);
 				if(src) {
 					src=JSON.parse(src[1]);
