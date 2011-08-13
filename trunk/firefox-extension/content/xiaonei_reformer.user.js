@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.12.433
-// @miniver        433
+// @version        3.2.12.436
+// @miniver        436
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.12.433";
-XNR.miniver=433;
+XNR.version="3.2.12.436";
+XNR.miniver=436;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1413,6 +1413,14 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"a.button{color:white;background-color:"+FCOLOR+"}",
 				".page-titletabs .act-btn a{background-color:"+FCOLOR+"}",
 			],
+			"global-all-min.css":[
+				".phony_link{color:"+FCOLOR+"}",
+				".pagerpro li a:hover{background-color:"+FCOLOR+"}",
+				".pagerpro li.current a, .pagerpro li.current a:hover{color:"+FCOLOR+"}",
+				".preview-photo .gallery .thumbnail:hover, .preview-photo .gallery .ghover .thumbnail, .preview-photo .gallery .this .thumbnail{background-color:"+FCOLOR+"}",
+				"a.share:hover{background-color:"+FCOLOR+"}",
+				".input-button, .input-submit{background-color:"+FCOLOR+"}",
+			],
 			"global-std-min.css":[
 				"a:link,a:visited,a:hover{color:"+FCOLOR+"}",
 				"button,input[type=button]{background-color:"+FCOLOR+"}",
@@ -1420,10 +1428,15 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"td.pop_content .dialog_buttons input{background-color:"+FCOLOR+" !important}",
 				"td.pop_content h2{background-color:"+FCOLOR+"}",
 				".navigation{background-color:"+XCOLOR+"}",
+				".navigation .menu-title a:hover,.navigation .menu-title a.hover{background-color:"+BCOLOR+"}",
 				".menu-dropdown .menu-item li.show-more a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .menu-item a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .search-menu li a:hover,.menu-dropdown .optionmenu li a:hover{background-color:"+FCOLOR+"}",
 				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
+				"#appsMenuPro .menu-apps-side{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .app-item a:hover{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .app-item em{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .my-fav-apps{background-color:"+SCOLOR+"}",
 			],
 			"requests-all-min.css":[
 				".request div.btns button{background-color:"+FCOLOR+"}",
@@ -1737,6 +1750,100 @@ function customizePageLayout(layouts) {
 
 // 增加更多表情
 function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
+	// 日志、相册页的阿狸/囧囧熊表情
+	if ($page("blog") || $page("photo") || $page("album") || $page("share") || $page("pages") || $page("xiaozu")) {
+		// 阿狸表情，共51
+		var alEmo = ["", "啊啊啊", "安慰", "抱抱", "暴怒", "不要啊", "嘲弄", "吃饭啦", "出走", "大汗", "感动", "好囧", "好冷", "好温暖", "喝茶", "开心", "抠鼻孔", "狂汗", "狂笑", "困了晚安", "你好强", "赖皮", "捏脸", "怒", "爬过", "飘过", "潜水啦", "闪人", "送花给你", "送你礼物", "委屈哭", "我不说话", "喜欢你", "吓唬你", "笑喷了", "旋转", "疑问", "隐身", "郁闷", "抓狂", "转圈哭", "装可爱", "嘘嘘", "晚安", "耍帅", "你伤害了我", "贱扭扭", "寒", "顶顶顶", "大惊", "不耐烦", "不公平"];
+		// 囧囧熊表情，共20
+		var jjEmo = ["", "被雷到", "打酱油", "得意的笑", "顶", "灌水", "激光", "泪奔", "楼上的", "楼下的", "楼主", "如题", "撒泼", "沙发", "生气", "胜利", "受惊", "刷屏", "吐", "捂嘴偷笑", "阴险"];
+
+		if ($("#miniEditorEmoList, #miniEditorEmoList_1").exist()) {
+			// 采用内置表情列表
+			setTimeout(function() {
+				var aimg = $("#emoList1>li>img, #emoList1_1>li>img");
+				if (aimg.empty()) {
+					setTimeout(arguments.callee, 1000);
+					return;
+				}
+				var urlPrefix=(aimg.attr("emosrc") || aimg.attr("src") || "").match(/http:\/\/[^\/]+/) || "http://a.xnimg.cn";
+				var list1 = $("#emoList1, #emoList1_1");
+				for (var i=1;i<alEmo.length;i++) {
+					var id="[al"+(i<10?"0"+i:i)+"]";
+					if (list1.find("img[emotion='"+id+"']").empty()) {
+						var url = urlPrefix+"/imgpro/emotions/ali/"+i+".gif";
+						$("@li").attr("title", alEmo[i]).add($("@img").attr({forvip:"true",preview:"true",emotion:id,alt:alEmo[i],src:url,emosrc:url})).addTo(list1);
+					}
+				}
+				var list2 = $("#emoList2, #emoList2_1");
+				for (var i=1;i<jjEmo.length;i++) {
+					var id="[jj"+(i<10?"0"+i:i)+"]";
+					if (list2.find("img[emotion='"+id+"']").empty()) {
+						$("@li").attr("title", jjEmo[i]).add($("@img").attr({forvip:"true",preview:"true",emotion:id,alt:jjEmo[i],src:urlPrefix+"/imgpro/emotions/jiongjiong/"+i+".gif"})).addTo(list2);
+					}
+				}
+			}, 500);
+			return;
+		}
+		// 采用动态加载表情列表
+		var emList2 = {};
+		for (var i = 1; i < alEmo.length; i++) {
+			emList2["[al" + (i<10?"0"+i:i) + "]"] = { kind: 1, types: 2, t:alEmo[i], s:"/imgpro/emotions/ali/" + i + ".gif"};
+		}
+		for (var i = 1; i < jjEmo.length; i++) {
+			emList2["[jj" + (i<10?"0"+i:i) + "]"] = { kind: 2, types: 2, t:jjEmo[i], s:"/imgpro/emotions/jiongjiong/" + i + ".gif"};
+		}
+		var code="var count=0;"+
+		"(function(){"+
+			"try {"+
+				"function addEmo(data){"+
+					"var list=JSON.parse('"+JSON.stringify(emList2)+"');"+
+					"for (var i=0;i<data.length;i++) {"+
+						"delete list[data[i].ubb];"+
+					"}"+
+					"for (var e in list) {"+
+						"var em=list[e];"+
+						"data.push({alt:'('+em.t+')',id:0,src:em.s,position:1000,ubb:e,size:2,kind:em.kind,types:em.types,img:'<img src=\"http://xnimg.cn'+em.s+'\" alr=\"'+em.t+'\"'})"+
+					"}"+
+				"}"+
+
+				"if(window.tinyMCE){"+
+					"var p = window.tinymce.plugins.EmotionsPlugin.prototype;"+
+					"if(p.o_renderEmotion){"+
+						"return"+
+					"}"+
+					"p.o_renderEmotion=p.renderEmotion;"+
+					"p.renderEmotion=function(){"+
+						"if(!this.emoList){"+
+							"return"+
+						"}"+
+						"var data=XN.json.parse(this.emoList);"+
+						"addEmo(data.ubbList);"+
+						"this.emoList=XN.json.build(data);"+
+						"return tinymce.plugins.EmotionsPlugin.prototype.o_renderEmotion.apply(this,arguments)"+
+					"}"+
+				"}else{"+
+					"var p=XN.ui.emotions.prototype;"+
+					"if(p.o_formatData){"+
+						"return"+
+					"}"+
+					"p.o_formatData=p.formatData;"+
+					"p.formatData=function(data){"+
+						"addEmo(data);"+
+						"return XN.ui.emotions.prototype.o_formatData.apply(this,arguments)"+
+					"}"+
+				"}"+
+			"} catch(ex) {"+
+				"if(count<=10){"+
+					"setTimeout(arguments.callee,1000)"+
+				"}"+
+				"count++;"+
+				"return;"+
+			"}"+
+		"})();";
+		$script(code);
+		return;
+	}
+
 	// 状态表情列表
 	var emList1={
 	//	":)":		{t:"开心",			s:"/imgpro/icons/statusface/1.gif"},
@@ -1996,7 +2103,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		for(var e in emList1) {
 			var el=emList1[e];
 			// 不在已有列表中
-			if(!curlist[e]) {
+			if(!curlist[e] && !el.types) {
 				$("@li").attr(el.w?{"class":"wider"}:{}).add($("@a").attr("href","#nogo").add($("@img").attr({title:el.t,alt:el.t,emotion:e,src:"http://xnimg.cn"+el.s,rsrc:"http://xnimg.cn"+el.s}))).addTo(list);
 			} 
 		}
@@ -2204,7 +2311,7 @@ function extendBlogLinkSupport() {
 
 // 在编辑日志时添加直接编辑HTML代码按钮
 function addBlogHTMLEditor() {
-	if(!XNR.url.match(/\/editBlog\b|\/NewEntry\.do/i)) {
+	if(!XNR.url.match(/\/editBlog\b|\/addBlog\b|\/NewEntry\.do/i)) {
 		return;
 	}
 	var last=$("#editor_toolbar1 td.mceToolbarEndButton");
@@ -2904,7 +3011,6 @@ function showFullSizeImage(evt,indirect) {
 			return;
 		}
 
-
 		// 非常古老的头像（http://head.xiaonei.com/photos/20070201/1111/head[0-9]+.jpg），其head后的[0-9]+可能有变，以时间为准
 		if(thumbnail.match(/head\.xiaonei\.com\/photos\/[0-9]{8}\/[0-9]+\/head[0-9]+\./)) {
 			imageDate=/photos\/([0-9]{8}\/[0-9]+)/.exec(thumbnail)[1];
@@ -3108,6 +3214,7 @@ function showFullSizeImage(evt,indirect) {
 						return;
 					}
 				}
+
 				// 搜索ID匹配的图片
 				res=null;
 				regexpr=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://[^\"]+?"+imgId+"\"[^>]*?)>","ig");
@@ -3117,6 +3224,17 @@ function showFullSizeImage(evt,indirect) {
 						break;
 					}
 				}
+				if (!res) {
+					// 换background-image模式搜索
+					regexpr=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?style=\"background-image:\\s+url\\(&quot;http://[^\"]+?main_.*?"+imgId+"\"[^>]*?)>","ig");
+					while(res=regexpr.exec(html)) {
+						if(res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
+							res=res[1];
+							break;
+						}
+					}
+				}
+
 				// 当ID不匹配且为搜索小头像时，搜索时间标记匹配的图片
 				if(!res && imgDate) {
 					regexpr=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://[^\"]+?/"+imgDate+"/.*?\"[^>]*?)>","ig");
@@ -3126,6 +3244,17 @@ function showFullSizeImage(evt,indirect) {
 							break;
 						}
 					}
+					if (!res) {
+						// 换background-image模式搜索
+						regexpr=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?style=\"background-image:\\s+url\\(&quot;http://[^\"]+?/"+imgDate+"/.*?\"[^>]*?)>","ig");
+						while(res=regexpr.exec(html)) {
+							if(!res[2].match("\"http://[^\"]+tiny_") && res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
+								res=res[1];
+								break;
+							}
+						}
+					}
+
 					// 还没有的话，只限定日期试试。误差较大，但愿能准确匹配
 					if(!res) {
 						regexpr=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?src=\"http://.*?/"+/[0-9]{8}/.exec(imgDate)+"/.*?\"[^>]*?)>","ig");
@@ -3133,6 +3262,16 @@ function showFullSizeImage(evt,indirect) {
 							if(!res[2].match("\"http://[^\"]+tiny_") && res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
 								res=res[1];
 								break;
+							}
+						}
+						if (!res) {
+							// 换background-image模式搜索
+							regexpr=new RegExp("<a\\s[^>]*?href=\"(.*?)\"[^>]*?>[^<]*?<img\\s([^>]*?style=\"background-image:\\s+url\\(&quot;http://.*?/"+/[0-9]{8}/.exec(imgDate)+"/.*?\"[^>]*?)>","ig");
+							while(res=regexpr.exec(html)) {
+								if(!res[2].match("\"http://[^\"]+tiny_") && res[2].indexOf("type=\"hidden\"")==-1 && res[2].indexOf("class=\"avatar\"")==-1) {
+									res=res[1];
+									break;
+								}
 							}
 						}
 					}
@@ -3173,6 +3312,17 @@ function showFullSizeImage(evt,indirect) {
 				return;
 			}
 			try {
+				// 一般相册
+				var src=/photosJson *= *({.*});?/.exec(html);
+				if(src) {
+					src=JSON.parse(src[1]);
+					if(src.currentPhoto && src.currentPhoto.large) {
+						_imageCache(imgId,src.currentPhoto.large);
+						_showViewer(null,src.currentPhoto.large,imgId);
+						return;
+					}
+				}
+				// 分享的一般相册
 				var src=/var photo *= *({.*});?/.exec(html);
 				if(src) {
 					src=JSON.parse(src[1]);
@@ -5145,7 +5295,7 @@ function main(savedOptions) {
 					}
 				],
 				master:0,
-				page:"feed,profile,status,act",
+				page:"feed,profile,status,act,blog,photo,album,share,pages,xiaozu",
 				login:true
 			},{
 				text:"##为评论增加楼层计数##",
