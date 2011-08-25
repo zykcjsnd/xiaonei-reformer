@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.12.436
-// @miniver        436
+// @version        3.2.12.437
+// @miniver        437
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -1749,9 +1749,9 @@ function customizePageLayout(layouts) {
 };
 
 // 增加更多表情
-function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
+function addExtraEmotions(nEmo,eEmo,fEmo,sfEmo,aEmo) {
 	// 日志、相册页的阿狸/囧囧熊表情
-	if ($page("blog") || $page("photo") || $page("album") || $page("share") || $page("pages") || $page("xiaozu")) {
+	if ($page("blog") || $page("photo") || $page("album") || $page("share") || $page("pages") || $page("xiaozu") || $page("profile")) {
 		// 阿狸表情，共51
 		var alEmo = ["", "啊啊啊", "安慰", "抱抱", "暴怒", "不要啊", "嘲弄", "吃饭啦", "出走", "大汗", "感动", "好囧", "好冷", "好温暖", "喝茶", "开心", "抠鼻孔", "狂汗", "狂笑", "困了晚安", "你好强", "赖皮", "捏脸", "怒", "爬过", "飘过", "潜水啦", "闪人", "送花给你", "送你礼物", "委屈哭", "我不说话", "喜欢你", "吓唬你", "笑喷了", "旋转", "疑问", "隐身", "郁闷", "抓狂", "转圈哭", "装可爱", "嘘嘘", "晚安", "耍帅", "你伤害了我", "贱扭扭", "寒", "顶顶顶", "大惊", "不耐烦", "不公平"];
 		// 囧囧熊表情，共20
@@ -1782,66 +1782,68 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 					}
 				}
 			}, 500);
-			return;
-		}
-		// 采用动态加载表情列表
-		var emList2 = {};
-		for (var i = 1; i < alEmo.length; i++) {
-			emList2["[al" + (i<10?"0"+i:i) + "]"] = { kind: 1, types: 2, t:alEmo[i], s:"/imgpro/emotions/ali/" + i + ".gif"};
-		}
-		for (var i = 1; i < jjEmo.length; i++) {
-			emList2["[jj" + (i<10?"0"+i:i) + "]"] = { kind: 2, types: 2, t:jjEmo[i], s:"/imgpro/emotions/jiongjiong/" + i + ".gif"};
-		}
-		var code="var count=0;"+
-		"(function(){"+
-			"try {"+
-				"function addEmo(data){"+
-					"var list=JSON.parse('"+JSON.stringify(emList2)+"');"+
-					"for (var i=0;i<data.length;i++) {"+
-						"delete list[data[i].ubb];"+
+		} else {
+			// 采用动态加载表情列表
+			var emList2 = {};
+			for (var i = 1; i < alEmo.length; i++) {
+				emList2["[al" + (i<10?"0"+i:i) + "]"] = { kind: 1, types: 2, t:alEmo[i], s:"/imgpro/emotions/ali/" + i + ".gif"};
+			}
+			for (var i = 1; i < jjEmo.length; i++) {
+				emList2["[jj" + (i<10?"0"+i:i) + "]"] = { kind: 2, types: 2, t:jjEmo[i], s:"/imgpro/emotions/jiongjiong/" + i + ".gif"};
+			}
+			var code="var count=0;"+
+			"(function(){"+
+				"try {"+
+					"function addEmo(data){"+
+						"var list=JSON.parse('"+JSON.stringify(emList2)+"');"+
+						"for (var i=0;i<data.length;i++) {"+
+							"delete list[data[i].ubb];"+
+						"}"+
+						"for (var e in list) {"+
+							"var em=list[e];"+
+							"data.push({alt:'('+em.t+')',id:0,src:em.s,position:1000,ubb:e,size:2,kind:em.kind,types:em.types,img:'<img src=\"http://xnimg.cn'+em.s+'\" alr=\"'+em.t+'\"'})"+
+						"}"+
 					"}"+
-					"for (var e in list) {"+
-						"var em=list[e];"+
-						"data.push({alt:'('+em.t+')',id:0,src:em.s,position:1000,ubb:e,size:2,kind:em.kind,types:em.types,img:'<img src=\"http://xnimg.cn'+em.s+'\" alr=\"'+em.t+'\"'})"+
-					"}"+
-				"}"+
-
-				"if(window.tinyMCE){"+
-					"var p = window.tinymce.plugins.EmotionsPlugin.prototype;"+
-					"if(p.o_renderEmotion){"+
-						"return"+
-					"}"+
-					"p.o_renderEmotion=p.renderEmotion;"+
-					"p.renderEmotion=function(){"+
-						"if(!this.emoList){"+
+	
+					"if(window.tinyMCE){"+
+						"var p = window.tinymce.plugins.EmotionsPlugin.prototype;"+
+						"if(p.o_renderEmotion){"+
 							"return"+
 						"}"+
-						"var data=XN.json.parse(this.emoList);"+
-						"addEmo(data.ubbList);"+
-						"this.emoList=XN.json.build(data);"+
-						"return tinymce.plugins.EmotionsPlugin.prototype.o_renderEmotion.apply(this,arguments)"+
+						"p.o_renderEmotion=p.renderEmotion;"+
+						"p.renderEmotion=function(){"+
+							"if(!this.emoList){"+
+								"return"+
+							"}"+
+							"var data=XN.json.parse(this.emoList);"+
+							"addEmo(data.ubbList);"+
+							"this.emoList=XN.json.build(data);"+
+							"return tinymce.plugins.EmotionsPlugin.prototype.o_renderEmotion.apply(this,arguments)"+
+						"}"+
+					"}else{"+
+						"var p=XN.ui.emotions.prototype;"+
+						"if(p.o_formatData){"+
+							"return"+
+						"}"+
+						"p.o_formatData=p.formatData;"+
+						"p.formatData=function(data){"+
+							"addEmo(data);"+
+							"return XN.ui.emotions.prototype.o_formatData.apply(this,arguments)"+
+						"}"+
 					"}"+
-				"}else{"+
-					"var p=XN.ui.emotions.prototype;"+
-					"if(p.o_formatData){"+
-						"return"+
+				"} catch(ex) {"+
+					"if(count<=10){"+
+						"setTimeout(arguments.callee,1000)"+
 					"}"+
-					"p.o_formatData=p.formatData;"+
-					"p.formatData=function(data){"+
-						"addEmo(data);"+
-						"return XN.ui.emotions.prototype.o_formatData.apply(this,arguments)"+
-					"}"+
+					"count++;"+
+					"return;"+
 				"}"+
-			"} catch(ex) {"+
-				"if(count<=10){"+
-					"setTimeout(arguments.callee,1000)"+
-				"}"+
-				"count++;"+
-				"return;"+
-			"}"+
-		"})();";
-		$script(code);
-		return;
+			"})();";
+			$script(code);
+		}
+		if (!$page("profile")) {
+			return;
+		}
 	}
 
 	// 状态表情列表
@@ -1899,6 +1901,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		"(sx)":		{t:"烧香",			s:"/imgpro/icons/statusface/shaoxiang.gif"},
 		"(zmy)":	{t:"织毛衣",		s:"/imgpro/icons/statusface/zhimaoyi.gif"},
 		"(jh)":		{t:"秋菊",			s:"/imgpro/icons/statusface/chrysanthemum.gif"},
+		"(ju)":		{t:"人人聚焦",		s:"/imgpro/icons/statusface/jj.gif"},
 		"(cold)":	{t:"降温",			s:"/imgpro/icons/statusface/cold.gif"},
 		"(bw)":		{t:"暖暖被窝",		s:"/imgpro/icons/statusface/sleep.gif"},
 		"(gl)":		{t:"给力",			s:"/imgpro/icons/statusface/geili.gif"},
@@ -2049,6 +2052,25 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		"(ta)":		{t:"博派",			s:"/imgpro/icons/statusface/Transformers-Autobot.gif"},
 		"(td)":		{t:"狂派",			s:"/imgpro/icons/statusface/Transformers-Decepticon.gif"},
 	};
+	var sfEmList={
+		"(shafa1)":		{t:"抢沙发1",		s:"/imgpro/icons/statusface/rrdesk/cmbql1.gif"},
+		"(shafa2)":		{t:"抢沙发2",		s:"/imgpro/icons/statusface/rrdesk/pj1.gif"},
+		"(shafa3)":		{t:"抢沙发3",		s:"/imgpro/icons/statusface/rrdesk/xg1.gif"},
+		"(shafa4)":		{t:"抢沙发4",		s:"/imgpro/icons/statusface/rrdesk/kl1.gif"},
+	//	"(shafa5)":		{t:"抢沙发5",		s:"/imgpro/icons/statusface/rrdesk/cmbql2.gif"},
+	//	"(shafa6)":		{t:"抢沙发6",		s:"/imgpro/icons/statusface/rrdesk/pj2.gif"},
+	//	"(shafa7)":		{t:"抢沙发7",		s:"/imgpro/icons/statusface/rrdesk/xg2.gif"},
+	//	"(shafa8)":		{t:"抢沙发8",		s:"/imgpro/icons/statusface/rrdesk/kl2.gif"},
+		"(shafa9)":		{t:"抢沙发9",		s:"/imgpro/icons/statusface/rrdesk/shafa9xx.gif"},
+		"(shafa10)":	{t:"抢沙发10",		s:"/imgpro/icons/statusface/rrdesk/shafa10mm.gif"},
+		"(shafa11)":	{t:"抢沙发11",		s:"/imgpro/icons/statusface/rrdesk/shafa11fb.gif"},
+		"(shafa12)":	{t:"抢沙发12",		s:"/imgpro/icons/statusface/rrdesk/shafa12fb.gif"},
+		"(shafa13)":	{t:"抢沙发13",		s:"/imgpro/icons/statusface/rrdesk/wandou.gif"},
+		"(shafa14)":	{t:"抢沙发14",		s:"/imgpro/icons/statusface/rrdesk/xiangrikui.gif"},
+		"(shafa15)":	{t:"抢沙发15",		s:"/imgpro/icons/statusface/rrdesk/qingtianzhu.gif"},
+		"(shafa16)":	{t:"抢沙发16",		s:"/imgpro/icons/statusface/rrdesk/yellow.gif"},
+	};
+
 	var aEmList={
 		"(bl)":		{t:"冰露",			s:"/imgpro/icons/statusface/ice.gif"},
 		"(qt)":		{t:"蜻蜓",			s:"/imgpro/icons/statusface/qingt.gif"},
@@ -2089,6 +2111,11 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 	if(aEmo) {
 		for(var e in aEmList) {
 			emList1[e]=aEmList[e];
+		}
+	}
+	if(sfEmo) {
+		for(var e in sfEmList) {
+			emList1[e]=sfEmList[e];
 		}
 	}
 
@@ -2168,7 +2195,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,aEmo) {
 		"}";
 		$script(code);
 	}
-
+	
 	// 新鲜事回复表情
 	var code="var count=0;"+
 	"(function(){"+
@@ -3574,27 +3601,6 @@ function enableShortcutMenu(evt) {
 	} catch(ex) {
 		$error("enableShortcutMenu",ex);
 	}
-};
-
-// 允许优酷全屏播放
-function enableYoukuFullscreen() {
-	if($("#sharevideo").exist()) {
-		if($("#sharevideo img.videoimg").exist()) {
-			$("#sharevideo").bind("DOMNodeInserted",arguments.callee);
-			return;
-		} else {
-			$("#sharevideo").unbind("DOMNodeInserted",arguments.callee);
-		}
-	}
-	if($("img.video.mceItem").exist()) {
-		$("img.video.mceItem").superior().bind("DOMNodeInserted",arguments.callee);
-		return;
-	}
-	$("embed[src*='youku.com']:not([src*='winType=interior'])").each(function() {
-		this.src=this.src.replace(/(http:\/\/player\.youku\.com[^"]*)(\/v.swf)/,"$1&winType=interior$2");
-		this.src=this.src.replace(/(http:\/\/static\.youku\.com[^"]*)/,'$1&winType=interior');
-		$(this).attr("flashvars","winType=interior").tag(this);
-	});
 };
 
 // 提升搜索结果上限到200页
@@ -5265,7 +5271,7 @@ function main(savedOptions) {
 		],
 		"辅助功能":[
 			{
-				text:"##启用隐藏表情项##包括自然风光表情##包括节日事件表情##包括人物表情##包括商业广告表情",
+				text:"##启用隐藏表情项##包括自然风光表情##包括节日事件表情##包括人物表情##包括抢沙发表情##包括商业广告表情",
 				ctrl:[
 					{
 						id:"addExtraEmotions",
@@ -5273,7 +5279,7 @@ function main(savedOptions) {
 						fn:[{
 							name:addExtraEmotions,
 							stage:2,
-							args:["@natureEmo","@eventEmo","@figureEmo","@advEmo"],
+							args:["@natureEmo","@eventEmo","@figureEmo","@sfEmo","@advEmo"],
 							fire:true
 						}],
 					},{
@@ -5287,6 +5293,10 @@ function main(savedOptions) {
 					},{
 						type:"subcheck",
 						id:"figureEmo",
+						value:false
+					},{
+						type:"subcheck",
+						id:"sfEmo",
 						value:false
 					},{
 						type:"subcheck",
@@ -5565,18 +5575,6 @@ function main(savedOptions) {
 						value:"访问对方具体的相册/日志时会在对方最近来访中留下记录"
 					}
 				]
-			},{
-				text:"##允许全屏观看优酷视频",
-				ctrl:[{
-					id:"enableYoukuFullscreen",
-					value:false,
-					fn:[{
-						name:enableYoukuFullscreen,
-						stage:1,
-						fire:true
-					}]
-				}],
-				page:"share,blog",
 			},{
 				text:"##允许提升搜索结果上限到200页##",
 				ctrl:[

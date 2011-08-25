@@ -550,5 +550,9 @@
   "(camay)": {
     "t": "卡玫尔七夕",
     "s": "/imgpro/icons/statusface/camay.gif"
+  },
+  "(ju)": {
+    "t": "人人聚焦",
+    "s": "/imgpro/icons/statusface/jj.gif"
   }
 }
