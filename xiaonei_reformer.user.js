@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.12.436";
-XNR.miniver=436;
+XNR.version="3.2.13.438";
+XNR.miniver=438;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1908,6 +1908,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(bgl)":	{t:"不给力",		s:"/imgpro/icons/statusface/bugeili.gif"},
 		"(yl)":		{t:"鸭梨",			s:"/imgpro/icons/statusface/yali.gif"},
 		"(dli)":	{t:"冻梨",			s:"/imgpro/icons/statusface/dl.gif"},
+	//	"(hold)":	{t: "Hold住",		s:"/imgpro/icons/statusface/hold.gif"},
 		"(hold1)":	{t: "Hold住",		s:"/imgpro/icons/statusface/holdzhu.gif"},
 		"(s)":		{t:"大兵",			s:"/imgpro/icons/statusface/soldier.gif"},
 		"(NBA)":	{t:"篮球",			s:"/imgpro/icons/statusface/basketball4.gif"},
