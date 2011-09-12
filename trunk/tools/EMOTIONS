@@ -184,8 +184,8 @@
     "s": "/imgpro/icons/statusface/zhimaoyi.gif"
   },
   "(ga)": {
-    "s": "/imgpro/icons/statusface/gardener.gif",
-    "t": "园丁"
+    "t": "园丁",
+    "s": "/imgpro/icons/statusface/gardener.gif"
   },
   "(hzd)": {
     "t": "划重点",
@@ -554,5 +554,45 @@
   "(ju)": {
     "t": "人人聚焦",
     "s": "/imgpro/icons/statusface/jj.gif"
+  },
+  "(hold1)": {
+    "t": "Hold住",
+    "s": "/imgpro/icons/statusface/holdzhu.gif"
+  },
+  "(xrk)": {
+    "t": "向日葵",
+    "s": "/imgpro/icons/statusface/taiyang.gif"
+  },
+  "(wd)": {
+    "t": "豌豆射手",
+    "s": "/imgpro/icons/statusface/wandou.gif"
+  },
+  "(dou)": {
+    "t": "豌豆",
+    "s": "/imgpro/icons/statusface/dou.gif"
+  },
+  "(jqg)": {
+    "t": "小坚果",
+    "s": "/imgpro/icons/statusface/hetao.gif"
+  },
+  "(jsh)": {
+    "t": "僵尸",
+    "s": "/imgpro/icons/statusface/jiangshi.gif"
+  },
+  "(wd1)": {
+    "t": "豌豆",
+    "s": "/imgpro/icons/statusface/wandou1.gif"
+  },
+  "(js)": {
+    "t": "僵尸",
+    "s": "/imgpro/icons/statusface/jiangshi1.gif"
+  },
+  "(jt1)": {
+    "t": "家庭空间",
+    "s": "/imgpro/icons/statusface/jt1.gif"
+  },
+  "(jt2)": {
+    "t": "家庭空间",
+    "s": "/imgpro/icons/statusface/jt2.gif"
   }
 }
