@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.13.438
-// @miniver        438
+// @version        3.2.13.439
+// @miniver        439
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.13.438";
-XNR.miniver=438;
+XNR.version="3.2.13.439";
+XNR.miniver=439;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -459,7 +459,7 @@ function batchProcessRequest() {
 	// 好友申请
 	addLink("friend", "接受", "好友申请", "http://friend.renren.com/ApplyGuestRequest.do?friendId=${0}", /\d+/);
 	// 拒绝可一次完成，不用逐一拒绝
-	if ($("#requests_friend_header").length) {
+	if ($("#requests_friend_header").exist()) {
 		$("@a").attr({"href":"javascript:;", "style":"margin-left:10px"}).text("全部拒绝").addTo($("#requests_friend_header")).bind("click", function() {
 			if (!window.confirm("确实要拒绝所有列出的好友申请吗？")) {
 				return;
