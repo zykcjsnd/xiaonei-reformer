@@ -60,8 +60,7 @@ http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_c6.jpg
 ==使用脚本==
 如果你不想安装扩展，也可以使用Greasemonkey脚本。首先需要安装[https://addons.mozilla.org/firefox/addon/748/ Greasemonkey扩展]，然后到[http://userscripts.org/scripts/show/45836 脚本主页]安装脚本
 ==注意事项==
-Firefox扩展目前还未通过Mozilla官方审核，所以浏览器的检查扩展更新功能不会提示扩展的更新。因此请临时启用扩展程序自己的检查更新功能。
-最近几个版本的Greasemonkey有些问题，在部分情况下可能会出现一些莫名其妙的错误，请尽可能使用扩展版。
+由于Firefox扩展提交到AMO后需要通过审核才能放入发布通道，才会显示在扩展页面上以及被自动更新。一般会延迟1～3周时间，所以建议启用扩展程序自己的检查更新功能，以便及时获取更新信息。
 
 
 `=================================================================================================================`
