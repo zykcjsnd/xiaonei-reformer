@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.13.439
-// @miniver        439
+// @version        3.2.13.440
+// @miniver        440
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.13.439";
-XNR.miniver=439;
+XNR.version="3.2.13.440";
+XNR.miniver=440;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -3219,9 +3219,6 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 				image.attr("lid",imgId);
 			}
 			if(imgId==image.attr("lid")) {
-				if (!shrink) {
-					alert(arguments.callee.caller.toString())
-				}
 				(shrink?image:viewer).css({maxHeight:(parseInt(window.innerHeight)-10)+"px",maxWidth:(parseInt(window.innerWidth)-20)+"px"});	// 边距2，边框宽度3
 				image.attr("src",src);
 			} else {
