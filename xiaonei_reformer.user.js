@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.13.440
-// @miniver        440
+// @version        3.2.13.441
+// @miniver        441
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -1154,7 +1154,7 @@ function addNavItems(content) {
 		return;
 	}
 	var items=content.split("\n");
-	for(var i=0;i<items.length;i+=2) {
+	for(var i=0;i<items.length-1;i+=2) {
 		$("@div").html('<div class="menu-title"><a href="'+items[i+1]+'" target="_blank">'+items[i]+'<span class="drop-menu-btn"></span></a></div>').attr("class","menu").addTo(nav);
 	}
 	//防止被自作主张改动链接
