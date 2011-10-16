@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.13.440
-// @miniver        440
+// @version        3.2.13.442
+// @miniver        442
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.13.440";
-XNR.miniver=440;
+XNR.version="3.2.13.442";
+XNR.miniver=442;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1154,7 +1154,7 @@ function addNavItems(content) {
 		return;
 	}
 	var items=content.split("\n");
-	for(var i=0;i<items.length;i+=2) {
+	for(var i=0;i<items.length-1;i+=2) {
 		$("@div").html('<div class="menu-title"><a href="'+items[i+1]+'" target="_blank">'+items[i]+'<span class="drop-menu-btn"></span></a></div>').attr("class","menu").addTo(nav);
 	}
 	//防止被自作主张改动链接
@@ -1381,12 +1381,38 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
 				".open-search.hover .description .find-friends{color:"+FCOLOR+"}",
 			],
+			"login-all-min.css":[
+				"a,a:link,a:visited,a:hover{color:"+FCOLOR+"}",
+				"a.action:hover,a.share:hover,a.mini-share:hover{background-color:"+FCOLOR+"}",
+				".input-button,.input-submit{background-color:"+FCOLOR+"}",
+				".navigation{background-color:"+XCOLOR+"}",
+				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
+				".open-search.hover .description .find-friends{color:"+FCOLOR+"}",
+				".msn-login-panel .content p span{color:"+FCOLOR+"}",
+				".extra-guide .portal:hover{color:"+FCOLOR+"}",
+				".rrdesk.hover h5 a,.rrdesk.hover a{color:"+FCOLOR+" !important}",
+				"td.pop_content .dialog_body a, td.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
+				"td.pop_content .dialog_buttons input{background-color:"+FCOLOR+" !important}",
+				"ul.square_bullets{color:"+FCOLOR+"}",
+			],
 			"login-unbuffered.css":[
 				"a,a:link,a:visited,a:hover{color:"+FCOLOR+"}",
 				"a.action:hover,a.share:hover,a.mini-share:hover{background-color:"+FCOLOR+"}",
 				".input-button,.input-submit{background-color:"+FCOLOR+"}",
 				".navigation{background-color:"+XCOLOR+"}",
 				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
+			],
+			"unbuffered-all-min.css":[
+				".input-button, .input-submit{background-color:"+FCOLOR+"}",
+				".open-search.hover .description .find-friends{color:"+FCOLOR+"}",
+				"a,a:link,a:visited,a:hover{color:"+FCOLOR+"}",
+				".msn-login-panel .content p span{color:"+FCOLOR+"}",
+				".extra-guide .portal:hover{color:"+FCOLOR+"}",
+				".navigation{background-color:"+FCOLOR+"}",
+				"td.pop_content .dialog_body a, td.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
+				"td.pop_content .dialog_buttons input{background-color:"+FCOLOR+" !important}",
+				".rrdesk.hover h5 a, .rrdesk.hover a, .rrdesk a.deskbtn{color:"+FCOLOR+" !important}",
+				"ul.square_bullets{color:"+FCOLOR+"}",
 			],
 			"club.css":[
 				"a,a:hover{color:"+FCOLOR+"}",
@@ -1749,7 +1775,7 @@ function customizePageLayout(layouts) {
 };
 
 // 增加更多表情
-function addExtraEmotions(nEmo,eEmo,fEmo,sfEmo,aEmo) {
+function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 	// 日志、相册页的阿狸/囧囧熊表情
 	if ($page("blog") || $page("photo") || $page("album") || $page("share") || $page("pages") || $page("xiaozu") || $page("profile")) {
 		// 阿狸表情，共51
@@ -1904,12 +1930,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(ju)":		{t:"人人聚焦",		s:"/imgpro/icons/statusface/jj.gif"},
 		"(cold)":	{t:"降温",			s:"/imgpro/icons/statusface/cold.gif"},
 		"(bw)":		{t:"暖暖被窝",		s:"/imgpro/icons/statusface/sleep.gif"},
-		"(gl)":		{t:"给力",			s:"/imgpro/icons/statusface/geili.gif"},
-		"(bgl)":	{t:"不给力",		s:"/imgpro/icons/statusface/bugeili.gif"},
-		"(yl)":		{t:"鸭梨",			s:"/imgpro/icons/statusface/yali.gif"},
-		"(dli)":	{t:"冻梨",			s:"/imgpro/icons/statusface/dl.gif"},
-	//	"(hold)":	{t: "Hold住",		s:"/imgpro/icons/statusface/hold.gif"},
-		"(hold1)":	{t: "Hold住",		s:"/imgpro/icons/statusface/holdzhu.gif"},
+		"(mb)":		{t:"膜拜",			s:"/imgpro/icons/statusface/guibai.gif"},
 		"(s)":		{t:"大兵",			s:"/imgpro/icons/statusface/soldier.gif"},
 		"(NBA)":	{t:"篮球",			s:"/imgpro/icons/statusface/basketball4.gif"},
 		"(蜜蜂)":	{t:"小蜜蜂",		s:"/imgpro/icons/statusface/bee.gif"},
@@ -1930,25 +1951,20 @@ function addExtraEmotions(nEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(ct)":		{t:"锄头",			s:"/imgpro/icons/statusface/chutou.gif"},
 		"(bbt)":	{t:"棒棒糖",		s:"/imgpro/icons/statusface/bbt.gif"},
 		"(xr)":		{t:"儿时回忆",		s:"/imgpro/icons/statusface/sm.gif"},
-		"(qf)":		{t:"默哀",			s:"/imgpro/icons/statusface/candle.gif"},
+		"(mo)":		{t:"默哀",			s:"/imgpro/icons/statusface/lazhu.gif"},
 		"(hot)":	{t:"烈日",			s:"/imgpro/icons/statusface/hot.gif"},
 		"(feng)":	{t:"风扇",			s:"/imgpro/icons/statusface/fan.gif"},
 		"(bb)":		{t:"便便",			s:"/imgpro/icons/statusface/shit.gif"},
 		"(mg)":		{t:"七彩玫瑰",		s:"/imgpro/icons/statusface/rose.gif"},
 		"(hzd)":	{t:"划重点",		s:"/imgpro/icons/statusface/huazhongdian.gif"},
 		"(dm)":		{t:"点名",			s:"/imgpro/icons/statusface/dianming.gif"},
-		"(ugl)":	{t:"不给力",		s:"/imgpro/icons/statusface/ungelivable.gif"},
 		"(hcn)":	{t:"花痴男",		s:"/imgpro/icons/statusface/hcn.gif"},
 		"(hcv)":	{t:"花痴女",		s:"/imgpro/icons/statusface/hcnv.gif"},
-		"(cb)":		{t:"蟹蟹",			s:"/imgpro/icons/statusface/crab.gif"},
 		"(tic)":	{t:"车票",			s:"/imgpro/icons/statusface/ticket.gif"},
 		"(tra)":	{t:"车头",			s:"/imgpro/icons/statusface/train.gif"},
 		"(trb)":	{t:"车厢",			s:"/imgpro/icons/statusface/trainbox.gif"},
 		"(bon)":	{t:"年终奖",		s:"/imgpro/icons/statusface/award.gif"},
 		"(pt)":		{t:"派对，干杯",	s:"/imgpro/icons/statusface/partycup.gif"},
-		"(sbq)":	{t:"伤不起",		s:"/imgpro/icons/statusface/shangbuqi.gif"},
-		"(ymy)":	{t:"有木有",		s:"/imgpro/icons/statusface/youmuyou.gif"},
-		"(th)":		{t:"惊叹号",		s:"/imgpro/icons/statusface/exclamation.gif"},
 		"(三行情书)":{t:"三行情书",		s:"/imgpro/icons/statusface/xin.gif"},
 		"(knx)":	{t:"康乃馨",		s:"/imgpro/icons/statusface/carnation.gif"},
 		"(520)":	{t:"520",			s:"/imgpro/icons/statusface/heart.gif"},
@@ -1956,9 +1972,9 @@ function addExtraEmotions(nEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(bgi)":	{t:"小女孩",		s:"/imgpro/icons/statusface/girl2011.gif"},
 		"(bal)":	{t:"气球",			s:"/imgpro/icons/statusface/balloon.gif"},
 		"(jy)":		{t:"加油",			s:"/imgpro/icons/statusface/2011gaokao.gif"},
-		"(see)":	{t:"看海",			s:"/imgpro/icons/statusface/seesea.gif"},
 		"(jt1)":	{t:"家庭空间",		s:"/imgpro/icons/statusface/jt1.gif"},
 		"(jt2)":	{t:"家庭空间",		s:"/imgpro/icons/statusface/jt2.gif"},
+		"(yb)":		{t:"元宝",			s:"/imgpro/icons/statusface/yuanbao.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
@@ -1985,6 +2001,20 @@ function addExtraEmotions(nEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(lt)":		{t:"柳枝",			s:"/imgpro/icons/statusface/willow.gif"},
 		"(bs)":		{t:"秋高气爽",		s:"/imgpro/icons/statusface/bluesky.gif"},
 		"(h)":		{t:"小草",			s:"/imgpro/icons/philips.jpg"},
+	};
+	var bEmList={
+		"(gl)":		{t:"给力",			s:"/imgpro/icons/statusface/geili.gif"},
+		"(bgl)":	{t:"不给力",		s:"/imgpro/icons/statusface/bugeili.gif"},
+		"(ugl)":	{t:"不给力",		s:"/imgpro/icons/statusface/ungelivable.gif"},
+		"(yl)":		{t:"鸭梨",			s:"/imgpro/icons/statusface/yali.gif"},
+		"(dli)":	{t:"冻梨",			s:"/imgpro/icons/statusface/dl.gif"},
+	//	"(hold)":	{t:"Hold住",		s:"/imgpro/icons/statusface/hold.gif"},
+		"(hold1)":	{t:"Hold住",		s:"/imgpro/icons/statusface/holdzhu.gif"},
+		"(sbq)":	{t:"伤不起",		s:"/imgpro/icons/statusface/shangbuqi.gif"},
+		"(ymy)":	{t:"有木有",		s:"/imgpro/icons/statusface/youmuyou.gif"},
+		"(th)":		{t:"惊叹号",		s:"/imgpro/icons/statusface/exclamation.gif"},
+		"(cb)":		{t:"蟹蟹",			s:"/imgpro/icons/statusface/crab.gif"},
+		"(see)":	{t:"看海",			s:"/imgpro/icons/statusface/seesea.gif"},
 	};
 	var eEmList={
 		"(gq)":		{t:"国庆快乐",		s:"/imgpro/icons/statusface/nationalday2010.gif"},
@@ -2015,7 +2045,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(zsj)":	{t:"植树节",		s:"/imgpro/icons/statusface/trees.gif"},
 		"(rs)":		{t:"玫瑰花",		s:"/imgpro/icons/statusface/rose0314.gif"},
 		"(315)":	{t:"消费者权益保护日",s:"/imgpro/icons/statusface/20110315.gif"},
-		"(yb)":		{t:"月饼",			s:"/imgpro/icons/statusface/mooncake.gif"},
+		"(yb1)":	{t:"月饼",			s:"/imgpro/icons/statusface/mooncake.gif"},
 		"(zz)":		{t:"粽子",			s:"/imgpro/icons/statusface/zongzi.gif"},
 		"(lot)":	{t:"龙头",			s:"/imgpro/icons/statusface/dwj_longtou.gif"},
 		"(huc)":	{t:"划船",			s:"/imgpro/icons/statusface/dwj_huachuan.gif"},
@@ -2055,6 +2085,7 @@ function addExtraEmotions(nEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(kz)":		{t:"孔子",			s:"/imgpro/icons/statusface/kz.gif"},
 		"(ta)":		{t:"博派",			s:"/imgpro/icons/statusface/Transformers-Autobot.gif"},
 		"(td)":		{t:"狂派",			s:"/imgpro/icons/statusface/Transformers-Decepticon.gif"},
+		"(jobs)":	{t:"乔布斯",		s:"/imgpro/icons/statusface/jobs.gif"},
 	};
 	var sfEmList={
 		"(shafa1)":		{t:"抢沙发1",		s:"/imgpro/icons/statusface/rrdesk/cmbql1.gif"},
@@ -2768,6 +2799,10 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						});
 					}
 					var title=$(".ablum-Information .Information h1").text();
+					if(!title) {
+						// 分享相册
+						title=$(".photo-title .Information h1").text();
+					}
 					if(!title) {
 						// 外链相册
 						var t=$(".album-meta .detail>.name").clone();
@@ -4702,7 +4737,7 @@ function main(savedOptions) {
 						value:false
 					},{
 						id:"connect",
-						text:"##连接",
+						text:"##连接网站",
 						value:false
 					},{
 						id:"friend",
@@ -5287,7 +5322,7 @@ function main(savedOptions) {
 		],
 		"辅助功能":[
 			{
-				text:"##启用隐藏表情项##包括自然风光表情##包括节日事件表情##包括人物表情##包括抢沙发表情##包括商业广告表情",
+				text:"##启用隐藏表情项##包括自然风光表情##包括网络流行语表情##包括节日事件表情##包括人物表情##包括抢沙发表情##包括商业广告表情",
 				ctrl:[
 					{
 						id:"addExtraEmotions",
@@ -5295,13 +5330,17 @@ function main(savedOptions) {
 						fn:[{
 							name:addExtraEmotions,
 							stage:2,
-							args:["@natureEmo","@eventEmo","@figureEmo","@sfEmo","@advEmo"],
+							args:["@natureEmo","@bwEmo","@eventEmo","@figureEmo","@sfEmo","@advEmo"],
 							fire:true
 						}],
 					},{
 						type:"subcheck",
 						id:"natureEmo",
 						value:false
+					},{
+						type:"subcheck",
+						id:"bwEmo",
+						value:true
 					},{
 						type:"subcheck",
 						id:"eventEmo",
@@ -7216,6 +7255,11 @@ function $feedType(feed) {
 			case 37:
 				// 小站发布状态:3701 小站分享链接:3702 小站分享视频:3703 小站发布图片:3705 关注小站:3707 小站日志:3708 小站分享小站日志 3709
 				return "xiaozhan";
+			case 50:
+				if(ntype==5030) {
+					return "share_video";
+				}
+				break;
 			case 80:
 				// 团购/品牌调查等等活动或游戏广告:8002，广告:8004，人人网:8005，保持联络:8006，成为好友:8007
 				if(ntype==8006) {

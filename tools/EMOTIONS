@@ -594,5 +594,33 @@
   "(jt2)": {
     "t": "家庭空间",
     "s": "/imgpro/icons/statusface/jt2.gif"
+  },
+  "(yb1)": {
+    "t": "月饼",
+    "s": "/imgpro/icons/statusface/mooncake.gif"
+  },
+  "(253)": {
+    "t": "膜拜",
+    "s": "/imgpro/icons/statusface/guibai.gif"
+  },
+  "(874)": {
+    "t": "猛抽",
+    "s": "/imgpro/icons/statusface/loli.gif"
+  },
+  "(mb)": {
+    "t": "膜拜",
+    "s": "/imgpro/icons/statusface/guibai.gif"
+  },
+  "(mc)": {
+    "t": "猛抽",
+    "s": "/imgpro/icons/statusface/loli.gif"
+  },
+  "(jobs)": {
+    "t": "乔布斯",
+    "s": "/imgpro/icons/statusface/jobs.gif"
+  },
+  "(mo)": {
+    "t": "默哀",
+    "s": "/imgpro/icons/statusface/lazhu.gif"
   }
 }
