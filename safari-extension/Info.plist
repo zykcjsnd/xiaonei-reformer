@@ -4,6 +4,8 @@
 <dict>
 	<key>Author</key>
 	<string>xz</string>
+	<key>Builder Version</key>
+	<string>534.51.22</string>
 	<key>CFBundleDisplayName</key>
 	<string>人人网改造器</string>
 	<key>CFBundleIdentifier</key>
@@ -16,6 +18,8 @@
 	<string>440</string>
 	<key>Chrome</key>
 	<dict>
+		<key>Database Quota</key>
+		<real>10485760</real>
 		<key>Global Page</key>
 		<string>background.html</string>
 	</dict>
