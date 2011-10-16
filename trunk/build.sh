@@ -34,8 +34,8 @@ cd ..
 
 cp "$OUTPUT" safari-extension/"$INPUT"
 cd safari-extension
-sed -i -E '14s/<string>[^<]*</<string>'$VER1'</' Info.plist
-sed -i -E '16s/<string>[^<]*</<string>'$VER2'</' Info.plist
+sed -i -E '16s/<string>[^<]*</<string>'$VER1'</' Info.plist
+sed -i -E '18s/<string>[^<]*</<string>'$VER2'</' Info.plist
 cd ..
 sed -i -E '15s/<string>[^<]*</<string>'$VER1'</' update.plist
 sed -i -E '13s/<string>[^<]*</<string>'$VER2'</' update.plist
