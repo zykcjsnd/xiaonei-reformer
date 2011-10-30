@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.13.444
-// @miniver        444
+// @version        3.2.14.445
+// @miniver        445
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.13.442";
-XNR.miniver=442;
+XNR.version="3.2.14.445";
+XNR.miniver=445;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -2378,6 +2378,61 @@ function addFloorCounter(evt) {
 		}
 	}
 };
+
+// 允许在分享的全站评论中回复
+function allowReplyToAllPeople(evt) {
+	if(evt && !/^replies/.test(evt.target.className)) {
+		return;
+	}
+	var replies = $("#allCmtsList dl.replies > dd");
+	if (replies.empty()) {
+		return;
+	}
+	var sid = parseInt($("#shareId").val());
+	if (isNaN(sid)) {
+		return;
+	}
+	replies.each(function() {
+		if ($(this).find(".reply > a[cmd*='reply']").exist()) {
+			return;
+		}
+		var o = $(this).find("a.avatar");
+		if (o.exist()) {
+			var oname = o.attr("title")
+		} else {
+			o = $(this).find(".info > a[href*='profile.do']");
+			var oname = o.text();
+		}
+		var oid = /id=(\d+)/.exec(o.attr("href"))[1];
+		if (oid == XNR.userId) {
+			return;
+		}
+		var cid = /\d+$/.exec(this.id)[0];
+		var cmd = {
+			t: "reply",
+			sid: sid,
+			oid: oid,
+			cid: cid,
+			oname: oname
+		};
+		var a = $("@a").addTo($(this).find(".reply"));
+		a.attr("cmd", JSON.stringify(cmd));
+		a.attr("href", "javascript:void(0);");
+		a.text("回复");
+	});
+	if (!evt) {
+		// 处理postParams
+		var code = "if(XN.array._toQueryString){return}" +
+		"XN.array._toQueryString=XN.array.toQueryString;" +
+		"XN.array.toQueryString=function(a){" +
+			"if(a.repetNo){"+
+				"delete a.all" +
+			"}"+
+			"return XN.array._toQueryString.apply(this, arguments)"+
+		"}";
+		$script(code);
+	}
+}
 
 // 允许在日志中添加HTTPS/FTP协议的链接
 function extendBlogLinkSupport() {
@@ -5379,21 +5434,19 @@ function main(savedOptions) {
 				login:true
 			},{
 				text:"##为评论增加楼层计数##",
-				ctrl:[
-					{
-						id:"addFloorCounter",
-						value:false,
-						fn:[{
-							name:addFloorCounter,
-							stage:2,
-							trigger:{"div.replies":"DOMNodeInserted"},
-							fire:true
-						}]
-					},{
-						type:"info",
-						value:"当有悄悄话存在时，人人网显示的评论数和实际能看到的评论数量会有差异，这会导致脚本的计数出现偏差"
-					}
-				],
+				ctrl:[{
+					id:"addFloorCounter",
+					value:false,
+					fn:[{
+						name:addFloorCounter,
+						stage:2,
+						trigger:{"div.replies":"DOMNodeInserted"},
+						fire:true
+					}]
+				},{
+					type:"info",
+					value:"当有悄悄话存在时，人人网显示的评论数和实际能看到的评论数量会有差异，这会导致计数出现偏差"
+				}],
 				login:true,
 				page:"blog,photo,pages"
 			},{
@@ -5695,6 +5748,23 @@ function main(savedOptions) {
 					}]
 				}],
 				page:"share"
+			},{
+				text:"##允许直接回复分享的全站评论##",
+				ctrl:[{
+					id:"allowReplyToAllPeople",
+					value:false,
+					fn:[{
+						name:allowReplyToAllPeople,
+						stage:2,
+						trigger:{"#allCmtsList":"DOMNodeInserted"},
+						fire:true
+					}]
+				},{
+					type:"warn",
+					value:"回复的内容会出现在原分享者的分享评论中"
+				}],
+				login:true,
+				page:"blog,share"
 			},{
 				text:"##禁止鼠标悬停在用户头像/名称时显示名片##",
 				ctrl:[{
