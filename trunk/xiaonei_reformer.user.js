@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.13.442
-// @miniver        442
+// @version        3.2.13.443
+// @miniver        443
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -1413,6 +1413,8 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"td.pop_content .dialog_buttons input{background-color:"+FCOLOR+" !important}",
 				".rrdesk.hover h5 a, .rrdesk.hover a, .rrdesk a.deskbtn{color:"+FCOLOR+" !important}",
 				"ul.square_bullets{color:"+FCOLOR+"}",
+				".nav-other .menu-title a:hover{background-color:"+BCOLOR+"}",
+				"td.pop_content h2{background-color:"+BCOLOR+"}",
 			],
 			"club.css":[
 				"a,a:hover{color:"+FCOLOR+"}",
@@ -3498,7 +3500,15 @@ function useWhisper() {
 
 // 隐藏橙名
 function hideOrangeName() {
-	var color=$("body a:not([class]):not([id]):not([style])").curCSS("color");
+	// 设置主页皮肤后，样式被应用到.full-page-holder a
+	var a=$(".full-page-holder a:not([class]):not([id]):not([style]):not([stats]):not([href^='javascript:'])");
+	if (a.empty()) {
+		var a=$("@a").attr("href", "#").addTo(document.body);
+		var color=a.curCSS("color");
+		a.remove();
+	} else {
+		var color=a.curCSS("color");
+	}
 	$patchCSS(".lively-user, a.lively-user:link, a.lively-user:visited{color:"+color+"}");
 };
 
