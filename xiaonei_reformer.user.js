@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.13.443
-// @miniver        443
+// @version        3.2.13.444
+// @miniver        444
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -151,13 +151,15 @@ function removeAds() {
 function removePageTheme() {
 	const themes=[
 		"head link[rel='stylesheet'][href*='/csspro/themes/'][href*='.css']", //节日模板
-	//	"#hometpl_style",	// 首页模板（直接去除会导致首页换肤功能出错）
 	//	"head link[rel='stylesheet'][href*='zidou_nav.css']",	// 紫豆导航栏
 		"#domain_wrapper",	// 个人域名提示栏
 		"#themeLink"	// 公共主页模板
 	];
 	$(themes.join(",")).remove();
-	
+
+	// 去除首页模板（直接去除会导致首页换肤功能出错）
+	$("#hometpl_style style").text("");
+
 	// 删除紫豆模板
 	$("head style").each(function() {
 		var theme=$(this);
@@ -499,10 +501,11 @@ function batchProcessRequest() {
 			$("#requests_" + id + "_list button[click^='" + id + "_accept:']").each(function() {
 				var param = regexpr.exec($(this).attr("click"));
 				if (param) {
+					var ilink = link;
 					for (var i = 0; i < param.length; i++) {
-						link = link.replace("${" + i + "}", param[i])
+						ilink = ilink.replace("${" + i + "}", param[i])
 					}
-					$get(link,null,null,"POST");
+					$get(ilink,null,null,"POST");
 				}
 			});
 			window.alert("已经" + action + "了所有" + type + "，将刷新页面……");
@@ -1289,6 +1292,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"ul.square_bullets{color:"+FCOLOR+"}",
 				".navigation{background-color:"+XCOLOR+"}",
 				".navigation .menu-title a:hover,.navigation .menu-title a.hover{background-color:"+BCOLOR+"}",
+				".search-Result li.m-autosug-hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .menu-item li.show-more a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .menu-item a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .optionmenu li a:hover{background-color:"+FCOLOR+"}",
@@ -1495,7 +1499,8 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".home .home-sidebar .pymk .comefrom{background-color:"+SCOLOR+"}",
 				".panel.bookmarks{background-color:"+SCOLOR+"}",
 				".user-data{background-color:"+SCOLOR+"}",
-				".message-box ul li.brand-new{background-color:#EFEDFF}",
+				".message-box ul li.brand-new{background-color:#F0F5F8}",
+				".message-box .box-footer{background-color:#EFEDFF}",
 				".message-box dt{color:"+FCOLOR+"}",
 				".message-box div.handle button, .message-box div.handle a.accept{background-color:"+FCOLOR+"}",
 			],
