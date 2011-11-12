@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.14.445
-// @miniver        445
+// @version        3.2.14.446
+// @miniver        446
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -68,7 +68,10 @@ const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4,SAFARI=8,OPERA_UJS=16,OPERA_EXT=
 const GECKO=1,WEBKIT=2,PRESTO=4;
 XNR.agent=UNKNOWN;
 XNR.acore=UNKNOWN;
-if(window.chrome) {
+if (typeof GM_getResourceURL=="function") {
+	XNR.agent=USERSCRIPT;
+	XNR.acore=GECKO;
+} else if(window.chrome) {
 	XNR.agent=CHROME;
 	XNR.acore=WEBKIT;
 } else if (window.safari) {
@@ -84,9 +87,6 @@ if(window.chrome) {
 	XNR.acore=PRESTO;
 } else if (typeof XNR_save=="function") {
 	XNR.agent=FIREFOX;
-	XNR.acore=GECKO;
-} else if (typeof GM_setValue=="function") {
-	XNR.agent=USERSCRIPT;
 	XNR.acore=GECKO;
 }
 
@@ -1321,6 +1321,12 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".filter li.c a{background-color:"+BCOLOR+"}",
 				".tabs-holder .tabpanel a{color:"+FCOLOR+"}",
 			],
+			"oldprofile-all-min.css":[
+				".imgbtn-1{background-color:"+FCOLOR+"}",
+				".user-info .link{color:"+FCOLOR+"}",
+				"#starPK .fans-list .item .details .name{color:"+FCOLOR+" !important}",
+				".latest-photos .footer .more, .latest-photos .footer .loading, .latest-photos .footer .nomore, .latest-photos .footer .hasmore{background-color:"+SCOLOR+"}"
+			],
 			"msg.css":[
 				".page-titletabs a.add-msg{background-color:"+FCOLOR+"}",
 				".inputbutton,.inputsubmit,.subbutton,.canbutton,.button-group button{background-color:"+FCOLOR+"}",
@@ -1660,7 +1666,13 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".tabs-holder .tabpanel a,.tabs-holder .tabpanel a:visited{color:"+FCOLOR+"}",
 				".user-info .link{color:"+FCOLOR+"}",
 				".input-button{background-color:"+FCOLOR+"}",
-			]
+				".gallery-footer, .gallery-footer .more, .gallery-footer .nomore{background-color:"+SCOLOR+"}",
+			],
+			"nav-vip.css":[
+				".navigation .nav-main .menu-title a, .navigation #searchMenu .menu-title a, .navigation .nav-other .menu-title a{color:"+FCOLOR+"}",
+				".navigation .nav-main .menu-title a:hover, .navigation .menu-title a:hover{color:"+FCOLOR+";background-color:transparent}",
+				".navigation .nav-main .menu-title a.searchcolor{color:"+FCOLOR+"}",
+			],
 		};
 		var style="";
 		for(var f in files) {
@@ -2291,16 +2303,18 @@ function addFloorCounter(evt) {
 				start=parseInt(page[1])*100;
 			}
 			$("dl#comment_list>dd>.info").each(function(index) {
-				$(this).add($("@span").text((index+1+start)+"楼"),0);
+				if ($(this).find("span.fc").empty()) {
+					$(this).add($("@span").addClass("fc").text((index+1+start)+"楼"),0);
+				}
 			});
-		} else if(XNR.url.match("/photo/\\d+")) {
+		} else if(XNR.url.match("/photo/\\d+|/album/\\d+")) {
 			// 图片
 			if(evt) {
 				if($("#pageBar").exist()) {
 					if(evt.relatedNode.id!="pageBar") {
 						return;
 					}
-				} else if(evt.target.className!="replies") {
+				} else if(!/^replies/.test(evt.target.className)) {
 					return;
 				}
 			}
@@ -2315,7 +2329,11 @@ function addFloorCounter(evt) {
 			var page=$("#pageBar>a.current").text() || "1";
 			var start=(parseInt(page)-1)*30;
 			$("#commContainer>dl.replies>dd>.info").each(function(index) {
-				$(this).add($("@span").text((index+1+start)+"楼 "),0);
+				if ($(this).find("span.fc").empty()) {
+					$(this).add($("@span").addClass("fc").text((index+1+start)+"楼 "),0);
+				} else {
+					return true;
+				}
 			});
 		} else if(XNR.url.match("/note/\\d+")) {
 			// 日志
@@ -2325,9 +2343,111 @@ function addFloorCounter(evt) {
 				start=parseInt(page[1])*100;
 			}
 			$("ol#commentlist>li>.comment>.info").each(function(index) {
-				$(this).add($("@span").css("float","left").text((index+1+start)+"楼"),0);
+				if ($(this).find("span.fc").empty()) {
+					$(this).add($("@span").addClass("fc").css("float","left").text((index+1+start)+"楼"),0);
+				} else {
+					return true;
+				}
+			});
+		} else if(XNR.url.match("/page\\.renren\\.com/[^/]+/share")) {
+			// 分享
+			$("div.share-body").each(function() {
+				var share = $(this);
+				if (!/(\d+)条/.exec(share.find("#postcmtlink").text())) {
+					return;
+				}
+				var replyAmount = parseInt(RegExp.$1);
+				var replies = share.find("dl.replies>dd>.info");
+				var start = replyAmount - replies.size() + 1;
+				replies.each(function(index) {
+					if ($(this).find("span.fc").empty()) {
+						$(this).add($("@span").addClass("fc").css({"float":"left","margin-right":"3px"}).text((index+start)+"楼"),0);
+					} else {
+						return true;
+					}
+				});
+			});
+		} else if($page("page_home")) {
+			// 公共主页首页
+			$("div.replies").each(function() {
+				var share = $(this);
+				var replies = share.find("div.statuscmtitem > .replybody");
+				var hidden = (share.find(".showmorereply").css("display") != "none");
+				var info = share.find(".showmorereply").text();
+				if (/还有(\d+)条/.exec(info)) {
+					if (hidden) {
+						var replyAmount = parseInt(RegExp.$1) + 2;
+						if (replies.size() == 2) {
+							var start = 1;
+						} else {
+							var start = replyAmount - replies.size() + 1;
+						}
+					} else {
+						var replyAmount = replies.size();
+						var start = 1;
+					}
+				} else if (/显示(\d+)条中的最新(\d+)条/.exec(info)) {
+					var replyAmount = parseInt(RegExp.$1);
+					var start = replyAmount - parseInt(RegExp.$2) + 1;
+				} else {
+					var replyAmount = replies.size();
+					var start = 1;
+				}
+				replies.each(function(index) {
+					if ($(this).find("span.fc").empty()) {
+						if (hidden && (index == replies.size() - 1)) {
+							// 中间的被隐藏了，已经到最后一条
+							$(this).add($("@span").addClass("fc").css({"float":"left","margin-right":"3px"}).text(replyAmount+"楼"),0);
+						} else {
+							$(this).add($("@span").addClass("fc").css({"float":"left","margin-right":"3px"}).text((index+start)+"楼"),0);
+						}
+					} else {
+						// 加载更多时实际上是更新了所有的，原来的第一条个和最后一条都被重置了
+						return true;
+					}
+				});
 			});
 		}
+	} else if($page("feed") || $page("profile")) {
+		// 首页/个人主页新鲜事的回复
+		$("div.replies").each(function() {
+			var share = $(this);
+			var replies = share.find("div.statuscmtitem > .replybody");
+			var hidden = (share.find(".showmorereply").css("display") != "none");
+			var info = share.find(".showmorereply").text();
+			if (/还有(\d+)条/.exec(info)) {
+				if (hidden) {
+					var replyAmount = parseInt(RegExp.$1) + 2;
+					if (replies.size() == 2) {
+						var start = 1;
+					} else {
+						var start = replyAmount - replies.size() + 1;
+					}
+				} else {
+					var replyAmount = replies.size();
+					var start = 1;
+				}
+			} else if (/显示(\d+)条中的最新(\d+)条/.exec(info)) {
+				var replyAmount = parseInt(RegExp.$1);
+				var start = replyAmount - parseInt(RegExp.$2) + 1;
+			} else {
+				var replyAmount = replies.size();
+				var start = 1;
+			}
+			replies.each(function(index) {
+				if ($(this).find("span.fc").empty()) {
+					if (hidden && (index == replies.size() - 1)) {
+						// 中间的被隐藏了，已经到最后一条
+						$(this).add($("@span").addClass("fc").css({"float":"left","margin-right":"3px"}).text(replyAmount+"楼"),0);
+					} else {
+						$(this).add($("@span").addClass("fc").css({"float":"left","margin-right":"3px"}).text((index+start)+"楼"),0);
+					}
+				} else {
+					// 加载更多时实际上是更新了所有的，原来的第一条个和最后一条都被重置了
+					return true;
+				}
+			});
+		});
 	} else {
 		if(evt && !/^replies/.test(evt.target.className)) {
 			return;
@@ -2358,7 +2478,7 @@ function addFloorCounter(evt) {
 		}
 		shownReplies.each(function(index) {
 			var info=$(this).find(".info");
-			if(info.child(0).attr("class")!="fc") {
+			if(info.find("span.fc").empty()) {
 				$("@span").text((replyStartFloor+parseInt(index)+1)+"楼 ").attr("class","fc").css("color","grey").addTo(info,0);
 			} else {
 				//添加过了，不再继续
@@ -5440,7 +5560,7 @@ function main(savedOptions) {
 					fn:[{
 						name:addFloorCounter,
 						stage:2,
-						trigger:{"div.replies":"DOMNodeInserted"},
+						trigger:{"div.replies,div.boxcont,div#feedView,div#newsfeed-module-box>.feed-module>.feed-list":"DOMNodeInserted"},
 						fire:true
 					}]
 				},{
@@ -5448,7 +5568,7 @@ function main(savedOptions) {
 					value:"当有悄悄话存在时，人人网显示的评论数和实际能看到的评论数量会有差异，这会导致计数出现偏差"
 				}],
 				login:true,
-				page:"blog,photo,pages"
+				page:"blog,photo,pages,feed,profile"
 			},{
 				text:"##允许在日志中添加HTTPS/FTP协议的链接",
 				ctrl:[{
@@ -6756,8 +6876,8 @@ function $page(category,url) {
 		blog:"/blog\\.renren\\.com/|#//blog/",	// 日志
 		forum:"/club\\.renren\\.com/",	// 论坛
 		pages:"/page\\.renren\\.com/",	// 公共主页
-		page_home:"/page\\.renren\\.com/[^/]+$|/page\\.renren\\.com/\\d+/index",	// 公共主页首页 FIXME 准确否??
-		page_blog:"/page\\.renren\\.com/\\d+/note/\\d+",	// 公共主页日志
+		page_home:"/page\\.renren\\.com/[^/]+$|page\\.renren\\.com/[^/]+\\?|/page\\.renren\\.com/[^/]+/index",	// 公共主页首页 FIXME 准确否??
+		page_blog:"/page\\.renren\\.com/[^/]+/note/\\d+",	// 公共主页日志
 		status:"/status\\.renren\\.com/|#//status/",	// 状态
 		photo:"/photo\\.renren\\.com/getphoto\\.do|/photo\\.renren\\.com/gettagphoto\\.do|/photo\\.renren\\.com/photo/sp/|/photo\\.renren\\.com/photo/[0-9]+/photo-|/page\\.renren\\.com/[^/]+/photo/|event\\.renren\\.com/event/[0-9]+/[0-9]+/photo/[0-9]+|lover\\.renren\\.com/photo/",	// 照片
 		album:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|/photo/album\\?|photo\\.renren\\.com/photo/ap/|event\\.renren\\.com/event/[0-9]+/photos|event\\.renren\\.com/event/[0-9]+/stars|lover\\.renren\\.com/album/",	// 相册
