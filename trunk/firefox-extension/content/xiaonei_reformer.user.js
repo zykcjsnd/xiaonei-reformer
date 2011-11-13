@@ -3918,6 +3918,10 @@ function showLoginInfo(lastHash) {
 			$error("showLoginInfo","地址改变？");
 			return;
 		}
+		if(data.indexOf('</html>')>0) {
+			$error("showLoginInfo","跨域失败？内容改变？");
+			return;
+		}
 		data=data.replace(/<(\/?)a[^>]*>/g,"<$1span>").replace("<dt>当前登录信息</dt>","");
 		data+="<div><a style='float:right;padding:5px' href='http://safe.renren.com/alarm/alarmIndex' target='_blank'>更多信息<a></div>";
 		$popup("登录信息",data,"0x0-5-5",15,5);
