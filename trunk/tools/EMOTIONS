@@ -622,5 +622,9 @@
   "(mo)": {
     "t": "默哀",
     "s": "/imgpro/icons/statusface/lazhu.gif"
+  },
+  "(fog)": {
+    "t": "大雾",
+    "s": "/imgpro/icons/statusface/dawu.gif"
   }
 }
