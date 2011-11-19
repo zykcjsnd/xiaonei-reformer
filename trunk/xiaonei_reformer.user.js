@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.15.447
-// @miniver        447
+// @version        3.2.15.448
+// @miniver        448
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -733,7 +733,8 @@ function flodFeedComment() {
 			list.push(this.id.match("[0-9]+$")[0]);
 		});
 		if(list.length>0) {
-			var code="try{var list="+JSON.stringify(list)+";for(var i=0;i<list.length;i++){getReplyEditor(list[i],'f').hide()}}catch(e){}";
+			// hide()中会执行this._inputHelper.focus()，导致页面往下滚动，故hide前先将其无效化
+			var code="try{var list="+JSON.stringify(list)+";var uf=function(){};for(var i=0;i<list.length;i++){var e=getReplyEditor(list[i],'f');var t=e.getEl('input');var f=t.focus;t.focus=uf;e.hide();t.focus=f}}catch(e){}";
 			$script(code);
 		}
 		p.remove();
@@ -3585,11 +3586,14 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 
 	// 获取相册中某一张图片的大图并显示出来
 	function _getAlbumImage(album,pageN,imgId,imgDate,autoShrink) {
-		$get(album+(album.indexOf("?")==-1?"?":"&")+"curpage="+pageN,function(html) {
+		var url = album+(album.indexOf("?")==-1?"?":"&")+"curpage="+pageN;
+		var analyzer = function(html, url) {
 			if(!html || html.indexOf("\"errorPage\"")!=-1 || html.indexOf("\"error404Page\"")!=-1) {
 				_showViewer(null,"error",imgId,autoShrink);
 				return;
 			}
+			$dealloc("last_album_html_cache");
+			$alloc("last_album_html_cache", {"url":url, "data":html});
 			try {
 				// 搜索ID匹配的大图。可能是一般相册的故事模式，也可能是未能区分分享相册/照片的情况
 				var res=null;
@@ -3690,7 +3694,12 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 			} catch(ex) {
 				$error("_getAlbumImage",ex);
 			}
-		});
+		};
+		if (url == $alloc("last_album_html").url) {
+			analyzer($alloc("last_album_html").data, url);
+		} else {
+			$get(url, analyzer);
+		}
 	};
 
 	// 获取一般图片的大图并显示出来
@@ -3749,12 +3758,15 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 	};
 	//获取日志中图片的大图并显示出来
 	function _getBlogImage(pageURL,imgId,autoShrink) {
-		$get(pageURL,function(html) {
+		var analyzer = function(html, url) {
 			try {
 				if(!html || html.search("<body id=\"errorPage\">")!=-1) {
 					_showViewer(null,"error",imgId,autoShrink);
 					return;
 				}
+				$dealloc("last_blog_html");
+				$alloc("last_blog_html", {"url":url, "data":html});
+
 				var src=new RegExp("<img [^>]*?src=\"(.*?"+imgId+")\".*?>").exec(html);
 				if(src) {
 					src=src[1];
@@ -3766,7 +3778,12 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 			} catch(ex) {
 				$error("_getBlogImage",ex);
 			}
-		});
+		};
+		if (pageURL == $alloc("last_blog_html").url) {
+			analyzer($alloc("last_blog_html").data, pageURL);
+		} else {
+			$get(pageURL, analyzer);
+		}
 	};
 	//获取小组头像图片并显示出来
 	function _getXiaozuImage(pageURL,imgId,autoShrink) {
@@ -3791,12 +3808,15 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 	};
 	//获取人人小站上传图片并显示出来
 	function _getXiaozhanImage(pageURL,imgId,autoShrink) {
-		$get(pageURL,function(html) {
+		var analyzer = function(html, url) {
 			try {
 				if(!html || html.search("<body id=\"errorPage\">")!=-1) {
 					_showViewer(null,"error",imgId,autoShrink);
 					return;
 				}
+				$dealloc("last_xiaozhan_html");
+				$alloc("last_xiaozhan_html", {"url":url, "data":html});
+
 				// 头像
 				var src=new RegExp("head:'([^']+" + imgId +  "[^']*)'").exec(html);
 				if (src) {
@@ -3822,15 +3842,22 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 			} catch(ex) {
 				$error("_getXiaozhanImage",ex);
 			}
-		});
+		};
+		if (pageURL == $alloc("last_xiaozhan_html").url) {
+			analyzer($alloc("last_xiaozhan_html").data, pageURL);
+		} else {
+			$get(pageURL, analyzer);
+		}
 	};
-
 
 };
 
 // 清除大图地址缓存
 function cleanFullSizeImageCache() {
 	$dealloc("image_cache");
+	$dealloc("last_xiaozhan_html");
+	$dealloc("last_blog_html");
+	$dealloc("last_album_html");
 	window.localStorage.setItem("xnr_image_cache","{}");
 	window.alert("缓存已经清空");
 };
@@ -7091,10 +7118,10 @@ function $page(category,url) {
  *   [Object]:对象
  */
 function $alloc(name,value) {
-	if(XNR.storage[name]) {
+	if(XNR.storage[name] != undefined) {
 		return XNR.storage[name];
 	} else {
-		if(value==null) {
+		if(value==undefined) {
 	 		XNR.storage[name]=new Object();
 		} else {
 	 		XNR.storage[name]=value;
@@ -7111,7 +7138,7 @@ function $alloc(name,value) {
  *   [Boolean]:是否已经分配
  */
 function $allocated(name) {
-	return XNR.storage[name]!=null;
+	return XNR.storage[name]!=undefined;
 };
 
 
@@ -7123,7 +7150,7 @@ function $allocated(name) {
  *   无
  */
 function $dealloc(name) {
-	XNR.storage[name]=null;
+	delete XNR.storage[name];
 };
 
 /*
