@@ -626,5 +626,9 @@
   "(fog)": {
     "t": "大雾",
     "s": "/imgpro/icons/statusface/dawu.gif"
+  },
+  "(hsd)": {
+    "t": "红丝带",
+    "s": "/imgpro/icons/statusface/hsd.gif"
   }
 }
