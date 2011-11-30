@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.2.15.449
-// @miniver        449
+// @version        3.3.0.450
+// @miniver        450
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -64,7 +64,7 @@ XNR.url=document.location.href;
 XNR.options={};
 
 // 当前运行环境（浏览器）
-const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4,SAFARI=8,OPERA_UJS=16,OPERA_EXT=32;
+const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4,SAFARI=8,OPERA_UJS=16,OPERA_EXT=32,JETPACK=64;
 const GECKO=1,WEBKIT=2,PRESTO=4;
 XNR.agent=UNKNOWN;
 XNR.acore=UNKNOWN;
@@ -88,7 +88,36 @@ if (typeof GM_getResourceURL=="function") {
 } else if (typeof XNR_save=="function") {
 	XNR.agent=FIREFOX;
 	XNR.acore=GECKO;
+} else if (typeof self=="object" && self.port) {
+	XNR.agent=JETPACK;
+	XNR.acore=GECKO;
 }
+
+// 针对jetpack的特殊处理
+if(XNR.agent==JETPACK) {
+	// jetpack扩展使用单一的通讯方法
+	XNR.msgHandlers={};
+	XNR.jetSendRequest=function(req, msg, handler) {
+		if (handler) {
+			do {
+				var reqId=Math.random();
+			} while(XNR.msgHandlers[reqId]!=null);
+			XNR.msgHandlers[reqId]=handler;
+			if (msg == null) {
+				msg = {};
+			}
+			msg.reqId=reqId;
+		}
+		self.port.emit(req, msg);
+	};
+	self.port.on("response", function(response) {
+		if(XNR.msgHandlers[response.reqId]) {
+			XNR.msgHandlers[response.reqId].call(window, response.data);
+			delete XNR.msgHandlers[response.reqId];
+		}
+	});
+}
+
 
 // 针对Opera的特殊处理
 if(XNR.acore==PRESTO) {
@@ -614,23 +643,8 @@ function hideFeeds(evt,feeds,mark,badTitles,badIds,goodIds,hideOld,hideDays) {
 
 // 首页默认显示特别关注
 function showAttentionFeeds() {
-	if((XNR.acore==PRESTO && XNR.loadStage==0) || (XNR.acore!=PRESTO && document.readyState=="loading")) {
-		document.location.href="http://www.renren.com/homeAttention#/homeAttention?from=homeleft";
-		return;
-	}
-	// 不能只修改hash，从个人主页会来时会失效
-	switch(document.location.pathname) {
-		case "/home":
-		case "/homeAttention":
-			document.location.hash="/homeAttention?from=homeleft";
-			break;
-		case "/guide":
-			document.location.hash="//www/homeAttention?from=homeleft";
-			break;
-		default:
-			document.location.href="http://www.renren.com/home#/homeAttention?from=homeleft";
-			break;
-	}
+	var code = 'var c=0;setTimeout(function(){var t=document.getElementById("feedTabAttention");if(!t){if(t<10){setTimeout(arguments.callee,200);c++}return}var e=document.createEvent("Events");e.initEvent("click",true,true);t.dispatchEvent(e)},100)';
+	$script(code);
 };
 
 // 加载更多页新鲜事
@@ -2109,6 +2123,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(hz)":		{t:"传递爱心",		s:"/imgpro/icons/statusface/cdax.gif"},
 		"(jq)":		{t:"坚强",			s:"/imgpro/icons/statusface/quake.gif"},
 		"(rr)":		{t:"红丝带",		s:"/imgpro/icons/statusface/red-ribbon.gif"},
+		"(hsd)":	{t:"红丝带",		s:"/imgpro/icons/statusface/hsd.gif"},
 		"(ny)":		{t:"新年好",		s:"/imgpro/icons/statusface/2011.gif"},
 		"(lb)":		{t:"腊八粥",		s:"/imgpro/icons/statusface/laba.gif"},
 		"(t)":		{t:"火炬",			s:"/img/ems/torch.gif"}
@@ -3124,6 +3139,8 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						}
 					} else if(XNR.agent==FIREFOX) {
 						XNR_album(album);
+					} else if(XNR.agent==JETPACK) {
+						XNR.jetSendRequest("album", album);
 					} else if(XNR.agent==CHROME) {
 						chrome.extension.sendRequest({action:"album",data:album});
 					} else if(XNR.agent==SAFARI) {
@@ -5248,7 +5265,7 @@ function main(savedOptions) {
 					value:false,
 					fn:[{
 						name:showAttentionFeeds,
-						stage:0,
+						stage:1,
 						fire:true,
 						once:true
 					}]
@@ -5584,7 +5601,7 @@ function main(savedOptions) {
 				page:"profile"
 			},{
 				text:"##修正导航栏项目高度##",
-				agent:FIREFOX | USERSCRIPT,
+				agent:FIREFOX | USERSCRIPT | JETPACK,
 				ctrl:[
 					{
 						id:"fixNavItemHeight",
@@ -5601,7 +5618,7 @@ function main(savedOptions) {
 				]
 			},{
 				text:"##修正论坛排版错误##",
-				agent:FIREFOX | USERSCRIPT,
+				agent:FIREFOX | USERSCRIPT | JETPACK,
 				ctrl:[
 					{
 						id:"fixClubTypesetting",
@@ -6144,7 +6161,7 @@ function main(savedOptions) {
 						value:"24小时内最多检查一次"
 					}
 				],
-				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT
+				agent:USERSCRIPT | FIREFOX | JETPACK | OPERA_UJS | OPERA_EXT
 			},{
 				text:"最后一次检查更新时间：##",
 				ctrl:[{
@@ -6153,7 +6170,7 @@ function main(savedOptions) {
 					value:0,
 					format:"date"
 				}],
-				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT
+				agent:USERSCRIPT | FIREFOX | JETPACK | OPERA_UJS | OPERA_EXT
 			},{
 				text:"##",
 				ctrl:[{
@@ -6165,7 +6182,7 @@ function main(savedOptions) {
 						args:[null,"@checkLink","@updateLink","@lastUpdate"]
 					}],
 				}],
-				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT
+				agent:USERSCRIPT | FIREFOX | JETPACK | OPERA_UJS | OPERA_EXT
 			},{
 				text:"检查更新地址：##",
 				ctrl:[{
@@ -6195,7 +6212,7 @@ function main(savedOptions) {
 					style:"width:330px",
 					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的检查更新地址"}
 				}],
-				agent:FIREFOX | OPERA_EXT
+				agent:FIREFOX | JETPACK | OPERA_EXT
 			},{
 				text:"扩展下载地址：##",
 				ctrl:[{
@@ -6205,7 +6222,7 @@ function main(savedOptions) {
 					style:"width:330px;",
 					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的脚本下载地址"},
 				}],
-				agent:FIREFOX
+				agent:FIREFOX | JETPACK
 			},{
 				text:"脚本下载地址：##",
 				ctrl:[{
@@ -6228,7 +6245,7 @@ function main(savedOptions) {
 				agent:OPERA_EXT
 			},{
 				text:"* 以上地址保存后生效",
-				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT
+				agent:USERSCRIPT | FIREFOX | JETPACK | OPERA_UJS | OPERA_EXT
 			},{
 				text:"##升级后显示通知",
 				ctrl:[{
@@ -7316,6 +7333,9 @@ function $save(name,value) {
 		case FIREFOX:
 			XNR_save(opts);
 			break;
+		case JETPACK:
+			XNR.jetSendRequest("save", opts);
+			break;
 		case CHROME:
 			chrome.extension.sendRequest({action:"save",data:opts});
 			break;
@@ -7348,6 +7368,13 @@ function $get(url,func,userData,method) {
 		case FIREFOX:
 			// 不能直接使用window.XMLHttpRequest，会被noscript阻挡
 			XNR_get(window,url,func,userData,method);
+			break;
+		case JETPACK:
+			if(func!=null) {
+				XNR.jetSendRequest("get",{url:url,method:method},function(data){func.call(window,data,url,userData)});
+			} else {
+				XNR.jetSendRequest("get",{url:url,method:method});
+			}
 			break;
 		case USERSCRIPT:
 			if(func!=null) {
@@ -7450,6 +7477,8 @@ function $error(func,error) {
 		var log = "在 "+func+"() 中发生了一个错误。\n"+msg;
 		if(XNR.agent==FIREFOX) {
 			XNR_log(log);
+		} else if(XNR.agent==JETPACK) {
+			XNR.jetSendRequest("log", log);
 		} else if(XNR.agent==USERSCRIPT) {
 			GM_log(log);	// Firefox 3.6 has no console.log
 		} else {
@@ -8358,6 +8387,17 @@ switch(XNR.agent) {
 			}
 		}
 		main(opts);
+		break;
+	case JETPACK:
+		XNR.jetSendRequest("load", null, function(data) {
+			var opts;
+			try {
+				opts=JSON.parse(data);
+			} catch(ex) {
+				opts={};
+			}
+			main(opts);
+		})
 		break;
 	case SAFARI:
 		var reqId=Math.random();
