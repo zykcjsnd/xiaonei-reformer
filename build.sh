@@ -18,7 +18,7 @@ yui-compressor --nomunge "$INPUT" >> "$OUTPUT"
 
 cp "$OUTPUT" chromium-extension/"$INPUT"
 cd chromium-extension
-sed -i -E '3s/"version": "[^"]*"/"version": "'$VER1'"/' manifest.json
+sed -i '3s/"version": "[^"]*"/"version": "'$VER1'"/' manifest.json
 ./pack.sh
 cd ..
 
@@ -26,7 +26,15 @@ cd ..
 
 cp "$INPUT" firefox-extension/content/"$INPUT"
 cd firefox-extension
-sed -i -E '7s/version>[^<]*</version>'$VER1'</' install.rdf
+sed -i '7s/version>[^<]*</version>'$VER1'</' install.rdf
+./pack.sh
+cd ..
+
+#######################################
+
+cp "$INPUT" jetpack/data/"$INPUT"
+cd jetpack
+sed -i '10s/".*"/"version": "'$VER1'"/' package.json
 ./pack.sh
 cd ..
 
@@ -34,11 +42,11 @@ cd ..
 
 cp "$OUTPUT" safari-extension/"$INPUT"
 cd safari-extension
-sed -i -E '16s/<string>[^<]*</<string>'$VER1'</' Info.plist
-sed -i -E '18s/<string>[^<]*</<string>'$VER2'</' Info.plist
+sed -i '16s/<string>[^<]*</<string>'$VER1'</' Info.plist
+sed -i '18s/<string>[^<]*</<string>'$VER2'</' Info.plist
 cd ..
-sed -i -E '15s/<string>[^<]*</<string>'$VER1'</' update.plist
-sed -i -E '13s/<string>[^<]*</<string>'$VER2'</' update.plist
+sed -i '15s/<string>[^<]*</<string>'$VER1'</' update.plist
+sed -i '13s/<string>[^<]*</<string>'$VER2'</' update.plist
 
 #######################################
 
@@ -48,7 +56,7 @@ cp "$OUTPUT" `echo "$OUTPUT" | sed 's/.user.js/.js/'`
 
 cp "$OUTPUT" opera-extension/includes/"$INPUT"
 cd opera-extension
-sed -i -E '2s/version="[^"]*"/version="'$VER1'"/' config.xml
+sed -i '2s/version="[^"]*"/version="'$VER1'"/' config.xml
 ./pack.sh
 cd ..
 

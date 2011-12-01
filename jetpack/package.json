@@ -1,9 +1,12 @@
 {
   "name": "xnreformer",
-  "fullName": "Xiaonei Reformer",
+  "fullName": "xiaonei reformer",
   "description": "Enhance your experience on renren.com (xiaonei.com formerly)",
   "author": "xz",
+  "homepage": "http://xiaonei-reformer.googlecode.com",
+  "icon": "icon/logo_48.png",
+  "icon64": "icon/logo_64.png",
   "license": "GPL 3.0",
-  "version": "0.1",
-  "id": "3c43fd59-db7d-4dd7-b6fa-08566d5a0b9d"
+  "version": "3.3.0.450",
+  "id": "xnreformer@gmail.com"
 }
