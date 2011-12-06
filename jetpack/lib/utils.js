@@ -36,11 +36,3 @@ function XNR_log (msg) {
 	console.log(msg);
 }
 
-function XNR_album (data) {
-	tabs.open({
-		url: self.data.url("album.html") + "#" + encodeURIComponent(JSON.stringify(data)),
-		inNewWindow: false,
-		inBackground: false
-	});
-}
-
