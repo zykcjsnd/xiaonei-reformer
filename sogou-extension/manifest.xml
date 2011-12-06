@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<extension>
+	<id>com.googlecode.xiaoneireformer</id>
+	<name>人人网改造器</name>
+	<description>人人网改造器测试</description>
+	<version>3.3.0.452</version>
+	<author>xz</author>
+	<show_icon>false</show_icon>
+	<request_api_version>1</request_api_version>
+	<about_url>http://xiaonei-reformer.googlecode.com</about_url>
+	<background page="background.html"/>
+	<content_scripts>
+		<content_script core_type="webkit" all_frames="true">
+			<match>http://renren.com/*</match>
+			<match>http://*.renren.com/*</match>
+			<js>xiaonei_reformer.user.js</js>
+		</content_script>
+	</content_scripts>
+</extension>
+
