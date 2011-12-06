@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.0.450
-// @miniver        450
+// @version        3.3.0.451
+// @miniver        451
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.2.15.449";
-XNR.miniver=449;
+XNR.version="3.3.0.450";
+XNR.miniver=450;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -587,7 +587,7 @@ function hideFeeds(evt,feeds,mark,badTitles,badIds,goodIds,hideOld,hideDays) {
 		var feed=$(elem);
 		var fh3=feed.find("h3");
 		var fstatus=feed.find(".content .original-stauts");
-		if(goodIds && fh3.filter(gidFilter).exist()) {
+		if(goodIds && fh3.find(gidFilter).exist()) {
 			return false;
 		}
 		if(badTitles && fh3.text().replace(/\s/g,"").match(badTitles)) {
@@ -626,7 +626,7 @@ function hideFeeds(evt,feeds,mark,badTitles,badIds,goodIds,hideOld,hideDays) {
 			}
 		}
 		var type=$feedType(feed);
-		return (type!="" && feeds[type]==true) || (type.match("^share") && badIds && fh3.filter(bidFilter).exist())
+		return (type!="" && feeds[type]==true) || (type.match("^share") && badIds && fh3.find(bidFilter).exist())
 	}).each(function() {
 		if(mark) {
 			try {
@@ -874,7 +874,7 @@ function autoCheckFeeds(feedFilter,badTitles,badIds,goodIds,checkReply) {
 					var feed=feedList.child(i);
 					var fh3=feed.find("h3");
 					var fstatus=feed.find(".content .original-stauts");
-					if(goodIds && fh3.filter(gidFilter).exist()) {
+					if(goodIds && fh3.find(gidFilter).exist()) {
 						// 在白名单上
 						continue;
 					}
@@ -892,7 +892,7 @@ function autoCheckFeeds(feedFilter,badTitles,badIds,goodIds,checkReply) {
 					var feedType=$feedType(feed);
 					if(feedType && feedFilter[feedType]) {
 						feed.remove();
-					} else if(feedType.match("^share") && badIds && fh3.filter(bidFilter).exist()) {
+					} else if(feedType.match("^share") && badIds && fh3.find(bidFilter).exist()) {
 						feed.remove();
 					}
 				}
@@ -3090,7 +3090,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						unknown:failedImagesList,		// 失败/未知的数据
 						type:linkOnly					// 只显示链接
 					};
-					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS) {
+					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS || XNR.agent==JETPACK) {
 						var html="<head><meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+album.title.replace("\\","\\\\").replace("'","\\'")+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style><script>function switchLink(){var links=document.querySelectorAll(\"a[title]:not([title=\\'\\'])\");for(var i=0;i<links.length;i++){if(links[i].textContent!=links[i].title){links[i].textContent=links[i].title}else{links[i].textContent=links[i].href}}};function switchIndex(add,max){var links=document.querySelectorAll(\"*[index]\");for(var i=0;i<links.length;i++){if(add){links[i].title=idx(parseInt(links[i].getAttribute(\"index\"))+1,max)+\" \"+links[i].title}else{links[i].title=links[i].title.replace(/^[0-9]+ /,\"\")}}};function idx(n,max){var i=0;for(;max>0;max=parseInt(max/10)){i++}n=\"00000\"+n;return n.substring(n.length-i,n.length)}</script></head><body>";
 						html+="<p><a target=\"_blank\" href=\"http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum\">下载指南</a>";
 						html+="</p><p>来源："+album.ref+"</p>";
@@ -3139,8 +3139,6 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						}
 					} else if(XNR.agent==FIREFOX) {
 						XNR_album(album);
-					} else if(XNR.agent==JETPACK) {
-						XNR.jetSendRequest("album", album);
 					} else if(XNR.agent==CHROME) {
 						chrome.extension.sendRequest({action:"album",data:album});
 					} else if(XNR.agent==SAFARI) {
@@ -3521,7 +3519,7 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 		if(!$allocated("image_viewer")) {
 			if (!shrink) {
 				$alloc("image_viewer").viewer=$("@div").attr("style","border:3px double #666666;display:none;background:#F6F6F6;top:2px;z-index:199999;right:2px;position:fixed;overflow-x:auto").addTo(document);
-				$alloc("image_viewer").image=$("@img").attr("onload","this.parentNode.style.overflowY=(parseInt(this.height)>parseInt(window.innerHeight)-10?'scroll':'auto')").addTo($alloc("image_viewer").viewer);
+				$alloc("image_viewer").image=$("@img").attr("onload","this.parentNode.style.overflowY=(parseInt(this.height)>parseInt(window.innerHeight)-10?'scroll':'auto')").attr("onerror","this.src='"+errorImage+"'").addTo($alloc("image_viewer").viewer);
 			} else {
 				$alloc("image_viewer").viewer=$("@div").attr("style","border:3px double #666666;display:none;background:#F6F6F6;top:2px;z-index:199999;right:2px;position:fixed").addTo(document);
 				$alloc("image_viewer").image=$("@img").addTo($alloc("image_viewer").viewer);
@@ -5790,7 +5788,7 @@ function main(savedOptions) {
 				ctrl:[
 					{
 						id:"preventTracking",
-						value:false,
+						value:true,
 						fn:[
 							{
 								name:preventTracking0,
