@@ -3090,7 +3090,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						unknown:failedImagesList,		// 失败/未知的数据
 						type:linkOnly					// 只显示链接
 					};
-					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS) {
+					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS || XNR.agent==JETPACK) {
 						var html="<head><meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+album.title.replace("\\","\\\\").replace("'","\\'")+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style><script>function switchLink(){var links=document.querySelectorAll(\"a[title]:not([title=\\'\\'])\");for(var i=0;i<links.length;i++){if(links[i].textContent!=links[i].title){links[i].textContent=links[i].title}else{links[i].textContent=links[i].href}}};function switchIndex(add,max){var links=document.querySelectorAll(\"*[index]\");for(var i=0;i<links.length;i++){if(add){links[i].title=idx(parseInt(links[i].getAttribute(\"index\"))+1,max)+\" \"+links[i].title}else{links[i].title=links[i].title.replace(/^[0-9]+ /,\"\")}}};function idx(n,max){var i=0;for(;max>0;max=parseInt(max/10)){i++}n=\"00000\"+n;return n.substring(n.length-i,n.length)}</script></head><body>";
 						html+="<p><a target=\"_blank\" href=\"http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum\">下载指南</a>";
 						html+="</p><p>来源："+album.ref+"</p>";
@@ -3139,8 +3139,6 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						}
 					} else if(XNR.agent==FIREFOX) {
 						XNR_album(album);
-					} else if(XNR.agent==JETPACK) {
-						XNR.jetSendRequest("album", album);
 					} else if(XNR.agent==CHROME) {
 						chrome.extension.sendRequest({action:"album",data:album});
 					} else if(XNR.agent==SAFARI) {
