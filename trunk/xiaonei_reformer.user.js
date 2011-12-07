@@ -586,21 +586,6 @@ function batchProcessRequest() {
 	}
 };
 
-// 自动屏蔽应用通知
-function blockAppNotification() {
-	$get("http://msg.renren.com/notify/notifications.do",function(html) {
-		var blocked=[];
-		var command;
-		var regexpr=/showDialog\(this,(\d+)\)/g;
-		while(command=regexpr.exec(html)) {
-			if(!blocked[command[1]]) {
-				$get("http://msg.renren.com/notify/notifications.do?action=block&app_id="+command[1]);
-				blocked[command[1]]=true;
-			}
-		}
-	});
-};
-
 // 隐藏特定类型/标题新鲜事
 function hideFeeds(evt,feeds,mark,badTitles,badIds,goodIds,hideOld,hideDays) {
 	if(evt && evt.target.tagName!="ARTICLE") {
@@ -5093,23 +5078,6 @@ function main(savedOptions) {
 					}
 				],
 				page:"request",
-				login:true,
-			},{
-				text:"##自动屏蔽应用通知##",
-				ctrl:[
-					{
-						id:"blockAppNotification",
-						value:false,
-						fn:[{
-							name:blockAppNotification,
-							stage:0,
-							fire:true
-						}],
-					},{
-						type:"info",
-						value:"在“站内信”->“通知”处可以解除屏蔽",
-					}
-				],
 				login:true,
 			}
 		],
