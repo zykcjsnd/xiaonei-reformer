@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.0.451
-// @miniver        451
+// @version        3.3.0.453
+// @miniver        453
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.0.450";
-XNR.miniver=450;
+XNR.version="3.3.0.452";
+XNR.miniver=452;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -64,7 +64,7 @@ XNR.url=document.location.href;
 XNR.options={};
 
 // 当前运行环境（浏览器）
-const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4,SAFARI=8,OPERA_UJS=16,OPERA_EXT=32,JETPACK=64;
+const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4,SAFARI=8,OPERA_UJS=16,OPERA_EXT=32,JETPACK=64,SOGOU=128;
 const GECKO=1,WEBKIT=2,PRESTO=4;
 XNR.agent=UNKNOWN;
 XNR.acore=UNKNOWN;
@@ -73,6 +73,9 @@ if (typeof GM_getResourceURL=="function") {
 	XNR.acore=GECKO;
 } else if(window.chrome) {
 	XNR.agent=CHROME;
+	XNR.acore=WEBKIT;
+} else if (typeof sogouExplorer=="object" && sogouExplorer.extension) {
+	XNR.agent=SOGOU;
 	XNR.acore=WEBKIT;
 } else if (window.safari) {
 	XNR.agent=SAFARI;
@@ -419,7 +422,7 @@ function hideRequest(req) {
 function rejectRequest(req,blockApp) {
 	// 好友申请
 	if(req["friendRequest"]) {
-		$get("http://www.renren.com/delallguestrequest.do?id="+XNR.userId);
+		$get("http://www.renren.com/delallguestrequest.do?id="+XNR.userId, null, null, "POST");
 	}
 
 	// 应用请求
@@ -431,14 +434,22 @@ function rejectRequest(req,blockApp) {
 			// 一般应用
 			var command;
 			var regexpr=/ignore_all_request\((\d+),(\d+),'(.*?)'\)/g;
+			var links=[];
 			while(command=regexpr.exec(html)) {
 				if(blockApp==true) {
 					// 屏蔽同时会清空当前的请求队列
-					$get("http://app.renren.com/req/blockAppRequest/block?action=block&type="+command[1]+"&appId="+command[2],null,null,"POST");
+					links.push("http://app.renren.com/req/blockAppRequest/block?action=block&type="+command[1]+"&appId="+command[2]);
 				} else {
-					$get("http://app.renren.com/request/ignoreAppRequest.do?type="+command[1]+"&appId="+command[2],null,null,"POST");
+					links.push("http://app.renren.com/request/ignoreAppRequest.do?type="+command[1]+"&appId="+command[2]);
 				}
 			}
+			var executer = function() {
+				if(links.length>0) {
+					var link=links.shift();
+					$get(link,executer,null,"POST");
+				}
+			}
+			executer();
 		});
 	}
 
@@ -448,12 +459,13 @@ function rejectRequest(req,blockApp) {
 	}
 
 	$get("http://req.renren.com/xmc/gmc", function(html) {
+		var links=[];
 		// 圈人请求
 		if(req["tagRequest"]) {
 			var command;
 			var regexpr = /tagPhoto_refuse:(\d+)/g;
 			while (command = regexpr.exec(html)) {
-				$get("http://photo.renren.com/refuseptrequest.do?id=" + command[1],null,null,"POST");
+				links.push("http://photo.renren.com/refuseptrequest.do?id=" + command[1]);
 			}
 		}
 		// 好友推荐
@@ -461,7 +473,7 @@ function rejectRequest(req,blockApp) {
 			var command;
 			var regexpr = /tuijian_refuse:(\d+),\S+?,(\d+)/g;
 			while (command = regexpr.exec(html)) {
-				$get("http://friend.renren.com/j_f_deny_rcd?r=" + command[1] + "&s=" + command[2],null,null,"POST");
+				links.push("http://friend.renren.com/j_f_deny_rcd?r=" + command[1] + "&s=" + command[2]);
 			}
 		}
 		// 情侣请求，尚无全部拒绝功能
@@ -469,7 +481,7 @@ function rejectRequest(req,blockApp) {
 			var command;
 			var regexpr = /lover_ignore:.*?id=(\d+)/g;
 			while (command = regexpr.exec(html)) {
-				$get("http://lover.renren.com/love/request/accept?id=" + command[1],null,null,"POST");
+				links.push("http://lover.renren.com/love/request/accept?id=" + command[1]);
 			}
 		}
 		// 小组邀请
@@ -477,7 +489,7 @@ function rejectRequest(req,blockApp) {
 			var command;
 			var regexpr = /xiaozu-i_refuse:.*?\/(\d+)\//g;
 			while (command = regexpr.exec(html)) {
-				$get("http://xiaozu.renren.com/xiaozu/" + command[1] + "/invite/refuse",null,null,"POST");
+				links.push("http://xiaozu.renren.com/xiaozu/" + command[1] + "/invite/refuse");
 			}
 		}
 		// 通讯录请求
@@ -485,10 +497,16 @@ function rejectRequest(req,blockApp) {
 			var command;
 			var regexpr = /addr_refuse:(\d+)/g;
 			while (command = regexpr.exec(html)) {
-				$get("http://www.renren.com/address/ignorecard?id=" + command[1],null,null,"POST");
+				links.push("http://www.renren.com/address/ignorecard?id=" + command[1]);
 			}
 		}
-
+		var executer = function() {
+			if(links.length>0) {
+				var link=links.shift();
+				$get(link,executer,null,"POST");
+			}
+		}
+		executer();
 	});
 };
 
@@ -524,6 +542,10 @@ function batchProcessRequest() {
 	addLink("xiaozu-i", "接受", "小组邀请", "http://xiaozu.renren.com/xiaozu/${1}/add", /\/(\d+)\//);
 	addLink("xiaozu-i", "忽略", "小组邀请", "http://xiaozu.renren.com/xiaozu/${1}/invite/refuse", /\/(\d+)\//);
 
+	// 应用请求
+	addLink("appmessage", "接受", "应用请求", "http://app.renren.com/request/handleRequest.do?rid=${1}&appId=${2}&type=${3}", /:(\d+),(\d+),(\d+)/);
+	addLink("appmessage", "拒绝", "应用请求", "http://app.renren.com/request/ignoreAppRequest.do?rid=${1}&appId=${2}&type=${3}", /:(\d+),(\d+),(\d+)/);
+
 	function addLink(id, action, type, link, regexpr) {
 		var header = $("#requests_" + id + "_header");
 		if (header.size() != 1) {
@@ -534,6 +556,7 @@ function batchProcessRequest() {
 			if (!window.confirm("确实要" + action + "所有列出的" + type + "吗？")) {
 				return;
 			}
+			var links=[];
 			$("#requests_" + id + "_list button[click^='" + id + "_accept:']").each(function() {
 				var param = regexpr.exec($(this).attr("click"));
 				if (param) {
@@ -541,11 +564,24 @@ function batchProcessRequest() {
 					for (var i = 0; i < param.length; i++) {
 						ilink = ilink.replace("${" + i + "}", param[i])
 					}
-					$get(ilink,null,null,"POST");
+					links.push(ilink);
 				}
 			});
-			window.alert("已经" + action + "了所有" + type + "，将刷新页面……");
-			document.location.reload();
+			var total = links.length;
+			var box = $("@div").css({zIndex:"999999", width:"100%", height:"100%", position:"fixed", background:"rgba(0,0,0,0.8)", color:"#fff", left:0, top:0, textAlign:"center", verticalAlign:"middle", lineHeight:document.documentElement.clientHeight+"px"}).addTo(document);
+			if (total > 0) {
+				var executer = function() {
+					if (links.length > 0) {
+						box.text("处理中，请稍候..."+parseInt((total-links.length)*100/total)+"%");
+						var link = links.shift();
+						$get(link,executer,null,"POST");
+					} else {
+						box.text("已经" + action + "了所有" + type + "，将刷新页面……");
+						window.location.reload();
+					}
+				};
+				executer();
+			}
 		});
 	}
 };
@@ -3141,6 +3177,8 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						XNR_album(album);
 					} else if(XNR.agent==CHROME) {
 						chrome.extension.sendRequest({action:"album",data:album});
+					} else if(XNR.agent==SOGOU) {
+						sogouExplorer.extension.sendRequest({action:"album",data:album});
 					} else if(XNR.agent==SAFARI) {
 						safari.self.tab.dispatchMessage("xnr_album",album);
 					} else if(XNR.agent==OPERA_EXT) {
@@ -4180,16 +4218,29 @@ function delAllShares() {
 		if(!window.confirm("确实要删除所有在这里显示的分享？")) {
 			return;
 		}
-		var del=false;
+		var ids=[];
 		$(".share-itembox").each(function() {
 			if($(this).css("display")!="none") {
 				var id=this.id.match("\\d+");
-				$get("http://share.renren.com/share/EditShare.do?action=del&sid="+id+"&type="+XNR.userId,null,null,"POST");
-				del=true;
+				if(id) {
+					ids.push(id);
+				}
 			}
 		});
-		if(del) {
-			window.location.reload();
+		var total = ids.length;
+		var box = $("@div").css({zIndex:"999999", width:"100%", height:"100%", position:"fixed", background:"rgba(0,0,0,0.8)", color:"#fff", left:0, top:0, textAlign:"center", verticalAlign:"middle", lineHeight:document.documentElement.clientHeight+"px"}).addTo(document);
+		if (total > 0) {
+			var deleter = function() {
+				if (ids.length > 0) {
+					box.text("处理中，请稍候..."+parseInt((total-ids.length)*100/total)+"%");
+					var id = ids.shift();
+					$get("http://share.renren.com/share/EditShare.do?action=del&sid="+id+"&type="+XNR.userId,deleter,null,"POST");
+				} else {
+					box.text("处理完毕，将刷新页面...");
+					window.location.reload();
+				}
+			};
+			deleter();
 		}
 	});
 };
@@ -4342,15 +4393,29 @@ function delAllNotes() {
 		if(!window.confirm("确实要删除所有在这里显示的留言？")) {
 			return;
 		}
-		var del=false;
+		var ids=[];
 		$("#talk .comment").each(function() {
 			var id=this.id.match("\\d+");
+			if(!id) {
+				return;
+			}
 			var cmd=/delComment\('.*?','(.*?)','.*?',\d+\)/.exec($(this).find("a[onclick^='delComment']").attr("onclick"));
-			$get("http://gossip.renren.com/delgossip.do?age=recent&id="+id+"&owner="+(cmd?cmd[1]:XNR.userId),null,null,"POST");
-			del=true;
+			ids.push({"id":id,"owner":(cmd?cmd[1]:XNR.userId)});
 		});
-		if(del) {
-			window.location.reload();
+		var total = ids.length;
+		var box = $("@div").css({zIndex:"999999", width:"100%", height:"100%", position:"fixed", background:"rgba(0,0,0,0.8)", color:"#fff", left:0, top:0, textAlign:"center", verticalAlign:"middle", lineHeight:document.documentElement.clientHeight+"px"}).addTo(document);
+		if (total > 0) {
+			var deleter = function() {
+				if (ids.length > 0) {
+					box.text("处理中，请稍候..."+parseInt((total-ids.length)*100/total)+"%");
+					var ido = ids.shift();
+					$get("http://gossip.renren.com/delgossip.do?age=recent&id="+ido.id+"&owner="+ido.owner,deleter,null,"POST");
+				} else {
+					box.text("处理完毕，将刷新页面...");
+					window.location.reload();
+				}
+			};
+			deleter();
 		}
 	});
 };
@@ -4367,14 +4432,27 @@ function delAllStatus() {
 		if(!window.confirm("确实要删除所有在这里显示的状态？")) {
 			return;
 		}
-		var del=false;
+		var ids=[];
 		$("ul.status-list li a[onclick*='delMyDoing(']").each(function() {
 			var cmd=/delMyDoing\(.*?,'(\d+)'\)/.exec($(this).attr("onclick"));
-			$get("http://status.renren.com/doing/deleteDoing.do?id="+cmd[1],null,null,"POST");
-			del=true;
+			if (cmd) {
+				ids.push(cmd[1]);
+			}
 		});
-		if(del) {
-			window.location.reload();
+		var total = ids.length;
+		var box = $("@div").css({zIndex:"999999", width:"100%", height:"100%", position:"fixed", background:"rgba(0,0,0,0.8)", color:"#fff", left:0, top:0, textAlign:"center", verticalAlign:"middle", lineHeight:document.documentElement.clientHeight+"px"}).addTo(document);
+		if (total > 0) {
+			var deleter = function() {
+				if (ids.length > 0) {
+					box.text("处理中，请稍候..."+parseInt((total-ids.length)*100/total)+"%");
+					var id = ids.shift();
+					$get("http://status.renren.com/doing/deleteDoing.do?id="+id,deleter,null,"POST");
+				} else {
+					box.text("处理完毕，将刷新页面...");
+					window.location.reload();
+				}
+			};
+			deleter();
 		}
 	});
 };
@@ -7266,7 +7344,7 @@ function $script(code,global) {
 		// 让脚本以匿名函数方式执行
 		code="(function(){"+code+"})();";
 	}
-	if(XNR.agent==CHROME || XNR.agent==SAFARI) {
+	if(XNR.agent==CHROME || XNR.agent==SAFARI || XNR.agent==SOGOU) {
 		// 如果chrome/safari用location方法，会发生各种各样奇怪的事。比如innerHTML失灵。。。万恶的webkit
 		$("@script").text(code).addTo(document).remove();
 	} else {
@@ -7337,6 +7415,9 @@ function $save(name,value) {
 		case CHROME:
 			chrome.extension.sendRequest({action:"save",data:opts});
 			break;
+		case SOGOU:
+			sogouExplorer.extension.sendRequest({action:"save",data:opts});
+			break;
 		case SAFARI:
 			safari.self.tab.dispatchMessage("xnr_save",opts);
 			break;
@@ -7390,6 +7471,15 @@ function $get(url,func,userData,method) {
 				chrome.extension.sendRequest({action:"get",url:url,method:method});
 			} else {
 				chrome.extension.sendRequest({action:"get",url:url,method:method},function(response) {
+					func.call(window,response.data,url,userData);
+				});
+			}
+			break;
+		case SOGOU:
+			if(func==null) {
+				sogouExplorer.extension.sendRequest({action:"get",url:url,method:method});
+			} else {
+				sogouExplorer.extension.sendRequest({action:"get",url:url,method:method},function(response) {
 					func.call(window,response.data,url,userData);
 				});
 			}
@@ -8370,6 +8460,11 @@ switch(XNR.agent) {
 		break;
 	case CHROME:
 		chrome.extension.sendRequest({action:"load"}, function(response) {
+			main(response.options);
+		});
+		break;
+	case SOGOU:
+		sogouExplorer.extension.sendRequest({action:"load"}, function(response) {
 			main(response.options);
 		});
 		break;
