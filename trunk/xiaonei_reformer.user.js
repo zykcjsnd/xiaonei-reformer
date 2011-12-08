@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.0.453
-// @miniver        453
+// @version        3.3.0.454
+// @miniver        454
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.0.452";
-XNR.miniver=452;
+XNR.version="3.3.0.454";
+XNR.miniver=454;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -193,6 +193,7 @@ function removePageTheme() {
 	$("#hometpl_style style").text("");
 
 	// 删除紫豆模板
+	$("#diyStyleId").remove();
 	$("head style").each(function() {
 		var theme=$(this);
 		if(theme.text().indexOf("url(http://i.static.renren.com")!=-1) {
@@ -258,10 +259,17 @@ function removeMouseCursor() {
 // 去除VIP页面入场动画
 function removeEnterCartoon() {
 	// 动画最上层div的z-index为1000001
-	const target="body>#mask,body>div[style*='1000001']";
+	const target="#mask,#preveiwSwf,body>div[style*='1000001']";
 	$ban(target);
 	// 样式会将body的高度设为100%，overflow设成hidden
-	$patchCSS("html,body{height:auto;overflow:auto}");
+	var p = $patchCSS("html,body{height:auto;overflow:auto}");
+	$wait(1, function(){
+		var l = $("link[href*='cartoon.']");
+		if (l.exist()) {
+			l.remove();
+			p.remove();
+		}
+	});
 };
 
 // 去除日志信纸
@@ -4005,6 +4013,7 @@ function enableShortcutMenu(evt) {
 			"Ta的日志":"http://blog.renren.com/GetBlog.do?id=@@",	// http://blog.renren.com/blog/@@/friends
 			"Ta的公开资料":"http://browse.renren.com/searchEx.do?ajax=1&q=@@",
 			"Ta的状态":"http://status.renren.com/status/@@",
+			"Ta的行踪":"http://places.renren.com/web/lbsApp?pt=7&userId=@@&__view=async-html",
 			"Ta的好友":"http://friend.renren.com/GetFriendList.do?id=@@",
 		};
 		var morePages={
@@ -6960,6 +6969,12 @@ function main(savedOptions) {
 			if(stage==2) {
 				// 添加菜单入口项在页面DOM构建完毕后执行
 				entry.addTo($(".nav-body .nav-other"),0);
+				// 确保css补丁块在页面最后，至少是在body之后
+				if($allocated("css_block")) {
+					$alloc("css_block").addTo(document);
+				} else {
+					$alloc("css_block",$("@div").addTo(document));
+				}
 			}
 			for(var iPage in fnQueue) {
 				if(iPage!="*" && !$page(iPage)) {
@@ -7106,7 +7121,7 @@ function $page(category,url) {
 	const pages={
 		home:"renren\\.com/[hH]ome|guide\\.renren\\.com/[Gg]uide",	// 首页，后面的是新注册用户的首页
 		feed:"renren\\.com/[hH]ome#?$|renren\\.com/[hH]ome.*#nogo$|renren\\.com/[hH]ome\?[^#]*$|#/home|/homeAttention#*$|/homeAttention[^#]*$|/guide\\.renren\\.com/[Gg]uide#?$|#/guide",	// 首页新鲜事，后面的是新注册用户的首页
-		profile:"renren\\.com/[Pp]rofile|/[a-zA-Z0-9_]{5,}\\.renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|renren.com/[a-zA-Z0-9_]{6,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personal/link/
+		profile:"renren\\.com/[Pp]rofile|/[a-zA-Z0-9_]{5,}\\.renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|[a-zA-Z0-9_]{5,}\\.renren\\.com/innerProfile|renren\\.com/[a-zA-Z0-9_]{6,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personal/link/
 		blog:"/blog\\.renren\\.com/|#//blog/",	// 日志
 		forum:"/club\\.renren\\.com/",	// 论坛
 		pages:"/page\\.renren\\.com/",	// 公共主页
