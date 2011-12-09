@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.0.455
-// @miniver        455
+// @version        3.3.0.456
+// @miniver        456
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.0.455";
-XNR.miniver=455;
+XNR.version="3.3.0.456";
+XNR.miniver=456;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -2442,11 +2442,8 @@ function addFloorCounter(evt) {
 					return;
 				}
 				if (/还有(\d+)条/.exec(info)) {
-					console.log(hidden);
-					console.log(replies.size());
 					if (hidden) {
 						var replyAmount = parseInt(RegExp.$1) + 2;
-						console.log(replyAmount);
 						if (replies.size() == 2) {
 							var start = 1;
 						} else {
@@ -2456,7 +2453,6 @@ function addFloorCounter(evt) {
 						var replyAmount = replies.size();
 						var start = 1;
 					}
-					console.log(start);
 				} else if (/显示(\d+)条中的最新(\d+)条/.exec(info)) {
 					var replyAmount = parseInt(RegExp.$1);
 					var start = replyAmount - parseInt(RegExp.$2) + 1;
@@ -7436,9 +7432,6 @@ function $get(url,func,userData,method) {
 				sogouExplorer.extension.sendRequest({action:"get",url:url,method:method});
 			} else {
 				sogouExplorer.extension.sendRequest({action:"get",url:url,method:method},function(response) {
-					alert(func)
-					alert(response)
-					alert(response.data)
 					func.call(window,response.data,url,userData);
 				});
 			}

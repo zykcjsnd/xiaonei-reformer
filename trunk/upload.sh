@@ -25,7 +25,6 @@ type3="-l Deprecated"
 ./googlecode_upload.py -s "Safari扩展" $project $type1 xiaonei_reformer.safariextz
 ./googlecode_upload.py -s "Safari升级" $project $type3 update.plist
 ./googlecode_upload.py -s "Chrome扩展" $project $type1 xiaonei_reformer.crx
-./googlecode_upload.py -s "Firefox扩展(jetpack)" $project $type1 xiaonei_reformer-fx-jetpack.xpi
 ./googlecode_upload.py -s "Firefox扩展" $project $type1 xiaonei_reformer-fx.xpi
 ./googlecode_upload.py -s "Greasemonkey/Scriptish脚本" $project $type1 xiaonei_reformer.min.user.js
 ./googlecode_upload.py -s "脚本升级" $project $type3 45836.meta.js
