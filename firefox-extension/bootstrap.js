@@ -67,7 +67,6 @@ const XNRCore = {
 			sandboxPrototype: contentDocument.defaultView,
 			wantXrays: true
 		});
-		Services.console.logStringMessage(sandbox);
 
 		sandbox.importFunction(XNRCore.save, "XNR_save");
 		sandbox.importFunction(XNRCore.load, "XNR_load");
