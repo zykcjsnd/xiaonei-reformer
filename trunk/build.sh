@@ -24,7 +24,7 @@ cd ..
 
 #######################################
 
-cp "$INPUT" firefox-extension/content/"$INPUT"
+cp "$INPUT" firefox-extension/"$INPUT"
 cd firefox-extension
 sed -i '7s/version>[^<]*</version>'$VER1'</' install.rdf
 ./pack.sh
