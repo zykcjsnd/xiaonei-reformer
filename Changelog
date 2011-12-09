@@ -1,3 +1,6 @@
+456:
+fix:去除调试代码
+
 455:
 fix:废弃jetpack架构，直接将firefox扩展转换成bootstrap
 fix:修正下载相册页面可能无法正确设置页面title的问题
