@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.0.455
-// @miniver        455
+// @version        3.3.0.454
+// @miniver        454
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.0.455";
-XNR.miniver=455;
+XNR.version="3.3.0.454";
+XNR.miniver=454;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -64,7 +64,7 @@ XNR.url=document.location.href;
 XNR.options={};
 
 // 当前运行环境（浏览器）
-const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4,SAFARI=8,OPERA_UJS=16,OPERA_EXT=32,SOGOU=128;
+const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4,SAFARI=8,OPERA_UJS=16,OPERA_EXT=32,JETPACK=64,SOGOU=128;
 const GECKO=1,WEBKIT=2,PRESTO=4;
 XNR.agent=UNKNOWN;
 XNR.acore=UNKNOWN;
@@ -91,7 +91,36 @@ if (typeof GM_getResourceURL=="function") {
 } else if (typeof XNR_save=="function") {
 	XNR.agent=FIREFOX;
 	XNR.acore=GECKO;
+} else if (typeof self=="object" && self.port) {
+	XNR.agent=JETPACK;
+	XNR.acore=GECKO;
 }
+
+// 针对jetpack的特殊处理
+if(XNR.agent==JETPACK) {
+	// jetpack扩展使用单一的通讯方法
+	XNR.msgHandlers={};
+	XNR.jetSendRequest=function(req, msg, handler) {
+		if (handler) {
+			do {
+				var reqId=Math.random();
+			} while(XNR.msgHandlers[reqId]!=null);
+			XNR.msgHandlers[reqId]=handler;
+			if (msg == null) {
+				msg = {};
+			}
+			msg.reqId=reqId;
+		}
+		self.port.emit(req, msg);
+	};
+	self.port.on("response", function(response) {
+		if(XNR.msgHandlers[response.reqId]) {
+			XNR.msgHandlers[response.reqId].call(window, response.data);
+			delete XNR.msgHandlers[response.reqId];
+		}
+	});
+}
+
 
 // 针对Opera的特殊处理
 if(XNR.acore==PRESTO) {
@@ -2185,7 +2214,6 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(gq1)":	{t:"国庆六十周年",	s:"/imgpro/icons/statusface/national-day-60-firework.gif"},
 		"(2011)":	{t:"2011",			s:"/imgpro/icons/statusface/2011g.gif"},
 		"(five)":	{t:"人人网5周年",	s:"/imgpro/icons/statusface/5years.gif"},
-		"(six)":	{t:"人人网6周年",	s:"/imgpro/icons/statusface/six.gif"},
 		"(jd)":		{t:"建党90周年",	s:"/imgpro/icons/statusface/party90.gif"},
 	};
 
@@ -2334,7 +2362,7 @@ function addFloorCounter(evt) {
 		return;
 	}
 	if($page("pages") && !$page("page_home")) {
-		// 公共主页，除了公共主页首页。因为首页的处理和个人主页/首页相同
+		// 公共主页，除了首页。因为首页的处理和个人主页/首页相同
 		if(XNR.url.match("/fdoing/\\d+")) {
 			if (evt) {
 				return;
@@ -2437,16 +2465,13 @@ function addFloorCounter(evt) {
 				var start = 1;
 			} else {
 				var hidden = (share.find(".showmorereply").css("display") != "none");
-				var info = share.find(".showmorereply").text().replace(/\s/g, "");
+				var info = share.find(".showmorereply").text();
 				if (!info || /加载中/.exec(info) || "显示全部回复"==info) {
 					return;
 				}
 				if (/还有(\d+)条/.exec(info)) {
-					console.log(hidden);
-					console.log(replies.size());
 					if (hidden) {
 						var replyAmount = parseInt(RegExp.$1) + 2;
-						console.log(replyAmount);
 						if (replies.size() == 2) {
 							var start = 1;
 						} else {
@@ -2456,7 +2481,6 @@ function addFloorCounter(evt) {
 						var replyAmount = replies.size();
 						var start = 1;
 					}
-					console.log(start);
 				} else if (/显示(\d+)条中的最新(\d+)条/.exec(info)) {
 					var replyAmount = parseInt(RegExp.$1);
 					var start = replyAmount - parseInt(RegExp.$2) + 1;
@@ -2465,27 +2489,20 @@ function addFloorCounter(evt) {
 					var start = 1;
 				}
 			}
-			if (start <= 0) {
-				// 人人网抽风了
-				start = 1;
-			}
 			if (hidden && replies.size() == 2) {
 				// 中间的被隐藏了，只有首尾两条
 				replies.each(function(index) {
 					if ($(this).find("span.fc").empty()) {
 						$(this).add($("@span").addClass("fc").css({"float":"left","margin-right":"3px"}).text((index?replyAmount:start)+"楼"),0);
 					} else {
+						// 加载更多时实际上是更新了所有的，原来的第一条个和最后一条都被重置了
 						return true;
 					}
 				});
 			} else {
 				replies.each(function(index) {
-					var fc = $(this).find("span.fc");
-					if (fc.empty()) {
+					if ($(this).find("span.fc").empty()) {
 						$(this).add($("@span").addClass("fc").css({"float":"left","margin-right":"3px"}).text((index+start)+"楼"),0);
-					} else {
-						// 有些浏览器上是分段添加的。。
-						fc.text((index+start)+"楼");
 					}
 				});
 			}
@@ -3102,7 +3119,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						unknown:failedImagesList,		// 失败/未知的数据
 						type:linkOnly					// 只显示链接
 					};
-					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS) {
+					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS || XNR.agent==JETPACK) {
 						var html="<head><meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+album.title.replace("\\","\\\\").replace("'","\\'")+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style><script>function switchLink(){var links=document.querySelectorAll(\"a[title]:not([title=\\'\\'])\");for(var i=0;i<links.length;i++){if(links[i].textContent!=links[i].title){links[i].textContent=links[i].title}else{links[i].textContent=links[i].href}}};function switchIndex(add,max){var links=document.querySelectorAll(\"*[index]\");for(var i=0;i<links.length;i++){if(add){links[i].title=idx(parseInt(links[i].getAttribute(\"index\"))+1,max)+\" \"+links[i].title}else{links[i].title=links[i].title.replace(/^[0-9]+ /,\"\")}}};function idx(n,max){var i=0;for(;max>0;max=parseInt(max/10)){i++}n=\"00000\"+n;return n.substring(n.length-i,n.length)}</script></head><body>";
 						html+="<p><a target=\"_blank\" href=\"http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum\">下载指南</a>";
 						html+="</p><p>来源："+album.ref+"</p>";
@@ -5637,7 +5654,7 @@ function main(savedOptions) {
 				page:"profile"
 			},{
 				text:"##修正导航栏项目高度##",
-				agent:FIREFOX | USERSCRIPT,
+				agent:FIREFOX | USERSCRIPT | JETPACK,
 				ctrl:[
 					{
 						id:"fixNavItemHeight",
@@ -5654,7 +5671,7 @@ function main(savedOptions) {
 				]
 			},{
 				text:"##修正论坛排版错误##",
-				agent:FIREFOX | USERSCRIPT,
+				agent:FIREFOX | USERSCRIPT | JETPACK,
 				ctrl:[
 					{
 						id:"fixClubTypesetting",
@@ -6197,7 +6214,7 @@ function main(savedOptions) {
 						value:"24小时内最多检查一次"
 					}
 				],
-				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT
+				agent:USERSCRIPT | FIREFOX | JETPACK | OPERA_UJS | OPERA_EXT
 			},{
 				text:"最后一次检查更新时间：##",
 				ctrl:[{
@@ -6206,7 +6223,7 @@ function main(savedOptions) {
 					value:0,
 					format:"date"
 				}],
-				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT
+				agent:USERSCRIPT | FIREFOX | JETPACK | OPERA_UJS | OPERA_EXT
 			},{
 				text:"##",
 				ctrl:[{
@@ -6218,7 +6235,7 @@ function main(savedOptions) {
 						args:[null,"@checkLink","@updateLink","@lastUpdate"]
 					}],
 				}],
-				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT
+				agent:USERSCRIPT | FIREFOX | JETPACK | OPERA_UJS | OPERA_EXT
 			},{
 				text:"检查更新地址：##",
 				ctrl:[{
@@ -6248,7 +6265,7 @@ function main(savedOptions) {
 					style:"width:330px",
 					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的检查更新地址"}
 				}],
-				agent:FIREFOX | OPERA_EXT
+				agent:FIREFOX | JETPACK | OPERA_EXT
 			},{
 				text:"扩展下载地址：##",
 				ctrl:[{
@@ -6258,7 +6275,7 @@ function main(savedOptions) {
 					style:"width:330px;",
 					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的脚本下载地址"},
 				}],
-				agent:FIREFOX 
+				agent:FIREFOX | JETPACK
 			},{
 				text:"脚本下载地址：##",
 				ctrl:[{
@@ -6281,7 +6298,7 @@ function main(savedOptions) {
 				agent:OPERA_EXT
 			},{
 				text:"* 以上地址保存后生效",
-				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT
+				agent:USERSCRIPT | FIREFOX | JETPACK | OPERA_UJS | OPERA_EXT
 			},{
 				text:"##升级后显示通知",
 				ctrl:[{
@@ -7375,6 +7392,9 @@ function $save(name,value) {
 		case FIREFOX:
 			XNR_save(opts);
 			break;
+		case JETPACK:
+			XNR.jetSendRequest("save", opts);
+			break;
 		case CHROME:
 			chrome.extension.sendRequest({action:"save",data:opts});
 			break;
@@ -7411,6 +7431,13 @@ function $get(url,func,userData,method) {
 			// 不能直接使用window.XMLHttpRequest，会被noscript阻挡
 			XNR_get(window,url,func,userData,method);
 			break;
+		case JETPACK:
+			if(func!=null) {
+				XNR.jetSendRequest("get",{url:url,method:method},function(data){func.call(window,data,url,userData)});
+			} else {
+				XNR.jetSendRequest("get",{url:url,method:method});
+			}
+			break;
 		case USERSCRIPT:
 			if(func!=null) {
 				GM_xmlhttpRequest({method:method,url:url,onload:function(o) {
@@ -7436,9 +7463,6 @@ function $get(url,func,userData,method) {
 				sogouExplorer.extension.sendRequest({action:"get",url:url,method:method});
 			} else {
 				sogouExplorer.extension.sendRequest({action:"get",url:url,method:method},function(response) {
-					alert(func)
-					alert(response)
-					alert(response.data)
 					func.call(window,response.data,url,userData);
 				});
 			}
@@ -7524,6 +7548,8 @@ function $error(func,error) {
 		var log = "在 "+func+"() 中发生了一个错误。\n"+msg;
 		if(XNR.agent==FIREFOX) {
 			XNR_log(log);
+		} else if(XNR.agent==JETPACK) {
+			XNR.jetSendRequest("log", log);
 		} else if(XNR.agent==USERSCRIPT) {
 			GM_log(log);	// Firefox 3.6 has no console.log
 		} else {
@@ -8437,6 +8463,17 @@ switch(XNR.agent) {
 			}
 		}
 		main(opts);
+		break;
+	case JETPACK:
+		XNR.jetSendRequest("load", null, function(data) {
+			var opts;
+			try {
+				opts=JSON.parse(data);
+			} catch(ex) {
+				opts={};
+			}
+			main(opts);
+		})
 		break;
 	case SAFARI:
 		var reqId=Math.random();
