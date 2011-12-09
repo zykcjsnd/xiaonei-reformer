@@ -32,9 +32,9 @@ cd ..
 
 #######################################
 
-cp "$INPUT" jetpack/data/"$INPUT"
-cd jetpack
-sed -i '10s/".*"/"version": "'$VER1'"/' package.json
+cp "$OUTPUT" sogou-extension/"$INPUT"
+cd sogou-extension
+sed -i '6s/version>[^<]*</version>'$VER1'</' manifest.xml
 ./pack.sh
 cd ..
 

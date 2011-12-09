@@ -1,3 +1,9 @@
+455:
+fix:废弃jetpack架构，直接将firefox扩展转换成bootstrap
+fix:修正下载相册页面可能无法正确设置页面title的问题
+fix:更新表情列表
+fix:修正楼层计数功能可能的计数错误BUG
+
 454:
 fix:完善对紫豆模板的清除
 fix:修正去除VIP入场动画功能在部分情况下会导致页面无法滚动BUG

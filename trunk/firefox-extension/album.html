@@ -1,3 +1,4 @@
+<doctype html>
 <html>
 <head>
 	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -13,10 +14,9 @@
 	<script>
 		function getPhotos() {
 			try {
-				var data = /#(.*)$/.exec(location.href)[1];
-				var album = JSON.parse(data);
-				var html = "";
-				html += "<p><a target=\"_blank\" href=\"http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum\">下载指南</a></p>";
+				var album=JSON.parse(decodeURIComponent(/#(.*)$/.exec(location.href)[1]));
+				var html="";
+				html+="<p><a target=\"_blank\" href=\"http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum\">下载指南</a></p>";
 				html+="<p>来源："+album.ref+"</p>";
 				if(album.unknown.length>0) {
 					html+="<p>未能取得以下地址的图片：</p>";
@@ -45,7 +45,7 @@
 				} else {
 					if(album.data.length>0) {
 						html+="<p>图片数量："+album.data.length+"</p>";
-						html+="<p>如果你有什么方法可以把这些图片弄到你电脑上，那就弄吧</p>";
+						html+="<p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列图片</p>";
 						html+="<p><input type=\"checkbox\" onclick=\"switchIndex(this.checked,"+album.data.length+")\">在描述前添加图片序号</input></p>";
 					}
 					for(var i=0;i<album.data.length;i++) {
@@ -54,10 +54,11 @@
 					}
 				}
 				document.body.innerHTML=html;
-				if (album.title) {
-					document.title = album.title;
+				if(album.title) {
+					document.title=album.title;
 				}
 			} catch(err) {
+				document.body.textContent="数据传输出错！";
 			}
 		};
 		function switchLink() {
@@ -91,6 +92,6 @@
 	</script>
 </head>
 <body onload="getPhotos()">
-别刷新……
+请稍候。如果您安装了noscript扩展，请允许file://执行脚本
 </body>
 </html>

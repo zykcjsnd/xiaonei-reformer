@@ -630,5 +630,9 @@
   "(hsd)": {
     "t": "红丝带",
     "s": "/imgpro/icons/statusface/hsd.gif"
+  },
+  "(six)": {
+    "t": "人人网6周年",
+    "s": "/imgpro/icons/statusface/six.gif"
   }
 }
