@@ -19,7 +19,9 @@
 				case "get":
 					var httpReq= new XMLHttpRequest();
 					httpReq.onload=function() {
-						event.source.postMessage(JSON.stringify({reqId:request.reqId,data:(httpReq.status==200?httpReq.responseText:null)}));
+						if (httpReq.readyState == 4) {
+							event.source.postMessage(JSON.stringify({reqId:request.reqId,data:(httpReq.status==200?httpReq.responseText:null)}));
+						}
 					};
 					httpReq.onerror=function(e) {
 						event.source.postMessage(JSON.stringify({reqId:request.reqId,data:null}));
@@ -29,7 +31,7 @@
 					break;
 				case "album":
 					// FIXME:无法下载图片
-					opera.extension.tabs.create({focused:true, url:"album.html#"+encodeURIComponent(JSON.stringify(request.data))});
+					opera.extension.tabs.create({focused:true, url:"javascript:'"+request.data+"'"});
 					break;
 			}
 		};

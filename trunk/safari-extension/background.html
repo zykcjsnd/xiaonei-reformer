@@ -23,7 +23,9 @@ safari.application.addEventListener("message",function(msg) {
 		case "xnr_get":
 			var httpReq=new XMLHttpRequest();
 			httpReq.onload=function() {
-				msg.target.page.dispatchMessage("xnr_get_data",{id:msg.message.id,data:(httpReq.status==200?httpReq.responseText:null)});
+				if (httpReq.readyState == 4) {
+					msg.target.page.dispatchMessage("xnr_get_data",{id:msg.message.id,data:(httpReq.status==200?httpReq.responseText:null)});
+				}
 			};
 			httpReq.onerror=function(e) {
 				msg.target.page.dispatchMessage("xnr_get_data",{id:msg.message.id,data:null});
@@ -34,9 +36,7 @@ safari.application.addEventListener("message",function(msg) {
 			break;
 		case "xnr_album":
 			var tab=safari.application.activeBrowserWindow.openTab();
-			var reqId=parseInt(Math.random()*1000000);
-			localStorage.setItem("xnr_album_"+reqId,JSON.stringify(msg.message));
-			tab.url=safari.extension.baseURI+"album.html#"+reqId;
+			tab.url=safari.extension.baseURI+"album.html#"+encodeURIComponent(JSON.stringify(msg.message));
 			break;
 	}
 },false);

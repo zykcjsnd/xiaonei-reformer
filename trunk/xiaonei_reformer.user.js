@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.0.458
-// @miniver        458
+// @version        3.3.1.459
+// @miniver        459
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -35,11 +35,11 @@ if (window.self != window.top) {
 	if(document.designMode=="on") {
 		// 不在内容可以编辑的frame中运行
 		return;
+	} else if(document.location.href.match(/ajaxproxy|ime.htm/i)) {
+		// 也不在ajaxproxy.html和ime.htm中运行
+		return;
 	} else if(document.body && !document.body.id && !document.body.className) {
 		// 也不在body没有标记的frame中运行
-		return;
-	} else if(document.location.href.match(/ajaxproxy|ime.htm/i)) {
-		// 也不在ajaxproxy.html和ime.htm中运行。for damn chrome
 		return;
 	}
 }
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.0.457";
-XNR.miniver=457;
+XNR.version="3.3.1.459";
+XNR.miniver=459;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -3173,6 +3173,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 
 		function finish() {
 			try {
+				downLink.text("下载当前页图片");
 				if($alloc("download_album").length==0) {
 					alert("无法获取任何图片的地址");
 				} else {
@@ -3246,7 +3247,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 									if (repMode) {
 										html+="<p>尊敬的Opera用户，请在下列图片上逐个点鼠标右键手动保存。如果是在使用11.00之前的Opera，可尝试完整保存本页面，在与页面同名文件夹下得到下列图片</p>";
 									} else {
-										html+="<p>尊敬的Opera用户，请在每个图片上点鼠标右键手动保存。这是Opera本身的限制，如果您有什么好的方法可以实现一次性保存全部图片，欢迎来信赐教</p>";
+										html+="<p>尊敬的Opera用户，请在下列图片上逐个点鼠标右键手动保存。这是Opera本身的限制，如果您有什么好的方法可以实现一次性保存全部图片，欢迎来信赐教</p>";
 									}
 								} else {
 									html+="<p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列图片</p>";
@@ -3281,7 +3282,6 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 					}
 				}
 				$dealloc("download_album");
-				downLink.text("下载当前页图片");
 				$(".photo-list span.img a,table.photoList td.photoPan>a").attr({down:null});
 			} catch(ex) {
 				$error("addDownloadAlbumLink::finish",ex);
@@ -7449,7 +7449,7 @@ function $script(code,global) {
 		code="(function(){"+code+"})();";
 	}
 	if(XNR.agent==CHROME || XNR.agent==SAFARI || XNR.agent==SOGOU) {
-		// 如果chrome/safari用location方法，会发生各种各样奇怪的事。比如innerHTML失灵。。。万恶的webkit
+		// 如果用location方法，会发生各种各样奇怪的事。比如innerHTML失灵。。。万恶的webkit
 		$("@script").text(code).addTo(document).remove();
 	} else {
 		try {
@@ -7579,17 +7579,70 @@ function $get(url,func,userData,method) {
 			}
 			break;
 		case SAFARI:
-			// 由于发送和接收消息是分离的，随机ID确保联系
-			var requestId=Math.random();
-			if(func!=null) {
-				safari.self.addEventListener("message",function(msg) {
-					if(msg.name=="xnr_get_data" && msg.message.id==requestId) {
-						safari.self.removeEventListener("message",arguments.callee,false);
-						func.call(window,msg.message.data,url,userData);
+			// 在safari 5.1.x中，如果请求发送自扩展，无法同时发送对应页面已有的cookie
+			// 所以只能尝试使用人人网自己的ajaxproxy跨域机制
+			var domain=url.match(".*?://[^/]+")[0];
+			if (/renren\.com$/.test(domain)) {
+				var requestId="xnr_ajax_"+parseInt(Math.random()*1000000);
+				var dataDiv=$("@div").attr({"style":"display:none","id":requestId+"_response","url":url}).addTo(document);
+				var code="var count=0;"+
+					"(function(){"+
+						"if(!window.XN || !XN.net || !XN.net.xmlhttp){"+
+							"if(count<20){"+
+								"setTimeout(arguments.callee, 300);"+
+								"count++;"+
+							"}else{"+
+								"ajaxagent('null')"+
+							"}"+
+							"return;"+
+						"}"+
+						"try{"+
+							"new XN.net.xmlhttp({"+
+								"url:document.getElementById('"+requestId+"_response').getAttribute('url'),"+
+								"method:'"+method+"',"+
+								"onSuccess:function(r){"+
+									"if(r.readyState==4){"+
+										"ajaxagent(r.status==200?r.responseText:'null')"+
+									"}"+
+								"},"+
+								"onError:function(r){"+
+									"ajaxagent('null')"+
+								"}"+
+							"});"+
+						"}catch(ex){"+
+							"ajaxagent('null')"+
+						"}"+
+						"function ajaxagent(content){"+
+							"document.getElementById('"+requestId+"_response').textContent=content;"+
+							"var evt=document.createEvent('HTMLEvents');"+
+							"evt.initEvent('"+requestId+"',true,true);"+
+							"document.documentElement.dispatchEvent(evt)"+
+						"}"+
+					"})()";
+				$(document).bind(requestId, function(){
+					$(document).unbind(requestId, arguments.callee, true);
+					var text=dataDiv.text();
+					dataDiv.remove();
+					if (text==="null"){
+						func.call(window,null,url,userData);
+					} else {
+						func.call(window,text,url,userData);
 					}
-				},false);
+				},true);
+				$script(code);
+			} else {
+				// 由于发送和接收消息是分离的，随机ID确保联系
+				var requestId=Math.random();
+				if(func!=null) {
+					safari.self.addEventListener("message",function(msg) {
+						if(msg.name=="xnr_get_data" && msg.message.id==requestId) {
+							safari.self.removeEventListener("message",arguments.callee,false);
+							func.call(window,msg.message.data,url,userData);
+						}
+					},false);
+				}
+		    	safari.self.tab.dispatchMessage("xnr_get",{id:requestId,url:url,method:method});
 			}
-	    	safari.self.tab.dispatchMessage("xnr_get",{id:requestId,url:url,method:method});
 			break;
 		case OPERA_UJS:
 			try {
