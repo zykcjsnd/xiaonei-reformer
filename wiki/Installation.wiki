@@ -80,7 +80,7 @@ http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_c6.jpg
 ==安装Opera==
 请到 http://www.opera.com/ 下载最新版Opera进行安装。本程序不保证能在10.50以下版本上正常运行
 ==安装用户脚本==
- # 到[http://code.google.com/p/xiaonei-reformer/downloads/list 扩展下载页面]去下载[http://xiaonei-reformer.googlecode.com/files/opera_crossdomain.zip Opera用户脚本跨域支持]，将压缩包中的两个文件解压到[http://wiki.operachina.com/UserJS#.E5.85.A8.E5.B1.80.E4.BD.BF.E7.94.A8 javascript文件夹]内。如果不安装Opera用户脚本跨域支持，程序也可以运行，但部分功能将会失效。关于Opera用户脚本跨域支持的相关信息，参考[http://my.opera.com/community/forums/topic.dml?id=155224 这里]。
+ # 到[http://code.google.com/p/xiaonei-reformer/downloads/list 扩展下载页面]去下载[http://xiaonei-reformer.googlecode.com/files/opera_crossdomain.zip Opera用户脚本跨域支持]，将压缩包中的两个文件解压到[http://wiki.operachina.com/UserJS#.E5.85.A8.E5.B1.80.E4.BD.BF.E7.94.A8 javascript文件夹]内。如果不安装Opera用户脚本跨域支持，程序也可以运行，但部分功能将会失效。关于Opera用户脚本跨域支持的相关信息，参考[http://my.opera.com/community/forums/topic.dml?id=155224 这里]。<font color="red">注意：观察到在Opera 11.60版中，此跨域方法失效。请换用Opera扩展版本</font>
  # 下载Opera用户脚本，将Opera用户脚本同样放置在[http://wiki.operachina.com/UserJS#.E5.85.A8.E5.B1.80.E4.BD.BF.E7.94.A8 javascript文件夹]中
 ==允许脚本存储==
 程序脚本需要在你的机器上存储你所设置的选项，但Opera默认并不允许程序脚本这么做。请在Opera设置（opera:config）里将"User JS Storage Quota"项的值设置为102400。如下图所示。
@@ -88,5 +88,7 @@ http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_c6.jpg
 http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_o1.png
 
 <font color="red">这一步非常重要，如果不修改，脚本将无法正常运行。</font>关于脚本存储的更多信息，参考[http://www.opera.com/docs/userjs/specs/#scriptstorage 这里]。
-==关于Opera 11的扩展==
-Opera 11增加了扩展机制。但是在11.50版之前，都存在一个缺陷，导致人人网改造器无法正常工作。目前人人网改造器的Opera扩展版本已经制作完成，但暂时不做发布。确实有兴趣的朋友可以来信想作者索取，或者自行从源码仓库中构建。
+
+==安装扩展==
+Opera 11增加了扩展机制。但是在11.50版之前，都存在一个缺陷，导致人人网改造器无法正常工作。所以如果要使用
+到[http://code.google.com/p/xiaonei-reformer/downloads/list 扩展下载页面]去下载扩展程序。下载后将文件拖动到opera窗口上即可安装
