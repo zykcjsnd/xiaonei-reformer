@@ -6390,7 +6390,7 @@ function main(savedOptions) {
 					type:"input",
 					value:"http://xiaonei-reformer.googlecode.com/files/xiaonei_reformer-fx.xpi",
 					style:"width:330px;",
-					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的脚本下载地址"},
+					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的扩展下载地址"},
 				}],
 				agent:FIREFOX 
 			},{
@@ -6410,7 +6410,7 @@ function main(savedOptions) {
 					type:"input",
 					value:"http://xiaonei-reformer.googlecode.com/files/xiaonei_reformer-opera.oex",
 					style:"width:330px;",
-					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的脚本下载地址"},
+					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的扩展下载地址"},
 				}],
 				agent:OPERA_EXT
 			},{
