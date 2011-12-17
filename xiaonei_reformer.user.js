@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.0.457
-// @miniver        457
+// @version        3.3.0.458
+// @miniver        458
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.0.456";
-XNR.miniver=456;
+XNR.version="3.3.0.457";
+XNR.miniver=457;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -3103,71 +3103,79 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 			var cur=0;
 			links.attr("down","down");
 			downLink.text("分析中...(0/"+totalImage+")");
-			links.each(function(index) {
-				if(!downLink.text().match("分析中")) {
-					return false;
-				}
-				$get(this.href,function(html,url,target) {
+			var hrefs=[];
+			links.each(function() {
+				hrefs.push({t:this,l:this.href});
+			});
+
+			var a=hrefs.shift();
+			$get(a.l,function(html,url,target) {
+				var imageSrc="";
+				try {
 					if(html==null) {
 						return;
 					}
 					if(!downLink.text().match("分析中")) {
 						return;
 					}
-					var imageSrc="";
-					try {
-						if(html.search("<body id=\"errorPage\">")!=-1) {
+
+					if(html.search("<body id=\"errorPage\">")!=-1) {
+						return;
+					}
+					var src=/var photo *= *({.*});?/.exec(html);
+					if(src) {
+						src=JSON.parse(src[1]);
+						if(src.photo && src.photo.large) {
+							imageSrc=src.photo.large;
 							return;
 						}
-						var src=/var photo *= *({.*});?/.exec(html);
-						if(src) {
-							src=JSON.parse(src[1]);
-							if(src.photo && src.photo.large) {
-								imageSrc=src.photo.large;
-								return;
-							}
-						}
-						// 公共主页相册
-						var src=/XN.PAGE.albumPhoto.init\((.*?)\);/i.exec(html);
-						if(src) {
-							src=JSON.parse("["+src[1].replace(/'.*?'/g,"0").replace(",photo:",',"photo":')+"]")[10];
-							if(src && src.photo && src.photo.large) {
-								imageSrc=src.photo.large;
-								return;
-							}
-						}
-						// 其他的照片 ？？？
-						var src=/<img[^>]+id="photo".*?>/.exec(html);
-						if(src) {
-							src=/src=\"(.*?)\"/.exec(src);
-							if(src && src[1] && src[1].indexOf("/a.gif")==-1) {
-								imageSrc=src[1];
-								return;
-							}
-						}
-					} catch(ex) {
-						$error("addDownloadAlbumLink::$get",ex);
-					} finally {
-						if(imageSrc) {
-							$alloc("download_album").push({i:index,src:imageSrc,title:($(target).find("img").attr("alt") || "")});
-							$(target).attr({down:null});
-						}
-						cur++;
-						if(cur==totalImage) {
-							if(downLink.text().match("分析中")) {
-								finish();
-							}
-						} else {
-							downLink.text("分析中...("+cur+"/"+totalImage+")");
+					}
+					// 公共主页相册
+					var src=/XN.PAGE.albumPhoto.init\((.*?)\);/i.exec(html);
+					if(src) {
+						src=JSON.parse("["+src[1].replace(/'.*?'/g,"0").replace(",photo:",',"photo":')+"]")[10];
+						if(src && src.photo && src.photo.large) {
+							imageSrc=src.photo.large;
+							return;
 						}
 					}
-				},this);
-			});
+					// 其他的照片 ？？？
+					var src=/<img[^>]+id="photo".*?>/.exec(html);
+					if(src) {
+						src=/src=\"(.*?)\"/.exec(src);
+						if(src && src[1] && src[1].indexOf("/a.gif")==-1) {
+							imageSrc=src[1];
+							return;
+						}
+					}
+				} catch(ex) {
+					$error("addDownloadAlbumLink::$get",ex);
+				} finally {
+					if(imageSrc) {
+						$alloc("download_album").push({i:totalImage-hrefs.length,src:imageSrc,title:($(target).find("img").attr("alt") || "")});
+						$(target).attr({down:null});
+					}
+					cur++;
+					if(cur==totalImage) {
+						if(downLink.text().match("分析中")) {
+							finish();
+						}
+					} else {
+						downLink.text("分析中...("+cur+"/"+totalImage+")");
+					}
+					if (hrefs.length>0 && downLink.text().match("分析中")) {
+						var a=hrefs.shift();
+						$get(a.l, arguments.callee, a.t);
+					}
+				}
+			},a.t);
 		}
 
 		function finish() {
 			try {
-				if($alloc("download_album").length>0) {
+				if($alloc("download_album").length==0) {
+					alert("无法获取任何图片的地址");
+				} else {
 					var failedImages=$(".photo-list span.img a[down],table.photoList td.photoPan>a[down],.photo-list>ul>li>a.cover[down]");
 					var failedImagesList=[];
 					if(failedImages.exist()) {
@@ -3203,7 +3211,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						unknown:failedImagesList,		// 失败/未知的数据
 						type:linkOnly					// 只显示链接
 					};
-					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS) {
+					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS || XNR.agent==OPERA_EXT) {
 						var html="<head><meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+album.title.replace("\\","\\\\").replace("'","\\'")+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style><script>function switchLink(){var links=document.querySelectorAll(\"a[title]:not([title=\\'\\'])\");for(var i=0;i<links.length;i++){if(links[i].textContent!=links[i].title){links[i].textContent=links[i].title}else{links[i].textContent=links[i].href}}};function switchIndex(add,max){var links=document.querySelectorAll(\"*[index]\");for(var i=0;i<links.length;i++){if(add){links[i].title=idx(parseInt(links[i].getAttribute(\"index\"))+1,max)+\" \"+links[i].title}else{links[i].title=links[i].title.replace(/^[0-9]+ /,\"\")}}};function idx(n,max){var i=0;for(;max>0;max=parseInt(max/10)){i++}n=\"00000\"+n;return n.substring(n.length-i,n.length)}</script></head><body>";
 						html+="<p><a target=\"_blank\" href=\"http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum\">下载指南</a>";
 						html+="</p><p>来源："+album.ref+"</p>";
@@ -3234,7 +3242,15 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						} else {
 							if(album.data.length>0) {
 								html+="<p>图片数量："+album.data.length+"</p>";
-								html+="<p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列图片</p>";
+								if (XNR.agent==OPERA_EXT || XNR.agent==OPERA_UJS) {
+									if (repMode) {
+										html+="<p>尊敬的Opera用户，请在下列图片上逐个点鼠标右键手动保存。如果是在使用11.00之前的Opera，可尝试完整保存本页面，在与页面同名文件夹下得到下列图片</p>";
+									} else {
+										html+="<p>尊敬的Opera用户，请在每个图片上点鼠标右键手动保存。这是Opera本身的限制，如果您有什么好的方法可以实现一次性保存全部图片，欢迎来信赐教</p>";
+									}
+								} else {
+									html+="<p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列图片</p>";
+								}
 								html+="<p><input type=\"checkbox\" onclick=\"switchIndex(this.checked,"+album.data.length+")\">在描述前添加图片序号</input></p>";
 							}
 							for(var i=0;i<album.data.length;i++) {
@@ -3248,7 +3264,11 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 							document.documentElement.innerHTML=html.replace(/<script>[\s\S]*<\/script>/,"");
 							$("@script").text(/<script>([\s\S]*)<\/script>/.exec(html)[1]).addTo(document);
 						} else {
-							window.open("javascript:'"+html+"'");
+							if(XNR.agent==OPERA_EXT) {
+								XNR.oexSendRequest({action:"album",data:html});
+							} else {
+								window.open("javascript:'"+html+"'");
+							}
 						}
 					} else if(XNR.agent==FIREFOX) {
 						XNR_album(album);
@@ -3258,8 +3278,6 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						sogouExplorer.extension.sendRequest({action:"album",data:album});
 					} else if(XNR.agent==SAFARI) {
 						safari.self.tab.dispatchMessage("xnr_album",album);
-					} else if(XNR.agent==OPERA_EXT) {
-						XNR.oexSendRequest({action:"album",data:album});
 					}
 				}
 				$dealloc("download_album");
