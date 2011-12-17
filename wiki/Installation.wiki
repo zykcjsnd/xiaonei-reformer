@@ -90,5 +90,5 @@ http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_o1.png
 <font color="red">这一步非常重要，如果不修改，脚本将无法正常运行。</font>关于脚本存储的更多信息，参考[http://www.opera.com/docs/userjs/specs/#scriptstorage 这里]。
 
 ==安装扩展==
-Opera 11增加了扩展机制。但是在11.50版之前，都存在一个缺陷，导致人人网改造器无法正常工作。所以如果要使用
+Opera 11增加了扩展机制。但是在11.50版之前，都存在一个缺陷，导致人人网改造器无法正常工作。所以请使用11.50或更高版本的Opera
 到[http://code.google.com/p/xiaonei-reformer/downloads/list 扩展下载页面]去下载扩展程序。下载后将文件拖动到opera窗口上即可安装
