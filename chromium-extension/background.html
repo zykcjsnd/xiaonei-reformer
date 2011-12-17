@@ -23,7 +23,9 @@ function(request, sender, sendResponse) {
 		case "get":
 			var httpReq= new XMLHttpRequest();
 			httpReq.onload=function() {
-				sendResponse({data:(httpReq.status==200?httpReq.responseText:null)});
+				if (httpReq.readyState == 4) {
+					sendResponse({data:(httpReq.status==200?httpReq.responseText:null)});
+				}
 			};
 			httpReq.onerror=function(e) {
 				sendResponse({data:null});

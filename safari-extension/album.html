@@ -13,7 +13,7 @@
 	<script>
 		function getPhotos() {
 			try {
-				var data = /#(.*)$/.exec(location.href)[1];
+				var data = decodeURIComponent(/#(.*)$/.exec(location.href)[1]);
 				var album = JSON.parse(data);
 				var html = "";
 				html += "<p><a target=\"_blank\" href=\"http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum\">下载指南</a></p>";
@@ -45,7 +45,7 @@
 				} else {
 					if(album.data.length>0) {
 						html+="<p>图片数量："+album.data.length+"</p>";
-						html+="<p>如果你有什么方法可以把这些图片弄到你电脑上，那就弄吧</p>";
+						html+="<p>尊敬的Safari用户，请在下列图片上逐个点鼠标右键手动保存。如果您有什么好的方法可以实现一次性保存全部图片，欢迎来信赐教</p>";
 						html+="<p><input type=\"checkbox\" onclick=\"switchIndex(this.checked,"+album.data.length+")\">在描述前添加图片序号</input></p>";
 					}
 					for(var i=0;i<album.data.length;i++) {
@@ -91,6 +91,6 @@
 	</script>
 </head>
 <body onload="getPhotos()">
-别刷新……
+请稍候
 </body>
 </html>

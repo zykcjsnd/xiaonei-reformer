@@ -25,7 +25,9 @@ const XNRCore = {
 		var httpReq = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
 		if (func != null) {
 			httpReq.onload = function() {
-				func.call(scope, (httpReq.status==200?httpReq.responseText:null), url, data);
+				if (httpReq.readyState == 4) {
+					func.call(scope, (httpReq.status==200?httpReq.responseText:null), url, data);
+				}
 			};
 			httpReq.onerror=function () {
 				func.call(scope, null, url, data);
