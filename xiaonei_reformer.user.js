@@ -305,10 +305,10 @@ function removeHomeGadgets(gadgetOpt) {
 		"levelBar":".site-menu-user-box",	// 个人等级
 		"footprint":"#footPrint",	// 最近来访
 		"recommendApp":".site-menu-apps.recommend",	// 推荐应用
-		"newFriends":".pymk:not(.manage),.find-friend-box,#myknowfriend_user",	// 好友推荐，后面2个是新注册用户页面上的
+		"newFriends":"#pymk_home,.find-friend-box,#myknowfriend_user",	// 好友推荐，后面2个是新注册用户页面上的
 		"schoolBeauty":"#schoolBeautyBox,#xiaoTaoHua",	// 校花校草
 		"sponsors":"#sponsorsWidget,.wide-sponsors",	// 赞助商内容
-		"publicPageAdmin":"#pageAdmin,.pymk.manage",	// 公共主页管理
+		"publicPageAdmin":"#myAdmins",	// 主页管理
 		"birthday":"#homeBirthdayPart",	// 好友生日
 		"survey":".side-item.sales-poll",	// 人人网调查
 		"friendPhoto":"#friendPhoto",	// 朋友的照片
@@ -577,8 +577,8 @@ function hideFeeds(evt,feeds,mark,badTitles,badIds,goodIds,hideOld,hideDays) {
 		var curMonth=new Date().getMonth()+1;
 		var d={m:deadline.getMonth()+1,d:deadline.getDate()};
 	}
-	if(badIds && feeds.share==false) {
-		var bidFilter="a[href*='profile.do?id="+badIds.split("|").join("'],a[href*='profile.do?id=")+"']";
+	if(badIds && (feeds.share==false || feeds.status==false)) {
+		var bidFilter="a[href*='profile.do?id="+badIds.split("|").join("'],a[href*='profile.do?id=")+"']," + "a[href*='page.renren.com/"+badIds.split("|").join("'],a[href*='page.renren.com/")+"']";
 	}
 	if(goodIds) {
 		var gidFilter="a[href*='profile.do?id="+goodIds.split("|").join("'],a[href*='profile.do?id=")+"']";
@@ -626,7 +626,7 @@ function hideFeeds(evt,feeds,mark,badTitles,badIds,goodIds,hideOld,hideDays) {
 			}
 		}
 		var type=$feedType(feed);
-		return (type!="" && feeds[type]==true) || (type.match("^share") && badIds && fh3.find(bidFilter).exist())
+		return (type!="" && feeds[type]==true) || (type.match("^share|status") && badIds && fh3.find(bidFilter).exist())
 	}).each(function() {
 		if(mark) {
 			try {
@@ -863,8 +863,8 @@ function autoCheckFeeds(feedFilter,badTitles,badIds,goodIds,checkReply) {
 			try {
 				// 获取新鲜事列表
 				var feedList=$("@ul").html(r.replace(/onload=".*?"/g,"").replace(/<script.*?<\/script>/g,"").replace(/src="http:\/\/s\.xnimg\.cn\/a\.gif"/g,"").replace(/lala=/g,"src="));
-				if(badIds && feedFilter.share==false) {
-					var bidFilter="a[href*='profile.do?id="+badIds.split("|").join("'],a[href*='profile.do?id=")+"']";
+				if(badIds && feedFilter.share==false && feedFilter.status==false) {
+					var bidFilter="a[href*='profile.do?id="+badIds.split("|").join("'],a[href*='profile.do?id=")+"'],"+"a[href*='page.renren.com/"+badIds.split("|").join("'],a[href*='page.renren.com/")+"']";
 				}
 				if(goodIds) {
 					var gidFilter="a[href*='profile.do?id="+goodIds.split("|").join("'],a[href*='profile.do?id=")+"']";
@@ -1272,6 +1272,10 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"#appsMenuPro .my-fav-apps{background-color:"+SCOLOR+"}",
 			],
 			"home-all-min.css":[
+				".publisher-share input.inlineinput{color:"+FCOLOR+"}",
+				".publisher-selector .publisher-photo-trigger{color:"+FCOLOR+"}",
+				".publisher-module .status-inputer .submit{background-color:"+FCOLOR+"}",
+				".publisher-module .comment-module .submit{background-color:"+FCOLOR+"}",
 				".a-feed .details a.share:hover{color:"+FCOLOR+"}",
 				".a-feed .feed-dropmenu menu li a:hover{background-color:"+FCOLOR+"}",
 				".feed-module .feed-tools a:link,.feed-module .feed-tools a:visited{color:"+FCOLOR+"}",
@@ -1287,7 +1291,6 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".like .favors,.reply .col-center .favors{color:"+FCOLOR+"}",
 				".like-video .terminal .video-title,.like-video .combox_share dl.replies dt.digged{color:"+FCOLOR+"}",
 				"#closePublisherSkin:hover,#dressPublisherSkin:hover{background-color:"+FCOLOR+"}",
-				".pymk .comefrom,.statuscmtitem,.mincmt-diggers,.panel.bookmarks,.user-data,.friend-birthday-window .bless-msg{background-color:"+SCOLOR+"}",
 				".feed-module .category-filter menu a:hover,.news-feed-types a.news-feed-type:hover{background-color:"+BCOLOR+"}",
 				".feed-module .feed-header-new .types label{color:"+FCOLOR+"}",
 				".feed-module .feed-header-new label.s, .feed-module .feed-header-new .category-filter:hover label.s, .feed-module .feed-header-new .category-filter_hover label.s, .feed-module .feed-header-new .feed-attention:hover label.s, .feed-module .feed-header-new .feed-attention_hover label.s{color:#333333}",
@@ -1295,11 +1298,19 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".message-box dt{color:"+FCOLOR+"}",
 				".message-box ul li.brand-new{background-color:#EFEDFF}",
 				".message-box div.handle button, .message-box div.handle a.accept{background-color:"+FCOLOR+"}",
+				".guide-tags li a.act{background-color:"+FCOLOR+"}",
+				".rr-dialog .guide-tags li a.act{background-color:"+FCOLOR+"}",
+				".rr-dialog .dialog-title{background-color:"+FCOLOR+"}",
+				".rr-dialog .guide-btn{background-color:"+FCOLOR+"}",
+				".xz-dialog .dialog-title{background-color:"+FCOLOR+"}",
+				".xz-dialog .guide-btn{background-color:"+FCOLOR+"}",
+				".input-button, .input-submit{background-color:"+FCOLOR+"}",
 				".a-feed .card-privacy{background-color:"+SCOLOR+"}",
 				".mincmt-diggers{background-color:"+SCOLOR+"}",
-				".home .home-sidebar .pymk .comefrom{background-color:"+SCOLOR+"}",
+				".pymk .comefrom{background-color:"+SCOLOR+"}",
 				".panel.bookmarks{background-color:"+SCOLOR+"}",
 				".user-data{background-color:"+SCOLOR+"}",
+				".statuscmtitem{background-color:"+SCOLOR+"}",
 			],
 			"webpager-std-min.css":[
 				".webpager ul.icon a:hover .tooltip{background-color:"+FCOLOR+"}",
@@ -2505,6 +2516,14 @@ function addFloorCounter(evt) {
 				} else if (/显示(\d+)条中的最新(\d+)条/.exec(info)) {
 					var replyAmount = parseInt(RegExp.$1);
 					var start = replyAmount - parseInt(RegExp.$2) + 1;
+				} else if (/显示最新(\d+)条/.exec(info)) {
+					// 准确数目不明？
+					var start = 1;
+					if (hidden) {
+						var replyAmount = parseInt(RegExp.$1);
+					} else {
+						var replyAmount = replies.size();
+					}
 				} else {
 					var replyAmount = replies.size();
 					var start = 1;
@@ -4568,6 +4587,12 @@ function delAllStatus() {
 	});
 };
 
+// 解除超级拖拽功能的封印。FIXME：中二了
+function repaireSuperDrag() {
+	const code='document.body.addEventListener("dragover",function(e){if(e.dataTransfer.types.indexOf("Files")==-1){e.stopPropagation()}},true)';
+	$script(code);
+}
+
 // 检查更新
 function checkUpdate(evt,checkLink,updateLink,lastCheck) {
 	var today=new Date().getTime();
@@ -5005,7 +5030,7 @@ function main(savedOptions) {
 						value:false,
 					},{
 						id:"publicPageAdmin",
-						text:"##公共主页/情侣空间管理",
+						text:"##页面管理",
 						value:false,
 					},{
 						id:"birthday",
@@ -5373,11 +5398,11 @@ function main(savedOptions) {
 				],
 				page:"feed,profile"
 			},{
-				text:"隐藏与以下ID有关的分享######",
+				text:"隐藏与以下ID有关的分享/转发######",
 				ctrl:[
 					{
 						type:"info",
-						value:"包括分享者和内容来源者。ID是对方个人主页地址中id=后面的数字。多个ID用|分隔。如果要屏蔽某人全部的新鲜事，请使用网站自身的忽略名单功能"
+						value:"包括分享/转发者和内容来源者。ID是对方个人主页地址中id=后面的数字，或者是公共主页地址上的6开头的9位数字。多个ID用|分隔。如果要屏蔽某人全部的新鲜事，请使用网站自身的忽略名单功能"
 					},{
 						type:"br"
 					},{
@@ -6311,6 +6336,23 @@ function main(savedOptions) {
 					}]
 				}],
 				page:"status"
+			},{
+				text: "##解决浏览器内置的超级拖拽功能失效问题##",
+				ctrl:[{
+					id:"repaireSuperDrag",
+					value:false,
+					fn:[{
+						name:repaireSuperDrag,
+						stage:2,
+						fire:true,
+						once:true
+					}]
+				},{
+					type:"info",
+					value: "人人网首页的拖拽图片上传会使chromeplus、sunchrome等浏览器内建的超级拖拽失效。开启本功能后可以使其重新生效。如果是通过第三方扩展实现的拖拽，没必要启用本功能"
+				}],
+				agent:CHROME,
+				page:"home"
 			}
 		],
 		"自动更新":[
@@ -7240,7 +7282,7 @@ function $cookie(name,def) {
  */
 function $page(category,url) {
 	const pages={
-		home:"renren\\.com/[hH]ome|renren\\.com/\\d+$|renren\\.com/\\d+[#?]|guide\\.renren\\.com/[Gg]uide",	// 首页，后面的是新注册用户的首页
+		home:"renren\\.com/[hH]ome|renren\\.com/\\d+$|renren\\.com/\\d+[#?]|/[a-zA-Z0-9_]{5,}\\.renren\\.com/|guide\\.renren\\.com/[Gg]uide",	// 首页，后面的是新注册用户的首页
 		feed:"renren\\.com/[hH]ome#?$|renren\\.com/[hH]ome.*#nogo$|renren\\.com/[hH]ome\?[^#]*$|#/home|/homeAttention#*$|/homeAttention[^#]*$|renren\\.com/\\d+$|renren\\.com/\\d+[#?]|/guide\\.renren\\.com/[Gg]uide#?$|#/guide",	// 首页新鲜事，后面的是新注册用户的首页
 		profile:"renren\\.com/[Pp]rofile|/[a-zA-Z0-9_]{5,}\\.renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|[a-zA-Z0-9_]{5,}\\.renren\\.com/innerProfile|renren\\.com/[a-zA-Z0-9_]{6,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personal/link/
 		blog:"/blog\\.renren\\.com/|#//blog/",	// 日志
