@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.1.459
-// @miniver        459
+// @version        3.3.1.461
+// @miniver        461
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -3395,7 +3395,7 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 		}
 		imgId=thumbnail.substring(thumbnail.lastIndexOf("_"));
 
-		// 大图信息已经放在链接上
+		// 大图信息已经放在某个属性上
 		var largeData = t.getAttribute("data-large");
 		if (largeData) {
 			_showViewer(evt.pageX,largeData,imgId,autoShrink,true);
@@ -3406,9 +3406,14 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 			_showViewer(evt.pageX,largeData,imgId,autoShrink,true);
 			return;
 		}
+		largeData = t.getAttribute("data-photo");
+		if (largeData && /large:'([^']+)'/.exec(largeData)) {
+			_showViewer(evt.pageX,RegExp.$1,imgId,autoShrink,true);
+			return;
+		}
 		largeData = t.getAttribute("largesrc");
 		if (largeData) {
-			_showViewer(evt.pageX,image,imgId,autoShrink,true);
+			_showViewer(evt.pageX,largeData,imgId,autoShrink,true);
 			return;
 		}
 
@@ -3431,7 +3436,7 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 				if(!t.parentNode.href.match(/^#|^javascript:/)) {
 					pageURL=t.parentNode.href;
 				}
-			} else if(t.parentNode.tagName=="I" && t.parentNode.parentNode.tagName=="A") {
+			} else if(t.parentNode.parentNode.tagName=="A") {
 				pageURL=t.parentNode.parentNode.href
 			}
 			
