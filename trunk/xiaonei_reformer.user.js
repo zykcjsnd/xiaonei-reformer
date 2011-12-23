@@ -1192,7 +1192,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 		return;
 	}
 	
-	var FCOLOR="#3B5998";	//Facebook的深蓝色，#F3FAFF
+	var FCOLOR="#3B5998";	//Facebook的深蓝色，#005EAC, #548BC6
 	var XCOLOR="#3B5888";	//校内原来的深蓝色
 	var BCOLOR="#5C75AA";	//原来的菜单背景色，#3777BC
 	var SCOLOR="#EBF3F7";	//原来的应用栏&回复背景色，#F3FAFF
@@ -1764,6 +1764,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".statuscmtitem{background-color:"+SCOLOR+"}",
 				".mincmt-diggers{background-color:"+SCOLOR+"}",
 				".comments-box .mincmt-body dl.replies dd{background-color:"+SCOLOR+"}",
+				".s-sort li a:hover{background-color:"+FCOLOR+"}",
 			],
 		};
 		var style="";
@@ -3358,6 +3359,8 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 					if(t.style.backgroundImage.indexOf("url(")!=-1) {
 						thumbnail=t.style.backgroundImage.replace(/^url\("?|"?\);?$/g,"");
 					}
+				} else if(t.src.indexOf("/default-pic.png")!=-1) {
+					thumbnail=null;
 				} else {
 					thumbnail=t.src;
 				}
@@ -3703,6 +3706,7 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 		if(!src) {
 			// 显示加载中图片
 			image.attr("src","http://s.xnimg.cn/imgpro/bg/bg_line_loading.gif");
+			image.attr("title", "");
 			image.attr("lid",imgId);
 		} else if(src=="error") {
 			if(!imgId || imgId==image.attr("lid")) {
@@ -3716,6 +3720,7 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 			}
 			if(imgId==image.attr("lid")) {
 				(shrink?image:viewer).css({maxHeight:(parseInt(window.innerHeight)-10)+"px",maxWidth:(parseInt(window.innerWidth)-20)+"px"});	// 边距2，边框宽度3
+				image.attr("title", "图片下载显示中...");
 				image.attr("src",src);
 			} else {
 				return;
@@ -7287,7 +7292,7 @@ function $cookie(name,def) {
  */
 function $page(category,url) {
 	const pages={
-		home:"renren\\.com/[hH]ome|renren\\.com/\\d+$|renren\\.com/\\d+[#?]|/[a-zA-Z0-9_]{5,}\\.renren\\.com/|guide\\.renren\\.com/[Gg]uide",	// 首页，后面的是新注册用户的首页
+		home:"renren\\.com/[hH]ome|renren\\.com/\\d+$|renren\\.com/\\d+[#?]|/[a-zA-Z0-9\\-]{5,}\\.renren\\.com/|guide\\.renren\\.com/[Gg]uide",	// 首页，后面的是新注册用户的首页
 		feed:"renren\\.com/[hH]ome#?$|renren\\.com/[hH]ome.*#nogo$|renren\\.com/[hH]ome\?[^#]*$|#/home|/homeAttention#*$|/homeAttention[^#]*$|renren\\.com/\\d+$|renren\\.com/\\d+[#?]|/guide\\.renren\\.com/[Gg]uide#?$|#/guide",	// 首页新鲜事，后面的是新注册用户的首页
 		profile:"renren\\.com/[Pp]rofile|/[a-zA-Z0-9_]{5,}\\.renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|[a-zA-Z0-9_]{5,}\\.renren\\.com/innerProfile|renren\\.com/[a-zA-Z0-9_]{6,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personal/link/
 		blog:"/blog\\.renren\\.com/|#//blog/",	// 日志
@@ -7296,7 +7301,7 @@ function $page(category,url) {
 		page_home:"/page\\.renren\\.com/[^/]+$|page\\.renren\\.com/[^/]+\\?|/page\\.renren\\.com/[^/]+/index",	// 公共主页首页 FIXME 准确否??
 		page_blog:"/page\\.renren\\.com/[^/]+/note/\\d+",	// 公共主页日志
 		status:"/status\\.renren\\.com/|#//status/",	// 状态
-		photo:"/photo\\.renren\\.com/getphoto\\.do|/photo\\.renren\\.com/gettagphoto\\.do|/photo\\.renren\\.com/photo/sp/|/photo\\.renren\\.com/photo/[0-9]+/photo-|/page\\.renren\\.com/[^/]+/photo/|event\\.renren\\.com/event/[0-9]+/[0-9]+/photo/[0-9]+|lover\\.renren\\.com/photo/",	// 照片
+		photo:"/photo\\.renren\\.com/getphoto\\.do|/photo\\.renren\\.com/gettagphoto\\.do|/photo\\.renren\\.com/photo/sp/|/photo\\.renren\\.com/photo/[0-9]+/photo-|/photo\\.renren\\.com/photo/[0-9]+/[^/]+/photo-|/page\\.renren\\.com/[^/]+/photo/|event\\.renren\\.com/event/[0-9]+/[0-9]+/photo/[0-9]+|lover\\.renren\\.com/photo/",	// 照片
 		album:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|/photo/album\\?|photo\\.renren\\.com/photo/ap/|event\\.renren\\.com/event/[0-9]+/photos|event\\.renren\\.com/event/[0-9]+/stars|lover\\.renren\\.com/album/",	// 相册
 		friend:"/friend\\.renren\\.com/",	// 好友
 		share:"/share\\.renren\\.com/|#//share/",	// 分享
