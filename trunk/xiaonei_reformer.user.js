@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.1.461
-// @miniver        461
+// @version        3.3.1.462
+// @miniver        462
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.1.459";
-XNR.miniver=459;
+XNR.version="3.3.1.462";
+XNR.miniver=462;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -7294,7 +7294,7 @@ function $page(category,url) {
 	const pages={
 		home:"renren\\.com/[hH]ome|renren\\.com/\\d+$|renren\\.com/\\d+[#?]|/[a-zA-Z0-9\\-]{5,}\\.renren\\.com/|guide\\.renren\\.com/[Gg]uide",	// 首页，后面的是新注册用户的首页
 		feed:"renren\\.com/[hH]ome#?$|renren\\.com/[hH]ome.*#nogo$|renren\\.com/[hH]ome\?[^#]*$|#/home|/homeAttention#*$|/homeAttention[^#]*$|renren\\.com/\\d+$|renren\\.com/\\d+[#?]|/guide\\.renren\\.com/[Gg]uide#?$|#/guide",	// 首页新鲜事，后面的是新注册用户的首页
-		profile:"renren\\.com/[Pp]rofile|/[a-zA-Z0-9_]{5,}\\.renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|[a-zA-Z0-9_]{5,}\\.renren\\.com/innerProfile|renren\\.com/[a-zA-Z0-9_]{6,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personal/link/
+		profile:"renren\\.com/[Pp]rofile|/[a-zA-Z0-9_\\-]{5,}\\.renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|[a-zA-Z0-9_]{5,}\\.renren\\.com/innerProfile|renren\\.com/[a-zA-Z0-9_]{6,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personal/link/
 		blog:"/blog\\.renren\\.com/|#//blog/",	// 日志
 		forum:"/club\\.renren\\.com/",	// 论坛
 		pages:"/page\\.renren\\.com/",	// 公共主页
