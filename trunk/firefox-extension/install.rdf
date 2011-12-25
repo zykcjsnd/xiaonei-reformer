@@ -4,7 +4,7 @@
   <Description about="urn:mozilla:install-manifest">
     <em:id>{3c43fd59-db7d-4dd7-b6fa-08566d5a0b9d}</em:id>
 	<em:name>xiaonei reformer</em:name>
-    <em:version>3.3.1.459</em:version>
+    <em:version>3.3.1.462</em:version>
 	<em:type>2</em:type>    <!-- Extension -->
 	<em:bootstrap>true</em:bootstrap>
     <em:unpack>true</em:unpack>
