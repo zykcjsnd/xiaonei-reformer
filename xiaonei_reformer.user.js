@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.1.462
-// @miniver        462
+// @version        3.3.1.463
+// @miniver        463
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -4154,9 +4154,12 @@ function enableShortcutMenu(evt) {
 			return;
 		}
 		var pages={
+			"Ta的新鲜事":"http://www.renren.com/moreminifeed.do?p=0&u=@@",
 			"Ta的相册":"http://photo.renren.com/getalbumlist.do?id=@@",
 			"Ta的头像相册":"http://photo.renren.com/getalbumprofile.do?owner=@@",
-			"Ta的日志":"http://blog.renren.com/GetBlog.do?id=@@",	// http://blog.renren.com/blog/@@/friends
+			"Ta的日志":"http://blog.renren.com/blog/0/friendsNews?friend=@@&__view=async-html",
+			// 没有上面这个好用
+			// "Ta的日志":"http://blog.renren.com/GetBlog.do?id=@@",	// http://blog.renren.com/blog/@@/friends
 			"Ta的公开资料":"http://browse.renren.com/searchEx.do?ajax=1&q=@@",
 			"Ta的状态":"http://status.renren.com/status/@@",
 			"Ta的行踪":"http://places.renren.com/web/lbsApp?pt=7&userId=@@&__view=async-html",
@@ -4732,7 +4735,7 @@ function sendReq() {
 			return;
 		}
 		if(window.confirm("解析回应数据？")) {
-			document.documentElement.innerHTML=html;
+			document.documentElement.textContent=html;
 		}
 		$debug(html,0);
 	},null,method.toUpperCase());
@@ -6167,7 +6170,7 @@ function main(savedOptions) {
 						value:false,
 						fn:[{
 							name:removeNicknameRestriction,
-							stage:3,
+							stage:2,
 							fire:"trigger",
 							trigger:{"#ajaxContainer":"DOMNodeInserted"}
 						}]
@@ -7500,16 +7503,8 @@ function $script(code,global) {
 		// 让脚本以匿名函数方式执行
 		code="(function(){"+code+"})();";
 	}
-	if(XNR.agent==CHROME || XNR.agent==SAFARI || XNR.agent==SOGOU) {
-		// 如果用location方法，会发生各种各样奇怪的事。比如innerHTML失灵。。。万恶的webkit
-		$("@script").text(code).addTo(document).remove();
-	} else {
-		try {
-			document.location.href="javascript:"+code;
-		} catch(ex) {
-			$error("$script",ex);
-		}
-	}
+	// 如果用location方法，会发生各种各样奇怪的事。比如innerHTML失灵。。。万恶的webkit
+	$("@script").text(code).addTo(document).remove();
 };
 
 /*
