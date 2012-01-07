@@ -7,6 +7,7 @@
 
 ==Facebook风格的个人主页==
 {{{
+body#profile .site-nav{padding-bottom:0}
 body#profile .col-left{position:relative;top:-80px}
 body#profile .col-center{position:relative}
 body#profile .navigation,#profile .navigation-wrapper{width:100%}
@@ -36,6 +37,22 @@ body:not(.login)>#navBar{margin-top:24px}
 .webpager ul.icon a:hover .tooltip .tooltip-arrow{display:none}
 .webpager .buttontooltip{top:0}
 .webpager{border-bottom:1px solid #B4B4B4;border-top:none;background-position:bottom}
+}}}
+
+==隐藏首页左侧边栏上不能删除的应用==
+{{{
+#appsItem_95003{display:none}   /* 公共主页 */
+#appsItem_101644{display:none}  /* 糯米网 */
+#appsItem_120019{display:none}  /* 位置 */
+#appsItem_132844{display:none}  /* 读书 */
+#appsItem_141879{display:none}  /* 文档 */
+#appsItem_142871{display:none}  /* 视频 */
+#appsItem_161719{display:none}  /* 家庭空间 */
+.apps-item a[href^='http://status.']{display:none !important}  /* 状态 */
+.nav-item a[href^='http://class.']{display:none !important}    /* 校友录 */
+.nav-item a[href^='http://xiaozu.']{display:none !important}   /* 校友录 */
+.nav-item a[href^='http://topic.']{display:none !important}    /* 小站 */
+.nav-item a[href^='http://music.']{display:none !important}    /* 音乐 */
 }}}
 
 ==首页皮肤==
