@@ -634,5 +634,9 @@
   "(six)": {
     "t": "人人网6周年",
     "s": "/imgpro/icons/statusface/six.gif"
+  },
+  "(元旦)": {
+    "t": "元旦快乐",
+    "s": "/imgpro/icons/statusface/gantan.gif"
   }
 }

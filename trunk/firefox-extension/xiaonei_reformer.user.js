@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.1.462
-// @miniver        462
+// @version        3.3.1.464
+// @miniver        464
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.1.462";
-XNR.miniver=462;
+XNR.version="3.3.1.464";
+XNR.miniver=464;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -298,12 +298,12 @@ function removeSysNotification() {
 	$ban(target);
 };
 
-// 去除首页部件
 function removeHomeGadgets(gadgetOpt) {
 	const gadgets={
 		"topNotice":".notice-holder, #notice_system",		// 顶部通知
 		"levelBar":".site-menu-user-box",	// 个人等级
 		"footprint":"#footPrint",	// 最近来访
+		"appList":".site-menu-apps:not(.recommend)", // 应用列表
 		"recommendApp":".site-menu-apps.recommend",	// 推荐应用
 		"newFriends":"#pymk_home,.find-friend-box,#myknowfriend_user",	// 好友推荐，后面2个是新注册用户页面上的
 		"schoolBeauty":"#schoolBeautyBox,#xiaoTaoHua",	// 校花校草
@@ -1765,6 +1765,11 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".mincmt-diggers{background-color:"+SCOLOR+"}",
 				".comments-box .mincmt-body dl.replies dd{background-color:"+SCOLOR+"}",
 				".s-sort li a:hover{background-color:"+FCOLOR+"}",
+			],
+			"footprint.css":[
+				".dropmenu-holder .foot_action a{color:"+FCOLOR+"}",
+				".dropmenu-holder .foot_action a.hover{background-color:"+FCOLOR+" !important}",
+				".footwall li.hover{background-color:"+SCOLOR+"}",
 			],
 		};
 		var style="";
@@ -4154,9 +4159,12 @@ function enableShortcutMenu(evt) {
 			return;
 		}
 		var pages={
+			"Ta的新鲜事":"http://www.renren.com/moreminifeed.do?p=0&u=@@",
 			"Ta的相册":"http://photo.renren.com/getalbumlist.do?id=@@",
 			"Ta的头像相册":"http://photo.renren.com/getalbumprofile.do?owner=@@",
-			"Ta的日志":"http://blog.renren.com/GetBlog.do?id=@@",	// http://blog.renren.com/blog/@@/friends
+			"Ta的日志":"http://blog.renren.com/blog/0/friendsNews?friend=@@&__view=async-html",
+			// 没有上面这个好用
+			// "Ta的日志":"http://blog.renren.com/GetBlog.do?id=@@",	// http://blog.renren.com/blog/@@/friends
 			"Ta的公开资料":"http://browse.renren.com/searchEx.do?ajax=1&q=@@",
 			"Ta的状态":"http://status.renren.com/status/@@",
 			"Ta的行踪":"http://places.renren.com/web/lbsApp?pt=7&userId=@@&__view=async-html",
@@ -4732,7 +4740,7 @@ function sendReq() {
 			return;
 		}
 		if(window.confirm("解析回应数据？")) {
-			document.documentElement.innerHTML=html;
+			document.documentElement.textContent=html;
 		}
 		$debug(html,0);
 	},null,method.toUpperCase());
@@ -4984,7 +4992,7 @@ function main(savedOptions) {
 					}],
 				}]
 			},{
-				text:"##去除右下角系统通知（基本都是游戏广告）",
+				text:"##去除右下角系统通知",
 				ctrl:[{
 					id:"removeSysNotification",
 					value:false,
@@ -5017,6 +5025,10 @@ function main(savedOptions) {
 					},{
 						id:"levelBar",
 						text:"##头像等级栏",
+						value:false,
+					},{
+						id:"appList",
+						text:"##应用列表",
 						value:false,
 					},{
 						id:"recommendApp",
@@ -6167,7 +6179,7 @@ function main(savedOptions) {
 						value:false,
 						fn:[{
 							name:removeNicknameRestriction,
-							stage:3,
+							stage:2,
 							fire:"trigger",
 							trigger:{"#ajaxContainer":"DOMNodeInserted"}
 						}]
@@ -7500,16 +7512,8 @@ function $script(code,global) {
 		// 让脚本以匿名函数方式执行
 		code="(function(){"+code+"})();";
 	}
-	if(XNR.agent==CHROME || XNR.agent==SAFARI || XNR.agent==SOGOU) {
-		// 如果用location方法，会发生各种各样奇怪的事。比如innerHTML失灵。。。万恶的webkit
-		$("@script").text(code).addTo(document).remove();
-	} else {
-		try {
-			document.location.href="javascript:"+code;
-		} catch(ex) {
-			$error("$script",ex);
-		}
-	}
+	// 如果用location方法，会发生各种各样奇怪的事。比如innerHTML失灵。。。万恶的webkit
+	$("@script").text(code).addTo(document).remove();
 };
 
 /*
