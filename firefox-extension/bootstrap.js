@@ -17,8 +17,13 @@ const XNRCore = {
 	},
 
 	load: function () {
-		var opts = Services.prefs.getComplexValue(XNRCore.optsPath, Ci.nsISupportsString).data;
-		return opts || "{}";
+		try {
+			var opts = Services.prefs.getComplexValue(XNRCore.optsPath, Ci.nsISupportsString).data;
+			return opts || "{}";
+		} catch(ex) {
+			// optsPath not exists
+			return "{}";
+		}
 	},
 
 	request: function (scope, url, func, data, method) {
