@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.1.464";
-XNR.miniver=464;
+XNR.version="3.3.2.465";
+XNR.miniver=465;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -591,7 +591,7 @@ function hideFeeds(evt,feeds,mark,badTitles,badIds,goodIds,hideOld,hideDays) {
 	(evt?$(evt.target):$("div.feed-list>article")).filter(function(elem) {
 		var feed=$(elem);
 		var fh3=feed.find("h3");
-		var fshareTitle=feed.find(".content").find(".title,.video-title,.blog-title").text();
+		var fshareTitle=feed.find(".content").find(".title,.video-title,.blog-title,.link-title").text();
 		var fstatus=feed.find(".content .original-stauts");
 		if(goodIds && fh3.find(gidFilter).exist()) {
 			return false;
@@ -1213,7 +1213,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 	
 	var FCOLOR="#3B5998";	//Facebook的深蓝色，#005EAC, #548BC6
 	var XCOLOR="#3B5888";	//校内原来的深蓝色
-	var BCOLOR="#5C75AA";	//原来的菜单背景色，#3777BC
+	var BCOLOR="#5C75AA";	//原来的菜单背景色，#3777BC, #3175BD
 	var SCOLOR="#EBF3F7";	//原来的应用栏&回复背景色，#F3FAFF
 
 	if(!evt) {
@@ -1288,6 +1288,41 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"#appsMenuPro .menu-apps-side{background-color:"+SCOLOR+"}",
 				"#appsMenuPro .app-item a:hover{background-color:"+SCOLOR+"}",
 				"#appsMenuPro .app-item em{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .my-fav-apps{background-color:"+SCOLOR+"}",
+			],
+			"home-frame2-all-min.css":[
+				"a:link,a:visited,a:hover{color:"+FCOLOR+"}",
+				"button, input[type=button]{background-color:"+FCOLOR+"}",
+				"a.action:hover{background-color:"+FCOLOR+"}",
+				"a.share:hover,a.mini-share:hover{background-color:"+FCOLOR+"}",
+				".input-button, .input-submit{background-color:"+FCOLOR+"}",
+				".inputbutton, .inputsubmit, .subbutton, .canbutton, .button-group button{background-color:"+FCOLOR+"}",
+				"td.pop_content .dialog_body a,td.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
+				"td.pop_content .dialog_buttons input{background-color:"+FCOLOR+" !important}",
+				"ul.square_bullets{color:"+FCOLOR+"}",
+				".site-nav{background-color:"+FCOLOR+";background-image:none}",
+				".search-Result li.m-autosug-hover{background-color:"+FCOLOR+"}",
+				"#accountsPager li a:hover{background-color:"+FCOLOR+"}",
+				"#switchAccountPopup .pagerpro li.current a, .pagerpro li.current a:hover{color:"+FCOLOR+"}",
+				"#appsMenuPro .my-fav-apps .app-item em:hover{background-color:"+FCOLOR+"}",
+				"#appsMenuPro .other-apps .app-item em:hover{background-color:"+FCOLOR+"}",
+				"#appsMenuPro .menu-apps-side a.add-app-btn{background-color:"+FCOLOR+"}",
+				".group-info .mail .mail-link{background-color:"+FCOLOR+"}",
+				".group-info .btn-save{background-color:"+FCOLOR+"}",
+				".global-publisher-share input.inlineinput{color:"+FCOLOR+"}",
+				".global-publisher-selector .global-publisher-photo-trigger{color:"+FCOLOR+"}",
+				".global-publisher-module .submit{background-color:"+FCOLOR+"}",
+				".global-publisher-module .comment-module .submit{background-color:"+FCOLOR+"}",
+				".pagerpro li a:hover{background-color:"+FCOLOR+"}",
+				".pagerpro li.current a, .pagerpro li.current a:hover{color:"+FCOLOR+"}",
+				".s-sort li a:hover{color:"+FCOLOR+"}",
+				"#navMessage .on{background-color:"+BCOLOR+"}",
+				"td.pop_content h2{background-color:"+BCOLOR+"}",
+				".site-nav .menu-title a:hover{background-color:"+BCOLOR+"}",
+				"#appsMenuPro .my-fav-apps{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .app-item a:hover{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .app-item em{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .menu-apps-side{background-color:"+SCOLOR+"}",
 				"#appsMenuPro .my-fav-apps{background-color:"+SCOLOR+"}",
 			],
 			"home-all-min.css":[
@@ -1543,25 +1578,26 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 			],
 			"global2-all-min.css":[
 				"a:link,a:visited,a:hover{color:"+FCOLOR+"}",
-				"button, input[type='button']{background-color:"+FCOLOR+"}",
+				"button, input[type=button]{background-color:"+FCOLOR+"}",
+				"a.action:hover{background-color:"+FCOLOR+"}",
+				"a.share:hover,a.mini-share:hover{background-color:"+FCOLOR+"}",
 				".input-button, .input-submit{background-color:"+FCOLOR+"}",
-				"td.pop_content .dialog_body a, td.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
+				".inputbutton, .inputsubmit, .subbutton, .canbutton, .button-group button{background-color:"+FCOLOR+"}",
+				"td.pop_content .dialog_body a,td.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
 				"td.pop_content .dialog_buttons input{background-color:"+FCOLOR+" !important}",
 				"ul.square_bullets{color:"+FCOLOR+"}",
+				".site-nav{background-color:"+FCOLOR+";background-image:none}",
 				".search-Result li.m-autosug-hover{background-color:"+FCOLOR+"}",
-				".navigation-new #global_inbox_link:hover span.msg-count{color:"+FCOLOR+" !important}",
-				".navigation-new #global_inbox_link:hover span.count{color:"+FCOLOR+" !important}",
 				"#accountsPager li a:hover{background-color:"+FCOLOR+"}",
-				"#switchAccountPopup .pagerpro li.current a, .pagerpro li.current a:hover{background-color:"+FCOLOR+"}",
+				"#switchAccountPopup .pagerpro li.current a, .pagerpro li.current a:hover{color:"+FCOLOR+"}",
 				"#appsMenuPro .my-fav-apps .app-item em:hover{background-color:"+FCOLOR+"}",
 				"#appsMenuPro .other-apps .app-item em:hover{background-color:"+FCOLOR+"}",
 				"#appsMenuPro .menu-apps-side a.add-app-btn{background-color:"+FCOLOR+"}",
-				".site-menu-nav-box .nav-item-count{color:"+FCOLOR+" !important}",
-				".group-info .mail .mail-link{color:"+FCOLOR+"}",
-				".group-info .btn-save{background-color:"+FCOLOR+"}",
-				".site-menu-nav .nav-item .create-zhan a:link, .site-menu-nav .nav-item .create-zhan a:visited{color:"+FCOLOR+"}",
-				".site-menu-nav .nav-item .create-zhan a:hover{color:"+FCOLOR+"}",
+				".pagerpro li a:hover{background-color:"+FCOLOR+"}",
+				".pagerpro li.current a, .pagerpro li.current a:hover{background-color:"+FCOLOR+"}",
+				"#navMessage .on{background-color:"+BCOLOR+"}",
 				"td.pop_content h2{background-color:"+BCOLOR+"}",
+				".site-nav .menu-title a:hover{background-color:"+BCOLOR+"}",
 				"#appsMenuPro .my-fav-apps{background-color:"+SCOLOR+"}",
 				"#appsMenuPro .app-item a:hover{background-color:"+SCOLOR+"}",
 				"#appsMenuPro .app-item em{background-color:"+SCOLOR+"}",
