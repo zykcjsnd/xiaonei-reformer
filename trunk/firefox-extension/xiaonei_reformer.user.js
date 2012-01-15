@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.1.464
-// @miniver        464
+// @version        3.3.2.465
+// @miniver        465
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -48,8 +48,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.1.464";
-XNR.miniver=464;
+XNR.version="3.3.2.465";
+XNR.miniver=465;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -199,14 +199,14 @@ function removeHomeTheme() {
 	var sa = $(".skin-action, #closeHomeSkin");
 	if(sa.exist()) {
 		if(/关闭/.test(sa.text())) {
-			$script(sa.attr("onclick"));
+			sa.trigger("click");
 		}
-		$ban(".skin-action, #closeHomeSkin, #useHomeSkin");
+		$patchCSS("a.skin-action, #closeHomeSkin, #useHomeSkin{display:none}");
 	}
 	// 状态输入框皮肤
 	var sa = $("a[title='关闭皮肤']");
-	if (sa.length) {
-		$script(sa.attr("onclick"));
+	if (sa.exist()) {
+		sa.trigger("click");
 	}
 };
 
@@ -303,8 +303,8 @@ function removeHomeGadgets(gadgetOpt) {
 		"topNotice":".notice-holder, #notice_system",		// 顶部通知
 		"levelBar":".site-menu-user-box",	// 个人等级
 		"footprint":"#footPrint",	// 最近来访
-		"appList":".site-menu-apps:not(.recommend)", // 应用列表
 		"recommendApp":".site-menu-apps.recommend",	// 推荐应用
+		"recommendGift":"#recommendGift",	// 推荐礼物
 		"newFriends":"#pymk_home,.find-friend-box,#myknowfriend_user",	// 好友推荐，后面2个是新注册用户页面上的
 		"schoolBeauty":"#schoolBeautyBox,#xiaoTaoHua",	// 校花校草
 		"sponsors":"#sponsorsWidget,.wide-sponsors",	// 赞助商内容
@@ -317,6 +317,7 @@ function removeHomeGadgets(gadgetOpt) {
 	};
 	const filters={
 		"webFunction":{t:".side-item",f:".web-function"},	// 站内功能
+		"publicPageAdmin":{t:".site-menu-apps",f:".site-menu-apps-admins"},	// 主页管理
 	};
 
 	if(!$allocated("home_gadgets")) {
@@ -331,6 +332,10 @@ function removeHomeGadgets(gadgetOpt) {
 			$ban(patch.substring(0,patch.length-1));
 		}
 		$alloc("home_gadgets");
+	}
+
+	if(gadgetOpt["appList"]) {
+		$patchCSS(".site-menu-apps:not([id]):not(.site-menu-minigroups):not(.recommend){display:none}"); // 应用列表
 	}
 
 	$wait(1,function() {
@@ -586,15 +591,21 @@ function hideFeeds(evt,feeds,mark,badTitles,badIds,goodIds,hideOld,hideDays) {
 	(evt?$(evt.target):$("div.feed-list>article")).filter(function(elem) {
 		var feed=$(elem);
 		var fh3=feed.find("h3");
+		var fshareTitle=feed.find(".content").find(".title,.video-title,.blog-title,.link-title").text();
 		var fstatus=feed.find(".content .original-stauts");
 		if(goodIds && fh3.find(gidFilter).exist()) {
 			return false;
 		}
-		if(badTitles && fh3.text().replace(/\s/g,"").match(badTitles)) {
-			return true;
-		}
-		if(badTitles && fstatus.exist() && fstatus.text().replace(/\s/g,"").match(badTitles)) {
-			return true;
+		if(badTitles) {
+			if(fh3.text().replace(/\s/g,"").match(badTitles)) {
+				return true;
+			}
+			if(fshareTitle && fshareTitle.replace(/\s/g,"").match(badTitles)) {
+				return true;
+			}
+			if(fstatus.exist() && fstatus.text().replace(/\s/g,"").match(badTitles)) {
+				return true;
+			}
 		}
 		if(hideOld) {
 			var time=feed.find(".duration").text();
@@ -873,20 +884,28 @@ function autoCheckFeeds(feedFilter,badTitles,badIds,goodIds,checkReply) {
 				for(var i=feedList.heirs()-1;i>=0;i--) {
 					var feed=feedList.child(i);
 					var fh3=feed.find("h3");
+					var fshareTitle=feed.find(".content").find(".title,.video-title,.blog-title").text();
 					var fstatus=feed.find(".content .original-stauts");
 					if(goodIds && fh3.find(gidFilter).exist()) {
 						// 在白名单上
 						continue;
 					}
-					if(badTitles && fh3.text().replace(/\s/g,"").match(badTitles)) {
-						// 按标题滤除
-						feed.remove();
-						continue;
-					}
-					if(badTitles && fstatus.exist() && fstatus.text().replace(/\s/g,"").match(badTitles)) {
-						// 转发的状态也算做标题
-						feed.remove();
-						continue;
+					if(badTitles) {
+						if(fh3.text().replace(/\s/g,"").match(badTitles)) {
+							// 按标题滤除
+							feed.remove();
+							continue;
+						}
+						if(fshareTitle && fshareTitle.replace(/\s/g,"").match(badTitles)) {
+							//  分享的标题
+							feed.remove();
+							continue;
+						}
+						if(fstatus.exist() && fstatus.text().replace(/\s/g,"").match(badTitles)) {
+							// 转发的状态也算做标题
+							feed.remove();
+							continue;
+						}
 					}
 					// 按类型滤除
 					var feedType=$feedType(feed);
@@ -1194,7 +1213,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 	
 	var FCOLOR="#3B5998";	//Facebook的深蓝色，#005EAC, #548BC6
 	var XCOLOR="#3B5888";	//校内原来的深蓝色
-	var BCOLOR="#5C75AA";	//原来的菜单背景色，#3777BC
+	var BCOLOR="#5C75AA";	//原来的菜单背景色，#3777BC, #3175BD
 	var SCOLOR="#EBF3F7";	//原来的应用栏&回复背景色，#F3FAFF
 
 	if(!evt) {
@@ -1269,6 +1288,41 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"#appsMenuPro .menu-apps-side{background-color:"+SCOLOR+"}",
 				"#appsMenuPro .app-item a:hover{background-color:"+SCOLOR+"}",
 				"#appsMenuPro .app-item em{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .my-fav-apps{background-color:"+SCOLOR+"}",
+			],
+			"home-frame2-all-min.css":[
+				"a:link,a:visited,a:hover{color:"+FCOLOR+"}",
+				"button, input[type=button]{background-color:"+FCOLOR+"}",
+				"a.action:hover{background-color:"+FCOLOR+"}",
+				"a.share:hover,a.mini-share:hover{background-color:"+FCOLOR+"}",
+				".input-button, .input-submit{background-color:"+FCOLOR+"}",
+				".inputbutton, .inputsubmit, .subbutton, .canbutton, .button-group button{background-color:"+FCOLOR+"}",
+				"td.pop_content .dialog_body a,td.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
+				"td.pop_content .dialog_buttons input{background-color:"+FCOLOR+" !important}",
+				"ul.square_bullets{color:"+FCOLOR+"}",
+				".site-nav{background-color:"+FCOLOR+";background-image:none}",
+				".search-Result li.m-autosug-hover{background-color:"+FCOLOR+"}",
+				"#accountsPager li a:hover{background-color:"+FCOLOR+"}",
+				"#switchAccountPopup .pagerpro li.current a, .pagerpro li.current a:hover{color:"+FCOLOR+"}",
+				"#appsMenuPro .my-fav-apps .app-item em:hover{background-color:"+FCOLOR+"}",
+				"#appsMenuPro .other-apps .app-item em:hover{background-color:"+FCOLOR+"}",
+				"#appsMenuPro .menu-apps-side a.add-app-btn{background-color:"+FCOLOR+"}",
+				".group-info .mail .mail-link{background-color:"+FCOLOR+"}",
+				".group-info .btn-save{background-color:"+FCOLOR+"}",
+				".global-publisher-share input.inlineinput{color:"+FCOLOR+"}",
+				".global-publisher-selector .global-publisher-photo-trigger{color:"+FCOLOR+"}",
+				".global-publisher-module .submit{background-color:"+FCOLOR+"}",
+				".global-publisher-module .comment-module .submit{background-color:"+FCOLOR+"}",
+				".pagerpro li a:hover{background-color:"+FCOLOR+"}",
+				".pagerpro li.current a, .pagerpro li.current a:hover{color:"+FCOLOR+"}",
+				".s-sort li a:hover{color:"+FCOLOR+"}",
+				"#navMessage .on{background-color:"+BCOLOR+"}",
+				"td.pop_content h2{background-color:"+BCOLOR+"}",
+				".site-nav .menu-title a:hover{background-color:"+BCOLOR+"}",
+				"#appsMenuPro .my-fav-apps{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .app-item a:hover{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .app-item em{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .menu-apps-side{background-color:"+SCOLOR+"}",
 				"#appsMenuPro .my-fav-apps{background-color:"+SCOLOR+"}",
 			],
 			"home-all-min.css":[
@@ -1497,6 +1551,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 			"global-all-min.css":[
 				"a:link,a:visited,a:hover{color:"+FCOLOR+"}",
 				"button, input[type='button']{background-color:"+FCOLOR+"}",
+				".input-button, .input-submit{background-color:"+FCOLOR+"}",
 				"td.pop_content .dialog_body a, td.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
 				"td.pop_content .dialog_buttons input{background-color:"+FCOLOR+" !important}",
 				"ul.square_bullets{color:"+FCOLOR+"}",
@@ -1516,6 +1571,33 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".site-menu-nav .nav-item .create-zhan a:hover{color:"+FCOLOR+"}",
 				".navigation .menu-title a:hover, .navigation .menu-title a.hover{background-color:"+BCOLOR+"}",
 				"td.pop_content h2{background-color:"+BCOLOR+"}",
+				"#appsMenuPro .my-fav-apps{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .app-item a:hover{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .app-item em{background-color:"+SCOLOR+"}",
+				"#appsMenuPro .menu-apps-side{background-color:"+SCOLOR+"}",
+			],
+			"global2-all-min.css":[
+				"a:link,a:visited,a:hover{color:"+FCOLOR+"}",
+				"button, input[type=button]{background-color:"+FCOLOR+"}",
+				"a.action:hover{background-color:"+FCOLOR+"}",
+				"a.share:hover,a.mini-share:hover{background-color:"+FCOLOR+"}",
+				".input-button, .input-submit{background-color:"+FCOLOR+"}",
+				".inputbutton, .inputsubmit, .subbutton, .canbutton, .button-group button{background-color:"+FCOLOR+"}",
+				"td.pop_content .dialog_body a,td.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
+				"td.pop_content .dialog_buttons input{background-color:"+FCOLOR+" !important}",
+				"ul.square_bullets{color:"+FCOLOR+"}",
+				".site-nav{background-color:"+FCOLOR+";background-image:none}",
+				".search-Result li.m-autosug-hover{background-color:"+FCOLOR+"}",
+				"#accountsPager li a:hover{background-color:"+FCOLOR+"}",
+				"#switchAccountPopup .pagerpro li.current a, .pagerpro li.current a:hover{color:"+FCOLOR+"}",
+				"#appsMenuPro .my-fav-apps .app-item em:hover{background-color:"+FCOLOR+"}",
+				"#appsMenuPro .other-apps .app-item em:hover{background-color:"+FCOLOR+"}",
+				"#appsMenuPro .menu-apps-side a.add-app-btn{background-color:"+FCOLOR+"}",
+				".pagerpro li a:hover{background-color:"+FCOLOR+"}",
+				".pagerpro li.current a, .pagerpro li.current a:hover{background-color:"+FCOLOR+"}",
+				"#navMessage .on{background-color:"+BCOLOR+"}",
+				"td.pop_content h2{background-color:"+BCOLOR+"}",
+				".site-nav .menu-title a:hover{background-color:"+BCOLOR+"}",
 				"#appsMenuPro .my-fav-apps{background-color:"+SCOLOR+"}",
 				"#appsMenuPro .app-item a:hover{background-color:"+SCOLOR+"}",
 				"#appsMenuPro .app-item em{background-color:"+SCOLOR+"}",
@@ -5032,7 +5114,11 @@ function main(savedOptions) {
 						value:false,
 					},{
 						id:"recommendApp",
-						text:"##推荐应用",
+						text:"##应用推荐",
+						value:false,
+					},{
+						id:"recommendGift",
+						text:"##礼物推荐",
 						value:false,
 					},{
 						id:"footprint",
@@ -7306,7 +7392,7 @@ function $page(category,url) {
 	const pages={
 		home:"renren\\.com/[hH]ome|renren\\.com/\\d+$|renren\\.com/\\d+[#?]|/[a-zA-Z0-9\\-]{5,}\\.renren\\.com/|guide\\.renren\\.com/[Gg]uide",	// 首页，后面的是新注册用户的首页
 		feed:"renren\\.com/[hH]ome#?$|renren\\.com/[hH]ome.*#nogo$|renren\\.com/[hH]ome\?[^#]*$|#/home|/homeAttention#*$|/homeAttention[^#]*$|renren\\.com/\\d+$|renren\\.com/\\d+[#?]|/guide\\.renren\\.com/[Gg]uide#?$|#/guide",	// 首页新鲜事，后面的是新注册用户的首页
-		profile:"renren\\.com/[Pp]rofile|/[a-zA-Z0-9_\\-]{5,}\\.renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|[a-zA-Z0-9_]{5,}\\.renren\\.com/innerProfile|renren\\.com/[a-zA-Z0-9_]{6,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personal/link/
+		profile:"renren\\.com/[Pp]rofile|renren\\.com/[^/]+/[Pp]rofile|/[a-zA-Z0-9_\\-]{5,}\\.renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|[a-zA-Z0-9_]{5,}\\.renren\\.com/innerProfile|renren\\.com/[a-zA-Z0-9_]{6,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personal/link/
 		blog:"/blog\\.renren\\.com/|#//blog/",	// 日志
 		forum:"/club\\.renren\\.com/",	// 论坛
 		pages:"/page\\.renren\\.com/",	// 公共主页
@@ -8647,6 +8733,15 @@ PageKit.prototype={
 			nodes.push(this.cloneNode(true));
 		});
 		return PageKit(nodes);
+	},
+	// 触发事件
+	trigger:function(evtName) {
+		this.each(function() {
+			var e = document.createEvent('Events');
+      		e.initEvent(evtName, true, true)
+			this.dispatchEvent(e);
+		});
+		return this;
 	}
 };
 
