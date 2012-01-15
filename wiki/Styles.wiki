@@ -42,18 +42,22 @@ body:not(.login)>#navBar{margin-top:24px}
 ==隐藏首页左侧边栏上不能删除的应用==
 {{{
 #appsItem_95003{display:none}   /* 公共主页 */
-#appsItem_101644{display:none}  /* 糯米网 */
+#appsItem_101644{display:none}  /* 糯米网团购 */
 #appsItem_120019{display:none}  /* 位置 */
 #appsItem_132844{display:none}  /* 读书 */
 #appsItem_141879{display:none}  /* 文档 */
 #appsItem_142871{display:none}  /* 视频 */
 #appsItem_161719{display:none}  /* 家庭空间 */
-.apps-item a[href^='http://status.']{display:none !important}  /* 状态 */
+.apps-item a[href^='http://app.']{display:none !important}  /* 应用中心 */
+.apps-item a[href^='http://game.']{display:none !important}  /* 网页游戏 */
 .nav-item a[href^='http://class.']{display:none !important}    /* 校友录 */
-.nav-item a[href^='http://xiaozu.']{display:none !important}   /* 校友录 */
-.nav-item a[href^='http://topic.']{display:none !important}    /* 小站 */
-.nav-item a[href^='http://music.']{display:none !important}    /* 音乐 */
+#appsItem_45,.apps-item a[href^='http://status.']{display:none !important}  /* 状态 */
+#appsItem_166617,.nav-item a[href^='http://xiaozu.']{display:none !important}   /* 小组 */
+#appsItem_166616,.nav-item a[href^='http://topic.']{display:none !important}    /* 小站 */
+#appsItem_166614,.nav-item a[href^='http://music.']{display:none !important}    /* 音乐 */
 }}}
+
+
 
 ==首页皮肤==
 在一个等级达到11级的帐户，使用首页换肤功能，应用一个皮肤后，在地址栏输入
