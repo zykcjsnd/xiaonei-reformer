@@ -638,5 +638,29 @@
   "(元旦)": {
     "t": "元旦快乐",
     "s": "/imgpro/icons/statusface/gantan.gif"
+  },
+  "(long1)": {
+    "t": "龙1",
+    "s": "/imgpro/icons/statusface/long1.gif"
+  },
+  "(long2)": {
+    "t": "龙2",
+    "s": "/imgpro/icons/statusface/long2.gif"
+  },
+  "(long3)": {
+    "t": "龙3",
+    "s": "/imgpro/icons/statusface/long3.gif"
+  },
+  "(long4)": {
+    "t": "龙4",
+    "s": "/imgpro/icons/statusface/long4.gif"
+  },
+  "(long5)": {
+    "t": "龙5",
+    "s": "/imgpro/icons/statusface/long5.gif"
+  },
+  "(long6)": {
+    "t": "龙6",
+    "s": "/imgpro/icons/statusface/long6.gif"
   }
 }
