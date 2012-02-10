@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.2.466
-// @miniver        466
+// @version        3.3.2.467
+// @miniver        467
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -401,11 +401,6 @@ function hideRequest(req) {
 };
 // 自动拒绝请求
 function rejectRequest(req,blockApp) {
-	// 好友申请
-	if(req["friendRequest"]) {
-		$get("http://www.renren.com/delallguestrequest.do?id="+XNR.userId, null, null, "POST");
-	}
-
 	// 应用请求
 	if(req["appRequest"]==true || blockApp==true) {
 		$get("http://app.renren.com/app/appRequestList",function(html) {
@@ -435,12 +430,21 @@ function rejectRequest(req,blockApp) {
 	}
 
 	// 没有其他选项被启用，退出。
-	if(req["tagRequest"]==false && req["recommendRequest"]==false && req["loverRequest"]==false && req["xiaozuRequest"]==false && req["addbookRequest"]==false) {
+	if(req["tagRequest"]==false && req["recommendRequest"]==false && req["loverRequest"]==false && req["xiaozuRequest"]==false && req["addbookRequest"]==false && req["friendRequest"]==false) {
 		return;
 	}
 
 	$get("http://req.renren.com/xmc/gmc", function(html) {
 		var links=[];
+		// 好友申请
+		if(req["friendRequest"]) {
+			var command;
+			var regexpr = /friend_refuse:(\d+)/g;
+			while (command = regexpr.exec(html)) {
+				links.push("http://friend.renren.com/rejguereq.do?id=" + command[1]);
+			}
+		}
+
 		// 圈人请求
 		if(req["tagRequest"]) {
 			var command;
@@ -495,18 +499,10 @@ function rejectRequest(req,blockApp) {
 function batchProcessRequest() {
 	// 好友申请
 	addLink("friend", "接受", "好友申请", "http://friend.renren.com/ApplyGuestRequest.do?friendId=${0}", /\d+/);
-	// 拒绝可一次完成，不用逐一拒绝
-	if ($("#requests_friend_header").exist()) {
-		$("@a").attr({"href":"javascript:;", "style":"margin-left:10px"}).text("全部拒绝").addTo($("#requests_friend_header")).bind("click", function() {
-			if (!window.confirm("确实要拒绝所有列出的好友申请吗？")) {
-				return;
-			}
-			$get("http://friend.renren.com/delallguestrequest.do?friendId=" + uid, null,null,"POST");
-			window.alert("已经拒绝了所有申请，将刷新页面……");
-			document.location.reload();
-		});
-	}
-
+	// 全部拒绝已失效？
+	// $get("http://friend.renren.com/delallguestrequest.do?id=" + XNR.userId, null, null, "POST");
+	addLink("friend", "拒绝", "好友申请", "http://friend.renren.com/rejguereq.do?id=${0}", /\d+/);
+	
 	// 好友推荐
 	addLink("tuijian", "接受", "好友推荐", "http://friend.renren.com/ajax_request_friend.do?from=req.renren.com/xmc/gmc&codeFlag=0&code=&why=&id=${1}&matchmaker=${2}", /:(\d+),[^,]+,[^,]+,(\d+)/);
 	addLink("tuijian", "忽略", "好友推荐", "http://friend.renren.com/j_f_deny_rcd?r=${1}&s=${2}", /:(\d+),[^,]+,[^,]+,(\d+)/);
