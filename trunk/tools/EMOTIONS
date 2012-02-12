@@ -662,5 +662,13 @@
   "(long6)": {
     "t": "龙6",
     "s": "/imgpro/icons/statusface/long6.gif"
+  },
+  "(vdlove)": {
+    "t": "爱就大声说",
+    "s": "/imgpro/icons/statusface/vdlove.gif"
+  },
+  "(tucao)": {
+    "t": "吐槽",
+    "s": "/imgpro/icons/statusface/tuc.gif"
   }
 }

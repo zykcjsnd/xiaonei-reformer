@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.2.467
-// @miniver        467
+// @version        3.3.2.468
+// @miniver        468
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -45,8 +45,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.2.465";
-XNR.miniver=465;
+XNR.version="3.3.2.468";
+XNR.miniver=468;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -2123,6 +2123,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(cold)":	{t:"降温",			s:"/imgpro/icons/statusface/cold.gif"},
 		"(bw)":		{t:"暖暖被窝",		s:"/imgpro/icons/statusface/sleep.gif"},
 		"(mb)":		{t:"膜拜",			s:"/imgpro/icons/statusface/guibai.gif"},
+		"(tucao)":	{t:"吐槽",			s:"/imgpro/icons/statusface/tuc.gif"},
 		"(s)":		{t:"大兵",			s:"/imgpro/icons/statusface/soldier.gif"},
 		"(NBA)":	{t:"篮球",			s:"/imgpro/icons/statusface/basketball4.gif"},
 		"(蜜蜂)":	{t:"小蜜蜂",		s:"/imgpro/icons/statusface/bee.gif"},
@@ -2273,6 +2274,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(long4)":	{t:"龙4",			s:"/imgpro/icons/statusface/long4.gif"},
 		"(long5)":	{t:"龙5",			s:"/imgpro/icons/statusface/long5.gif"},
 		"(long6)":	{t:"龙6",			s:"/imgpro/icons/statusface/long6.gif"},
+		"(vdlove)":	{t:"爱就大声说",	s:"/imgpro/icons/statusface/vdlove.gif"},
 		"(t)":		{t:"火炬",			s:"/img/ems/torch.gif"}
 	};
 	var fEmList={
