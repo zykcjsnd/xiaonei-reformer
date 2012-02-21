@@ -30,7 +30,7 @@ function(request, sender, sendResponse) {
 			httpReq.onerror=function(e) {
 				sendResponse({data:null});
 			};
-		    httpReq.open(request.method,request.url,true);
+			httpReq.open(request.method,request.url,true);
 			//httpReq.setRequestHeader("Cache-Control","no-cache");
 			httpReq.send();
 			break;
