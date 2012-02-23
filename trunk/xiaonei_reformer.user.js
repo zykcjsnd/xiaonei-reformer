@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.2.469
-// @miniver        469
+// @version        3.3.2.470
+// @miniver        470
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -2821,7 +2821,7 @@ function extendBlogLinkSupport() {
 
 // 在编辑日志时添加直接编辑HTML代码按钮
 function addBlogHTMLEditor() {
-	if(!XNR.url.match(/\/editBlog\b|\/addBlog\b|\/NewEntry\.do/i)) {
+	if(!XNR.url.match(/\/editBlog\b|\/editDraft\b|\/addBlog\b|\/NewEntry\.do/i)) {
 		return;
 	}
 	var last=$("#editor_toolbar1 td.mceToolbarEndButton");
@@ -3794,7 +3794,7 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 		if(!$allocated("image_viewer")) {
 			if (!shrink) {
 				$alloc("image_viewer").viewer=$("@div").attr("style","border:3px double #666666;display:none;background:#F6F6F6;top:2px;z-index:199999;right:2px;position:fixed;overflow-x:auto").addTo(document);
-				$alloc("image_viewer").image=$("@img").attr("onload","this.parentNode.style.overflowY=(parseInt(this.height)>parseInt(window.innerHeight)-10?'scroll':'auto')").attr("onerror","this.src='"+errorImage+"'").addTo($alloc("image_viewer").viewer);
+				$alloc("image_viewer").image=$("@img").attr("onload","this.parentNode.style.overflowY=(parseInt(this.height)>parseInt(window.innerHeight)-10?'scroll':'auto');this.title=''").attr("onerror","this.src='"+errorImage+"';this.title=''").addTo($alloc("image_viewer").viewer);
 			} else {
 				$alloc("image_viewer").viewer=$("@div").attr("style","border:3px double #666666;display:none;background:#F6F6F6;top:2px;z-index:199999;right:2px;position:fixed").addTo(document);
 				$alloc("image_viewer").image=$("@img").addTo($alloc("image_viewer").viewer);
