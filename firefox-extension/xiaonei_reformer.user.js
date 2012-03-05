@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.2.469
-// @miniver        469
+// @version        3.3.2.472
+// @miniver        472
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -45,8 +45,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.2.469";
-XNR.miniver=469;
+XNR.version="3.3.2.472";
+XNR.miniver=472;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -2821,7 +2821,7 @@ function extendBlogLinkSupport() {
 
 // 在编辑日志时添加直接编辑HTML代码按钮
 function addBlogHTMLEditor() {
-	if(!XNR.url.match(/\/editBlog\b|\/addBlog\b|\/NewEntry\.do/i)) {
+	if(!XNR.url.match(/\/editBlog\b|\/editDraft\b|\/addBlog\b|\/NewEntry\.do/i)) {
 		return;
 	}
 	var last=$("#editor_toolbar1 td.mceToolbarEndButton");
@@ -3131,9 +3131,10 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 			return;
 		}
 		$alloc("download_album",[]);
+		var mode=$(".review-mode");
 		// 评论模式
-		var links=$(".review-mode ul > li .pic img");
-		if (links.exist()) {
+		if (mode.exist() && mode.rect().width>0) {
+			var links=$(".review-mode ul > li .pic img");
 			var totalImage=links.size();
 			var cur=0;
 			links.each(function(index) {
@@ -3794,7 +3795,7 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 		if(!$allocated("image_viewer")) {
 			if (!shrink) {
 				$alloc("image_viewer").viewer=$("@div").attr("style","border:3px double #666666;display:none;background:#F6F6F6;top:2px;z-index:199999;right:2px;position:fixed;overflow-x:auto").addTo(document);
-				$alloc("image_viewer").image=$("@img").attr("onload","this.parentNode.style.overflowY=(parseInt(this.height)>parseInt(window.innerHeight)-10?'scroll':'auto')").attr("onerror","this.src='"+errorImage+"'").addTo($alloc("image_viewer").viewer);
+				$alloc("image_viewer").image=$("@img").attr("onload","this.parentNode.style.overflowY=(parseInt(this.height)>parseInt(window.innerHeight)-10?'scroll':'auto');this.title=''").attr("onerror","this.src='"+errorImage+"';this.title=''").addTo($alloc("image_viewer").viewer);
 			} else {
 				$alloc("image_viewer").viewer=$("@div").attr("style","border:3px double #666666;display:none;background:#F6F6F6;top:2px;z-index:199999;right:2px;position:fixed").addTo(document);
 				$alloc("image_viewer").image=$("@img").addTo($alloc("image_viewer").viewer);
@@ -7703,7 +7704,7 @@ function $get(url,func,userData,method) {
 	if(!method) {
 		method="GET";
 	}
-	if(url.indexOf("renren.com") > 0) {
+	if(method=="POST" && url.indexOf("renren.com") > 0) {
 		// XN.get_check & XN.get_check_x
 		var reqToken = $("input[type='hidden'][name='requestToken']").val();
 		var rtk = $("input[type='hidden'][name='_rtk']").val();
