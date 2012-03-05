@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.2.471
-// @miniver        471
+// @version        3.3.2.472
+// @miniver        472
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -45,8 +45,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.2.469";
-XNR.miniver=469;
+XNR.version="3.3.2.472";
+XNR.miniver=472;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -7704,7 +7704,7 @@ function $get(url,func,userData,method) {
 	if(!method) {
 		method="GET";
 	}
-	if(url.indexOf("renren.com") > 0) {
+	if(method=="POST" && url.indexOf("renren.com") > 0) {
 		// XN.get_check & XN.get_check_x
 		var reqToken = $("input[type='hidden'][name='requestToken']").val();
 		var rtk = $("input[type='hidden'][name='_rtk']").val();
