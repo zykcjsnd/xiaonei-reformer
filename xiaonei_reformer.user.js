@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.2.472
-// @miniver        472
+// @version        3.3.2.473
+// @miniver        473
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -3135,147 +3135,21 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 		// 评论模式
 		if (mode.exist() && mode.rect().width>0) {
 			var links=$(".review-mode ul > li .pic img");
-			var totalImage=links.size();
-			var cur=0;
-			links.each(function(index) {
-				var t=$(this);
-				var title = t.attr("alt");
-				if (!title) {
-					title = t.superior(2).find(".myphoto-info .descript").text();
-				}
-				if (!title) {
-					title = "";
-				}
-				$alloc("download_album").push({i:index,src:(t.attr("data-src") || t.attr("src")),title:title});
-				cur++;
-				if(cur==totalImage) {
-					if(downLink.text().match("分析中")) {
-						finish();
+			var t=links.eq(0);
+			var src=t.attr("data-src") || t.attr("src");
+			if (/large_|original_/.test(src)) {
+				var totalImage=links.size();
+				var cur=0;
+				links.each(function(index) {
+					var t=$(this);
+					var title = t.attr("alt");
+					if (!title) {
+						title = t.superior(2).find(".myphoto-info .descript").text();
 					}
-				} else {
-					downLink.text("分析中...("+cur+"/"+totalImage+")");
-				}
-
-			});
-			return;
-		}
-
-		// 缩略图模式
-		links=$(".photo-list ul li .picture img");
-		if (links.exist()) {
-			var totalImage=links.size();
-			var cur=0;
-			links.each(function(index) {
-				var t=$(this);
-				var title = t.attr("alt");
-				if (!title) {
-					title = t.superior(2).find(".myphoto-info .descript").text();
-				}
-				if (!title) {
-					title = "";
-				}
-				$alloc("download_album").push({i:index,src:(t.attr("data-src") || t.attr("src")),title:title});
-				cur++;
-				if(cur==totalImage) {
-					if(downLink.text().match("分析中")) {
-						finish();
+					if (!title) {
+						title = "";
 					}
-				} else {
-					downLink.text("分析中...("+cur+"/"+totalImage+")");
-				}
-
-			});
-			return;
-		}
-
-		// 故事模式（已作废？）
-		links=$(".story-pic .story-pic-list .photo-img img");
-		if(links.exist()) {
-			var totalImage=links.size();
-			var cur=0;
-			links.each(function(index) {
-				var t=$(this);
-				var title = t.attr("alt");
-				if (title == null) {
-					var pid = t.attr("cmdinfo");
-					title = $("#photoTitle_" + pid).text();
-				}
-				if (!title) {
-					title = "";
-				}
-				$alloc("download_album").push({i:index,src:(t.attr("lazy-src") || t.attr("src")),title:title});
-				cur++;
-				if(cur==totalImage) {
-					if(downLink.text().match("分析中")) {
-						finish();
-					}
-				} else {
-					downLink.text("分析中...("+cur+"/"+totalImage+")");
-				}
-			});
-			return;
-		} else {
-			// 普通模式
-			links=$(".photo-list span.img a, table.photoList td.photoPan>a, .photo-list>ul>li>a.cover, ul.album-list>li>a.photo-box");
-			var totalImage=links.size();
-			if(totalImage==0) {
-				return;
-			}
-			var cur=0;
-			links.attr("down","down");
-			downLink.text("分析中...(0/"+totalImage+")");
-			var hrefs=[];
-			links.each(function() {
-				hrefs.push({t:this,l:this.href});
-			});
-
-			var a=hrefs.shift();
-			$get(a.l,function(html,url,target) {
-				var imageSrc="";
-				try {
-					if(html==null) {
-						return;
-					}
-					if(!downLink.text().match("分析中")) {
-						return;
-					}
-
-					if(html.search("<body id=\"errorPage\">")!=-1) {
-						return;
-					}
-					var src=/var photo *= *({.*});?/.exec(html);
-					if(src) {
-						src=JSON.parse(src[1]);
-						if(src.photo && src.photo.large) {
-							imageSrc=src.photo.large;
-							return;
-						}
-					}
-					// 公共主页相册
-					var src=/XN.PAGE.albumPhoto.init\((.*?)\);/i.exec(html);
-					if(src) {
-						src=JSON.parse("["+src[1].replace(/'.*?'/g,"0").replace(",photo:",',"photo":')+"]")[10];
-						if(src && src.photo && src.photo.large) {
-							imageSrc=src.photo.large;
-							return;
-						}
-					}
-					// 其他的照片 ？？？
-					var src=/<img[^>]+id="photo".*?>/.exec(html);
-					if(src) {
-						src=/src=\"(.*?)\"/.exec(src);
-						if(src && src[1] && src[1].indexOf("/a.gif")==-1) {
-							imageSrc=src[1];
-							return;
-						}
-					}
-				} catch(ex) {
-					$error("addDownloadAlbumLink::$get",ex);
-				} finally {
-					if(imageSrc) {
-						$alloc("download_album").push({i:totalImage-hrefs.length,src:imageSrc,title:($(target).find("img").attr("alt") || "")});
-						$(target).attr({down:null});
-					}
+					$alloc("download_album").push({i:index,src:(t.attr("data-src") || t.attr("src")),title:title});
 					cur++;
 					if(cur==totalImage) {
 						if(downLink.text().match("分析中")) {
@@ -3284,13 +3158,183 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 					} else {
 						downLink.text("分析中...("+cur+"/"+totalImage+")");
 					}
-					if (hrefs.length>0 && downLink.text().match("分析中")) {
-						var a=hrefs.shift();
-						$get(a.l, arguments.callee, a.t);
+				});
+				return;
+			} else {
+				// img上没写大图地址
+				if (/photo\/(\d+)\/album-(\d+)/.test(XNR.url)) {
+					downLink.text("分析中...");
+					var ownerId = RegExp.$1;
+					var albumId = RegExp.$2;
+					// FIXME 随便指定个1000应该没问题吧
+					$get("http://photo.renren.com/photo/"+ownerId+"/album-"+albumId+"/bypage/ajax?curPage=0&pagenum=1000", function(html) {
+						if (!html) {
+							finish();
+							return;
+						}
+						if(!downLink.text().match("分析中")) {
+							return;
+						}
+
+						try {
+							var list = JSON.parse(html).photoList;
+						} catch(ex) {
+							finish();
+							$error("addDownloadAlbumLink::$get", "相册内容解析失败");
+							return;
+						}
+						var pool=$alloc("download_album");
+						for (var i=0,i_max=list.length;i<i_max;i++) {
+							var photo=list[i];
+							pool.push({i:i,src:photo.largeUrl,title:photo.title});
+						}
+						finish();
+					})
+					return;
+				}
+			}
+		}
+
+		// 缩略图模式
+		links=$(".photo-list ul li .picture img");
+		if (links.exist()) {
+			var t=links.eq(0);
+			var src=t.attr("data-src") || t.attr("src");
+			if (/large_|original_/.test(src)) {
+				var totalImage=links.size();
+				var cur=0;
+				links.each(function(index) {
+					var t=$(this);
+					var title = t.attr("alt");
+					if (!title) {
+						title = t.superior(2).find(".myphoto-info .descript").text();
+					}
+					if (!title) {
+						title = "";
+					}
+					$alloc("download_album").push({i:index,src:(t.attr("data-src") || t.attr("src")),title:title});
+					cur++;
+					if(cur==totalImage) {
+						if(downLink.text().match("分析中")) {
+							finish();
+						}
+					} else {
+						downLink.text("分析中...("+cur+"/"+totalImage+")");
+					}
+
+				});
+				return;
+			} else {
+				// img上没写大图地址
+				if (/photo\/(\d+)\/album-(\d+)/.test(XNR.url)) {
+					downLink.text("分析中...");
+					var ownerId = RegExp.$1;
+					var albumId = RegExp.$2;
+					// FIXME 随便指定个1000应该没问题吧
+					$get("http://photo.renren.com/photo/"+ownerId+"/album-"+albumId+"/bypage/ajax?curPage=0&pagenum=1000", function(html) {
+						if (!html) {
+							finish();
+							return;
+						}
+						if(!downLink.text().match("分析中")) {
+							return;
+						}
+
+						try {
+							var list = JSON.parse(html).photoList;
+						} catch(ex) {
+							finish();
+							$error("addDownloadAlbumLink::$get", "相册内容解析失败");
+							return;
+						}
+						var pool=$alloc("download_album");
+						for (var i=0,i_max=list.length;i<i_max;i++) {
+							var photo=list[i];
+							pool.push({i:i,src:photo.largeUrl,title:photo.title});
+						}
+						finish();
+					})
+					return;
+				}
+				// ... 不管了，试试其他模式吧
+			}
+		}
+
+		// 普通模式
+		links=$(".photo-list span.img a, table.photoList td.photoPan>a, .photo-list>ul>li>a.cover, ul.album-list>li>a.photo-box");
+		var totalImage=links.size();
+		if(totalImage==0) {
+			return;
+		}
+		var cur=0;
+		links.attr("down","down");
+		downLink.text("分析中...(0/"+totalImage+")");
+		var hrefs=[];
+		links.each(function() {
+			hrefs.push({t:this,l:this.href});
+		});
+
+		var a=hrefs.shift();
+		$get(a.l,function(html,url,target) {
+			var imageSrc="";
+			try {
+				if(html==null) {
+					return;
+				}
+				if(!downLink.text().match("分析中")) {
+					return;
+				}
+
+				if(html.search("<body id=\"errorPage\">")!=-1) {
+					return;
+				}
+				var src=/var photo *= *({.*});?/.exec(html);
+				if(src) {
+					src=JSON.parse(src[1]);
+					if(src.photo && src.photo.large) {
+						imageSrc=src.photo.large;
+						return;
 					}
 				}
-			},a.t);
-		}
+				// 公共主页相册
+				var src=/XN.PAGE.albumPhoto.init\((.*?)\);/i.exec(html);
+				if(src) {
+					src=JSON.parse("["+src[1].replace(/'.*?'/g,"0").replace(",photo:",',"photo":')+"]")[10];
+					if(src && src.photo && src.photo.large) {
+						imageSrc=src.photo.large;
+						return;
+					}
+				}
+				// 其他的照片 ？？？
+				var src=/<img[^>]+id="photo".*?>/.exec(html);
+				if(src) {
+					src=/src=\"(.*?)\"/.exec(src);
+					if(src && src[1] && src[1].indexOf("/a.gif")==-1) {
+						imageSrc=src[1];
+						return;
+					}
+				}
+			} catch(ex) {
+				$error("addDownloadAlbumLink::$get",ex);
+			} finally {
+				if(imageSrc) {
+					$alloc("download_album").push({i:totalImage-hrefs.length,src:imageSrc,title:($(target).find("img").attr("alt") || "")});
+					$(target).attr({down:null});
+				}
+				cur++;
+				if(cur==totalImage) {
+					if(downLink.text().match("分析中")) {
+						finish();
+					}
+				} else {
+					downLink.text("分析中...("+cur+"/"+totalImage+")");
+				}
+				if (hrefs.length>0 && downLink.text().match("分析中")) {
+					var a=hrefs.shift();
+					$get(a.l, arguments.callee, a.t);
+				}
+			}
+		},a.t);
 
 		function finish() {
 			try {
@@ -3305,7 +3349,13 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 							failedImagesList.push(this.href);
 						});
 					}
-					var title=$(".ablum-Information .Information h1").text();
+					var titleNode=$(".ablum-infor>h1").clone();
+					titleNode.find("span.num").remove();
+					var title=titleNode.text();
+					if(!title) {
+						// 旧式相册
+						title=$(".ablum-Information .Information h1").text();
+					}
 					if(!title) {
 						// 分享相册
 						title=$(".photo-title .Information h1").text();
@@ -6154,7 +6204,7 @@ function main(savedOptions) {
 						}]
 					},{
 						type:"info",
-						value:"在相册图片列表下方会生成一个”下载当前页图片“链接。如果点击链接后进度长期卡住，再点击一次链接选择中止，可以下载其他已分析完毕的图片。"+(XNR.agent==USERSCRIPT?"分析完毕后会弹出一个窗口，其可能会被浏览器拦截，在浏览器状态栏上的弹出窗口拦截图标上点左键让其显示即可。":"")+"如果想下载整个相册的内容，请配合“相册所有图片在一页中显示”功能使用。",
+						value:"在相册图片列表下方会生成一个”下载当前页图片“链接。如果点击链接后进度长期卡住，再点击一次链接选择中止，可以下载其他已分析完毕的图片。"+(XNR.agent==USERSCRIPT?"分析完毕后会弹出一个窗口，其可能会被浏览器拦截，在浏览器状态栏或地址栏右侧的弹出窗口拦截图标上点左键让其显示即可。":"")+"如果想下载整个相册的内容，请配合“相册所有图片在一页中显示”功能使用。",
 					},{
 						type:"subcheck",
 						id:"showImageLinkOnly",
