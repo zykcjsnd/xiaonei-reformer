@@ -93,3 +93,7 @@ http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_o1.png
 Opera 11增加了扩展机制。但是在11.50版之前，都存在一个缺陷，导致人人网改造器无法正常工作。所以请使用11.50或更高版本的Opera
 
 到[http://code.google.com/p/xiaonei-reformer/downloads/list 扩展下载页面]去下载扩展程序。下载后将文件拖动到opera窗口上即可安装
+
+<font color="red">注意：</font>使用opera下载扩展时，可能会将其识别为zip压缩文件并自动将扩展名改成zip。如果发生此问题请手动将文件扩展名改回oex。另外有个稍微复杂但一劳永逸的方法：在opera的首选项->高级->下载中，编辑mime类型为“application/zip”（如果找不到请取消勾选“隐藏用opera打开的文件类型”）对应的文件扩展名，加上oex，如下图所示：
+
+http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_o2.png
