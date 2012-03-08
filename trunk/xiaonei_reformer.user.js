@@ -45,8 +45,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.2.472";
-XNR.miniver=472;
+XNR.version="3.3.2.473";
+XNR.miniver=473;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
