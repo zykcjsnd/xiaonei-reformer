@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.2.473
-// @miniver        473
+// @version        3.3.2.474
+// @miniver        474
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -4282,7 +4282,7 @@ function enableShortcutMenu(evt) {
 		if(t.tagName=="SPAN" && t.childElementCount==0 && !t.nextElementSibling && !t.previousElementSibling && t.parentNode.tagName=="A") {
 			t=t.parentNode;
 		}
-		if(t.tagName!="A" || (!/\/profile\.do\?/.test(t.href) && !/\/\/www\.renren\.com\/g\//.test(t.href))) {
+		if(t.tagName!="A" || (!/\/profile\.do\?/.test(t.href) && !/\/\/www\.renren\.com\/g\//.test(t.href) && !/\/www\.renren\.com\/\d+$/.test(t.href))) {
 			return;
 		}
 		if(t.id || /#|&v=/.test(t.href) || t.style.backgroundImage) {
@@ -4298,6 +4298,8 @@ function enableShortcutMenu(evt) {
 				// 公共主页/情侣空间
 				return;
 			}
+		} else if (/\/www\.renren\.com\/\d+$/.test(t.href)) {
+			var id=/([0-9]+)$/.exec(t.href)[1];
 		} else {
 			var id=/[&?]id=([0-9]+)/.exec(t.href)[1];
 		}
