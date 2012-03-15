@@ -22,7 +22,7 @@ def getEmo()
 	cookie = IO.read(File.dirname(__FILE__)+"/cookies")
 	res = gfetch('http://status.renren.com/getdoingubblist.do', cookie)
 	if (res.code == '302')
-        raise 'Redirect to ' + res.reponse["location"]
+        raise 'Redirect to ' + res["location"]
     end
 	return res.body
 end
