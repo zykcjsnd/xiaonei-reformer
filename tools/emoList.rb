@@ -8,7 +8,7 @@ def gfetch(url, cookie)
 		"Accept" => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 		"Referer" => 'http://www.renren.com/',
 		"Connection" => 'keep-alive',
-		"User-Agent" => 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:10.0) Gecko/20100101 Firefox/11.0'
+		"User-Agent" => 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0'
 	}
 	if (cookie != nil)
 		header["Cookie"] = cookie
