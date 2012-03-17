@@ -6,7 +6,11 @@ require 'uri'
 def gfetch(url, cookie)
 	header = {
 		"Accept" => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-		"Referer" => 'http://www.renren.com/',
+		"Accept-Encoding" => 'gzip, deflate',
+		"Content-Type" => 'application/x-www-form-urlencoded',
+		"Accept-Language" => 'zh-cn,zh;q=0.5',
+		"Referer" => 'http://shell.renren.com/ajaxproxy.htm',
+		"DNT" => '1',
 		"Connection" => 'keep-alive',
 		"User-Agent" => 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0'
 	}
@@ -16,6 +20,10 @@ def gfetch(url, cookie)
 	uri = URI.parse(url)
 	http = Net::HTTP.new(uri.host, uri.port)
 	res = http.get(uri.path, header)
+	if (res["content-encoding"] == "gzip")
+		res.body = Zlib::GzipReader.new(StringIO.new(res.body.to_s())).read()
+	end
+	return res;
 end
 
 def getEmo()

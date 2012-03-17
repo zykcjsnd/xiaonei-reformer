@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.2.473
-// @miniver        473
+// @version        3.3.2.475
+// @miniver        475
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -45,8 +45,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.2.473";
-XNR.miniver=473;
+XNR.version="3.3.2.475";
+XNR.miniver=475;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -283,17 +283,12 @@ function removePagesMusicPlayer() {
 };
 
 
-// 移除底部工具栏
+// 隐藏底部工具栏
 function removeBottomBar() {
 	const target="#bottombar, #imengine";
-	$ban(target);
+	$patchCSS(target+"{display:none !important}");
 };
 
-// 去除右下角系统通知
-function removeSysNotification() {
-	const target="#system-notification-box";
-	$ban(target);
-};
 
 function removeHomeGadgets(gadgetOpt) {
 	const gadgets={
@@ -748,8 +743,12 @@ function flodFeedComment() {
 	var code="var count=0;"+
 	"(function(){"+
 		"try{"+
-			"var code=window.XN.app.status.replyEditor.prototype.loadJSON.toString().replace(/function *\\(json\\) *{/,'').replace(/}$/,'').replace(/this.show\\([^\\)]*\\)/,'this.hide()');"+
-			"window.XN.app.status.replyEditor.prototype.loadJSON=new Function('json',code)"+
+			"var c=['','4Qun','4Zhan'];"+
+			"for(var i=0;i<c.length;i++){"+
+				"var p=window.XN.app.status['replyEditor'+c[i]].prototype;"+
+				"var code=p.loadJSON.toString().replace(/function *\\(json\\) *{/,'').replace(/}$/,'').replace(/this.show\\([^\\)]*\\)/,'this.hide()');"+
+				"p.loadJSON=new Function('json',code)"+
+			"}"+
 		"}catch(e){"+
 			"count++;"+
 			"if(count<5)"+
@@ -3149,7 +3148,11 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 					if (!title) {
 						title = "";
 					}
-					$alloc("download_album").push({i:index,src:(t.attr("data-src") || t.attr("src")),title:title});
+					var src=(t.attr("data-src") || t.attr("src"));
+					if(src.indexOf("/large_")>0 && /\/2012\d{4}\//.test(src)) {
+						src=src.replace("large_", "original_");
+					}
+					$alloc("download_album").push({i:index,src:src,title:title});
 					cur++;
 					if(cur==totalImage) {
 						if(downLink.text().match("分析中")) {
@@ -3186,7 +3189,12 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						var pool=$alloc("download_album");
 						for (var i=0,i_max=list.length;i<i_max;i++) {
 							var photo=list[i];
-							pool.push({i:i,src:photo.largeUrl,title:photo.title});
+							var src=photo.largeUrl;
+							//p_large_的没存特大图，2011年11/12月的已经直接列出original了(?)
+							if(src.indexOf("/large_")>0 && /\/2012\d{4}\//.test(src)) {
+								src=src.replace("large_", "original_");
+							}
+							pool.push({i:i,src:src,title:photo.title});
 						}
 						finish();
 					})
@@ -3212,7 +3220,11 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 					if (!title) {
 						title = "";
 					}
-					$alloc("download_album").push({i:index,src:(t.attr("data-src") || t.attr("src")),title:title});
+					var src=(t.attr("data-src") || t.attr("src"));
+					if(src.indexOf("/large_")>0 && /\/2012\d{4}\//.test(src)) {
+						src=src.replace("large_", "original_");
+					}
+					$alloc("download_album").push({i:index,src:src,title:title});
 					cur++;
 					if(cur==totalImage) {
 						if(downLink.text().match("分析中")) {
@@ -3250,7 +3262,11 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						var pool=$alloc("download_album");
 						for (var i=0,i_max=list.length;i<i_max;i++) {
 							var photo=list[i];
-							pool.push({i:i,src:photo.largeUrl,title:photo.title});
+							var src=photo.largeUrl;
+							if(src.indexOf("/large_")>0 && /\/2012\d{4}\//.test(src)) {
+								src=src.replace("large_", "original_");
+							}
+							pool.push({i:i,src:src,title:photo.title});
 						}
 						finish();
 					})
@@ -3277,6 +3293,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 		var a=hrefs.shift();
 		$get(a.l,function(html,url,target) {
 			var imageSrc="";
+			var imageTitle="";
 			try {
 				if(html==null) {
 					return;
@@ -3293,6 +3310,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 					src=JSON.parse(src[1]);
 					if(src.photo && src.photo.large) {
 						imageSrc=src.photo.large;
+						imageTitle=src.photo.title;
 						return;
 					}
 				}
@@ -3302,6 +3320,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 					src=JSON.parse("["+src[1].replace(/'.*?'/g,"0").replace(",photo:",',"photo":')+"]")[10];
 					if(src && src.photo && src.photo.large) {
 						imageSrc=src.photo.large;
+						imageTitle=src.photo.title;
 						return;
 					}
 				}
@@ -3318,8 +3337,11 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 				$error("addDownloadAlbumLink::$get",ex);
 			} finally {
 				if(imageSrc) {
-					$alloc("download_album").push({i:totalImage-hrefs.length,src:imageSrc,title:($(target).find("img").attr("alt") || "")});
-					$(target).attr({down:null});
+					if(imageSrc.indexOf("/large_")>0 && /\/2012\d{4}\//.test(imageSrc)) {
+						imageSrc=imageSrc.replace("large_", "original_");
+					}
+					$alloc("download_album").push({i:totalImage-hrefs.length,src:imageSrc,title:(imageTitle || ($(target).find("img").attr("alt") || ""))});
+						$(target).attr({down:null});
 				}
 				cur++;
 				if(cur==totalImage) {
@@ -4282,7 +4304,7 @@ function enableShortcutMenu(evt) {
 		if(t.tagName=="SPAN" && t.childElementCount==0 && !t.nextElementSibling && !t.previousElementSibling && t.parentNode.tagName=="A") {
 			t=t.parentNode;
 		}
-		if(t.tagName!="A" || (!/\/profile\.do\?/.test(t.href) && !/\/\/www\.renren\.com\/g\//.test(t.href))) {
+		if(t.tagName!="A" || (!/\/profile\.do\?/.test(t.href) && !/\/\/www\.renren\.com\/g\//.test(t.href) && !/\/www\.renren\.com\/\d+$/.test(t.href))) {
 			return;
 		}
 		if(t.id || /#|&v=/.test(t.href) || t.style.backgroundImage) {
@@ -4298,6 +4320,8 @@ function enableShortcutMenu(evt) {
 				// 公共主页/情侣空间
 				return;
 			}
+		} else if (/\/www\.renren\.com\/\d+$/.test(t.href)) {
+			var id=/([0-9]+)$/.exec(t.href)[1];
 		} else {
 			var id=/[&?]id=([0-9]+)/.exec(t.href)[1];
 		}
@@ -5127,7 +5151,7 @@ function main(savedOptions) {
 				}],
 				page:"pages"
 			},{
-				text:"##去除底部工具栏",
+				text:"##隐藏底部工具栏##",
 				ctrl:[{
 					id:"removeBottomBar",
 					value:false,
@@ -5136,17 +5160,9 @@ function main(savedOptions) {
 						stage:0,
 						fire:true,
 					}],
-				}]
-			},{
-				text:"##去除右下角系统通知",
-				ctrl:[{
-					id:"removeSysNotification",
-					value:false,
-					fn:[{
-						name:removeSysNotification,
-						stage:0,
-						fire:true,
-					}]
+				},{
+					type:"warn",
+					value:"启用此功能并不会使你不出现在别人的在线好友列表，并且还会导致你无法看到别人对你发起的在线对话"
 				}]
 			},{
 				text:"##",
