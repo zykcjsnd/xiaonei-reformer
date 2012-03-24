@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.2.475
-// @miniver        475
+// @version        3.3.2.476
+// @miniver        476
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -327,7 +327,7 @@ function removeHomeGadgets(gadgetOpt) {
 	}
 
 	if(gadgetOpt["appList"]) {
-		$patchCSS(".site-menu-apps:not([id]):not(.site-menu-minigroups):not(.recommend){display:none}"); // 应用列表
+		$patchCSS("#site-menu-apps-nav{display:none}"); // 应用列表
 	}
 
 	$wait(1,function() {
@@ -2820,43 +2820,75 @@ function extendBlogLinkSupport() {
 
 // 在编辑日志时添加直接编辑HTML代码按钮
 function addBlogHTMLEditor() {
-	if(!XNR.url.match(/\/editBlog\b|\/editDraft\b|\/addBlog\b|\/NewEntry\.do/i)) {
+	var zhan = false;
+	if ($page("zhan")) {
+		zhan = true;
+	} else if(!XNR.url.match(/\/editBlog\b|\/editDraft\b|\/addBlog\b|\/NewEntry\.do|\/new$|\/edit$/i)) {
 		return;
 	}
+	
 	var last=$("#editor_toolbar1 td.mceToolbarEndButton");
 	if(last.empty()) {
 		setTimeout(arguments.callee, 500);
 		return;
 	}
 	
-	const css="#editor_editcode{background-position:0 -196px; padding:2px; background-image:url(http://a.xnimg.cn/imgpro/editor/editor.gif); height:24px}#editor_editcode:hover{background-position:0 0}";
-	$patchCSS(css);
+	if ($("#editor_toolbar1 .mce_changeMode").empty()) {
+		// 普通模式需要设置下按钮样式
+		const css="#editor_editcode{background-position:0 -196px; padding:2px; background-image:url(http://a.xnimg.cn/imgpro/editor/editor.gif); height:24px}#editor_editcode:hover{background-position:0 0}";
+		$patchCSS(css);
+	} else {
+		// 高级模式，要放到第二行
+		if ($("#editor_toolbar2").exist()) {
+			last = $("#editor_toolbar2 td.mceToolbarEndButton");
+		}
+		// 加宽点，否则HTML显示不全
+		$patchCSS("#editor_editcode .mce_code{width:20px}");
+	}
 
-	$("@td").add($("@span").addClass("mceSeparator")).move("before",last);
-	$("@td").html('<a title="编辑HTML" onclick="return false;" onmousedown="return false;" class="mceButton mceButtonEnabled" href="javascript:;" id="editor_editcode"><span class="mceIcon mce_code"></span></a>').move("before",last);
+	$("@td").css("position","relative").add($("@span").addClass("mceSeparator")).move("before",last);
+	$("@td").css("position","relative").html('<a title="编辑HTML" onclick="return false;" onmousedown="return false;" class="mceButton mceButtonEnabled" href="javascript:;" id="editor_editcode"><span class="mceIcon mce_code"></span></a>').move("before",last);
+
+	if (zhan) {
+		// 处理所有分隔符，腾出空间
+		$("#editor_toolbar1 .mceSeparator").css({"width":"1px","margin":"0"});
+		$("#editor_fullscreen").css("padding","3px 2px 1px");
+	}
 
 	$("#editor_editcode").bind("click",function() {
 		// 由于跨域，无法使用内置的编辑器，必须自己创建一个编辑框
 		// tinyMCE.execInstanceCommand("editor","mceCodeEditor",false)
-		var code='var dlg = new XN.ui.dialog({modal:true});'+
-        	'dlg.hide();'+
-			'dlg.setWidth("auto");'+
-			'dlg.setHeight("auto");'+
-			'dlg.header.setContent("编辑HTML代码");'+
-			'dlg.body.setContent("<textarea style=\'width:600px;height:280px\'></textarea>");'+
-			'dlg.addButton({text:"\u786e\u5b9a", onclick:function(){'+
-				'tinyMCE.get("editor").setContent(dlg.frame.querySelector("textarea").value);'+
-			'}});'+
-			'dlg.addButton({text:"\u53d6\u6d88"});'+
-			'dlg.getButton("\u53d6\u6d88").addClass("gray");'+
-			'dlg.frame.querySelector("table").style.display = "block";'+	// 不加此句webkit显示会乱掉
-			'dlg.show();'+
-			'var editor = tinyMCE.get("editor");'+
-			'var pos = XN.form.getRichEditorPos(editor);'+
-			'dlg.moveTo(pos.x, pos.y-120);'+
-			'var textarea = dlg.frame.querySelector("textarea");'+
-			'textarea.value = editor.getContent();'+
-			'textarea.focus();';
+		if (!zhan) {
+			var code='var dlg=new XN.ui.dialog({modal:true});'+
+        		'dlg.hide();'+
+				'dlg.setWidth("auto");'+
+				'dlg.setHeight("auto");'+
+				'dlg.header.setContent("编辑HTML代码");'+
+				'dlg.body.setContent("<textarea style=\'width:600px;height:280px\'></textarea>");'+
+				'dlg.addButton({text:"\u786e\u5b9a", onclick:function(){'+
+					'tinyMCE.activeEditor.setContent(dlg.frame.querySelector("textarea").value);'+
+				'}});'+
+				'dlg.addButton({text:"\u53d6\u6d88"});'+
+				'dlg.getButton("\u53d6\u6d88").addClass("gray");'+
+				'dlg.frame.querySelector("table").style.display = "block";'+	// 不加此句webkit显示会乱掉
+				'dlg.show();'+
+				'var editor = tinyMCE.activeEditor;'+
+				'var pos = XN.form.getRichEditorPos(editor);'+
+				'dlg.moveTo(pos.x, pos.y-120);'+
+				'var textarea = dlg.frame.querySelector("textarea");'+
+				'textarea.value = editor.getContent();'+
+				'textarea.focus();';
+		} else {
+			var code='var dlg=jQuery.confirmDialog({width:640});'+
+        		'dlg.hide();'+
+        		'dlg.getHeader().find("h3").text("编辑HTML代码");'+
+				'dlg.getBody().html("<textarea style=\'width:600px;height:280px\'></textarea>");'+
+				'dlg.getButton("confirm").click(function(){'+
+					'tinyMCE.activeEditor.setContent(dlg.getBody().find("textarea").val());'+
+				'});'+
+				'dlg.show();'+
+				'dlg.getBody().find("textarea").val(tinyMCE.activeEditor.getContent()).focus();';
+		}
 		$script(code);
 	});
 };
@@ -6171,7 +6203,7 @@ function main(savedOptions) {
 					}]
 				}],
 				login:true,
-				page:"blog"
+				page:"blog,lover_blog,page_blog,zhan"
 			},{
 				text:"##禁止跟踪统计##",
 				ctrl:[
@@ -7479,6 +7511,8 @@ function $page(category,url) {
 		profile:"renren\\.com/[Pp]rofile|renren\\.com/[^/]+/[Pp]rofile|/[a-zA-Z0-9_\\-]{5,}\\.renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|[a-zA-Z0-9_]{5,}\\.renren\\.com/innerProfile|renren\\.com/[a-zA-Z0-9_]{6,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personal/link/
 		blog:"/blog\\.renren\\.com/|#//blog/",	// 日志
 		forum:"/club\\.renren\\.com/",	// 论坛
+		lover:"/lover\\.renren\\.com/",	// 情侣空间
+		lover_blog:"/lover\\.renren\\.com/note/",	// 情侣空间日志
 		pages:"/page\\.renren\\.com/",	// 公共主页
 		page_home:"/page\\.renren\\.com/[^/]+$|page\\.renren\\.com/[^/]+\\?|/page\\.renren\\.com/[^/]+/index",	// 公共主页首页 FIXME 准确否??
 		page_blog:"/page\\.renren\\.com/[^/]+/note/\\d+",	// 公共主页日志
@@ -7494,6 +7528,7 @@ function $page(category,url) {
 		fm:"/music\\.renren\\.com/fm",	// 人人电台
 		xiaozu:"/xiaozu\\.renren\\.com/",	// 小组
 		gossip:"/gossip\\.renren\\.com/",	// 留言板
+		zhan:"/zhan\\.renren\\.com/",	// 小站
 	};
 	if(!url) {
 		url=XNR.url;
