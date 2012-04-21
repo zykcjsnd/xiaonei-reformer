@@ -670,5 +670,13 @@
   "(tucao)": {
     "t": "吐槽",
     "s": "/imgpro/icons/statusface/tuc.gif"
+  },
+  "(xx)": {
+    "t": "星星",
+    "s": "/imgpro/icons/statusface/xx.gif"
+  },
+  "(yrj)": {
+    "t": "愚人节",
+    "s": "/imgpro/icons/statusface/yrj.gif"
   }
 }

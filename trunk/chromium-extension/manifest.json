@@ -1,6 +1,6 @@
 {
 	"name": "人人网改造器",
-	"version": "3.3.2.476",
+	"version": "3.3.3.478",
 	"description": "为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，增加更多功能……",
 	"icons": { "16": "image/logo_16.png", "64": "image/logo_64.png", "128": "image/logo_128.png" },
 	"background_page": "background.html",
