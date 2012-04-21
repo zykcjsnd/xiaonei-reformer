@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.2.476
-// @miniver        476
+// @version        3.3.3.478
+// @miniver        478
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -45,8 +45,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.2.476";
-XNR.miniver=476;
+XNR.version="3.3.3.478";
+XNR.miniver=478;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -108,7 +108,7 @@ if(XNR.acore==PRESTO) {
 		XNR.msgHandlers={};
 		XNR.oexSendRequest=function(msg,handler) {
 			do {
-				var reqId=Math.random();
+				var reqId=parseInt(Math.random()*100000);
 			} while(XNR.msgHandlers[reqId]!=null);
 			XNR.msgHandlers[reqId]=handler;
 			msg.reqId=reqId;
@@ -134,7 +134,7 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], .sec.promotion, iframe[src*='adsupport.renren.com']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .advert-con, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], .sec.promotion, iframe[src*='adsupport.renren.com']";
 	$ban(ads);
 	$script("const ad_js_version=null",true);
 	$wait(1,function() {
@@ -172,7 +172,7 @@ function removePageTheme() {
 		}
 	});
 	// 恢复原始模板
-	if($page("profile") && !$page("pages")) {
+	if($page("profile") && !$page("pages") && !$page("lover")) {
 		var skin=$("head>link[href*='profile-skin.css'],head>link[href*='home-all-min.css']");
 		if(skin.empty()) {
 			$("@link").attr({type:"text/css",rel:"stylesheet",href:"http://s.xnimg.cn/csspro/apps/profile-skin.css"}).addTo($("head"));
@@ -293,23 +293,23 @@ function removeBottomBar() {
 function removeHomeGadgets(gadgetOpt) {
 	const gadgets={
 		"topNotice":".notice-holder, #notice_system",		// 顶部通知
-		"levelBar":".site-menu-user-box",	// 个人等级
 		"footprint":"#footPrint",	// 最近来访
-		"recommendApp":".site-menu-apps.recommend",	// 推荐应用
+		"recommendApp":".site-menu-apps.recommend",	// 推荐应用，v5版主页
 		"recommendGift":"#recommendGift",	// 推荐礼物
 		"newFriends":"#pymk_home,.find-friend-box,#myknowfriend_user",	// 好友推荐，后面2个是新注册用户页面上的
 		"schoolBeauty":"#schoolBeautyBox,#xiaoTaoHua",	// 校花校草
 		"sponsors":"#sponsorsWidget,.wide-sponsors",	// 赞助商内容
-		"publicPageAdmin":"#myAdmins",	// 主页管理
 		"birthday":"#homeBirthdayPart",	// 好友生日
 		"survey":".side-item.sales-poll",	// 人人网调查
 		"friendPhoto":"#friendPhoto",	// 朋友的照片
 		"newStar":".star-new,#highSchoolStar",	// 人气之星
 		"contact":".side-item.get-touch",	// 联系朋友
+		"groups":".site-menu-minigroups, #site-menu-nav>.minigroups",	// 我的群
 	};
 	const filters={
 		"webFunction":{t:".side-item",f:".web-function"},	// 站内功能
 		"publicPageAdmin":{t:".site-menu-apps",f:".site-menu-apps-admins"},	// 主页管理
+		"recommendApp":{t:".site-menu-apps",f:".site-menu-apps-recommend"},	// 推荐应用
 	};
 
 	if(!$allocated("home_gadgets")) {
@@ -328,6 +328,7 @@ function removeHomeGadgets(gadgetOpt) {
 
 	if(gadgetOpt["appList"]) {
 		$patchCSS("#site-menu-apps-nav{display:none}"); // 应用列表
+		$patchCSS(".site-menu-nav-box>.site-menu-apps:not(.recommend){display:none}"); // 应用列表，v5主页
 	}
 
 	$wait(1,function() {
@@ -342,7 +343,6 @@ function removeHomeGadgets(gadgetOpt) {
 // 去除个人主页组件
 function removeProfileGadgets(gadgetOpt) {
 	const gadgets={
-		"levelBar":"#userPoint.mod",
 		"album":"#album.mod, #latestPhotos",
 		"blog":"#blog.mod",
 		"share":"#share.mod",
@@ -368,6 +368,17 @@ function removeProfileGadgets(gadgetOpt) {
 	}
 	if(patch) {
 		$ban(patch.substring(0,patch.length-1));
+	}
+	if (gadgetOpt["activity"]) {
+		$wait(1,function(){
+			var t=$(".col-right>.extra-side>div").eq(0);
+			t.find("a[href='#nogo']").each(function(){
+				if (/退出活动/.test(this.textContent)) {
+					t.remove();
+					return false;
+				}
+			});
+		});
 	}
 };
 
@@ -395,7 +406,7 @@ function hideRequest(req) {
 	}
 };
 // 自动拒绝请求
-function rejectRequest(req,blockApp) {
+function rejectRequest(req,blockApp,igNotification,igReminder) {
 	// 应用请求
 	if(req["appRequest"]==true || blockApp==true) {
 		$get("http://app.renren.com/app/appRequestList",function(html) {
@@ -424,78 +435,124 @@ function rejectRequest(req,blockApp) {
 		});
 	}
 
-	// 没有其他选项被启用，退出。
-	if(req["tagRequest"]==false && req["recommendRequest"]==false && req["loverRequest"]==false && req["xiaozuRequest"]==false && req["addbookRequest"]==false && req["friendRequest"]==false && req["pageRequest"]==false) {
-		return;
+	if(igNotification) {
+		// http://req.renren.com/notify/nt
+		$get("http://notify.renren.com/rmessage/get?getbybigtype=1&bigtype=3&limit=20&begin=1&view=16&rand="+Math.random(), function(html) {
+			try {
+				var nl=JSON.parse(html);
+			} catch(ex) {
+				return;
+			}
+			var links=[];
+			for (var i=0;i<nl.length;i++) {
+				var link=nl[i].rmessagecallback;
+				if (link) {
+					links.push(link);
+				}
+			}
+			var executer = function() {
+				if(links.length>0) {
+					var link=links.shift();
+					$get(link,executer,null,"POST");
+				}
+			}
+			executer();
+		});
 	}
 
-	$get("http://req.renren.com/xmc/gmc", function(html) {
-		var links=[];
-		// 好友申请
-		if(req["friendRequest"]) {
-			var command;
-			var regexpr = /friend_refuse:(\d+)/g;
-			while (command = regexpr.exec(html)) {
-				links.push("http://friend.renren.com/rejguereq.do?id=" + command[1]);
+	if(igReminder) {
+		$get("http://notify.renren.com/rmessage/get?getbybigtype=1&bigtype=1&limit=20&begin=1&view=16&rand="+Math.random(), function(html) {
+			try {
+				var nl=JSON.parse(html);
+			} catch(ex) {
+				return;
 			}
-		}
+			var links=[];
+			for (var i=0;i<nl.length;i++) {
+				var link=nl[i].rmessagecallback;
+				if (link) {
+					links.push(link);
+				}
+			}
+			var executer = function() {
+				if(links.length>0) {
+					var link=links.shift();
+					$get(link,executer,null,"POST");
+				}
+			}
+			executer();
+		});
+	}
 
-		// 圈人请求
-		if(req["tagRequest"]) {
-			var command;
-			var regexpr = /tagPhoto_refuse:(\d+)/g;
-			while (command = regexpr.exec(html)) {
-				links.push("http://photo.renren.com/refuseptrequest.do?id=" + command[1]);
+	if(req["tagRequest"] || req["recommendRequest"] || req["loverRequest"] || req["xiaozuRequest"] || req["addbookRequest"] || req["friendRequest"] || req["pageRequest"]) {
+		$get("http://req.renren.com/xmc/gmc", function(html) {
+			var links=[];
+			// 好友申请
+			if(req["friendRequest"]) {
+				var command;
+				var regexpr = /friend_refuse:(\d+)/g;
+				while (command = regexpr.exec(html)) {
+					links.push("http://friend.renren.com/rejguereq.do?id=" + command[1]);
+				}
 			}
-		}
-		// 好友推荐
-		if(req["recommendRequest"]) {
-			var command;
-			var regexpr = /tuijian_refuse:(\d+),\S+?,(\d+)/g;
-			while (command = regexpr.exec(html)) {
-				links.push("http://friend.renren.com/j_f_deny_rcd?r=" + command[1] + "&s=" + command[2]);
+	
+			// 圈人请求
+			if(req["tagRequest"]) {
+				var command;
+				var regexpr = /tagPhoto_refuse:(\d+)/g;
+				while (command = regexpr.exec(html)) {
+					links.push("http://photo.renren.com/refuseptrequest.do?id=" + command[1]);
+				}
 			}
-		}
-		// 情侣请求，尚无全部拒绝功能
-		if(req["loverRequest"]) {
-			var command;
-			var regexpr = /lover_ignore:.*?id=(\d+)/g;
-			while (command = regexpr.exec(html)) {
-				links.push("http://lover.renren.com/love/request/accept?id=" + command[1]);
+			// 好友推荐
+			if(req["recommendRequest"]) {
+				var command;
+				var regexpr = /tuijian_refuse:(\d+),\S+?,(\d+)/g;
+				while (command = regexpr.exec(html)) {
+					links.push("http://friend.renren.com/j_f_deny_rcd?r=" + command[1] + "&s=" + command[2]);
+				}
 			}
-		}
-		// 小组邀请
-		if(req["xiaozuRequest"]) {
-			var command;
-			var regexpr = /xiaozu-i_refuse:.*?\/(\d+)\//g;
-			while (command = regexpr.exec(html)) {
-				links.push("http://xiaozu.renren.com/xiaozu/" + command[1] + "/invite/refuse");
+			// 情侣请求，尚无全部拒绝功能
+			if(req["loverRequest"]) {
+				var command;
+				var regexpr = /lover_ignore:.*?id=(\d+)/g;
+				while (command = regexpr.exec(html)) {
+					links.push("http://lover.renren.com/love/request/accept?id=" + command[1]);
+				}
 			}
-		}
-		// 通讯录请求
-		if(req["addbookRequest"]) {
-			var command;
-			var regexpr = /addr_refuse:(\d+)/g;
-			while (command = regexpr.exec(html)) {
-				links.push("http://www.renren.com/address/ignorecard?id=" + command[1]);
+			// 小组邀请
+			if(req["xiaozuRequest"]) {
+				var command;
+				var regexpr = /xiaozu-i_refuse:.*?\/(\d+)\//g;
+				while (command = regexpr.exec(html)) {
+					links.push("http://xiaozu.renren.com/xiaozu/" + command[1] + "/invite/refuse");
+				}
 			}
-		}
-		// 公共主页邀请
-		if(req["pageRequest"]) {
-			var command;
-			var regexpr = /pageInvite_refuse:(\d+),(\d+)/g;
-			while (command = regexpr.exec(html)) {
-				links.push("http://page.renren.com/apply/ignore?rid=" + command[1] + "&pid=" + command[2]);
+			// 通讯录请求
+			if(req["addbookRequest"]) {
+				var command;
+				var regexpr = /addr_refuse:(\d+)/g;
+				while (command = regexpr.exec(html)) {
+					links.push("http://www.renren.com/address/ignorecard?id=" + command[1]);
+				}
 			}
-		}
-		var executer = function() {
-			if(links.length>0) {
-				var link=links.shift();
-				$get(link,executer,null,"POST");
+			// 公共主页邀请
+			if(req["pageRequest"]) {
+				var command;
+				var regexpr = /pageInvite_refuse:(\d+),(\d+)/g;
+				while (command = regexpr.exec(html)) {
+					links.push("http://page.renren.com/apply/ignore?rid=" + command[1] + "&pid=" + command[2]);
+				}
 			}
-		}
-		executer();
-	});
+			var executer = function() {
+				if(links.length>0) {
+					var link=links.shift();
+					$get(link,executer,null,"POST");
+				}
+			}
+			executer();
+		});
+	}
 };
 
 // 允许批量处理请求
@@ -569,6 +626,17 @@ function batchProcessRequest() {
 		});
 	}
 };
+
+// 忽略通知。实际只隐藏，其他工作在rejectRequest中完成
+function ignoreReminder() {
+	$patchCSS("#navMessage .remind i, #bubbleRemind{display:none !important}");
+}
+
+// 忽略提醒。实际只隐藏，其他工作在rejectRequest中完成
+function ignoreNotification() {
+	$patchCSS("#navMessage .notice i, #bubbleNotice{display:none !important}");
+}
+
 
 // 隐藏特定类型/标题新鲜事
 function hideFeeds(evt,feeds,mark,badTitles,badIds,goodIds,hideOld,hideDays) {
@@ -1148,7 +1216,10 @@ function addNavLogout() {
 
 // 浮动导航栏
 function useFloatingNav() {
-	var nav=$("#container>#header,body>#navBar,#container>#navBar").eq();
+	var nav=$("#container>#header,body>#navBar,#header>#navBar,#container>#navBar").eq();
+	if (nav.empty()) {
+		return;
+	}
 	// 将导航栏复制一份放在原来的位置，防止排版出错
 	var fake=nav.clone().css("visibility","hidden").attr("fake","").move("after",nav);
 	// z-index应小于XN.ui.dialog的半透明背景的2000
@@ -1349,6 +1420,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".like .favors,.reply .col-center .favors{color:"+FCOLOR+"}",
 				".like-video .terminal .video-title,.like-video .combox_share dl.replies dt.digged{color:"+FCOLOR+"}",
 				"#closePublisherSkin:hover,#dressPublisherSkin:hover{background-color:"+FCOLOR+"}",
+				".feed-module a:link, .feed-module a:hover, .feed-module a:visited{color:"+FCOLOR+"}",
 				".feed-module .category-filter menu a:hover,.news-feed-types a.news-feed-type:hover{background-color:"+BCOLOR+"}",
 				".feed-module .feed-header-new .types label{color:"+FCOLOR+"}",
 				".feed-module .feed-header-new label.s, .feed-module .feed-header-new .category-filter:hover label.s, .feed-module .feed-header-new .category-filter_hover label.s, .feed-module .feed-header-new .feed-attention:hover label.s, .feed-module .feed-header-new .feed-attention_hover label.s{color:#333333}",
@@ -2179,6 +2251,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(jt1)":	{t:"家庭空间",		s:"/imgpro/icons/statusface/jt1.gif"},
 		"(jt2)":	{t:"家庭空间",		s:"/imgpro/icons/statusface/jt2.gif"},
 		"(yb)":		{t:"元宝",			s:"/imgpro/icons/statusface/yuanbao.gif"},
+		"(xx)":		{t:"星星",			s:"/imgpro/icons/statusface/xx.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
@@ -2230,6 +2303,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(va)":		{t:"情人节",		s:"/imgpro/icons/statusface/qixi.gif"},
 		"(qx)":		{t:"七夕",			s:"/imgpro/icons/statusface/qixi11.gif"},
 		"(qx2)":	{t:"七夕",			s:"/imgpro/icons/statusface/qixi2.gif"},
+		"(yrj)":	{t:"愚人节",		s:"/imgpro/icons/statusface/yrj.gif"},
 		"(wy)":		{t:"劳动节",		s:"/imgpro/icons/statusface/wuyi.gif"},
 		"(cy1)":	{t:"重阳节",		s:"/imgpro/icons/statusface/09double9-3.gif"},
 		"(cy2)":	{t:"登高",			s:"/imgpro/icons/statusface/09double9.gif"},
@@ -5217,10 +5291,6 @@ function main(savedOptions) {
 						text:"##顶部通知栏",
 						value:false,
 					},{
-						id:"levelBar",
-						text:"##头像等级栏",
-						value:false,
-					},{
 						id:"appList",
 						text:"##应用列表",
 						value:false,
@@ -5250,7 +5320,11 @@ function main(savedOptions) {
 						value:false,
 					},{
 						id:"publicPageAdmin",
-						text:"##页面管理",
+						text:"##我的管理",
+						value:false,
+					},{
+						id:"groups",
+						text:"##我的群",
 						value:false,
 					},{
 						id:"birthday",
@@ -5293,12 +5367,7 @@ function main(savedOptions) {
 				id:"profileGadgets",
 				text:"去除个人主页上以下部件",
 				column:2,
-				ctrl:[
-					{
-						id:"levelBar",
-						text:"##等级栏",
-						value:false,
-					},{
+				ctrl:[{
 						id:"album",
 						text:"##相册",
 						value:false,
@@ -5325,6 +5394,10 @@ function main(savedOptions) {
 					},{
 						id:"introduceFriends",
 						text:"##介绍朋友",
+						value:false,
+					},{
+						id:"activity",
+						text:"##活动广告",
 						value:false,
 					},{
 						id:"lover",
@@ -5370,7 +5443,7 @@ function main(savedOptions) {
 					fn:[{
 						name:rejectRequest,
 						stage:0,
-						args:["@rejectRequestGroup","@blockAppRequest"],
+						args:["@rejectRequestGroup","@blockAppRequest","@ignoreNotification","@ignoreReminder"],
 						once:true
 					},{
 						name:hideRequest,
@@ -5454,6 +5527,28 @@ function main(savedOptions) {
 				],
 				page:"request",
 				login:true,
+			},{
+				text:"##忽略所有通知",
+				ctrl:[{
+					id:"ignoreNotification",
+					value:false,
+					fn:[{
+						name:ignoreNotification,
+						stage:0,
+						fire:true
+					}]
+				}],
+			},{
+				text:"##忽略所有留言/回复/站内信提醒",
+				ctrl:[{
+					id:"ignoreReminder",
+					value:false,
+					fn:[{
+						name:ignoreReminder,
+						stage:0,
+						fire:true
+					}]
+				}],
 			}
 		],
 		"处理新鲜事":[
@@ -8072,10 +8167,10 @@ function $feedType(feed) {
 					return "share_other";
 				}
 			case 2:
-				// 论坛发帖:204 小组发帖:209 参加小组:210 小组推荐帖子 213
+				// 论坛发帖:204 小组发帖:209 参加小组:210 小组推荐帖子:213 小组发贴:215,216
 				if(ntype==204) {
 					return "forum";
-				} else if(ntype>=209 && ntype<=213) {
+				} else if(ntype>=209 && ntype<=216) {
 					return "xiaozu";
 				}
 				break;
@@ -8131,11 +8226,11 @@ function $feedType(feed) {
 				// 喜欢(照片？):1901
 				return "like";
 			case 20:
-				// 在公共主页留言:2001, 成为公共主页好友:2002, 分享公共主页日志:2003, 分享公共主页图片:2004, 分享公共分享链接:2005, 分享公共分享视频:2006, 公共主页发状态:2008, 分享公共主页相册:2009, 公共主页发日志:2012, 公共主页发照片:2013, 公共主页改头像:2015, 公共主页发回复:2016, 分享公共主页:2017, 开通情侣空间:2023, 情侣空间发状态:2024, 情侣空间发日志:2025, 情侣空间发照片:2026
-				if((ntype>=2003 && ntype<=2006) || ntype==2009 || ntype==2017) {
-					if(ntype==2003) {
+				// 在公共主页留言:2001, 成为公共主页好友:2002, 分享公共主页日志:2003, 分享公共主页图片:2004, 分享公共分享链接:2005, 分享公共分享视频:2006, 公共主页发状态:2008, 分享公共主页相册:2009, 公共主页发日志:2012, 公共主页发照片:2013, 公共主页改头像:2015, 公共主页发回复:2016, 分享公共主页:2017, 开通情侣空间:2023, 情侣空间发状态:2024, 情侣空间发日志:2025, 情侣空间发照片:2026, 公共主页分享日志:2032, 公共主页分享相册:2036, 公共主页上传照片:2038
+				if((ntype>=2003 && ntype<=2006) || ntype==2009 || ntype==2017 || ntype==2032 || ntype==2036) {
+					if(ntype==2003 || ntype==2032) {
 						return "share_blog";
-					} else if(ntype==2004 || ntype==2009) {
+					} else if(ntype==2004 || ntype==2009 || ntype==2036) {
 						return "share_photo";
 					} else if(ntype==2006) {
 						return "share_video";

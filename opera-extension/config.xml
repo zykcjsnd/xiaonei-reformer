@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<widget xmlns="http://www.w3.org/ns/widgets" version="3.3.2.476" id="extensions:xiaonei-reformer" defaultlocale="zh-cn">
-	<name>Xiaonei Reformer</name>
+<widget xmlns="http://www.w3.org/ns/widgets" version="3.3.3.478" id="extensions:xiaonei-reformer" defaultlocale="zh-cn">
+	<name xml:lang="en">Xiaonei Reformer</name>
+	<name xml:lang="zh-cn">人人网改造器</name>
 	<description xml:lang="en">enhance your experience on renren.com (formerly xiaonei.com)</description>
 	<description xml:lang="zh-cn">改造你的人人网！</description>
 	<author href="http://xiaonei-reformer.googlecode.com/" email="xnreformer@gmail.com">xz</author>
