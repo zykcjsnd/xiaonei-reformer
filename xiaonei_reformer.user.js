@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.2.476
-// @miniver        476
+// @version        3.3.2.477
+// @miniver        477
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -108,7 +108,7 @@ if(XNR.acore==PRESTO) {
 		XNR.msgHandlers={};
 		XNR.oexSendRequest=function(msg,handler) {
 			do {
-				var reqId=Math.random();
+				var reqId=parseInt(Math.random()*100000);
 			} while(XNR.msgHandlers[reqId]!=null);
 			XNR.msgHandlers[reqId]=handler;
 			msg.reqId=reqId;
@@ -172,7 +172,7 @@ function removePageTheme() {
 		}
 	});
 	// 恢复原始模板
-	if($page("profile") && !$page("pages")) {
+	if($page("profile") && !$page("pages") && !$page("lover")) {
 		var skin=$("head>link[href*='profile-skin.css'],head>link[href*='home-all-min.css']");
 		if(skin.empty()) {
 			$("@link").attr({type:"text/css",rel:"stylesheet",href:"http://s.xnimg.cn/csspro/apps/profile-skin.css"}).addTo($("head"));
@@ -293,23 +293,23 @@ function removeBottomBar() {
 function removeHomeGadgets(gadgetOpt) {
 	const gadgets={
 		"topNotice":".notice-holder, #notice_system",		// 顶部通知
-		"levelBar":".site-menu-user-box",	// 个人等级
 		"footprint":"#footPrint",	// 最近来访
-		"recommendApp":".site-menu-apps.recommend",	// 推荐应用
+		"recommendApp":".site-menu-apps.recommend",	// 推荐应用，v5版主页
 		"recommendGift":"#recommendGift",	// 推荐礼物
 		"newFriends":"#pymk_home,.find-friend-box,#myknowfriend_user",	// 好友推荐，后面2个是新注册用户页面上的
 		"schoolBeauty":"#schoolBeautyBox,#xiaoTaoHua",	// 校花校草
 		"sponsors":"#sponsorsWidget,.wide-sponsors",	// 赞助商内容
-		"publicPageAdmin":"#myAdmins",	// 主页管理
 		"birthday":"#homeBirthdayPart",	// 好友生日
 		"survey":".side-item.sales-poll",	// 人人网调查
 		"friendPhoto":"#friendPhoto",	// 朋友的照片
 		"newStar":".star-new,#highSchoolStar",	// 人气之星
 		"contact":".side-item.get-touch",	// 联系朋友
+		"groups":".site-menu-minigroups, #site-menu-nav>.minigroups",	// 我的群
 	};
 	const filters={
 		"webFunction":{t:".side-item",f:".web-function"},	// 站内功能
 		"publicPageAdmin":{t:".site-menu-apps",f:".site-menu-apps-admins"},	// 主页管理
+		"recommendApp":{t:".site-menu-apps",f:".site-menu-apps-recommend"},	// 推荐应用
 	};
 
 	if(!$allocated("home_gadgets")) {
@@ -328,6 +328,7 @@ function removeHomeGadgets(gadgetOpt) {
 
 	if(gadgetOpt["appList"]) {
 		$patchCSS("#site-menu-apps-nav{display:none}"); // 应用列表
+		$patchCSS(".site-menu-nav-box>.site-menu-apps:not(.recommend){display:none}"); // 应用列表，v5主页
 	}
 
 	$wait(1,function() {
@@ -342,7 +343,6 @@ function removeHomeGadgets(gadgetOpt) {
 // 去除个人主页组件
 function removeProfileGadgets(gadgetOpt) {
 	const gadgets={
-		"levelBar":"#userPoint.mod",
 		"album":"#album.mod, #latestPhotos",
 		"blog":"#blog.mod",
 		"share":"#share.mod",
@@ -368,6 +368,17 @@ function removeProfileGadgets(gadgetOpt) {
 	}
 	if(patch) {
 		$ban(patch.substring(0,patch.length-1));
+	}
+	if (gadgetOpt["activity"]) {
+		$wait(1,function(){
+			var t=$(".col-right>.extra-side>div").eq(0);
+			t.find("a[href='#nogo']").each(function(){
+				if (/退出活动/.test(this.textContent)) {
+					t.remove();
+					return false;
+				}
+			});
+		});
 	}
 };
 
@@ -1148,7 +1159,10 @@ function addNavLogout() {
 
 // 浮动导航栏
 function useFloatingNav() {
-	var nav=$("#container>#header,body>#navBar,#container>#navBar").eq();
+	var nav=$("#container>#header,body>#navBar,#header>#navBar,#container>#navBar").eq();
+	if (nav.empty()) {
+		return;
+	}
 	// 将导航栏复制一份放在原来的位置，防止排版出错
 	var fake=nav.clone().css("visibility","hidden").attr("fake","").move("after",nav);
 	// z-index应小于XN.ui.dialog的半透明背景的2000
@@ -1349,6 +1363,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".like .favors,.reply .col-center .favors{color:"+FCOLOR+"}",
 				".like-video .terminal .video-title,.like-video .combox_share dl.replies dt.digged{color:"+FCOLOR+"}",
 				"#closePublisherSkin:hover,#dressPublisherSkin:hover{background-color:"+FCOLOR+"}",
+				".feed-module a:link, .feed-module a:hover, .feed-module a:visited{color:"+FCOLOR+"}",
 				".feed-module .category-filter menu a:hover,.news-feed-types a.news-feed-type:hover{background-color:"+BCOLOR+"}",
 				".feed-module .feed-header-new .types label{color:"+FCOLOR+"}",
 				".feed-module .feed-header-new label.s, .feed-module .feed-header-new .category-filter:hover label.s, .feed-module .feed-header-new .category-filter_hover label.s, .feed-module .feed-header-new .feed-attention:hover label.s, .feed-module .feed-header-new .feed-attention_hover label.s{color:#333333}",
@@ -2179,6 +2194,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(jt1)":	{t:"家庭空间",		s:"/imgpro/icons/statusface/jt1.gif"},
 		"(jt2)":	{t:"家庭空间",		s:"/imgpro/icons/statusface/jt2.gif"},
 		"(yb)":		{t:"元宝",			s:"/imgpro/icons/statusface/yuanbao.gif"},
+		"(xx)":		{t:"星星",			s:"/imgpro/icons/statusface/xx.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
@@ -2230,6 +2246,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(va)":		{t:"情人节",		s:"/imgpro/icons/statusface/qixi.gif"},
 		"(qx)":		{t:"七夕",			s:"/imgpro/icons/statusface/qixi11.gif"},
 		"(qx2)":	{t:"七夕",			s:"/imgpro/icons/statusface/qixi2.gif"},
+		"(yrj)":	{t:"愚人节",		s:"/imgpro/icons/statusface/yrj.gif"},
 		"(wy)":		{t:"劳动节",		s:"/imgpro/icons/statusface/wuyi.gif"},
 		"(cy1)":	{t:"重阳节",		s:"/imgpro/icons/statusface/09double9-3.gif"},
 		"(cy2)":	{t:"登高",			s:"/imgpro/icons/statusface/09double9.gif"},
@@ -5217,10 +5234,6 @@ function main(savedOptions) {
 						text:"##顶部通知栏",
 						value:false,
 					},{
-						id:"levelBar",
-						text:"##头像等级栏",
-						value:false,
-					},{
 						id:"appList",
 						text:"##应用列表",
 						value:false,
@@ -5250,7 +5263,11 @@ function main(savedOptions) {
 						value:false,
 					},{
 						id:"publicPageAdmin",
-						text:"##页面管理",
+						text:"##我的管理",
+						value:false,
+					},{
+						id:"groups",
+						text:"##我的群",
 						value:false,
 					},{
 						id:"birthday",
@@ -5293,12 +5310,7 @@ function main(savedOptions) {
 				id:"profileGadgets",
 				text:"去除个人主页上以下部件",
 				column:2,
-				ctrl:[
-					{
-						id:"levelBar",
-						text:"##等级栏",
-						value:false,
-					},{
+				ctrl:[{
 						id:"album",
 						text:"##相册",
 						value:false,
@@ -5325,6 +5337,10 @@ function main(savedOptions) {
 					},{
 						id:"introduceFriends",
 						text:"##介绍朋友",
+						value:false,
+					},{
+						id:"activity",
+						text:"##活动广告",
 						value:false,
 					},{
 						id:"lover",
