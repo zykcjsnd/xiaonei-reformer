@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.3.478
-// @miniver        478
+// @version        3.3.3.479
+// @miniver        479
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -35,7 +35,7 @@ if (window.self != window.top) {
 	if(document.designMode=="on") {
 		// 不在内容可以编辑的frame中运行
 		return;
-	} else if(document.location.href.match(/ajaxproxy|ime.htm/i)) {
+	} else if(document.location.href.match(/proxy|ime.htm/i)) {
 		// 也不在ajaxproxy.html和ime.htm中运行
 		return;
 	}
@@ -144,6 +144,11 @@ function removeAds() {
 		// 其他的横幅广告。如2010-06的 kfc-banner
 		$("div[class$='-banner']").filter("a[target='_blank']>img").filter({childElementCount:1}).remove();
 		$script("window.load_jebe_ads=function(){}");
+		// 个人主页上的边栏广告
+		var t=$(".col-right>.extra-side>div").eq(0);
+		if (/收起/.test(t.find("a[href='#nogo']").text())) {
+			t.remove();
+		}
 	});
 };
 
@@ -1178,7 +1183,7 @@ function removeNavItems(navLinks) {
 
 // 加宽导航栏
 function widenNavBar() {
-	$patchCSS(".navigation-wrapper,.navigation{width:auto} .navigation .nav-body{width:auto;float:none}");
+	$patchCSS(".navigation-wrapper,.navigation{width:auto} .navigation .nav-body{width:auto;float:none} .site-nav .nav-drop-menu-holder{width:auto}");
 	$wait(1,function() {
 		$("#navBar").move("before",$("body.layout_home3cols #container, body.layout_3cols #container"));
 	});
@@ -1186,7 +1191,7 @@ function widenNavBar() {
 
 // 使用旧式风格导航栏
 function useOldStyleNav() {
-	var css=".navigation-new .nav-main .menu-title a{font-weight:normal;padding:0 7px}.navigation-new .nav-main .drop-menu-btn{visibility:hidden !important;width:"+(XNR.acore==PRESTO?"1":"0")+"px;margin:0}.navigation-new .nav-other .account-action .menu-title a{background:none;padding:0 5px}";
+	var css=".navigation-new .nav-main .menu-title a{font-weight:normal;padding:0 7px}.navigation-new .nav-main .drop-menu-btn{visibility:hidden !important;width:"+(XNR.acore==PRESTO?"1":"0")+"px;margin:0}.navigation-new .nav-other .account-action .menu-title a{background:none;padding:0 5px} .site-nav .nav-drop-menu-profile{left:202px}";
 	$patchCSS(css);
 	$wait(1,function() {
 		$(".navigation-new .nav-main .menu-title a").filter(".drop-menu-btn[id]").bind("mouseover",function(evt) {
