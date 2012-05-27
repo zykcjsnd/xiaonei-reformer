@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.3.479
-// @miniver        479
+// @version        3.3.3.480
+// @miniver        480
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -3242,148 +3242,65 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 		}
 		$alloc("download_album",[]);
 		var mode=$(".review-mode");
-		// 评论模式
-		if (mode.exist() && mode.rect().width>0) {
-			var links=$(".review-mode ul > li .pic img");
-			var t=links.eq(0);
-			var src=t.attr("data-src") || t.attr("src");
-			if (/large_|original_/.test(src)) {
-				var totalImage=links.size();
-				var cur=0;
-				links.each(function(index) {
-					var t=$(this);
-					var title = t.attr("alt");
-					if (!title) {
-						title = t.superior(2).find(".myphoto-info .descript").text();
+		if ($(".review-mode").exist()) {
+			// 有评论模式，是一般相册
+			// 目前是异步加载新的页数，所以当成是所有图片已经在一页中显示了
+			if (/photo\/(\d+)\/album-(\d+)/.test(XNR.url)) {
+				downLink.text("分析中...");
+				var ownerId = RegExp.$1;
+				var albumId = RegExp.$2;
+				// FIXME 随便指定个1000应该没问题吧
+				$get("http://photo.renren.com/photo/"+ownerId+"/album-"+albumId+"/bypage/ajax?curPage=0&pagenum=1000", function(html) {
+					if (!html) {
+						finish();
+						return;
 					}
-					if (!title) {
-						title = "";
+					if(!downLink.text().match("分析中")) {
+						return;
 					}
-					var src=(t.attr("data-src") || t.attr("src"));
-					if(src.indexOf("/large_")>0 && /\/2012\d{4}\//.test(src)) {
-						src=src.replace("large_", "original_");
+
+					try {
+						var list = JSON.parse(html).photoList;
+					} catch(ex) {
+						finish();
+						$error("addDownloadAlbumLink::$get", "相册内容解析失败");
+						return;
 					}
-					$alloc("download_album").push({i:index,src:src,title:title});
-					cur++;
-					if(cur==totalImage) {
-						if(downLink.text().match("分析中")) {
-							finish();
+					var pool=$alloc("download_album");
+					var amount=list.length;
+					var cur=0;
+					for (var i = 0; i < amount; i++) {
+						var photo = list[i];
+						var largeImg = photo.largeUrl;
+						if (/xlarge_|original_|\/p_/.test(largeImg)) {
+							// 文件名以p_开头的，是通过普通上传方式上传，没有特大图（？）
+							pool.push({i:i,src:largeImg,title:photo.title});
+							cur++;
+							downLink.text("分析中...("+cur+"/"+amount+")");
+						} else if (photo.photoId) {
+							// largeUrl中记录的不是特大图，是否存在特大图需要进一步检查
+							photo.idx = i;
+							$get("http://photo.renren.com/photo/"+ownerId+"/photo-"+photo.photoId+"/large?xtype=album", function(html,url,photo) {
+								if (/src="([^"]+?(xlarge|original)_[^"]+)"/.test(html)) {
+									photo.largeUrl = RegExp.$1;
+								}
+								pool.push({i:photo.idx,src:photo.largeUrl,title:photo.title});
+								cur++;
+								downLink.text("分析中...("+cur+"/"+amount+")");
+								if (amount == cur) {
+									finish();
+								}
+							},photo);
+						} else {
+							// 格式变了，等用户来报告吧
+							cur--;
 						}
-					} else {
-						downLink.text("分析中...("+cur+"/"+totalImage+")");
+					}
+					if (amount == cur) {
+						finish();
 					}
 				});
 				return;
-			} else {
-				// img上没写大图地址
-				if (/photo\/(\d+)\/album-(\d+)/.test(XNR.url)) {
-					downLink.text("分析中...");
-					var ownerId = RegExp.$1;
-					var albumId = RegExp.$2;
-					// FIXME 随便指定个1000应该没问题吧
-					$get("http://photo.renren.com/photo/"+ownerId+"/album-"+albumId+"/bypage/ajax?curPage=0&pagenum=1000", function(html) {
-						if (!html) {
-							finish();
-							return;
-						}
-						if(!downLink.text().match("分析中")) {
-							return;
-						}
-
-						try {
-							var list = JSON.parse(html).photoList;
-						} catch(ex) {
-							finish();
-							$error("addDownloadAlbumLink::$get", "相册内容解析失败");
-							return;
-						}
-						var pool=$alloc("download_album");
-						for (var i=0,i_max=list.length;i<i_max;i++) {
-							var photo=list[i];
-							var src=photo.largeUrl;
-							//p_large_的没存特大图，2011年11/12月的已经直接列出original了(?)
-							if(src.indexOf("/large_")>0 && /\/2012\d{4}\//.test(src)) {
-								src=src.replace("large_", "original_");
-							}
-							pool.push({i:i,src:src,title:photo.title});
-						}
-						finish();
-					})
-					return;
-				}
-			}
-		}
-
-		// 缩略图模式
-		links=$(".photo-list ul li .picture img");
-		if (links.exist()) {
-			var t=links.eq(0);
-			var src=t.attr("data-src") || t.attr("src");
-			if (/large_|original_/.test(src)) {
-				var totalImage=links.size();
-				var cur=0;
-				links.each(function(index) {
-					var t=$(this);
-					var title = t.attr("alt");
-					if (!title) {
-						title = t.superior(2).find(".myphoto-info .descript").text();
-					}
-					if (!title) {
-						title = "";
-					}
-					var src=(t.attr("data-src") || t.attr("src"));
-					if(src.indexOf("/large_")>0 && /\/2012\d{4}\//.test(src)) {
-						src=src.replace("large_", "original_");
-					}
-					$alloc("download_album").push({i:index,src:src,title:title});
-					cur++;
-					if(cur==totalImage) {
-						if(downLink.text().match("分析中")) {
-							finish();
-						}
-					} else {
-						downLink.text("分析中...("+cur+"/"+totalImage+")");
-					}
-
-				});
-				return;
-			} else {
-				// img上没写大图地址
-				if (/photo\/(\d+)\/album-(\d+)/.test(XNR.url)) {
-					downLink.text("分析中...");
-					var ownerId = RegExp.$1;
-					var albumId = RegExp.$2;
-					// FIXME 随便指定个1000应该没问题吧
-					$get("http://photo.renren.com/photo/"+ownerId+"/album-"+albumId+"/bypage/ajax?curPage=0&pagenum=1000", function(html) {
-						if (!html) {
-							finish();
-							return;
-						}
-						if(!downLink.text().match("分析中")) {
-							return;
-						}
-
-						try {
-							var list = JSON.parse(html).photoList;
-						} catch(ex) {
-							finish();
-							$error("addDownloadAlbumLink::$get", "相册内容解析失败");
-							return;
-						}
-						var pool=$alloc("download_album");
-						for (var i=0,i_max=list.length;i<i_max;i++) {
-							var photo=list[i];
-							var src=photo.largeUrl;
-							if(src.indexOf("/large_")>0 && /\/2012\d{4}\//.test(src)) {
-								src=src.replace("large_", "original_");
-							}
-							pool.push({i:i,src:src,title:photo.title});
-						}
-						finish();
-					})
-					return;
-				}
-				// ... 不管了，试试其他模式吧
 			}
 		}
 
@@ -3659,6 +3576,9 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 				if(t.style.backgroundImage.indexOf("url(")!=-1) {
 					thumbnail=t.style.backgroundImage.replace(/^url\("?|"?\);?$/g,"");
 					pageURL=t.href;
+				} else if(t.className === "picture" && t.children.length === 1 && t.firstElementChild.tagName == "IMG") {
+					t=t.firstElementChild;
+					thumbnail=t.src;
 				}
 				break;
 		}
@@ -4264,11 +4184,18 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 				}
 				if (!src) {
 					// 一般图片
-					src=new RegExp("<div class=\"photo\">\\s*<img [^>]*?src=\"([^\"]*?" + imgId + "[^\"]*?)\"[^>]*?>").exec(html);
-					if (src) {
+					var regex = new RegExp("<img [^>]*?src=\"([^\"]*?" + imgId + "[^\"]*?)\"[^>]*?>", "ig");
+					var hsrc = null;
+					while(src=regex.exec(html)) {
 						src = src[1];
-					} else {
-						src = null;
+						if (/large_|original_/.test(src)) {
+							break;
+						} else if (/h_main_/.test(src)) {
+							hsrc = src;
+						}
+					}
+					if (!src && hsrc) {
+						src = hsrc;
 					}
 				}
 				if(src) {
