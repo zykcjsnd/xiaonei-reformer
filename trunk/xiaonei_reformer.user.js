@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.3.480
-// @miniver        480
+// @version        3.3.3.481
+// @miniver        481
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -134,7 +134,7 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .advert-con, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], .sec.promotion, iframe[src*='adsupport.renren.com']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .advert-con, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #pro-clent-ad, .pro-clent-ad, .buddy-clent-ad, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], .sec.promotion, iframe[src*='adsupport.renren.com']";
 	$ban(ads);
 	$script("const ad_js_version=null",true);
 	$wait(1,function() {
@@ -301,7 +301,7 @@ function removeHomeGadgets(gadgetOpt) {
 		"footprint":"#footPrint",	// 最近来访
 		"recommendApp":".site-menu-apps.recommend",	// 推荐应用，v5版主页
 		"recommendGift":"#recommendGift",	// 推荐礼物
-		"newFriends":"#pymk_home,.find-friend-box,#myknowfriend_user",	// 好友推荐，后面2个是新注册用户页面上的
+		"newFriends":"#recommendFriends,#pymk_home,#pymk_home_2,.pymk.pymk-home,.find-friend-box,#myknowfriend_user",	// 好友推荐，后面2个是新注册用户页面上的
 		"schoolBeauty":"#schoolBeautyBox,#xiaoTaoHua",	// 校花校草
 		"sponsors":"#sponsorsWidget,.wide-sponsors",	// 赞助商内容
 		"birthday":"#homeBirthdayPart",	// 好友生日
@@ -362,7 +362,8 @@ function removeProfileGadgets(gadgetOpt) {
 		"theme":"li.dressup,#dressup",
 		"invitation":".guide-find-friend,p.inviteguys",
 		"introduceFriends":"#commend-friends",
-		"musicPlayer":"#zidou_music,#ZDMusicPlayer"
+		"musicPlayer":"#zidou_music,#ZDMusicPlayer",
+		"activity": "#gift-act.mod"
 	};
 	var patch="";
 	for(var g in gadgetOpt) {
@@ -2056,104 +2057,10 @@ function customizePageLayout(layouts) {
 
 // 增加更多表情
 function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
-	// 日志、相册页的阿狸/囧囧熊表情
-	if ($page("blog") || $page("photo") || $page("album") || $page("share") || $page("pages") || $page("xiaozu") || $page("profile")) {
-		// 阿狸表情，共51
-		var alEmo = ["", "啊啊啊", "安慰", "抱抱", "暴怒", "不要啊", "嘲弄", "吃饭啦", "出走", "大汗", "感动", "好囧", "好冷", "好温暖", "喝茶", "开心", "抠鼻孔", "狂汗", "狂笑", "困了晚安", "你好强", "赖皮", "捏脸", "怒", "爬过", "飘过", "潜水啦", "闪人", "送花给你", "送你礼物", "委屈哭", "我不说话", "喜欢你", "吓唬你", "笑喷了", "旋转", "疑问", "隐身", "郁闷", "抓狂", "转圈哭", "装可爱", "嘘嘘", "晚安", "耍帅", "你伤害了我", "贱扭扭", "寒", "顶顶顶", "大惊", "不耐烦", "不公平"];
-		// 囧囧熊表情，共20
-		var jjEmo = ["", "被雷到", "打酱油", "得意的笑", "顶", "灌水", "激光", "泪奔", "楼上的", "楼下的", "楼主", "如题", "撒泼", "沙发", "生气", "胜利", "受惊", "刷屏", "吐", "捂嘴偷笑", "阴险"];
-
-		if ($("#miniEditorEmoList, #miniEditorEmoList_1").exist()) {
-			// 采用内置表情列表
-			setTimeout(function() {
-				var aimg = $("#emoList1>li>img, #emoList1_1>li>img");
-				if (aimg.empty()) {
-					setTimeout(arguments.callee, 1000);
-					return;
-				}
-				var urlPrefix=(aimg.attr("emosrc") || aimg.attr("src") || "").match(/http:\/\/[^\/]+/) || "http://a.xnimg.cn";
-				var list1 = $("#emoList1, #emoList1_1");
-				for (var i=1;i<alEmo.length;i++) {
-					var id="[al"+(i<10?"0"+i:i)+"]";
-					if (list1.find("img[emotion='"+id+"']").empty()) {
-						var url = urlPrefix+"/imgpro/emotions/ali/"+i+".gif";
-						$("@li").attr("title", alEmo[i]).add($("@img").attr({forvip:"true",preview:"true",emotion:id,alt:alEmo[i],src:url,emosrc:url})).addTo(list1);
-					}
-				}
-				var list2 = $("#emoList2, #emoList2_1");
-				for (var i=1;i<jjEmo.length;i++) {
-					var id="[jj"+(i<10?"0"+i:i)+"]";
-					if (list2.find("img[emotion='"+id+"']").empty()) {
-						$("@li").attr("title", jjEmo[i]).add($("@img").attr({forvip:"true",preview:"true",emotion:id,alt:jjEmo[i],src:urlPrefix+"/imgpro/emotions/jiongjiong/"+i+".gif"})).addTo(list2);
-					}
-				}
-			}, 500);
-		} else {
-			// 采用动态加载表情列表
-			var emList2 = {};
-			for (var i = 1; i < alEmo.length; i++) {
-				emList2["[al" + (i<10?"0"+i:i) + "]"] = { kind: 1, types: 2, t:alEmo[i], s:"/imgpro/emotions/ali/" + i + ".gif"};
-			}
-			for (var i = 1; i < jjEmo.length; i++) {
-				emList2["[jj" + (i<10?"0"+i:i) + "]"] = { kind: 2, types: 2, t:jjEmo[i], s:"/imgpro/emotions/jiongjiong/" + i + ".gif"};
-			}
-			var code="var count=0;"+
-			"(function(){"+
-				"try {"+
-					"function addEmo(data){"+
-						"var list=JSON.parse('"+JSON.stringify(emList2)+"');"+
-						"for (var i=0;i<data.length;i++) {"+
-							"delete list[data[i].ubb];"+
-						"}"+
-						"for (var e in list) {"+
-							"var em=list[e];"+
-							"data.push({alt:'('+em.t+')',id:0,src:em.s,position:1000,ubb:e,size:2,kind:em.kind,types:em.types,img:'<img src=\"http://xnimg.cn'+em.s+'\" alr=\"'+em.t+'\"'})"+
-						"}"+
-					"}"+
-	
-					"if(window.tinyMCE){"+
-						"var p = window.tinymce.plugins.EmotionsPlugin.prototype;"+
-						"if(p.o_renderEmotion){"+
-							"return"+
-						"}"+
-						"p.o_renderEmotion=p.renderEmotion;"+
-						"p.renderEmotion=function(){"+
-							"if(!this.emoList){"+
-								"return"+
-							"}"+
-							"var data=XN.json.parse(this.emoList);"+
-							"addEmo(data.ubbList);"+
-							"this.emoList=XN.json.build(data);"+
-							"return tinymce.plugins.EmotionsPlugin.prototype.o_renderEmotion.apply(this,arguments)"+
-						"}"+
-					"}else{"+
-						"var p=XN.ui.emotions.prototype;"+
-						"if(p.o_formatData){"+
-							"return"+
-						"}"+
-						"p.o_formatData=p.formatData;"+
-						"p.formatData=function(data){"+
-							"addEmo(data);"+
-							"return XN.ui.emotions.prototype.o_formatData.apply(this,arguments)"+
-						"}"+
-					"}"+
-				"} catch(ex) {"+
-					"if(count<=10){"+
-						"setTimeout(arguments.callee,1000)"+
-					"}"+
-					"count++;"+
-					"return;"+
-				"}"+
-			"})();";
-			$script(code);
-		}
-		if (!$page("profile")) {
-			return;
-		}
-	}
+	var allEmo = {};
 
 	// 状态表情列表
-	var emList1={
+	var emList={
 	//	":)":		{t:"开心",			s:"/imgpro/icons/statusface/1.gif"},
 		"(微笑)":	{t:"微笑",			s:"/imgpro/icons/statusface/1.gif"},
 		"@_@":		{t:"嘴唇",			s:"/imgpro/icons/statusface/2.gif"},
@@ -2428,29 +2335,32 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(jd)":		{t:"建党90周年",	s:"/imgpro/icons/statusface/party90.gif"},
 	};
 
+	for(var e in emList) {
+		allEmo[e]={ kind:0, alt:emList[e].t, src:emList[e].s, wide:emList[e].w };
+	}
 	if(nEmo) {
 		for(var e in nEmList) {
-			emList1[e]=nEmList[e];
+			allEmo[e]={ kind:0, alt:nEmList[e].t, src:nEmList[e].s, wide:nEmList[e].w };
 		}
 	}
 	if(eEmo) {
 		for(var e in eEmList) {
-			emList1[e]=eEmList[e];
+			allEmo[e]={ kind:0, alt:eEmList[e].t, src:eEmList[e].s, wide:eEmList[e].w };
 		}
 	}
 	if(fEmo) {
 		for(var e in fEmList) {
-			emList1[e]=fEmList[e];
+			allEmo[e]={ kind:0, alt:fEmList[e].t, src:fEmList[e].s, wide:fEmList[e].w };
 		}
 	}
 	if(aEmo) {
 		for(var e in aEmList) {
-			emList1[e]=aEmList[e];
+			allEmo[e]={ kind:0, alt:aEmList[e].t, src:aEmList[e].s, wide:aEmList[e].w };
 		}
 	}
 	if(sfEmo) {
 		for(var e in sfEmList) {
-			emList1[e]=sfEmList[e];
+			allEmo[e]={ kind:0, alt:sfEmList[e].t, src:sfEmList[e].s, wide:sfEmList[e].w };
 		}
 	}
 
@@ -2462,105 +2372,59 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		list.find("img").each(function() {
 			curlist[this.getAttribute("emotion")]=1;
 		});
-		for(var e in emList1) {
-			var el=emList1[e];
+		for(var e in allEmo) {
+			var el=allEmo[e];
 			// 不在已有列表中
 			if(!curlist[e] && !el.types) {
-				$("@li").attr(el.w?{"class":"wider"}:{}).add($("@a").attr("href","#nogo").add($("@img").attr({title:el.t,alt:el.t,emotion:e,src:"http://xnimg.cn"+el.s,rsrc:"http://xnimg.cn"+el.s}))).addTo(list);
+				$("@li").attr(el.w?{"class":"wider"}:{}).add($("@a").attr("href","#nogo").add($("@img").attr({title:el.alt,alt:el.alt,emotion:e,src:"http://xnimg.cn"+el.src,rsrc:"http://xnimg.cn"+el.src}))).addTo(list);
 			} 
 		}
 		$patchCSS(".publisher-new .emotion li.wider{width:50px}.publisher-new .emotion li.wider a{width:46px}.publisher-new .emotion img{margin:0;vertical-align:baseline}");
 	}
 
-	if($page("feed")) {
-		// 首页的状态表情列表
-		var code="var count=0;"+
-		"XN.ui.emotions=null;"+	// 清除原有的才能在异步刷新重建XN.ui.emotions并正确修改
-		// sorry, AMO reviewers dislike you
-		//"XN.loadFiles(['http://s.xnimg.cn/jspro/xn.ui.emoticons.js']);"+
-		"var js=document.querySelector(\"script[src*='xn.ui.emoticons.js']\");"+
-		"if(js) {"+
-			"addEmo();"+
-		"} else if(!XN.o_loadFile) {"+
-			"XN.o_loadFile = XN.loadFile;"+
-			"XN.loadFile=function(a){"+
-				"var r=XN.o_loadFile.apply(this,arguments);"+
-				"if(a.indexOf('xn.ui.emoticons.js')>0){"+
-					"addEmo();"+
-				"}"+
-				"return r"+
-			"}"+
-		"}"+
-		"function addEmo(){"+
-			"try{"+
-				"var p=XN.ui.emotions.prototype;"+
-				"if(p.o_buildPanelHtml){"+
-					"return"+
-				"}"+
-				"p.o_buildPanelHtml=p.buildPanelHtml;"+
-				"p.buildPanelHtml=function(){"+
-					"XN.ui.emotions.prototype.o_buildPanelHtml.apply(this,arguments);"+
-					"var emList={};"+
-					"var ul=document.querySelectorAll('ul.emo-list');"+
-					"if(ul.length!=1){"+
-						"return"+
-					"}else{"+
-						"ul=ul[0]"+
-					"}"+
-					"var em=ul.querySelectorAll('img[emotion]');"+
-					"for(var i=0;i<em.length;i++){"+
-						"emList[em[i].getAttribute('emotion')]=1"+
-					"}"+
-					"var newEmo='';"+
-					"var list=JSON.parse('"+JSON.stringify(emList1)+"');"+
-					"for(var i in list){"+
-						"if(!emList[i]){"+
-							"newEmo+=\"<li title='\"+list[i].t+\"'><img forvip='0' preview='0' emotion='\"+i+\"' alt='\"+list[i].t+\"' src='http://xnimg.cn\"+list[i].s+\"'/></li>\""+
-						"}"+
-					"}"+
-					"ul.innerHTML+=newEmo"+
-				"}"+
-			"}catch(ex){"+
-				"if(count<5){"+
-					"setTimeout(arguments.callee,500)"+
-				"}"+
-				"count++;"+
-				"return"+
-			"}"+
-		"}";
-		$script(code);
+	// 阿狸表情，共51
+	var alEmo = ["", "啊啊啊", "安慰", "抱抱", "暴怒", "不要啊", "嘲弄", "吃饭啦", "出走", "大汗", "感动", "好囧", "好冷", "好温暖", "喝茶", "开心", "抠鼻孔", "狂汗", "狂笑", "困了晚安", "你好强", "赖皮", "捏脸", "怒", "爬过", "飘过", "潜水啦", "闪人", "送花给你", "送你礼物", "委屈哭", "我不说话", "喜欢你", "吓唬你", "笑喷了", "旋转", "疑问", "隐身", "郁闷", "抓狂", "转圈哭", "装可爱", "嘘嘘", "晚安", "耍帅", "你伤害了我", "贱扭扭", "寒", "顶顶顶", "大惊", "不耐烦", "不公平"];
+	// 囧囧熊表情，共20
+	var jjEmo = ["", "被雷到", "打酱油", "得意的笑", "顶", "灌水", "激光", "泪奔", "楼上的", "楼下的", "楼主", "如题", "撒泼", "沙发", "生气", "胜利", "受惊", "刷屏", "吐", "捂嘴偷笑", "阴险"];
+
+	for (var i = 1; i < alEmo.length; i++) {
+		allEmo["[al"+(i<10?"0"+i:i)+"]"] = { kind:1, types:2, alt:alEmo[i], src:"/imgpro/emotions/ali/"+i+".gif"};
 	}
-	
-	// 新鲜事回复表情
-	var code="var count=0;"+
-	"(function(){"+
-		"function addEmo(){"+
-			"var list=JSON.parse('"+JSON.stringify(emList1)+"');"+
-			"var status=JSON.parse(XN.app.status.emoJsonForNewsFeedStatus);"+
-			"for(var i=0;i<status.ubbList.length;i++){"+
-				"var em=status.ubbList[i];"+
-				"if(list[em.ubb]){"+
-					"delete list[em.ubb]"+
-				"}"+
-			"}"+
-			"for(var e in list){"+
-				"var em=list[e];"+
-				"status.ubbList.push({alt:'('+em.t+')',id:0,src:em.s,position:1000,ubb:e,img:'<img src=\"http://xnimg.cn'+em.s+'\" alr=\"'+em.t+'\"'})"+
-			"}"+
-			"XN.app.status.emoJsonForNewsFeedStatus=JSON.stringify(status)"+
-		"}"+
-		"try{"+
-			"if(!XN.app.status.emoJsonForNewsFeedStatus){"+
-				"XN.app.status.replyEditor.prototype.getNewsFeedEmoJsonStatus(addEmo);"+
-			"}else{"+
-				"addEmo()"+
-			"}"+
-		"}catch(ex){"+
-			"if(count<10){"+
-				"setTimeout(arguments.callee,500)"+
-			"}"+
-			"count++;"+
+	for (var i = 1; i < jjEmo.length; i++) {
+		allEmo["[jj"+(i<10?"0"+i:i)+"]"] = { kind:2, types:2, alt:jjEmo[i], src:"/imgpro/emotions/jiongjiong/"+i+".gif"};
+	}
+
+	// 其他异步加载的状态表情列表
+	// 由于im.js和xn.ui.emoticons.js中都会创建XN.ui.emotions，劫持$extend要简单点。
+	var code="(function(){"+
+		"if(!window.$extend) {"+
+			"setTimeout(arguments.callee,1000);"+
 			"return"+
+		"}"+
+		"if(window.$o_extend) {"+
+			"return"+
+		"}"+
+		"window.$o_extend=window.$extend;"+
+		"window.$extend=function(obj,attrs){"+
+			"var r=$o_extend.apply(this, arguments);"+
+			"if (window.XN && XN.ui && XN.ui.emotions && obj===XN.ui.emotions.prototype){"+
+				"obj.o_formatData=obj.formatData;"+
+				"obj.formatData=function(data){"+
+					"var list=JSON.parse('"+JSON.stringify(allEmo)+"');"+
+					"for (var i=0;i<data.length;i++) {"+
+						"delete list[data[i].ubb];"+
+					"}"+
+					"var f=(data[data.length-1].kind!=0);"+		// 发布状态处没有阿狸和囧囧熊表情
+					"for (var e in list) {"+
+						"var em=list[e];"+
+						"em.ubb=e;"+
+						"if(em.kind!=0){em.img='<img src=\"http://a.xnimg.cn/'+em.src+'\" alt=\"'+em.alt+'\"/>'}"+
+						"if(f||em.kind==0){data.push(em)}"+
+					"}"+
+					"return XN.ui.emotions.prototype.o_formatData.apply(this,arguments);"+
+				"};"+
+			"}"+
+			"return r;"+
 		"}"+
 	"})()";
 	$script(code);
@@ -5189,7 +5053,7 @@ function main(savedOptions) {
 				}],
 				page:"pages"
 			},{
-				text:"##隐藏底部工具栏##",
+				text:"##隐藏底部好友在线列表##",
 				ctrl:[{
 					id:"removeBottomBar",
 					value:false,
