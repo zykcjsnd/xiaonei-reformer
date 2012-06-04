@@ -678,5 +678,29 @@
   "(yrj)": {
     "t": "愚人节",
     "s": "/imgpro/icons/statusface/yrj.gif"
+  },
+  "(laodong)": {
+    "t": "五一",
+    "s": "/imgpro/icons/statusface/5.1.gif"
+  },
+  "(gk3)": {
+    "t": "高考",
+    "s": "/imgpro/icons/statusface/gk.gif"
+  },
+  "(bbg)": {
+    "t": "棒棒糖",
+    "s": "/imgpro/icons/statusface/bbg.gif"
+  },
+  "(bbl)": {
+    "t": "棒棒糖",
+    "s": "/imgpro/icons/statusface/bbl.gif"
+  },
+  "(zy)": {
+    "t": "最右",
+    "s": "/imgpro/icons/statusface/zy.gif"
+  },
+  "(nz)": {
+    "t": "奶嘴",
+    "s": "/imgpro/icons/statusface/nz.gif"
   }
 }
