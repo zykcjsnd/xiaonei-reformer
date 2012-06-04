@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.3.478
-// @miniver        478
+// @version        3.3.3.482
+// @miniver        482
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -35,7 +35,7 @@ if (window.self != window.top) {
 	if(document.designMode=="on") {
 		// 不在内容可以编辑的frame中运行
 		return;
-	} else if(document.location.href.match(/ajaxproxy|ime.htm/i)) {
+	} else if(document.location.href.match(/proxy|ime.htm/i)) {
 		// 也不在ajaxproxy.html和ime.htm中运行
 		return;
 	}
@@ -45,8 +45,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.3.478";
-XNR.miniver=478;
+XNR.version="3.3.3.482";
+XNR.miniver=482;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -134,7 +134,7 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .advert-con, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], .sec.promotion, iframe[src*='adsupport.renren.com']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .advert-con, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #pro-clent-ad, .pro-clent-ad, .buddy-clent-ad, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], .sec.promotion, iframe[src*='adsupport.renren.com']";
 	$ban(ads);
 	$script("const ad_js_version=null",true);
 	$wait(1,function() {
@@ -144,6 +144,11 @@ function removeAds() {
 		// 其他的横幅广告。如2010-06的 kfc-banner
 		$("div[class$='-banner']").filter("a[target='_blank']>img").filter({childElementCount:1}).remove();
 		$script("window.load_jebe_ads=function(){}");
+		// 个人主页上的边栏广告
+		var t=$(".col-right>.extra-side>div").eq(0);
+		if (/收起/.test(t.find("a[href='#nogo']").text())) {
+			t.remove();
+		}
 	});
 };
 
@@ -296,7 +301,7 @@ function removeHomeGadgets(gadgetOpt) {
 		"footprint":"#footPrint",	// 最近来访
 		"recommendApp":".site-menu-apps.recommend",	// 推荐应用，v5版主页
 		"recommendGift":"#recommendGift",	// 推荐礼物
-		"newFriends":"#pymk_home,.find-friend-box,#myknowfriend_user",	// 好友推荐，后面2个是新注册用户页面上的
+		"newFriends":"#recommendFriends,#pymk_home,#pymk_home_2,.pymk.pymk-home,.find-friend-box,#myknowfriend_user",	// 好友推荐，后面2个是新注册用户页面上的
 		"schoolBeauty":"#schoolBeautyBox,#xiaoTaoHua",	// 校花校草
 		"sponsors":"#sponsorsWidget,.wide-sponsors",	// 赞助商内容
 		"birthday":"#homeBirthdayPart",	// 好友生日
@@ -357,7 +362,8 @@ function removeProfileGadgets(gadgetOpt) {
 		"theme":"li.dressup,#dressup",
 		"invitation":".guide-find-friend,p.inviteguys",
 		"introduceFriends":"#commend-friends",
-		"musicPlayer":"#zidou_music,#ZDMusicPlayer"
+		"musicPlayer":"#zidou_music,#ZDMusicPlayer",
+		"activity": "#gift-act.mod"
 	};
 	var patch="";
 	for(var g in gadgetOpt) {
@@ -1178,7 +1184,7 @@ function removeNavItems(navLinks) {
 
 // 加宽导航栏
 function widenNavBar() {
-	$patchCSS(".navigation-wrapper,.navigation{width:auto} .navigation .nav-body{width:auto;float:none}");
+	$patchCSS(".navigation-wrapper,.navigation{width:auto} .navigation .nav-body{width:auto;float:none} .site-nav .nav-drop-menu-holder{width:auto}");
 	$wait(1,function() {
 		$("#navBar").move("before",$("body.layout_home3cols #container, body.layout_3cols #container"));
 	});
@@ -1186,7 +1192,7 @@ function widenNavBar() {
 
 // 使用旧式风格导航栏
 function useOldStyleNav() {
-	var css=".navigation-new .nav-main .menu-title a{font-weight:normal;padding:0 7px}.navigation-new .nav-main .drop-menu-btn{visibility:hidden !important;width:"+(XNR.acore==PRESTO?"1":"0")+"px;margin:0}.navigation-new .nav-other .account-action .menu-title a{background:none;padding:0 5px}";
+	var css=".navigation-new .nav-main .menu-title a{font-weight:normal;padding:0 7px}.navigation-new .nav-main .drop-menu-btn{visibility:hidden !important;width:"+(XNR.acore==PRESTO?"1":"0")+"px;margin:0}.navigation-new .nav-other .account-action .menu-title a{background:none;padding:0 5px} .site-nav .nav-drop-menu-profile{left:202px}";
 	$patchCSS(css);
 	$wait(1,function() {
 		$(".navigation-new .nav-main .menu-title a").filter(".drop-menu-btn[id]").bind("mouseover",function(evt) {
@@ -2050,105 +2056,11 @@ function customizePageLayout(layouts) {
 };
 
 // 增加更多表情
-function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
-	// 日志、相册页的阿狸/囧囧熊表情
-	if ($page("blog") || $page("photo") || $page("album") || $page("share") || $page("pages") || $page("xiaozu") || $page("profile")) {
-		// 阿狸表情，共51
-		var alEmo = ["", "啊啊啊", "安慰", "抱抱", "暴怒", "不要啊", "嘲弄", "吃饭啦", "出走", "大汗", "感动", "好囧", "好冷", "好温暖", "喝茶", "开心", "抠鼻孔", "狂汗", "狂笑", "困了晚安", "你好强", "赖皮", "捏脸", "怒", "爬过", "飘过", "潜水啦", "闪人", "送花给你", "送你礼物", "委屈哭", "我不说话", "喜欢你", "吓唬你", "笑喷了", "旋转", "疑问", "隐身", "郁闷", "抓狂", "转圈哭", "装可爱", "嘘嘘", "晚安", "耍帅", "你伤害了我", "贱扭扭", "寒", "顶顶顶", "大惊", "不耐烦", "不公平"];
-		// 囧囧熊表情，共20
-		var jjEmo = ["", "被雷到", "打酱油", "得意的笑", "顶", "灌水", "激光", "泪奔", "楼上的", "楼下的", "楼主", "如题", "撒泼", "沙发", "生气", "胜利", "受惊", "刷屏", "吐", "捂嘴偷笑", "阴险"];
-
-		if ($("#miniEditorEmoList, #miniEditorEmoList_1").exist()) {
-			// 采用内置表情列表
-			setTimeout(function() {
-				var aimg = $("#emoList1>li>img, #emoList1_1>li>img");
-				if (aimg.empty()) {
-					setTimeout(arguments.callee, 1000);
-					return;
-				}
-				var urlPrefix=(aimg.attr("emosrc") || aimg.attr("src") || "").match(/http:\/\/[^\/]+/) || "http://a.xnimg.cn";
-				var list1 = $("#emoList1, #emoList1_1");
-				for (var i=1;i<alEmo.length;i++) {
-					var id="[al"+(i<10?"0"+i:i)+"]";
-					if (list1.find("img[emotion='"+id+"']").empty()) {
-						var url = urlPrefix+"/imgpro/emotions/ali/"+i+".gif";
-						$("@li").attr("title", alEmo[i]).add($("@img").attr({forvip:"true",preview:"true",emotion:id,alt:alEmo[i],src:url,emosrc:url})).addTo(list1);
-					}
-				}
-				var list2 = $("#emoList2, #emoList2_1");
-				for (var i=1;i<jjEmo.length;i++) {
-					var id="[jj"+(i<10?"0"+i:i)+"]";
-					if (list2.find("img[emotion='"+id+"']").empty()) {
-						$("@li").attr("title", jjEmo[i]).add($("@img").attr({forvip:"true",preview:"true",emotion:id,alt:jjEmo[i],src:urlPrefix+"/imgpro/emotions/jiongjiong/"+i+".gif"})).addTo(list2);
-					}
-				}
-			}, 500);
-		} else {
-			// 采用动态加载表情列表
-			var emList2 = {};
-			for (var i = 1; i < alEmo.length; i++) {
-				emList2["[al" + (i<10?"0"+i:i) + "]"] = { kind: 1, types: 2, t:alEmo[i], s:"/imgpro/emotions/ali/" + i + ".gif"};
-			}
-			for (var i = 1; i < jjEmo.length; i++) {
-				emList2["[jj" + (i<10?"0"+i:i) + "]"] = { kind: 2, types: 2, t:jjEmo[i], s:"/imgpro/emotions/jiongjiong/" + i + ".gif"};
-			}
-			var code="var count=0;"+
-			"(function(){"+
-				"try {"+
-					"function addEmo(data){"+
-						"var list=JSON.parse('"+JSON.stringify(emList2)+"');"+
-						"for (var i=0;i<data.length;i++) {"+
-							"delete list[data[i].ubb];"+
-						"}"+
-						"for (var e in list) {"+
-							"var em=list[e];"+
-							"data.push({alt:'('+em.t+')',id:0,src:em.s,position:1000,ubb:e,size:2,kind:em.kind,types:em.types,img:'<img src=\"http://xnimg.cn'+em.s+'\" alr=\"'+em.t+'\"'})"+
-						"}"+
-					"}"+
-	
-					"if(window.tinyMCE){"+
-						"var p = window.tinymce.plugins.EmotionsPlugin.prototype;"+
-						"if(p.o_renderEmotion){"+
-							"return"+
-						"}"+
-						"p.o_renderEmotion=p.renderEmotion;"+
-						"p.renderEmotion=function(){"+
-							"if(!this.emoList){"+
-								"return"+
-							"}"+
-							"var data=XN.json.parse(this.emoList);"+
-							"addEmo(data.ubbList);"+
-							"this.emoList=XN.json.build(data);"+
-							"return tinymce.plugins.EmotionsPlugin.prototype.o_renderEmotion.apply(this,arguments)"+
-						"}"+
-					"}else{"+
-						"var p=XN.ui.emotions.prototype;"+
-						"if(p.o_formatData){"+
-							"return"+
-						"}"+
-						"p.o_formatData=p.formatData;"+
-						"p.formatData=function(data){"+
-							"addEmo(data);"+
-							"return XN.ui.emotions.prototype.o_formatData.apply(this,arguments)"+
-						"}"+
-					"}"+
-				"} catch(ex) {"+
-					"if(count<=10){"+
-						"setTimeout(arguments.callee,1000)"+
-					"}"+
-					"count++;"+
-					"return;"+
-				"}"+
-			"})();";
-			$script(code);
-		}
-		if (!$page("profile")) {
-			return;
-		}
-	}
+function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
+	var allEmo = {};
 
 	// 状态表情列表
-	var emList1={
+	var emList={
 	//	":)":		{t:"开心",			s:"/imgpro/icons/statusface/1.gif"},
 		"(微笑)":	{t:"微笑",			s:"/imgpro/icons/statusface/1.gif"},
 		"@_@":		{t:"嘴唇",			s:"/imgpro/icons/statusface/2.gif"},
@@ -2226,6 +2138,8 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(read)":	{t:"读书日",		s:"/imgpro/icons/statusface/reading.gif"},
 		"(ct)":		{t:"锄头",			s:"/imgpro/icons/statusface/chutou.gif"},
 		"(bbt)":	{t:"棒棒糖",		s:"/imgpro/icons/statusface/bbt.gif"},
+		"(bbg)":	{t:"棒棒糖",		s:"/imgpro/icons/statusface/bbg.gif"},
+		"(bbl)":	{t:"棒棒糖",		s:"/imgpro/icons/statusface/bbl.gif"},
 		"(xr)":		{t:"儿时回忆",		s:"/imgpro/icons/statusface/sm.gif"},
 		"(mo)":		{t:"默哀",			s:"/imgpro/icons/statusface/lazhu.gif"},
 		"(hot)":	{t:"烈日",			s:"/imgpro/icons/statusface/hot.gif"},
@@ -2252,6 +2166,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(jt2)":	{t:"家庭空间",		s:"/imgpro/icons/statusface/jt2.gif"},
 		"(yb)":		{t:"元宝",			s:"/imgpro/icons/statusface/yuanbao.gif"},
 		"(xx)":		{t:"星星",			s:"/imgpro/icons/statusface/xx.gif"},
+		"(nz)":		{t:"奶嘴",			s:"/imgpro/icons/statusface/nz.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
@@ -2263,6 +2178,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(yeah)":	{t:"哦耶",			s:"/img/ems/yeah.gif"},
 		"(good)":	{t:"牛",			s:"/img/ems/good.gif"},
 		"(ng)":		{t:"否",			s:"/imgpro/icons/statusface/nogood.gif"},
+		"(zy)":		{t:"最右",			s:"/imgpro/icons/statusface/zy.gif"},
 		"(f)":		{t:"拳头",			s:"/img/ems/fist.gif"}
 	};
 	var nEmList={
@@ -2305,6 +2221,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(qx2)":	{t:"七夕",			s:"/imgpro/icons/statusface/qixi2.gif"},
 		"(yrj)":	{t:"愚人节",		s:"/imgpro/icons/statusface/yrj.gif"},
 		"(wy)":		{t:"劳动节",		s:"/imgpro/icons/statusface/wuyi.gif"},
+		"(laodong)":{t:"五一",			s:"/imgpro/icons/statusface/5.1.gif"},
 		"(cy1)":	{t:"重阳节",		s:"/imgpro/icons/statusface/09double9-3.gif"},
 		"(cy2)":	{t:"登高",			s:"/imgpro/icons/statusface/09double9.gif"},
 		"(cy3)":	{t:"饮菊酒",		s:"/imgpro/icons/statusface/09double9-2.gif"},
@@ -2341,6 +2258,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(girl)":	{t:"女孩",			s:"/imgpro/icons/statusface/girl.gif"},
 		"(eclipse)":{t:"日全食",		s:"/imgpro/icons/statusface/eclipse.gif"},
 		"(gk)":		{t:"高考",			s:"/imgpro/icons/statusface/gaokao.gif"},
+		"(gk3)":	{t:"高考",			s:"/imgpro/icons/statusface/gk.gif"},
 		"(pass)":	{t:"CET必过",		s:"/imgpro/icons/statusface/cet46.gif"},
 		"(qgz)":	{t:"人人求工作",	s:"/imgpro/icons/statusface/offer.gif"},
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
@@ -2375,22 +2293,22 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(jobs)":	{t:"乔布斯",		s:"/imgpro/icons/statusface/jobs.gif"},
 	};
 	var sfEmList={
-		"(shafa1)":		{t:"抢沙发1",		s:"/imgpro/icons/statusface/rrdesk/cmbql1.gif"},
-		"(shafa2)":		{t:"抢沙发2",		s:"/imgpro/icons/statusface/rrdesk/pj1.gif"},
-		"(shafa3)":		{t:"抢沙发3",		s:"/imgpro/icons/statusface/rrdesk/xg1.gif"},
-		"(shafa4)":		{t:"抢沙发4",		s:"/imgpro/icons/statusface/rrdesk/kl1.gif"},
-	//	"(shafa5)":		{t:"抢沙发5",		s:"/imgpro/icons/statusface/rrdesk/cmbql2.gif"},
-	//	"(shafa6)":		{t:"抢沙发6",		s:"/imgpro/icons/statusface/rrdesk/pj2.gif"},
-	//	"(shafa7)":		{t:"抢沙发7",		s:"/imgpro/icons/statusface/rrdesk/xg2.gif"},
-	//	"(shafa8)":		{t:"抢沙发8",		s:"/imgpro/icons/statusface/rrdesk/kl2.gif"},
-		"(shafa9)":		{t:"抢沙发9",		s:"/imgpro/icons/statusface/rrdesk/shafa9xx.gif"},
-		"(shafa10)":	{t:"抢沙发10",		s:"/imgpro/icons/statusface/rrdesk/shafa10mm.gif"},
-		"(shafa11)":	{t:"抢沙发11",		s:"/imgpro/icons/statusface/rrdesk/shafa11fb.gif"},
-		"(shafa12)":	{t:"抢沙发12",		s:"/imgpro/icons/statusface/rrdesk/shafa12fb.gif"},
-		"(shafa13)":	{t:"抢沙发13",		s:"/imgpro/icons/statusface/rrdesk/wandou.gif"},
-		"(shafa14)":	{t:"抢沙发14",		s:"/imgpro/icons/statusface/rrdesk/xiangrikui.gif"},
-		"(shafa15)":	{t:"抢沙发15",		s:"/imgpro/icons/statusface/rrdesk/qingtianzhu.gif"},
-		"(shafa16)":	{t:"抢沙发16",		s:"/imgpro/icons/statusface/rrdesk/yellow.gif"},
+		"(shafa1)":		{t:"抢沙发1",		s:"/imgpro/icons/statusface/rrdesk/red.gif"},
+		"(shafa2)":		{t:"抢沙发2",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
+		"(shafa3)":		{t:"抢沙发3",		s:"/imgpro/icons/statusface/rrdesk/coffee.gif"},
+	//	"(shafa4)":		{t:"抢沙发4",		s:"/imgpro/icons/statusface/rrdesk/coffee.gif"},
+		"(shafa5)":		{t:"抢沙发5",		s:"/imgpro/icons/statusface/rrdesk/pink.gif"},
+	//	"(shafa6)":		{t:"抢沙发6",		s:"/imgpro/icons/statusface/rrdesk/red.gif"},
+	//	"(shafa7)":		{t:"抢沙发7",		s:"/imgpro/icons/statusface/rrdesk/pink.gif"},
+		"(shafa8)":		{t:"抢沙发8",		s:"/imgpro/icons/statusface/rrdesk/yinghua.gif"},
+		"(shafa9)":		{t:"抢沙发9",		s:"/imgpro/icons/statusface/rrdesk/black.gif"},
+		"(shafa10)":	{t:"抢沙发10",		s:"/imgpro/icons/statusface/rrdesk/long.gif"},
+	//	"(shafa11)":	{t:"抢沙发11",		s:"/imgpro/icons/statusface/rrdesk/black.gif"},
+	//	"(shafa12)":	{t:"抢沙发12",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
+	//	"(shafa13)":	{t:"抢沙发13",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
+	//	"(shafa14)":	{t:"抢沙发14",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
+	//	"(shafa15)":	{t:"抢沙发15",		s:"/imgpro/icons/statusface/rrdesk/black.gif"},
+	//	"(shafa16)":	{t:"抢沙发16",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
 	};
 
 	var aEmList={
@@ -2411,8 +2329,8 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(dou)":	{t:"豌豆",			s:"/imgpro/icons/statusface/dou.gif"},
 		"(jqg)":	{t:"小坚果",		s:"/imgpro/icons/statusface/hetao.gif"},
 		"(jsh)":	{t:"僵尸",			s:"/imgpro/icons/statusface/jiangshi.gif"},
-		"(wd1)":	{t:"豌豆",			s:"/imgpro/icons/statusface/wandou1.gif"},
-		"(js)":		{t:"僵尸",			s:"/imgpro/icons/statusface/jiangshi1.gif"},
+	//	"(wd1)":	{t:"豌豆",			s:"/imgpro/icons/statusface/wandou1.gif"},	和(dou)图片相同
+	//	"(js)":		{t:"僵尸",			s:"/imgpro/icons/statusface/jiangshi1.gif"},	和(jsh)图片相同
 	};
 	// 下面是内容过时的表情，不列出
 	var odEmList={
@@ -2423,31 +2341,40 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(jd)":		{t:"建党90周年",	s:"/imgpro/icons/statusface/party90.gif"},
 	};
 
+	for(var e in emList) {
+		allEmo[e]={ kind:0, alt:emList[e].t, src:emList[e].s, wide:emList[e].w };
+	}
 	if(nEmo) {
 		for(var e in nEmList) {
-			emList1[e]=nEmList[e];
+			allEmo[e]={ kind:0, alt:nEmList[e].t, src:nEmList[e].s, wide:nEmList[e].w };
 		}
 	}
 	if(eEmo) {
 		for(var e in eEmList) {
-			emList1[e]=eEmList[e];
+			allEmo[e]={ kind:0, alt:eEmList[e].t, src:eEmList[e].s, wide:eEmList[e].w };
 		}
 	}
 	if(fEmo) {
 		for(var e in fEmList) {
-			emList1[e]=fEmList[e];
+			allEmo[e]={ kind:0, alt:fEmList[e].t, src:fEmList[e].s, wide:fEmList[e].w };
 		}
 	}
 	if(aEmo) {
 		for(var e in aEmList) {
-			emList1[e]=aEmList[e];
+			allEmo[e]={ kind:0, alt:aEmList[e].t, src:aEmList[e].s, wide:aEmList[e].w };
 		}
 	}
 	if(sfEmo) {
 		for(var e in sfEmList) {
-			emList1[e]=sfEmList[e];
+			allEmo[e]={ kind:0, alt:sfEmList[e].t, src:sfEmList[e].s, wide:sfEmList[e].w };
 		}
 	}
+	if(odEmo) {
+		for(var e in odEmList) {
+			allEmo[e]={ kind:0, alt:odEmList[e].t, src:odEmList[e].s, wide:odEmList[e].w };
+		}
+	}
+
 
 	// 状态页(status.renren.com)的表情列表，活动页面中似乎也是这个
 	var list=$("#status_emotions");
@@ -2457,105 +2384,59 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		list.find("img").each(function() {
 			curlist[this.getAttribute("emotion")]=1;
 		});
-		for(var e in emList1) {
-			var el=emList1[e];
+		for(var e in allEmo) {
+			var el=allEmo[e];
 			// 不在已有列表中
 			if(!curlist[e] && !el.types) {
-				$("@li").attr(el.w?{"class":"wider"}:{}).add($("@a").attr("href","#nogo").add($("@img").attr({title:el.t,alt:el.t,emotion:e,src:"http://xnimg.cn"+el.s,rsrc:"http://xnimg.cn"+el.s}))).addTo(list);
+				$("@li").attr(el.w?{"class":"wider"}:{}).add($("@a").attr("href","#nogo").add($("@img").attr({title:el.alt,alt:el.alt,emotion:e,src:"http://xnimg.cn"+el.src,rsrc:"http://xnimg.cn"+el.src}))).addTo(list);
 			} 
 		}
 		$patchCSS(".publisher-new .emotion li.wider{width:50px}.publisher-new .emotion li.wider a{width:46px}.publisher-new .emotion img{margin:0;vertical-align:baseline}");
 	}
 
-	if($page("feed")) {
-		// 首页的状态表情列表
-		var code="var count=0;"+
-		"XN.ui.emotions=null;"+	// 清除原有的才能在异步刷新重建XN.ui.emotions并正确修改
-		// sorry, AMO reviewers dislike you
-		//"XN.loadFiles(['http://s.xnimg.cn/jspro/xn.ui.emoticons.js']);"+
-		"var js=document.querySelector(\"script[src*='xn.ui.emoticons.js']\");"+
-		"if(js) {"+
-			"addEmo();"+
-		"} else if(!XN.o_loadFile) {"+
-			"XN.o_loadFile = XN.loadFile;"+
-			"XN.loadFile=function(a){"+
-				"var r=XN.o_loadFile.apply(this,arguments);"+
-				"if(a.indexOf('xn.ui.emoticons.js')>0){"+
-					"addEmo();"+
-				"}"+
-				"return r"+
-			"}"+
-		"}"+
-		"function addEmo(){"+
-			"try{"+
-				"var p=XN.ui.emotions.prototype;"+
-				"if(p.o_buildPanelHtml){"+
-					"return"+
-				"}"+
-				"p.o_buildPanelHtml=p.buildPanelHtml;"+
-				"p.buildPanelHtml=function(){"+
-					"XN.ui.emotions.prototype.o_buildPanelHtml.apply(this,arguments);"+
-					"var emList={};"+
-					"var ul=document.querySelectorAll('ul.emo-list');"+
-					"if(ul.length!=1){"+
-						"return"+
-					"}else{"+
-						"ul=ul[0]"+
-					"}"+
-					"var em=ul.querySelectorAll('img[emotion]');"+
-					"for(var i=0;i<em.length;i++){"+
-						"emList[em[i].getAttribute('emotion')]=1"+
-					"}"+
-					"var newEmo='';"+
-					"var list=JSON.parse('"+JSON.stringify(emList1)+"');"+
-					"for(var i in list){"+
-						"if(!emList[i]){"+
-							"newEmo+=\"<li title='\"+list[i].t+\"'><img forvip='0' preview='0' emotion='\"+i+\"' alt='\"+list[i].t+\"' src='http://xnimg.cn\"+list[i].s+\"'/></li>\""+
-						"}"+
-					"}"+
-					"ul.innerHTML+=newEmo"+
-				"}"+
-			"}catch(ex){"+
-				"if(count<5){"+
-					"setTimeout(arguments.callee,500)"+
-				"}"+
-				"count++;"+
-				"return"+
-			"}"+
-		"}";
-		$script(code);
+	// 阿狸表情，共51
+	var alEmo = ["", "啊啊啊", "安慰", "抱抱", "暴怒", "不要啊", "嘲弄", "吃饭啦", "出走", "大汗", "感动", "好囧", "好冷", "好温暖", "喝茶", "开心", "抠鼻孔", "狂汗", "狂笑", "困了晚安", "你好强", "赖皮", "捏脸", "怒", "爬过", "飘过", "潜水啦", "闪人", "送花给你", "送你礼物", "委屈哭", "我不说话", "喜欢你", "吓唬你", "笑喷了", "旋转", "疑问", "隐身", "郁闷", "抓狂", "转圈哭", "装可爱", "嘘嘘", "晚安", "耍帅", "你伤害了我", "贱扭扭", "寒", "顶顶顶", "大惊", "不耐烦", "不公平"];
+	// 囧囧熊表情，共20
+	var jjEmo = ["", "被雷到", "打酱油", "得意的笑", "顶", "灌水", "激光", "泪奔", "楼上的", "楼下的", "楼主", "如题", "撒泼", "沙发", "生气", "胜利", "受惊", "刷屏", "吐", "捂嘴偷笑", "阴险"];
+
+	for (var i = 1; i < alEmo.length; i++) {
+		allEmo["[al"+(i<10?"0"+i:i)+"]"] = { kind:1, types:2, alt:alEmo[i], src:"/imgpro/emotions/ali/"+i+".gif"};
 	}
-	
-	// 新鲜事回复表情
-	var code="var count=0;"+
-	"(function(){"+
-		"function addEmo(){"+
-			"var list=JSON.parse('"+JSON.stringify(emList1)+"');"+
-			"var status=JSON.parse(XN.app.status.emoJsonForNewsFeedStatus);"+
-			"for(var i=0;i<status.ubbList.length;i++){"+
-				"var em=status.ubbList[i];"+
-				"if(list[em.ubb]){"+
-					"delete list[em.ubb]"+
-				"}"+
-			"}"+
-			"for(var e in list){"+
-				"var em=list[e];"+
-				"status.ubbList.push({alt:'('+em.t+')',id:0,src:em.s,position:1000,ubb:e,img:'<img src=\"http://xnimg.cn'+em.s+'\" alr=\"'+em.t+'\"'})"+
-			"}"+
-			"XN.app.status.emoJsonForNewsFeedStatus=JSON.stringify(status)"+
-		"}"+
-		"try{"+
-			"if(!XN.app.status.emoJsonForNewsFeedStatus){"+
-				"XN.app.status.replyEditor.prototype.getNewsFeedEmoJsonStatus(addEmo);"+
-			"}else{"+
-				"addEmo()"+
-			"}"+
-		"}catch(ex){"+
-			"if(count<10){"+
-				"setTimeout(arguments.callee,500)"+
-			"}"+
-			"count++;"+
+	for (var i = 1; i < jjEmo.length; i++) {
+		allEmo["[jj"+(i<10?"0"+i:i)+"]"] = { kind:2, types:2, alt:jjEmo[i], src:"/imgpro/emotions/jiongjiong/"+i+".gif"};
+	}
+
+	// 其他异步加载的状态表情列表
+	// 由于im.js和xn.ui.emoticons.js中都会创建XN.ui.emotions，劫持$extend要简单点。
+	var code="(function(){"+
+		"if(!window.$extend) {"+
+			"setTimeout(arguments.callee,1000);"+
 			"return"+
+		"}"+
+		"if(window.$o_extend) {"+
+			"return"+
+		"}"+
+		"window.$o_extend=window.$extend;"+
+		"window.$extend=function(obj,attrs){"+
+			"var r=$o_extend.apply(this, arguments);"+
+			"if (window.XN && XN.ui && XN.ui.emotions && obj===XN.ui.emotions.prototype){"+
+				"obj.o_formatData=obj.formatData;"+
+				"obj.formatData=function(data){"+
+					"var list=JSON.parse('"+JSON.stringify(allEmo)+"');"+
+					"for (var i=0;i<data.length;i++) {"+
+						"delete list[data[i].ubb];"+
+					"}"+
+					"var f=(data[data.length-1].kind!=0);"+		// 发布状态处没有阿狸和囧囧熊表情
+					"for (var e in list) {"+
+						"var em=list[e];"+
+						"em.ubb=e;"+
+						"if(em.kind!=0){em.img='<img src=\"http://a.xnimg.cn/'+em.src+'\" alt=\"'+em.alt+'\"/>'}"+
+						"if(f||em.kind==0){data.push(em)}"+
+					"}"+
+					"return XN.ui.emotions.prototype.o_formatData.apply(this,arguments);"+
+				"};"+
+			"}"+
+			"return r;"+
 		"}"+
 	"})()";
 	$script(code);
@@ -3237,148 +3118,65 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 		}
 		$alloc("download_album",[]);
 		var mode=$(".review-mode");
-		// 评论模式
-		if (mode.exist() && mode.rect().width>0) {
-			var links=$(".review-mode ul > li .pic img");
-			var t=links.eq(0);
-			var src=t.attr("data-src") || t.attr("src");
-			if (/large_|original_/.test(src)) {
-				var totalImage=links.size();
-				var cur=0;
-				links.each(function(index) {
-					var t=$(this);
-					var title = t.attr("alt");
-					if (!title) {
-						title = t.superior(2).find(".myphoto-info .descript").text();
+		if ($(".review-mode").exist()) {
+			// 有评论模式，是一般相册
+			// 目前是异步加载新的页数，所以当成是所有图片已经在一页中显示了
+			if (/photo\/(\d+)\/album-(\d+)/.test(XNR.url)) {
+				downLink.text("分析中...");
+				var ownerId = RegExp.$1;
+				var albumId = RegExp.$2;
+				// FIXME 随便指定个1000应该没问题吧
+				$get("http://photo.renren.com/photo/"+ownerId+"/album-"+albumId+"/bypage/ajax?curPage=0&pagenum=1000", function(html) {
+					if (!html) {
+						finish();
+						return;
 					}
-					if (!title) {
-						title = "";
+					if(!downLink.text().match("分析中")) {
+						return;
 					}
-					var src=(t.attr("data-src") || t.attr("src"));
-					if(src.indexOf("/large_")>0 && /\/2012\d{4}\//.test(src)) {
-						src=src.replace("large_", "original_");
+
+					try {
+						var list = JSON.parse(html).photoList;
+					} catch(ex) {
+						finish();
+						$error("addDownloadAlbumLink::$get", "相册内容解析失败");
+						return;
 					}
-					$alloc("download_album").push({i:index,src:src,title:title});
-					cur++;
-					if(cur==totalImage) {
-						if(downLink.text().match("分析中")) {
-							finish();
+					var pool=$alloc("download_album");
+					var amount=list.length;
+					var cur=0;
+					for (var i = 0; i < amount; i++) {
+						var photo = list[i];
+						var largeImg = photo.largeUrl;
+						if (/xlarge_|original_|\/p_/.test(largeImg)) {
+							// 文件名以p_开头的，是通过普通上传方式上传，没有特大图（？）
+							pool.push({i:i,src:largeImg,title:photo.title});
+							cur++;
+							downLink.text("分析中...("+cur+"/"+amount+")");
+						} else if (photo.photoId) {
+							// largeUrl中记录的不是特大图，是否存在特大图需要进一步检查
+							photo.idx = i;
+							$get("http://photo.renren.com/photo/"+ownerId+"/photo-"+photo.photoId+"/large?xtype=album", function(html,url,photo) {
+								if (/src="([^"]+?(xlarge|original)_[^"]+)"/.test(html)) {
+									photo.largeUrl = RegExp.$1;
+								}
+								pool.push({i:photo.idx,src:photo.largeUrl,title:photo.title});
+								cur++;
+								downLink.text("分析中...("+cur+"/"+amount+")");
+								if (amount == cur) {
+									finish();
+								}
+							},photo);
+						} else {
+							// 格式变了，等用户来报告吧
+							cur--;
 						}
-					} else {
-						downLink.text("分析中...("+cur+"/"+totalImage+")");
+					}
+					if (amount == cur) {
+						finish();
 					}
 				});
 				return;
-			} else {
-				// img上没写大图地址
-				if (/photo\/(\d+)\/album-(\d+)/.test(XNR.url)) {
-					downLink.text("分析中...");
-					var ownerId = RegExp.$1;
-					var albumId = RegExp.$2;
-					// FIXME 随便指定个1000应该没问题吧
-					$get("http://photo.renren.com/photo/"+ownerId+"/album-"+albumId+"/bypage/ajax?curPage=0&pagenum=1000", function(html) {
-						if (!html) {
-							finish();
-							return;
-						}
-						if(!downLink.text().match("分析中")) {
-							return;
-						}
-
-						try {
-							var list = JSON.parse(html).photoList;
-						} catch(ex) {
-							finish();
-							$error("addDownloadAlbumLink::$get", "相册内容解析失败");
-							return;
-						}
-						var pool=$alloc("download_album");
-						for (var i=0,i_max=list.length;i<i_max;i++) {
-							var photo=list[i];
-							var src=photo.largeUrl;
-							//p_large_的没存特大图，2011年11/12月的已经直接列出original了(?)
-							if(src.indexOf("/large_")>0 && /\/2012\d{4}\//.test(src)) {
-								src=src.replace("large_", "original_");
-							}
-							pool.push({i:i,src:src,title:photo.title});
-						}
-						finish();
-					})
-					return;
-				}
-			}
-		}
-
-		// 缩略图模式
-		links=$(".photo-list ul li .picture img");
-		if (links.exist()) {
-			var t=links.eq(0);
-			var src=t.attr("data-src") || t.attr("src");
-			if (/large_|original_/.test(src)) {
-				var totalImage=links.size();
-				var cur=0;
-				links.each(function(index) {
-					var t=$(this);
-					var title = t.attr("alt");
-					if (!title) {
-						title = t.superior(2).find(".myphoto-info .descript").text();
-					}
-					if (!title) {
-						title = "";
-					}
-					var src=(t.attr("data-src") || t.attr("src"));
-					if(src.indexOf("/large_")>0 && /\/2012\d{4}\//.test(src)) {
-						src=src.replace("large_", "original_");
-					}
-					$alloc("download_album").push({i:index,src:src,title:title});
-					cur++;
-					if(cur==totalImage) {
-						if(downLink.text().match("分析中")) {
-							finish();
-						}
-					} else {
-						downLink.text("分析中...("+cur+"/"+totalImage+")");
-					}
-
-				});
-				return;
-			} else {
-				// img上没写大图地址
-				if (/photo\/(\d+)\/album-(\d+)/.test(XNR.url)) {
-					downLink.text("分析中...");
-					var ownerId = RegExp.$1;
-					var albumId = RegExp.$2;
-					// FIXME 随便指定个1000应该没问题吧
-					$get("http://photo.renren.com/photo/"+ownerId+"/album-"+albumId+"/bypage/ajax?curPage=0&pagenum=1000", function(html) {
-						if (!html) {
-							finish();
-							return;
-						}
-						if(!downLink.text().match("分析中")) {
-							return;
-						}
-
-						try {
-							var list = JSON.parse(html).photoList;
-						} catch(ex) {
-							finish();
-							$error("addDownloadAlbumLink::$get", "相册内容解析失败");
-							return;
-						}
-						var pool=$alloc("download_album");
-						for (var i=0,i_max=list.length;i<i_max;i++) {
-							var photo=list[i];
-							var src=photo.largeUrl;
-							if(src.indexOf("/large_")>0 && /\/2012\d{4}\//.test(src)) {
-								src=src.replace("large_", "original_");
-							}
-							pool.push({i:i,src:src,title:photo.title});
-						}
-						finish();
-					})
-					return;
-				}
-				// ... 不管了，试试其他模式吧
 			}
 		}
 
@@ -3654,6 +3452,9 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 				if(t.style.backgroundImage.indexOf("url(")!=-1) {
 					thumbnail=t.style.backgroundImage.replace(/^url\("?|"?\);?$/g,"");
 					pageURL=t.href;
+				} else if(t.className === "picture" && t.children.length === 1 && t.firstElementChild.tagName == "IMG") {
+					t=t.firstElementChild;
+					thumbnail=t.src;
 				}
 				break;
 		}
@@ -4259,11 +4060,18 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 				}
 				if (!src) {
 					// 一般图片
-					src=new RegExp("<div class=\"photo\">\\s*<img [^>]*?src=\"([^\"]*?" + imgId + "[^\"]*?)\"[^>]*?>").exec(html);
-					if (src) {
+					var regex = new RegExp("<img [^>]*?src=\"([^\"]*?" + imgId + "[^\"]*?)\"[^>]*?>", "ig");
+					var hsrc = null;
+					while(src=regex.exec(html)) {
 						src = src[1];
-					} else {
-						src = null;
+						if (/large_|original_/.test(src)) {
+							break;
+						} else if (/h_main_/.test(src)) {
+							hsrc = src;
+						}
+					}
+					if (!src && hsrc) {
+						src = hsrc;
 					}
 				}
 				if(src) {
@@ -5257,7 +5065,7 @@ function main(savedOptions) {
 				}],
 				page:"pages"
 			},{
-				text:"##隐藏底部工具栏##",
+				text:"##隐藏底部好友在线列表##",
 				ctrl:[{
 					id:"removeBottomBar",
 					value:false,
@@ -6217,7 +6025,7 @@ function main(savedOptions) {
 		],
 		"辅助功能":[
 			{
-				text:"##启用隐藏表情项##包括自然风光表情##包括网络流行语表情##包括节日事件表情##包括人物表情##包括抢沙发表情##包括商业广告表情",
+				text:"##启用隐藏表情项##包括自然风光表情##包括网络流行语表情##包括节日事件表情##包括人物表情##包括抢沙发表情##包括商业广告表情##包括过期事件表情",
 				ctrl:[
 					{
 						id:"addExtraEmotions",
@@ -6225,7 +6033,7 @@ function main(savedOptions) {
 						fn:[{
 							name:addExtraEmotions,
 							stage:2,
-							args:["@natureEmo","@bwEmo","@eventEmo","@figureEmo","@sfEmo","@advEmo"],
+							args:["@natureEmo","@bwEmo","@eventEmo","@figureEmo","@sfEmo","@advEmo","@odEmo"],
 							fire:true
 						}],
 					},{
@@ -6251,6 +6059,10 @@ function main(savedOptions) {
 					},{
 						type:"subcheck",
 						id:"advEmo",
+						value:false
+					},{
+						type:"subcheck",
+						id:"odEmo",
 						value:false
 					}
 				],

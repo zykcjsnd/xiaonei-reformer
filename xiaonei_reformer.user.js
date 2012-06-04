@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.3.481
-// @miniver        481
+// @version        3.3.3.482
+// @miniver        482
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -45,8 +45,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.3.478";
-XNR.miniver=478;
+XNR.version="3.3.3.482";
+XNR.miniver=482;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -2056,7 +2056,7 @@ function customizePageLayout(layouts) {
 };
 
 // 增加更多表情
-function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
+function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 	var allEmo = {};
 
 	// 状态表情列表
@@ -2138,6 +2138,8 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(read)":	{t:"读书日",		s:"/imgpro/icons/statusface/reading.gif"},
 		"(ct)":		{t:"锄头",			s:"/imgpro/icons/statusface/chutou.gif"},
 		"(bbt)":	{t:"棒棒糖",		s:"/imgpro/icons/statusface/bbt.gif"},
+		"(bbg)":	{t:"棒棒糖",		s:"/imgpro/icons/statusface/bbg.gif"},
+		"(bbl)":	{t:"棒棒糖",		s:"/imgpro/icons/statusface/bbl.gif"},
 		"(xr)":		{t:"儿时回忆",		s:"/imgpro/icons/statusface/sm.gif"},
 		"(mo)":		{t:"默哀",			s:"/imgpro/icons/statusface/lazhu.gif"},
 		"(hot)":	{t:"烈日",			s:"/imgpro/icons/statusface/hot.gif"},
@@ -2164,6 +2166,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(jt2)":	{t:"家庭空间",		s:"/imgpro/icons/statusface/jt2.gif"},
 		"(yb)":		{t:"元宝",			s:"/imgpro/icons/statusface/yuanbao.gif"},
 		"(xx)":		{t:"星星",			s:"/imgpro/icons/statusface/xx.gif"},
+		"(nz)":		{t:"奶嘴",			s:"/imgpro/icons/statusface/nz.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
@@ -2175,6 +2178,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(yeah)":	{t:"哦耶",			s:"/img/ems/yeah.gif"},
 		"(good)":	{t:"牛",			s:"/img/ems/good.gif"},
 		"(ng)":		{t:"否",			s:"/imgpro/icons/statusface/nogood.gif"},
+		"(zy)":		{t:"最右",			s:"/imgpro/icons/statusface/zy.gif"},
 		"(f)":		{t:"拳头",			s:"/img/ems/fist.gif"}
 	};
 	var nEmList={
@@ -2217,6 +2221,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(qx2)":	{t:"七夕",			s:"/imgpro/icons/statusface/qixi2.gif"},
 		"(yrj)":	{t:"愚人节",		s:"/imgpro/icons/statusface/yrj.gif"},
 		"(wy)":		{t:"劳动节",		s:"/imgpro/icons/statusface/wuyi.gif"},
+		"(laodong)":{t:"五一",			s:"/imgpro/icons/statusface/5.1.gif"},
 		"(cy1)":	{t:"重阳节",		s:"/imgpro/icons/statusface/09double9-3.gif"},
 		"(cy2)":	{t:"登高",			s:"/imgpro/icons/statusface/09double9.gif"},
 		"(cy3)":	{t:"饮菊酒",		s:"/imgpro/icons/statusface/09double9-2.gif"},
@@ -2253,6 +2258,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(girl)":	{t:"女孩",			s:"/imgpro/icons/statusface/girl.gif"},
 		"(eclipse)":{t:"日全食",		s:"/imgpro/icons/statusface/eclipse.gif"},
 		"(gk)":		{t:"高考",			s:"/imgpro/icons/statusface/gaokao.gif"},
+		"(gk3)":	{t:"高考",			s:"/imgpro/icons/statusface/gk.gif"},
 		"(pass)":	{t:"CET必过",		s:"/imgpro/icons/statusface/cet46.gif"},
 		"(qgz)":	{t:"人人求工作",	s:"/imgpro/icons/statusface/offer.gif"},
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
@@ -2287,22 +2293,22 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(jobs)":	{t:"乔布斯",		s:"/imgpro/icons/statusface/jobs.gif"},
 	};
 	var sfEmList={
-		"(shafa1)":		{t:"抢沙发1",		s:"/imgpro/icons/statusface/rrdesk/cmbql1.gif"},
-		"(shafa2)":		{t:"抢沙发2",		s:"/imgpro/icons/statusface/rrdesk/pj1.gif"},
-		"(shafa3)":		{t:"抢沙发3",		s:"/imgpro/icons/statusface/rrdesk/xg1.gif"},
-		"(shafa4)":		{t:"抢沙发4",		s:"/imgpro/icons/statusface/rrdesk/kl1.gif"},
-	//	"(shafa5)":		{t:"抢沙发5",		s:"/imgpro/icons/statusface/rrdesk/cmbql2.gif"},
-	//	"(shafa6)":		{t:"抢沙发6",		s:"/imgpro/icons/statusface/rrdesk/pj2.gif"},
-	//	"(shafa7)":		{t:"抢沙发7",		s:"/imgpro/icons/statusface/rrdesk/xg2.gif"},
-	//	"(shafa8)":		{t:"抢沙发8",		s:"/imgpro/icons/statusface/rrdesk/kl2.gif"},
-		"(shafa9)":		{t:"抢沙发9",		s:"/imgpro/icons/statusface/rrdesk/shafa9xx.gif"},
-		"(shafa10)":	{t:"抢沙发10",		s:"/imgpro/icons/statusface/rrdesk/shafa10mm.gif"},
-		"(shafa11)":	{t:"抢沙发11",		s:"/imgpro/icons/statusface/rrdesk/shafa11fb.gif"},
-		"(shafa12)":	{t:"抢沙发12",		s:"/imgpro/icons/statusface/rrdesk/shafa12fb.gif"},
-		"(shafa13)":	{t:"抢沙发13",		s:"/imgpro/icons/statusface/rrdesk/wandou.gif"},
-		"(shafa14)":	{t:"抢沙发14",		s:"/imgpro/icons/statusface/rrdesk/xiangrikui.gif"},
-		"(shafa15)":	{t:"抢沙发15",		s:"/imgpro/icons/statusface/rrdesk/qingtianzhu.gif"},
-		"(shafa16)":	{t:"抢沙发16",		s:"/imgpro/icons/statusface/rrdesk/yellow.gif"},
+		"(shafa1)":		{t:"抢沙发1",		s:"/imgpro/icons/statusface/rrdesk/red.gif"},
+		"(shafa2)":		{t:"抢沙发2",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
+		"(shafa3)":		{t:"抢沙发3",		s:"/imgpro/icons/statusface/rrdesk/coffee.gif"},
+	//	"(shafa4)":		{t:"抢沙发4",		s:"/imgpro/icons/statusface/rrdesk/coffee.gif"},
+		"(shafa5)":		{t:"抢沙发5",		s:"/imgpro/icons/statusface/rrdesk/pink.gif"},
+	//	"(shafa6)":		{t:"抢沙发6",		s:"/imgpro/icons/statusface/rrdesk/red.gif"},
+	//	"(shafa7)":		{t:"抢沙发7",		s:"/imgpro/icons/statusface/rrdesk/pink.gif"},
+		"(shafa8)":		{t:"抢沙发8",		s:"/imgpro/icons/statusface/rrdesk/yinghua.gif"},
+		"(shafa9)":		{t:"抢沙发9",		s:"/imgpro/icons/statusface/rrdesk/black.gif"},
+		"(shafa10)":	{t:"抢沙发10",		s:"/imgpro/icons/statusface/rrdesk/long.gif"},
+	//	"(shafa11)":	{t:"抢沙发11",		s:"/imgpro/icons/statusface/rrdesk/black.gif"},
+	//	"(shafa12)":	{t:"抢沙发12",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
+	//	"(shafa13)":	{t:"抢沙发13",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
+	//	"(shafa14)":	{t:"抢沙发14",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
+	//	"(shafa15)":	{t:"抢沙发15",		s:"/imgpro/icons/statusface/rrdesk/black.gif"},
+	//	"(shafa16)":	{t:"抢沙发16",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
 	};
 
 	var aEmList={
@@ -2323,8 +2329,8 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 		"(dou)":	{t:"豌豆",			s:"/imgpro/icons/statusface/dou.gif"},
 		"(jqg)":	{t:"小坚果",		s:"/imgpro/icons/statusface/hetao.gif"},
 		"(jsh)":	{t:"僵尸",			s:"/imgpro/icons/statusface/jiangshi.gif"},
-		"(wd1)":	{t:"豌豆",			s:"/imgpro/icons/statusface/wandou1.gif"},
-		"(js)":		{t:"僵尸",			s:"/imgpro/icons/statusface/jiangshi1.gif"},
+	//	"(wd1)":	{t:"豌豆",			s:"/imgpro/icons/statusface/wandou1.gif"},	和(dou)图片相同
+	//	"(js)":		{t:"僵尸",			s:"/imgpro/icons/statusface/jiangshi1.gif"},	和(jsh)图片相同
 	};
 	// 下面是内容过时的表情，不列出
 	var odEmList={
@@ -2363,6 +2369,12 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo) {
 			allEmo[e]={ kind:0, alt:sfEmList[e].t, src:sfEmList[e].s, wide:sfEmList[e].w };
 		}
 	}
+	if(odEmo) {
+		for(var e in odEmList) {
+			allEmo[e]={ kind:0, alt:odEmList[e].t, src:odEmList[e].s, wide:odEmList[e].w };
+		}
+	}
+
 
 	// 状态页(status.renren.com)的表情列表，活动页面中似乎也是这个
 	var list=$("#status_emotions");
@@ -6013,7 +6025,7 @@ function main(savedOptions) {
 		],
 		"辅助功能":[
 			{
-				text:"##启用隐藏表情项##包括自然风光表情##包括网络流行语表情##包括节日事件表情##包括人物表情##包括抢沙发表情##包括商业广告表情",
+				text:"##启用隐藏表情项##包括自然风光表情##包括网络流行语表情##包括节日事件表情##包括人物表情##包括抢沙发表情##包括商业广告表情##包括过期事件表情",
 				ctrl:[
 					{
 						id:"addExtraEmotions",
@@ -6021,7 +6033,7 @@ function main(savedOptions) {
 						fn:[{
 							name:addExtraEmotions,
 							stage:2,
-							args:["@natureEmo","@bwEmo","@eventEmo","@figureEmo","@sfEmo","@advEmo"],
+							args:["@natureEmo","@bwEmo","@eventEmo","@figureEmo","@sfEmo","@advEmo","@odEmo"],
 							fire:true
 						}],
 					},{
@@ -6047,6 +6059,10 @@ function main(savedOptions) {
 					},{
 						type:"subcheck",
 						id:"advEmo",
+						value:false
+					},{
+						type:"subcheck",
+						id:"odEmo",
 						value:false
 					}
 				],
