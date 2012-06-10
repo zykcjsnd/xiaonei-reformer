@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.3.482
-// @miniver        482
+// @version        3.3.4.483
+// @miniver        483
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -443,27 +443,7 @@ function rejectRequest(req,blockApp,igNotification,igReminder) {
 
 	if(igNotification) {
 		// http://req.renren.com/notify/nt
-		$get("http://notify.renren.com/rmessage/get?getbybigtype=1&bigtype=3&limit=20&begin=1&view=16&rand="+Math.random(), function(html) {
-			try {
-				var nl=JSON.parse(html);
-			} catch(ex) {
-				return;
-			}
-			var links=[];
-			for (var i=0;i<nl.length;i++) {
-				var link=nl[i].rmessagecallback;
-				if (link) {
-					links.push(link);
-				}
-			}
-			var executer = function() {
-				if(links.length>0) {
-					var link=links.shift();
-					$get(link,executer,null,"POST");
-				}
-			}
-			executer();
-		});
+		$get("http://notify.renren.com/rmessage/rmessage-rmall.html?view=16&bigtype=3", null, null, "POST");
 	}
 
 	if(igReminder) {
@@ -1676,7 +1656,7 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"#appsMenuPro .other-apps .app-item em:hover{background-color:"+FCOLOR+"}",
 				"#appsMenuPro .menu-apps-side a.add-app-btn{background-color:"+FCOLOR+"}",
 				".pagerpro li a:hover{background-color:"+FCOLOR+"}",
-				".pagerpro li.current a, .pagerpro li.current a:hover{background-color:"+FCOLOR+"}",
+				".pagerpro li.current a, .pagerpro li.current a:hover{color:"+FCOLOR+"}",
 				"#navMessage .on{background-color:"+BCOLOR+"}",
 				"td.pop_content h2{background-color:"+BCOLOR+"}",
 				".site-nav .menu-title a:hover{background-color:"+BCOLOR+"}",
@@ -4218,7 +4198,7 @@ function enableShortcutMenu(evt) {
 		if(t.tagName=="SPAN" && t.childElementCount==0 && !t.nextElementSibling && !t.previousElementSibling && t.parentNode.tagName=="A") {
 			t=t.parentNode;
 		}
-		if(t.tagName!="A" || (!/\/profile\.do\?/.test(t.href) && !/\/\/www\.renren\.com\/g\//.test(t.href) && !/\/www\.renren\.com\/\d+$/.test(t.href))) {
+		if(t.tagName!="A" || (!/\/profile\.do\?/.test(t.href) && !/\/\/www\.renren\.com\/g\//.test(t.href) && !/\/www\.renren\.com\/\d+$|\/www\.renren\.com\/\d+[?#]/.test(t.href))) {
 			return;
 		}
 		if(t.id || /#|&v=/.test(t.href) || t.style.backgroundImage) {
@@ -4234,8 +4214,8 @@ function enableShortcutMenu(evt) {
 				// 公共主页/情侣空间
 				return;
 			}
-		} else if (/\/www\.renren\.com\/\d+$/.test(t.href)) {
-			var id=/([0-9]+)$/.exec(t.href)[1];
+		} else if (/\/www\.renren\.com\/\d+/.test(t.href)) {
+			var id=/([0-9]+)/.exec(t.href)[1];
 		} else {
 			var id=/[&?]id=([0-9]+)/.exec(t.href)[1];
 		}
@@ -4293,15 +4273,21 @@ function enableShortcutMenu(evt) {
 
 // 提升搜索结果上限到200页
 function expandSearchResult() {
-	$("@a").text("扩展到200页").attr({style:"float:left;padding:3px",onclick:"XN.app.search._bottomPager.setPageCount(200)"}).addTo($("#bottomPagerHolder"),0);
+	$("@a").text("扩展到200页").attr({style:"float:left;padding:3px",onclick:"XN.app.search._bottomPager.setPageCount(200)",href:"#nogo"}).addTo($("#bottomPagerHolder"),0);
 };
 
 // 搜索分享
 function searchShare() {
-	if(($("#content .toolbar").empty() || $("#content .share-headline").exist()) && $(".share-home .subnav-tabs").empty()) {
+	if($(".j-share-list, .share-hot-list, .blog-content .blog-home").empty()) {
 		return;
 	}
-	var searchBar=$("@div").css({padding:"3px",marginBottom:"10px"}).move("after",$("#content .toolbar, .share-home .subnav-tabs"));
+	var searchBar=$("@div").css({padding:"3px",marginBottom:"10px"});
+	var toolbar = $("#content .toolbar");
+	if (toolbar.exist()) {
+		searchBar.move("before",toolbar);
+	} else {
+		searchBar.move("before",$(".j-share-list, .share-hot-list, .blog-home"));
+	}
 	$("@input").attr({type:"text","class":"input-text"}).attr("style","width:200px;min-height:17px;margin-right:5px").addTo(searchBar).bind("keypress",function(evt) {
 		// 按下回车键触发搜索按钮点击事件
 		if(evt.keyCode==13) {
@@ -4310,6 +4296,28 @@ function searchShare() {
 			evt.target.nextElementSibling.dispatchEvent(cevt);
 		}
 	});
+	var targetSel, titleSel, contentSel, containerSel, pagerSel;
+	if ($page("share")) {
+		if ($(".share-hot-list").exist()) {
+			containerSel = ".share-hot-list";
+			targetSel = ".share-hot-list>li.share";
+			titleSel = "h3";
+			contentSel = ".content";
+			pagerSel = ".pager-top";
+		} else {
+			containerSel = ".j-share-list";
+			targetSel = "#content .share-itembox";
+			titleSel = ".share-body>h3";
+			contentSel = ".share-content";
+			pagerSel = ".pager-top";
+		}
+	} else if ($page("blog")) {
+		containerSel = ".blog-home";
+		targetSel = ".blog-home>.list-box,.blog-home>.list-blog";
+		titleSel = ".title-article>strong";
+		contentSel = ".text-article";
+		pagerSel = ".pager-top";
+	}
 	$("@input").attr({type:"button","class":"input-button"}).attr("style","min-height:25px;margin-right:10px").val("搜索").addTo(searchBar).bind("click",function(evt) {
 		try {
 			if(evt.target.value.indexOf("%")!=-1) {
@@ -4319,7 +4327,7 @@ function searchShare() {
 			var text=evt.target.previousElementSibling.value;
 			if(!text || !text.replace(/^ +/,"")) {
 				var i=0;
-				$("#content .share-itembox").each(function() {
+				$(targetSel).each(function() {
 					if(i<20) {
 						$(this).show();
 					} else {
@@ -4327,12 +4335,12 @@ function searchShare() {
 					}
 					i++;
 				});
-				$(".pager-top,.pager-bottom").show();
+				$(".pager-top,.pager-bottom,#pager_buttom").show();
 				return;
 			}
 			// 转换成小写，查找时不分大小写
 			var keywords=text.toLowerCase().split(/ +/);
-			var pager=$pager($(".pager-top"));
+			var pager=$pager($(pagerSel));
 			var curpage=pager.current;
 			var lastpage=pager.last;
 			var cache=false;
@@ -4351,10 +4359,12 @@ function searchShare() {
 				}
 			}
 			evt.target.value="0%";
-			$(".pager-top,.pager-bottom").hide();
-			$(".share-itembox").each(function() {
+			$(".pager-top,.pager-bottom,#pager_buttom").hide();
+			$(targetSel).each(function() {
 				var s=$(this);
-				var content=s.find(".share-content").text().toLowerCase();
+				var content=s.find(contentSel).text().toLowerCase();
+				content+=s.find(titleSel).text().toLowerCase();
+				content+=s.find(".timestamp, .legend .duration").text();
 				for(var i=0;i<keywords.length;i++) {
 					if(content.indexOf(keywords[i])==-1) {
 						break;
@@ -4371,7 +4381,7 @@ function searchShare() {
 				if(cache) {
 					$("#content").attr("cache","");
 				}
-				var link=$(".pager-top ol.pagerpro li:not(.current) a").prop("href").replace(/curpage=[0-9]+/,"").replace(/#.*$/,"");
+				var link=$(pagerSel).find("ol.pagerpro li:not(.current) a").prop("href").replace(/curpage=[0-9]+/,"").replace(/#.*$/,"");
 				if(link.indexOf("?")==-1) {
 					link+="?";
 				}
@@ -4382,7 +4392,7 @@ function searchShare() {
 						$get(link+"&curpage="+i,function(data) {
 							try {
 								var body=$("@div").html(/<body[\S\s]+<\/body>/.exec(data));
-								body.find(".share-itembox").each(function() {
+								body.find(targetSel).each(function() {
 									if(cache) {
 										var s=$(this);
 									} else {
@@ -4392,7 +4402,9 @@ function searchShare() {
 										}
 									}
 									var f=false;
-									var content=s.find(".share-content").text().toLowerCase();
+									var content=s.find(contentSel).text().toLowerCase();
+									content+=s.find(titleSel).text().toLowerCase();
+									content+=s.find(".timestamp, .legend .duration").text();
 									for(var i=0;i<keywords.length;i++) {
 										if(content.indexOf(keywords[i])==-1) {
 											break;
@@ -4408,13 +4420,13 @@ function searchShare() {
 										s.hide();
 									}
 									if(f || cache) {
-										s.addTo($("#content,.share-home"));
+										s.addTo($(containerSel));
 									}
 								});
 								body.find("body").remove();
 								body=null;
 								// 将翻页移动到最下面
-								$("#content .pager-bottom,.share-home .pager-bottom").addTo($("#content,.share-home"));
+								$("#content .pager-bottom,.share-home .pager-bottom").addTo($(containerSel));
 							} catch(ex) {
 								$error("searchShare::get",ex);
 							} finally {
@@ -4440,10 +4452,10 @@ function searchShare() {
 
 // 清空分享
 function delAllShares() {
-	if(!$(".page-title>h1").text().match("我的分享|我的收藏")) {
+	if(!XNR.url.match("//share/share/collection|//share/share/"+XNR.userId)) {
 		return;
 	}
-	$("@a").text("清空列出的分享").addTo($("@div").css({padding:"5px","text-align":"center",cursor:"pointer"}).move("before",$(".j-share-list"))).bind("click",function() {
+	$("@a").text("清空列出的分享").attr("href", "#nogo").addTo($("@div").css({padding:"5px","text-align":"center",cursor:"pointer"}).move("before",$(".j-share-list"))).bind("click",function() {
 		if($(".share-itembox").empty()) {
 			return;
 		}
@@ -6356,7 +6368,7 @@ function main(savedOptions) {
 				],
 				page:"searchEx",
 			},{
-				text:"##增加分享搜索功能##",
+				text:"##增加搜索分享/日志功能##",
 				ctrl:[
 					{
 						id:"searchShare",
@@ -6368,10 +6380,10 @@ function main(savedOptions) {
 						}]
 					},{
 						type:"info",
-						value:"可以根据标题/内容预览中出现的文字搜索自己或他人的分享，支持多个关键词。不要和网站原有的分享搜索混用"
+						value:"可以根据标题/内容预览中出现的文字搜索，支持多个关键词"
 					}
 				],
-				page:"share"
+				page:"share,blog"
 			},{
 				text:"##增加批量清理分享功能",
 				ctrl:[{
@@ -7413,21 +7425,21 @@ function $cookie(name,def) {
  */
 function $page(category,url) {
 	const pages={
-		home:"renren\\.com/[hH]ome|renren\\.com/\\d+$|renren\\.com/\\d+[#?]|/[a-zA-Z0-9\\-]{5,}\\.renren\\.com/|guide\\.renren\\.com/[Gg]uide",	// 首页，后面的是新注册用户的首页
-		feed:"renren\\.com/[hH]ome#?$|renren\\.com/[hH]ome.*#nogo$|renren\\.com/[hH]ome\?[^#]*$|#/home|/homeAttention#*$|/homeAttention[^#]*$|renren\\.com/\\d+$|renren\\.com/\\d+[#?]|/guide\\.renren\\.com/[Gg]uide#?$|#/guide",	// 首页新鲜事，后面的是新注册用户的首页
+		home:"renren\\.com/\\d+$|renren\\.com/\\d+[#?]|/[a-zA-Z0-9\\-]{5,}\\.renren\\.com/|guide\\.renren\\.com/[Gg]uide",	// 首页，后面的是新注册用户的首页
+		feed:"renren\\.com/\\d+$|renren\\.com/\\d+[#?]|/guide\\.renren\\.com/[Gg]uide#?$|#/guide",	// 首页新鲜事，后面的是新注册用户的首页
 		profile:"renren\\.com/[Pp]rofile|renren\\.com/[^/]+/[Pp]rofile|/[a-zA-Z0-9_\\-]{5,}\\.renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|[a-zA-Z0-9_]{5,}\\.renren\\.com/innerProfile|renren\\.com/[a-zA-Z0-9_]{6,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personal/link/
-		blog:"/blog\\.renren\\.com/|#//blog/",	// 日志
+		blog:"/blog\\.renren\\.com/|#//blog/|#!//blog/",	// 日志
 		forum:"/club\\.renren\\.com/",	// 论坛
 		lover:"/lover\\.renren\\.com/",	// 情侣空间
 		lover_blog:"/lover\\.renren\\.com/note/",	// 情侣空间日志
 		pages:"/page\\.renren\\.com/",	// 公共主页
 		page_home:"/page\\.renren\\.com/[^/]+$|page\\.renren\\.com/[^/]+\\?|/page\\.renren\\.com/[^/]+/index",	// 公共主页首页 FIXME 准确否??
 		page_blog:"/page\\.renren\\.com/[^/]+/note/\\d+",	// 公共主页日志
-		status:"/status\\.renren\\.com/|#//status/",	// 状态
+		status:"/status\\.renren\\.com/|#//status/|#!//status/",	// 状态
 		photo:"/photo\\.renren\\.com/getphoto\\.do|/photo\\.renren\\.com/gettagphoto\\.do|/photo\\.renren\\.com/photo/sp/|/photo\\.renren\\.com/photo/[0-9]+/photo-|/photo\\.renren\\.com/photo/[0-9]+/[^/]+/photo-|/page\\.renren\\.com/[^/]+/photo/|event\\.renren\\.com/event/[0-9]+/[0-9]+/photo/[0-9]+|lover\\.renren\\.com/photo/",	// 照片
 		album:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|page\\.renren\\.com/.*/album|/photo/album\\?|photo\\.renren\\.com/photo/ap/|event\\.renren\\.com/event/[0-9]+/photos|event\\.renren\\.com/event/[0-9]+/stars|lover\\.renren\\.com/album/",	// 相册
 		friend:"/friend\\.renren\\.com/",	// 好友
-		share:"/share\\.renren\\.com/|#//share/",	// 分享
+		share:"/share\\.renren\\.com/|#//share/|#!//share/",	// 分享
 		act:"/act\\.renren\\.com/",	// 活动
 		request:"/req\\.renren\\.com/",	// 请求
 		searchEx:"/browse\\.renren\\.com/searchEx\\.do",	// 搜索结果
@@ -8123,6 +8135,7 @@ function $feedType(feed) {
 function $pager(pager) {
 	var curpage=0;
 	var lastpage=0;
+	pager=$(pager);
 	if(pager.exist() && pager.find("li").exist()) {
 		try {
 			curpage=parseInt(pager.find("ol.pagerpro li.current a").text())-1;
