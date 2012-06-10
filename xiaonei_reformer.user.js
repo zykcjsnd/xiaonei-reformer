@@ -4373,7 +4373,7 @@ function searchShare() {
 						cache=true;
 					}
 				} else {
-					if(!window.confirm("分享数太多，估计会卡上一阵子。要继续吗？")) {
+					if(!window.confirm("项目太多，估计会卡上一阵子。要继续吗？")) {
 						return;
 					}
 				}
