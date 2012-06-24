@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.4.484
-// @miniver        484
+// @version        3.3.4.485
+// @miniver        485
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -4726,7 +4726,7 @@ function delAllStatus() {
 	if(!XNR.url.match("\\?id="+XNR.userId)) {
 		return;
 	}
-	$("@a").text("清空列出的状态").addTo($("@div").css({padding:"5px","text-align":"center",cursor:"pointer"}).addTo($("ul.status-list"),0)).bind("click",function() {
+	$("@a").text("清空列出的状态").addTo($("@div").css({padding:"5px","text-align":"center",cursor:"pointer"}).move("before",$("ul.status-list"),0)).bind("click",function() {
 		if($("ul.status-list li a[onclick*='delMyDoing(']").empty()) {
 			return;
 		}
