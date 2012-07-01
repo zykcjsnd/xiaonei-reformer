@@ -702,5 +702,9 @@
   "(nz)": {
     "t": "奶嘴",
     "s": "/imgpro/icons/statusface/nz.gif"
+  },
+  "(hjl)": {
+    "t": "火炬",
+    "s": "/imgpro/icons/statusface/hx.gif"
   }
 }
