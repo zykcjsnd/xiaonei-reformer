@@ -1,3 +1,9 @@
+488:
+fix:处理较新版chrome的CSP限制问题
+
+487:
+fix:使chrome扩展同时支持manifest v1
+
 486:
 fix:改进清理广告功能
 fix:支持去除首页上的应用动态
