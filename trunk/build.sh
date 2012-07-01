@@ -22,6 +22,11 @@ sed -i '3s/"version": "[^"]*"/"version": "'$VER1'"/' manifest.json
 ./pack.sh
 cd ..
 
+cd chromium-extension-v1
+sed -i '3s/"version": "[^"]*"/"version": "'$VER1'"/' manifest.json
+./pack.sh
+cd ..
+
 #######################################
 
 cp "$INPUT" firefox-extension/"$INPUT"
