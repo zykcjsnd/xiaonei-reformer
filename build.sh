@@ -62,4 +62,12 @@ cd ..
 
 #######################################
 
+cp "$OUTPUT" mx3-extension/"$INPUT"
+cd mx3-extension
+sed -i '5s/version": "[^"]*"/version": "'$VER1'"/' def.json
+./pack.sh
+cd ..
+
+#######################################
+
 
