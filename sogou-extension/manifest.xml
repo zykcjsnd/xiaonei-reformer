@@ -11,8 +11,8 @@
 	<background page="background.html"/>
 	<content_scripts>
 		<content_script core_type="webkit" all_frames="true">
-			<match>http://renren.com/*</match>
 			<match>http://*.renren.com/*</match>
+			<match>http://renren.com/*</match>
 			<js>xiaonei_reformer.user.js</js>
 		</content_script>
 	</content_scripts>
