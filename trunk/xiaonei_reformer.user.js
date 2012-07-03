@@ -135,6 +135,25 @@ if(XNR.agent==MAXTHON) {
 	XNR.rt=window.external.mxGetRuntime();
 }
 
+// 针对搜狗的特殊处理
+if(XNR.agent==SOGOU) {
+	XNR.msgHandlers={};
+	XNR.sgSendRequest=function(msg,handler) {
+		do {
+			var reqId=parseInt(Math.random()*100000);
+		} while(XNR.msgHandlers[reqId]!=null);
+		XNR.msgHandlers[reqId]=handler;
+		msg.id=reqId;
+		sogouExplorer.extension.sendRequest(msg);
+	};
+	sogouExplorer.extension.onRequest.addListener(function(request, sender, sendResponse) {
+		if(XNR.msgHandlers[request.id]) {
+			XNR.msgHandlers[request.id].call(window, request.data);
+			delete XNR.msgHandlers[request.id];
+		}
+	});
+}
+
 // 页面工具的简写
 var $=PageKit;
 
@@ -1578,12 +1597,10 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"a,a:link,a:visited,a:hover{color:"+FCOLOR+"}",
 				".msn-login-panel .content p span{color:"+FCOLOR+"}",
 				".extra-guide .portal:hover{color:"+FCOLOR+"}",
-				".navigation{background-color:"+FCOLOR+"}",
 				"td.pop_content .dialog_body a, td.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
 				"td.pop_content .dialog_buttons input{background-color:"+FCOLOR+" !important}",
 				".rrdesk.hover h5 a, .rrdesk.hover a, .rrdesk a.deskbtn{color:"+FCOLOR+" !important}",
 				"ul.square_bullets{color:"+FCOLOR+"}",
-				".nav-other .menu-title a:hover{background-color:"+BCOLOR+"}",
 				"td.pop_content h2{background-color:"+BCOLOR+"}",
 			],
 			"club.css":[
@@ -1618,7 +1635,6 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"td.pop_content .dialog_body a, td.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
 				"td.pop_content .dialog_buttons input{background-color:"+FCOLOR+" !important}",
 				"ul.square_bullets{color:"+FCOLOR+"}",
-				".navigation{background-color:"+FCOLOR+"}",
 				".search-Result li.m-autosug-hover{background-color:"+FCOLOR+"}",
 				".navigation-new #global_inbox_link:hover span.msg-count{color:"+FCOLOR+" !important}",
 				".navigation-new #global_inbox_link:hover span.count{color:"+FCOLOR+" !important}",
@@ -1632,7 +1648,6 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				".group-info .btn-save{background-color:"+FCOLOR+"}",
 				".site-menu-nav .nav-item .create-zhan a:link, .site-menu-nav .nav-item .create-zhan a:visited{color:"+FCOLOR+"}",
 				".site-menu-nav .nav-item .create-zhan a:hover{color:"+FCOLOR+"}",
-				".navigation .menu-title a:hover, .navigation .menu-title a.hover{background-color:"+BCOLOR+"}",
 				"td.pop_content h2{background-color:"+BCOLOR+"}",
 				"#appsMenuPro .my-fav-apps{background-color:"+SCOLOR+"}",
 				"#appsMenuPro .app-item a:hover{background-color:"+SCOLOR+"}",
@@ -1672,12 +1687,9 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 				"td.pop_content .dialog_body a,td.pop_content .dialog_body a:visited{color:"+FCOLOR+"}",
 				"td.pop_content .dialog_buttons input{background-color:"+FCOLOR+" !important}",
 				"td.pop_content h2{background-color:"+FCOLOR+"}",
-				".navigation{background-color:"+XCOLOR+"}",
-				".navigation .menu-title a:hover,.navigation .menu-title a.hover{background-color:"+BCOLOR+"}",
 				".menu-dropdown .menu-item li.show-more a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .menu-item a:hover{background-color:"+FCOLOR+"}",
 				".menu-dropdown .search-menu li a:hover,.menu-dropdown .optionmenu li a:hover{background-color:"+FCOLOR+"}",
-				".navigation .menu-title a:hover{background-color:"+BCOLOR+"}",
 				"#appsMenuPro .menu-apps-side{background-color:"+SCOLOR+"}",
 				"#appsMenuPro .app-item a:hover{background-color:"+SCOLOR+"}",
 				"#appsMenuPro .app-item em{background-color:"+SCOLOR+"}",
@@ -3291,7 +3303,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						unknown:failedImagesList,		// 失败/未知的数据
 						type:linkOnly					// 只显示链接
 					};
-					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS || XNR.agent==OPERA_EXT) {
+					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS || XNR.agent==OPERA_EXT || XNR.agent==SOGOU) {
 						var html="<head><meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+album.title.replace("\\","\\\\").replace("'","\\'")+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style><script>function switchLink(){var links=document.querySelectorAll(\"a[title]:not([title=\\'\\'])\");for(var i=0;i<links.length;i++){if(links[i].textContent!=links[i].title){links[i].textContent=links[i].title}else{links[i].textContent=links[i].href}}};function switchIndex(add,max){var links=document.querySelectorAll(\"*[index]\");for(var i=0;i<links.length;i++){if(add){links[i].title=idx(parseInt(links[i].getAttribute(\"index\"))+1,max)+\" \"+links[i].title}else{links[i].title=links[i].title.replace(/^[0-9]+ /,\"\")}}};function idx(n,max){var i=0;for(;max>0;max=parseInt(max/10)){i++}n=\"00000\"+n;return n.substring(n.length-i,n.length)}</script></head><body>";
 						html+="<p><a target=\"_blank\" href=\"http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum\">下载指南</a>";
 						html+="</p><p>来源："+album.ref+"</p>";
@@ -3354,8 +3366,6 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						XNR_album(album);
 					} else if(XNR.agent==CHROME) {
 						chrome.extension.sendRequest({action:"album",data:album});
-					} else if(XNR.agent==SOGOU) {
-						sogouExplorer.extension.sendRequest({action:"album",data:album});
 					} else if(XNR.agent==SAFARI) {
 						safari.self.tab.dispatchMessage("xnr_album",album);
 					} else if(XNR.agent==MAXTHON) {
@@ -7823,13 +7833,11 @@ function $get(url,func,userData,method) {
 			}
 			break;
 		case SOGOU:
-			if(func==null) {
-				sogouExplorer.extension.sendRequest({action:"get",url:url,method:method});
-			} else {
-				sogouExplorer.extension.sendRequest({action:"get",url:url,method:method},function(response) {
-					func.call(window,response.data,url,userData);
-				});
-			}
+			XNR.sgSendRequest({action:"get",url:url,method:method}, function(data) {
+				if(func!=null) {
+					func.call(window,data,url,userData);
+				}
+			});
 			break;
 		case SAFARI:
 			// 在safari 5.1.x中，如果请求发送自扩展，无法同时发送对应页面已有的cookie
@@ -7885,7 +7893,7 @@ function $get(url,func,userData,method) {
 				$script(code);
 			} else {
 				// 由于发送和接收消息是分离的，随机ID确保联系
-				var requestId=Math.random();
+				var requestId=parseInt(Math.random()*1000000);
 				if(func!=null) {
 					safari.self.addEventListener("message",function(msg) {
 						if(msg.name=="xnr_get_data" && msg.message.id==requestId) {
