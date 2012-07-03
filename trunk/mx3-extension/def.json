@@ -1,0 +1,36 @@
+[{
+	"type": "extension",
+	"frameworkVersion": "1.0.6",
+	"guid": "{8666FCBA-F584-4398-BBA5-A050A4C7CF75}",
+	"version": "3.3.4.489",
+	"author": {
+		"name": "xz",
+		"email": "xnreformer@gmail.com"
+	},
+	"title": {
+		"en": "Renren Reformer",
+		"zh-cn": "人人网改造器",
+		"zh-tw": "人人網改造器"
+	},
+	"description": {
+		"en": "Enhance your experience on renren.com",
+		"zh-cn": "改造你的人人网",
+		"zh-tw": "改造你的人人網",
+	},
+	"permissions": {
+		"httpRequest": [
+			"*.renren.com",
+			"renren.com",
+			"xiaonei-reformer.googlecode.com"
+		],
+	},
+	"actions": [
+		{
+			"type": "script",
+			"entryPoints": [ "doc_start" ],
+			"include": [ "*.renren.com", "renren.com" ],
+			"js": [ "xiaonei_reformer.user.js" ],
+			"includeFrames": true
+		}
+	]
+}]

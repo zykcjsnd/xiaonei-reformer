@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.4.486
-// @miniver        486
+// @version        3.3.4.489
+// @miniver        489
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -61,7 +61,7 @@ XNR.url=document.location.href;
 XNR.options={};
 
 // 当前运行环境（浏览器）
-const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4,SAFARI=8,OPERA_UJS=16,OPERA_EXT=32,SOGOU=128;
+const UNKNOWN=0,USERSCRIPT=1,FIREFOX=2,CHROME=4,SAFARI=8,OPERA_UJS=16,OPERA_EXT=32,SOGOU=128,MAXTHON=256;
 const GECKO=1,WEBKIT=2,PRESTO=4;
 XNR.agent=UNKNOWN;
 XNR.acore=UNKNOWN;
@@ -88,6 +88,9 @@ if (typeof GM_getResourceURL=="function") {
 } else if (typeof XNR_save=="function") {
 	XNR.agent=FIREFOX;
 	XNR.acore=GECKO;
+} else if (window.external && typeof window.external.mxGetRuntime=="function") {
+	XNR.agent=MAXTHON;
+	XNR.acore=WEBKIT;
 }
 
 // 针对Opera的特殊处理
@@ -125,6 +128,11 @@ if(XNR.acore==PRESTO) {
 		// opera用户JS的存储空间，需要在第一次执行时留个引用
 		XNR.scriptStorage=window.opera.scriptStorage;
 	}
+}
+
+// 针对Maxthon的特殊处理
+if(XNR.agent==MAXTHON) {
+	XNR.rt=window.external.mxGetRuntime();
 }
 
 // 页面工具的简写
@@ -3350,6 +3358,8 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						sogouExplorer.extension.sendRequest({action:"album",data:album});
 					} else if(XNR.agent==SAFARI) {
 						safari.self.tab.dispatchMessage("xnr_album",album);
+					} else if(XNR.agent==MAXTHON) {
+						XNR.rt.create("mx.browser").tabs.newTab({url:XNR.rt.getPrivateUrl()+"album.html#"+encodeURIComponent(JSON.stringify(album)),position:"afterCurrrent"});
 					}
 				}
 				$dealloc("download_album");
@@ -7754,6 +7764,10 @@ function $save(name,value) {
 			break;
 		case OPERA_EXT:
 			XNR.oexSendRequest({action:"save",data:opts});
+			break;
+		case MAXTHON:
+			XNR.rt.storage.setConfig("options", opts);
+			break;
 	}
 };
 
@@ -7916,6 +7930,26 @@ function $get(url,func,userData,method) {
 				XNR.oexSendRequest(req,function(response) {
 					func.call(window,response,url,userData);
 				});
+			}
+			break;
+		case MAXTHON:
+			var httpReq=new XMLHttpRequest();
+			if (func!=null) {
+				httpReq.onload=function() {
+					func.call(window,(httpReq.status==200?httpReq.responseText:null),url,userData);
+				};
+				httpReq.onerror=function(e) {
+					func.call(window,null,url,userData);
+				};
+			}
+			httpReq.open(method,url,true);
+			try {
+				httpReq.send();
+			} catch(ex) {
+				$error("$get",ex);
+				if (func!=null) {
+					func.call(window,null,url,userData);
+				}
 			}
 			break;
 	} 
@@ -8911,6 +8945,15 @@ switch(XNR.agent) {
 				main({});
 			}
 		});
+		break;
+	case MAXTHON:
+		var opts=XNR.rt.storage.getConfig("options");
+		try {
+			opts=JSON.parse(opts);
+		} catch(ex) {
+			opts={};
+		}
+		main(opts);
 		break;
 	default:
 		throw "unsupported browser";
