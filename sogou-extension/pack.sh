@@ -1,4 +1,4 @@
 #!/bin/sh -
 
-rm -f ../xiaonei-reformer.sext
-zip -r ../xiaonei-reformer.sext `find -type f | grep -Ev ".svn|pack.sh"`
+rm -f ../xiaonei_reformer-sogou.sext
+zip -r ../xiaonei_reformer-sogou.sext `find -type f | grep -Ev ".svn|pack.sh"`
