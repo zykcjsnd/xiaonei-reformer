@@ -77,7 +77,7 @@ function switchIndex(add) {
 	var links=document.querySelectorAll("*[index]");
 	for(var i=0;i<links.length;i++) {
 		if(add) {
-			links[i].title=idx(parseInt(links[i].getAttribute("index"))+1,max)+" "+links[i].title;
+			links[i].title=idx(parseInt(links[i].getAttribute("index")),max)+" "+links[i].title;
 		} else {
 			links[i].title=links[i].title.replace(/^[0-9]+ /,"");
 		}
@@ -95,7 +95,7 @@ function idx(n,max) {
 
 document.addEventListener("DOMContentLoaded", function() {
 	$("#switchLink").addEventListener("click", switchLink);
-	$("#switchLink").addEventListener("click", function(event) {
+	$("#switchIndex").addEventListener("click", function(event) {
 		switchIndex(event.target.checked)
 	});
 	showPhotos();

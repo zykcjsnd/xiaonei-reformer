@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.3.4.486</string>
+	<string>3.4.0.491</string>
 	<key>CFBundleVersion</key>
-	<string>486</string>
+	<string>491</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Database Quota</key>
@@ -44,7 +44,7 @@
 		</array>
 	</dict>
 	<key>Description</key>
-	<string>为人人网（renren.com，原校内网 xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复旧的深蓝色主题，增加更多功能…</string>
+	<string>让人人网（renren.com）用起来舒服一点</string>
 	<key>ExtensionInfoDictionaryVersion</key>
 	<string>1.0</string>
 	<key>Permissions</key>
