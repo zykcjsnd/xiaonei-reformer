@@ -2,8 +2,8 @@
 <extension>
 	<id>com.googlecode.xiaoneireformer</id>
 	<name>人人网改造器</name>
-	<description>人人网改造器测试</description>
-	<version>3.3.4.486</version>
+	<description>让人人网（renren.com）用起来舒服一点</description>
+	<version>3.4.0.491</version>
 	<author>xz</author>
 	<show_icon>false</show_icon>
 	<request_api_version>1</request_api_version>

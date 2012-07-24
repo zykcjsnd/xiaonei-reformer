@@ -706,5 +706,13 @@
   "(hjl)": {
     "t": "火炬",
     "s": "/imgpro/icons/statusface/hx.gif"
+  },
+  "(禅师)": {
+    "t": "禅师",
+    "s": "/imgpro/icons/statusface/chsh.gif"
+  },
+  "(冰棒)": {
+    "t": "冰棒",
+    "s": "/imgpro/icons/statusface/dbb.gif"
   }
 }

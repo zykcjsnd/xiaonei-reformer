@@ -5,9 +5,9 @@
 // @include        http://*.renren.com/*
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
-// @description    为人人网（renren.com，原校内网xiaonei.com）清理广告、新鲜事、各种烦人的通告，删除页面模板，恢复早期的深蓝色主题，增加更多功能……
-// @version        3.3.4.489
-// @miniver        489
+// @description    让人人网（renren.com）用起来舒服一点
+// @version        3.4.0.491
+// @miniver        491
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -45,8 +45,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.3.4.486";
-XNR.miniver=486;
+XNR.version="3.4.0.491";
+XNR.miniver=491;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -318,19 +318,25 @@ function removePagesMusicPlayer() {
 };
 
 
-// 隐藏底部工具栏
-function removeBottomBar() {
-	const target="#bottombar, #imengine";
+// 隐藏底部工具栏中的好友列表
+function removeFriendList() {
+	const target="#friends-panel";
 	$patchCSS(target+"{display:none !important}");
 };
 
+// 隐藏底部工具栏中的人人电台
+function removeRadioPlayer() {
+	const target="#webpager-miniradio";
+	$patchCSS(target+"{display:none !important}");
+};
 
 function removeHomeGadgets(gadgetOpt) {
 	const gadgets={
 		"topNotice":".notice-holder, #notice_system",		// 顶部通知
 		"footprint":"#footPrint",	// 最近来访
-		"recommendApp":".site-menu-apps.recommend",	// 推荐应用，v5版主页
 		"appState": "#appDynamic",	// 应用动态
+		"recommendApp": ".app-center-popup,#apps-count",	// 应用推荐
+		"vipToolbox": "#vipToolBox",	// 会员专区
 		"recommendGift":"#recommendGift",	// 推荐礼物
 		"newFriends":"#recommendFriends,#pymk_home,#pymk_home_2,.pymk.pymk-home,.find-friend-box,#myknowfriend_user",	// 好友推荐，后面2个是新注册用户页面上的
 		"schoolBeauty":"#schoolBeautyBox,#xiaoTaoHua",	// 校花校草
@@ -345,7 +351,6 @@ function removeHomeGadgets(gadgetOpt) {
 	const filters={
 		"webFunction":{t:".side-item",f:".web-function"},	// 站内功能
 		"publicPageAdmin":{t:".site-menu-apps",f:".site-menu-apps-admins"},	// 主页管理
-		"recommendApp":{t:".site-menu-apps",f:".site-menu-apps-recommend"},	// 推荐应用
 	};
 
 	if(!$allocated("home_gadgets")) {
@@ -364,7 +369,6 @@ function removeHomeGadgets(gadgetOpt) {
 
 	if(gadgetOpt["appList"]) {
 		$patchCSS("#site-menu-apps-nav{display:none}"); // 应用列表
-		$patchCSS(".site-menu-nav-box>.site-menu-apps:not(.recommend){display:none}"); // 应用列表，v5主页
 	}
 
 	$wait(1,function() {
@@ -896,53 +900,6 @@ function autoCheckFeeds(feedFilter,badTitles,badIds,goodIds,checkReply) {
 	// 每隔90秒检查一次
 	const interval=90;
 
-	// 在bottombar上建立一个新的接收区域
-	if($("#bottombar").exist()) {
-		(function() {
-			if($("#webpager #setting-panel").empty()) {
-				// 底部工具栏尚未建立完毕，继续等待
-				setTimeout(arguments.callee,1000);
-				return;
-			}
-			var root=$("@div").attr("class","popupwindow notify-panel").addTo($("@div").attr({"class":"panel",id:"feed-panel"}).move("before",$("#webpager #setting-panel")));
-			var Btn=$("@div").attr("class","panelbarbutton").addTo(root);
-			$("@img").attr({"class":"icon",height:"16",width:"16",src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA4klEQVQ4y61TsQrCQAztp9lCO3dz82N0cXFydXIWP0LE3Q/QxVEoR0Fpz15P3sGlSWlpix6EvOSSl9ccDYJ/nNnyZBfro53iqRmJ3fnmbHW42O31PiomEgBcwHjhUEwE881eSPNxG7fv4UlBXddkxhiLw+Oq+ogYXnwCCjxR13SOfT0pAODMuATmk31sjXI5rXW3AhT1Teb4VWipQClFCvj0tiqPxQ7SNHWMY3cAjHr0iVcY2gHPP7J3oyAMQ5sX2eQdoM8RxHFsn3kp3rlvB1xVkiTN/wA2b1EUCevKieZfzxcMt3dNdxsqQQAAAABJRU5ErkJggg%3D%3D",alt:"新鲜事",title:"新鲜事"}).addTo(Btn);
-			$("@div").attr({id:"feed_toread_tip","class":"buttontooltip",style:"display:none"}).add($("@strong").attr("id","feed_toread_num").text("0")).addTo(Btn);
-			var list=$("@article").attr("class","window").css({right:"-84px",width:"280px"}).html('<header><h4>新的新鲜事</h4><menu><command title="最小化" label="最小化" class="minimize"></command></menu></header><section><p style="padding:5px;">没有新的新鲜事</p><div class="notification" style="display:none"></div></section>').addTo(root);
-			Btn.bind("click",function(evt) {
-				var root=$("#webpager #feed-panel .notify-panel");
-				var list=$("#webpager #feed-panel .window");
-				if(root.attr("class").indexOf("actived")!=-1) {
-					list.hide();
-					root.removeClass("actived");
-				} else {
-					list.show();
-					root.addClass("actived");
-				}
-				root.find("#feed_toread_tip").hide();
-				root.find("#feed_toread_num").text("0");
-			});
-			list.find("command").bind("click",function(evt) {
-				$("#webpager #feed-panel .window").hide();
-				$("#webpager #feed-panel .notify-panel").removeClass("actived");
-				// 清空计数
-				$("#feed_toread_num").text("0");
-				$("#feed_toread_tip").hide();
-			});
-			list.find(".notification").bind("DOMNodeRemoved",function(evt) {
-				var node=$(evt.relatedNode);
-				if(node.heirs()<=1) {
-					// 事件触发时节点还没有删掉
-					node.hide();
-					node.sibling(-1).show();
-				}
-				// 清空计数
-				$("#feed_toread_num").text("0");
-				$("#feed_toread_tip").hide();
-			});
-		})();
-	}
-
 	(function(fTime) {
 		// 应该用post，不过get也行
 		$get("http://www.renren.com/feedretrieve2.do?p=0",function(html,url,firstTime) {
@@ -1113,40 +1070,23 @@ function autoCheckFeeds(feedFilter,badTitles,badIds,goodIds,checkReply) {
 					return;
 				}
 
-				// 很好，可以直接加到工具栏中
-				if($("#webpager #feed_toread_tip").exist()) {
-					var root=$("#webpager #feed-panel .window>section>.notification");
-					root.sibling(-1).hide();
-					root.show();
-					for(var i=feedArray.length-1;i>=0;i--) {
-						var feedInfo=feedArray[i];
-						var article=$("@article").attr("class","iconpanel").attr("id",feedInfo.id).addTo(root,0);
-						var header=$("@header").html("<img class='icon' height='16' width='16' src='"+feedInfo.icon+"'/><menu><command class='delete' closebtn='true' title='删除' onclick='var n=this.parentNode.parentNode.parentNode;n.parentNode.removeChild(n);'/></menu>").addTo(article);
-						// 内容
-						$("@section").add($("@p").html(feedInfo.text)).addTo(article);
-					}
-					// 计数
-					$("#feed_toread_num").text(feedArray.length+parseInt($("#feed_toread_num").text()));
-					$("#feed_toread_tip").show();
-				} else {
-					// 底部工具栏靠不住，自己建立一个窗口
-					var root=$("#xnr_newfeeds");
-					if(root.empty()) {
-						root=$("@div").attr({style:"position:fixed;bottom:10px;right:10px;width:250px;z-index:100000;background:#EBF3F7;border:#3B5888 solid 1px;",id:"xnr_newfeeds"}).add($("@div").css({padding:"3px",background:"#3B5998"}).html("<span style='color:white;font-weight:bold'>您有新的新鲜事</span><a style='float:right;cursor:pointer;color:white' onclick='document.body.removeChild(document.getElementById(\"xnr_newfeeds\"));'>关闭</a>")).add($("@div").attr("style","max-height:200px;padding-left:5px;padding-right:5px;overflow-y:auto").add($("@ul").attr("style","margin:0px;padding:0px;list-style-type:none"))).addTo(document.body);
-					}
-
-					var list=root.find("ul");
-					if(list.heirs()>0) {
-						list.child(-1).css("borderBottom","1px solid #AAAAAA");
-					}
-
-					for(var i=feedArray.length-1;i>=0;i--) {
-						var feedInfo=feedArray[i];
-						// 内容
-						$("@li").attr({style:"padding-top:5px;padding-bottom:5px;border-bottom:1px solid #AAAAAA;",id:feedInfo.id}).add($("@img").attr({width:"16px",height:"16px",src:feedInfo.icon,style:"float:left"})).add($("@div").css("paddingLeft","20px").html(feedInfo.text)).addTo(list);
-					}
-					list.child(-1).css("borderBottom","");
+				// 底部工具栏靠不住，自己建立一个窗口
+				var root=$("#xnr_newfeeds");
+				if(root.empty()) {
+					root=$("@div").attr({style:"position:fixed;bottom:10px;right:10px;width:250px;z-index:100000;background:#EBF3F7;border:#3B5888 solid 1px;",id:"xnr_newfeeds"}).add($("@div").css({padding:"3px",background:"#3B5998"}).html("<span style='color:white;font-weight:bold'>您有新的新鲜事</span><a style='float:right;cursor:pointer;color:white' onclick='document.body.removeChild(document.getElementById(\"xnr_newfeeds\"));'>关闭</a>")).add($("@div").attr("style","max-height:200px;padding-left:5px;padding-right:5px;overflow-y:auto").add($("@ul").attr("style","margin:0px;padding:0px;list-style-type:none"))).addTo(document.body);
 				}
+
+				var list=root.find("ul");
+				if(list.heirs()>0) {
+					list.child(-1).css("borderBottom","1px solid #AAAAAA");
+				}
+
+				for(var i=feedArray.length-1;i>=0;i--) {
+					var feedInfo=feedArray[i];
+					// 内容
+					$("@li").attr({style:"padding-top:5px;padding-bottom:5px;border-bottom:1px solid #AAAAAA;",id:feedInfo.id}).add($("@img").attr({width:"16px",height:"16px",src:feedInfo.icon,style:"float:left"})).add($("@div").css("paddingLeft","20px").html(feedInfo.text)).addTo(list);
+				}
+				list.child(-1).css("borderBottom","");
 			} catch(ex) {
 				$error("autoCheckFeeds",ex);
 			}
@@ -2119,6 +2059,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(fl)":		{t:"花仙子",		s:"/imgpro/icons/statusface/hanago.gif"},
 		"(cap)":	{t:"学位帽",		s:"/imgpro/icons/statusface/mortarboard.gif"},
 		"(ice)":	{t:"冰棍儿",		s:"/imgpro/icons/statusface/ice-cream.gif"},
+		"(冰棒)":	{t:"冰棒",			s:"/imgpro/icons/statusface/dbb.gif"},
 		"(gs)":		{t:"园丁",			s:"/imgpro/icons/statusface/growing-sapling.gif"},
 		"(ga)":		{t:"园丁",			s:"/imgpro/icons/statusface/gardener.gif"},
 		"(yt)":		{t:"光棍油条",		s:"/imgpro/icons/statusface/youtiao.gif"},
@@ -2202,6 +2143,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(th)":		{t:"惊叹号",		s:"/imgpro/icons/statusface/exclamation.gif"},
 		"(cb)":		{t:"蟹蟹",			s:"/imgpro/icons/statusface/crab.gif"},
 		"(see)":	{t:"看海",			s:"/imgpro/icons/statusface/seesea.gif"},
+		"(禅师)":	{t:"禅师",			s:"/imgpro/icons/statusface/chsh.gif"},
 	};
 	var eEmList={
 		"(gq)":		{t:"国庆快乐",		s:"/imgpro/icons/statusface/nationalday2010.gif"},
@@ -5150,16 +5092,27 @@ function main(savedOptions) {
 			},{
 				text:"##隐藏底部好友在线列表##",
 				ctrl:[{
-					id:"removeBottomBar",
+					id:"removeFriendList",
 					value:false,
 					fn:[{
-						name:removeBottomBar,
+						name:removeFriendList,
 						stage:0,
 						fire:true,
 					}],
 				},{
 					type:"warn",
 					value:"启用此功能并不会使你不出现在别人的在线好友列表，并且还会导致你无法看到别人对你发起的在线对话"
+				}]
+			},{
+				text:"##隐藏底部人人电台",
+				ctrl:[{
+					id:"removeRadioPlayer",
+					value:false,
+					fn:[{
+						name:removeRadioPlayer,
+						stage:0,
+						fire:true,
+					}],
 				}]
 			},{
 				text:"##",
@@ -5193,6 +5146,10 @@ function main(savedOptions) {
 						id:"appState",
 						text:"##应用动态",
 						value:false,
+					},{
+						id:"vipToolbox",
+						text:"##会员专区",
+						value:false
 					},{
 						id:"recommendGift",
 						text:"##礼物推荐",
@@ -7161,7 +7118,7 @@ function main(savedOptions) {
 		var icons_opera='data:image/png;base64,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%3D';
 		// 生成选项菜单
 		var menuHTML='<style type="text/css">.xnr_op{width:500px;position:fixed;z-index:200000;color:black;font-size:12px;background:rgba(0,0,0,0.5);padding:10px;-moz-border-radius:8px;border-radius:8px}.xnr_op *{padding:0;margin:0;line-height:normal}.xnr_op h1{font-size:18px;font-weight:bold}.xnr_op a{color:#3B5990}.xnr_op table{width:100%;border-collapse:collapse}.xnr_op .title{padding:4px;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none;cursor:default}.xnr_op .btns{background:#F0F5F8;text-align:right;border-top:1px solid lightgray}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px;cursor:pointer}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .ok:active{border-color:#124680 #B8D4E8 #B8D4E8 #124680}.xnr_op .cancel{background:#F0F0F0;border-color:white #848484 #848484 white;color:black}.xnr_op .cancel:active{border-color:#848484 white white #848484}.xnr_op .options{height:300px;background:#FFFFFA;clear:both}.xnr_op .category{width:119px;border-right:1px solid lightgray;overflow-x:hidden;overflow-y:auto;height:300px;float:left}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages{width:380px;margin-left:120px}.xnr_op .p{overflow:auto;height:280px;padding:10px}.xnr_op .p>div{min-height:19px;padding:2px 0;width:100%}.xnr_op .p>div *{vertical-align:middle}.xnr_op .group{margin-left:5px;margin-top:3px;table-layout:fixed}.xnr_op .group td{padding:2px 0}.xnr_op input[type="checkbox"]{margin-right:4px;cursor:pointer}.xnr_op button{background-color:#EFEFEF;background:-moz-linear-gradient(top,#FDFCFB,#E7E2DB);background:-o-linear-gradient(top,#FDFCFB,#E7E2DB);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#E7E2DB));color:black;border-color:#877C6C #A99D8C #A99D8C;border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;font-size:12px;padding:'+(XNR.acore==GECKO?1:3)+'px}.xnr_op button:hover:not([disabled]){background-color:#CCC4B9;background:-moz-linear-gradient(top,#FDFCFB,#CCC4B9);background:-o-linear-gradient(top,#FDFCFB,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#CCC4B9))}.xnr_op button[disabled]{color:grey}.xnr_op button:active:not([disabled]){background:#C1BDB6;background:-moz-linear-gradient(top,#C1BDB6,#CCC4B9);background:-o-linear-gradient(top,#C1BDB6,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#C1BDB6),to(#CCC4B9))}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op .p span{cursor:default}.xnr_op span[tooltip]{margin:0 2px;height:16px;width:16px;display:inline-block;cursor:help}.xnr_op span.info{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAuUlEQVQ4y2NgoDbQ9upiiK5eznD17sv/yDi2ajlYDi9wSZ+NoREdu2bNxa7ZJnkWXHPepH1YMUzeNnU6prPRNaMDdEOU3boRBoSWLWXApxmbIRHlyxAG4LIdFx+mHqcByBifNwgagE0zWQbgig24AWFogUgIgxNW7QpEIIKiBJsr8DlfxXMSalpwTpuJPyFN2ItIjXlzsKdGx9h2gknZLqYFf37gktJmCM2dhGFQaE4/A6eYKtUzLwMAfM0C2p5qSS4AAAAASUVORK5CYII%3D")}.xnr_op span.warn{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA1ElEQVQ4y2NgoCVYz8BgsJyBwYQszUCNsv8ZGP6D8FIGBlWSDYBphmGSNC9jYNAGabqUkvL/cmYm2IAlDAympNsOA6S4YjUDgxVI8dX8fLj+6+XlYAPWsbB4kGQ7hMtAvCvWsrN7gxRdq6jAMOBWSwvYgE1sbJFE+x3FBUiuaGBgYMKp+Xpz839c4P7UqWA1QJfmomgGmYgR8thcgOSKmQwMrBi23+js/E8IPJ47FyNAudBTHbEY7gJjBgbdDgaG7k4GhqmEcDcDw2Qg7ogA5hWq5FgAlMwfVWL5pDoAAAAASUVORK5CYII%3D")}.xnr_op input:not([type]),.xnr_op textarea{border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;padding:1px;border-color:#877C6C #A99D8C #A99D8C}.xnr_op input:not([type]):focus,.xnr_op textarea:focus{border-color:#3A6389;-moz-box-shadow:inset 0 0 1px #005EAC;-webkit-box-shadow:inset 0 0 1px #005EAC;box-shadow:inset 0 0 1px #005EAC}.xnr_op textarea{resize:none;-moz-resize:none}.xnr_op .fp{text-align:center;vertical-align:middle;width:400px;height:300px;display:table-cell}.xnr_op .fp>*{padding:5px}.xnr_op .icons>a{margin:8px}.xnr_op .icons img{width:29px}.xnr_op .icons img:hover{-webkit-transform:scale(1.1);-moz-transform:scale(1.1);-o-transform:scale(1.1)}</style>';
-		menuHTML+='<div class="title">改造选项</div><div class="options"><div class="category"><ul>'+categoryHTML+'</ul></div><div class="pages"><div class="fp"><h1>人人网改造器 '+XNR.version+'</h1><p><b>Copyright © 2008-2012</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p><p class="icons"><a href="http://userscripts.org/scripts/show/45836" title="GreaseMonkey脚本" target="_blank"><img src="'+icons_gm+'"/></a><a href="https://chrome.google.com/extensions/detail/bafellppfmjodafekndapfceggodmkfc" title="Chrome/Chromium扩展" target="_blank"><img src="'+icons_chrome+'"/></a><a href="https://addons.mozilla.org/firefox/addon/162178" title="Firefox扩展" target="_blank"><img src="'+icons_fx+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Safari扩展" target="_blank"><img src="'+icons_safari+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Opera用户脚本" target="_blank"><img src="'+icons_opera+'"/></a></p></div></div></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div>';
+		menuHTML+='<div class="title">改造选项</div><div class="options"><div class="category"><ul>'+categoryHTML+'</ul></div><div class="pages"><div class="fp"><h1>人人网改造器 '+XNR.version+'</h1><p><b>Copyright © 2008-2012</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p><p class="icons"><a href="http://userscripts.org/scripts/show/45836" title="GreaseMonkey脚本" target="_blank"><img src="'+icons_gm+'"/></a><a href="https://chrome.google.com/extensions/detail/bafellppfmjodafekndapfceggodmkfc" title="Chrome/Chromium扩展" target="_blank"><img src="'+icons_chrome+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Firefox扩展" target="_blank"><img src="'+icons_fx+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Safari扩展" target="_blank"><img src="'+icons_safari+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Opera扩展" target="_blank"><img src="'+icons_opera+'"/></a></p></div></div></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div>';
 	
 		var menu=$("@div").attr("class","xnr_op").css("display","none").html(menuHTML).addTo(document);
 		// 添加类别页，绑定提示信息事件

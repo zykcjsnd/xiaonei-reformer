@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<widget xmlns="http://www.w3.org/ns/widgets" version="3.3.4.486" id="extensions:xiaonei-reformer" defaultlocale="zh-cn">
+<widget xmlns="http://www.w3.org/ns/widgets" version="3.4.0.491" id="extensions:xiaonei-reformer" defaultlocale="zh-cn">
 	<name xml:lang="en">Xiaonei Reformer</name>
 	<name xml:lang="zh-cn">人人网改造器</name>
 	<description xml:lang="en">enhance your experience on renren.com (formerly xiaonei.com)</description>
-	<description xml:lang="zh-cn">改造你的人人网！</description>
+	<description xml:lang="zh-cn">让人人网（renren.com）用起来舒服一点</description>
 	<author href="http://xiaonei-reformer.googlecode.com/" email="xnreformer@gmail.com">xz</author>
 	<license href="http://www.gnu.org/licenses/gpl-3.0.html">GNU General Public License version 3</license>
 	<icon src="icons/logo_64.png"/>
