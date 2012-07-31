@@ -4,6 +4,10 @@
 
 <font color="red">将以下列出的页面样式复制粘贴到改造器中“改造界面”->"自定义页面样式"下的编辑框中</font>
 
+==去除奥运话题==
+{{{
+#olympic-pop,#olympic-hot-news,.today-guess,a[href*='olympic2012']{display:none !important}
+}}}
 
 ==Facebook风格的个人主页==
 {{{
