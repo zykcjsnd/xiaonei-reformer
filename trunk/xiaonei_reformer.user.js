@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.0.491
-// @miniver        491
+// @version        3.4.0.492
+// @miniver        492
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -660,7 +660,7 @@ function ignoreNotification() {
 
 
 // 隐藏特定类型/标题新鲜事
-function hideFeeds(evt,feeds,mark,badTitles,badIds,goodIds,hideOld,hideDays) {
+function hideFeeds(evt,feeds,mark,badTitles,badSources,badIds,goodIds,hideOld,hideDays) {
 	if(evt && evt.target.tagName!="ARTICLE") {
 		return;
 	}
@@ -682,6 +682,7 @@ function hideFeeds(evt,feeds,mark,badTitles,badIds,goodIds,hideOld,hideDays) {
 		var fh3=feed.find("h3");
 		var fshareTitle=feed.find(".content").find(".title,.video-title,.blog-title,.link-title").text();
 		var fstatus=feed.find(".content .original-stauts");
+		var source=feed.find(".details .legend span.from").text().replace(/\s/g,"").replace(/^通过|发布$/g,"");
 		if(goodIds && fh3.find(gidFilter).exist()) {
 			return false;
 		}
@@ -693,6 +694,11 @@ function hideFeeds(evt,feeds,mark,badTitles,badIds,goodIds,hideOld,hideDays) {
 				return true;
 			}
 			if(fstatus.exist() && fstatus.text().replace(/\s/g,"").match(badTitles)) {
+				return true;
+			}
+		}
+		if(badSources) {
+			if(source && badSources.replace(/\s/g,"").split("|").indexOf(source)>=0) {
 				return true;
 			}
 		}
@@ -896,7 +902,7 @@ function showFeedToolbar() {
 };
 
 // 自动检查提醒新鲜事更新
-function autoCheckFeeds(feedFilter,badTitles,badIds,goodIds,checkReply) {
+function autoCheckFeeds(feedFilter,badTitles,badSources,badIds,goodIds,checkReply) {
 	// 每隔90秒检查一次
 	const interval=90;
 
@@ -932,6 +938,7 @@ function autoCheckFeeds(feedFilter,badTitles,badIds,goodIds,checkReply) {
 					var fh3=feed.find("h3");
 					var fshareTitle=feed.find(".content").find(".title,.video-title,.blog-title").text();
 					var fstatus=feed.find(".content .original-stauts");
+					var source=feed.find(".details .legend span.from").text().replace(/\s/g,"").replace(/^通过|发布$/g,"");
 					if(goodIds && fh3.find(gidFilter).exist()) {
 						// 在白名单上
 						continue;
@@ -949,6 +956,12 @@ function autoCheckFeeds(feedFilter,badTitles,badIds,goodIds,checkReply) {
 						}
 						if(fstatus.exist() && fstatus.text().replace(/\s/g,"").match(badTitles)) {
 							// 转发的状态也算做标题
+							feed.remove();
+							continue;
+						}
+					}
+					if(badSources) {
+						if(source && badSources.replace(/\s/g,"").split("|").indexOf(source)>=0) {
 							feed.remove();
 							continue;
 						}
@@ -3395,7 +3408,7 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 				break;
 		}
 		if(!thumbnail || thumbnail.match("/large|_large|large_|original_|/photos/0/0/|/page_pic/|/homeAd/|/[sa]\\.xnimg\\.cn/|app\\.xnimg\\.cn|/L[^/]+$")) {
-			if(/large|original/.test(thumbnail) && t.tagName=="IMG" && (t.naturalWidth > t.width || t.naturalHeight > t.height)) {
+			if(/large|original/.test(thumbnail) && t.tagName=="IMG" && (t.naturalWidth * 0.8 > t.width || t.naturalHeight * 0.8 > t.height)) {
 				// 已经是大图了，只是被限制了大小
 				imgId=thumbnail.substring(thumbnail.lastIndexOf("_"));
 				_showViewer(evt.pageX,thumbnail,imgId,autoShrink,true);
@@ -4155,7 +4168,7 @@ function enableShortcutMenu(evt) {
 		if(t.tagName=="SPAN" && t.childElementCount==0 && !t.nextElementSibling && !t.previousElementSibling && t.parentNode.tagName=="A") {
 			t=t.parentNode;
 		}
-		if(t.tagName!="A" || (!/\/profile\.do\?/.test(t.href) && !/\/\/www\.renren\.com\/g\//.test(t.href) && !/\/www\.renren\.com\/\d+$|\/www\.renren\.com\/\d+[?#]/.test(t.href))) {
+		if(t.tagName!="A" || (!/\/profile\.do\?/.test(t.href) && !/\/\/www\.renren\.com\/g\//.test(t.href) && !/\/www\.renren\.com\/\d+$|\/www\.renren\.com\/\d+[?#]/.test(t.href) && !/\/\d+\/profile\?/.test(t.href))) {
 			return;
 		}
 		if(t.id || /#|&v=/.test(t.href) || t.style.backgroundImage) {
@@ -5411,7 +5424,7 @@ function main(savedOptions) {
 					fn:[{
 						name:hideFeeds,
 						stage:1,
-						args:[null,"@feedGroup","@markFeedAsRead","@forbiddenFeedTitle","@forbiddenFeedId","@trustedFeedId","@hideOldFeeds","@oldFeedDays"],
+						args:[null,"@feedGroup","@markFeedAsRead","@forbiddenFeedTitle","@forbiddenFeedSource","@forbiddenFeedId","@trustedFeedId","@hideOldFeeds","@oldFeedDays"],
 						trigger:{"div.feed-list":"DOMNodeInserted"},
 					}],
 				}],
@@ -5562,6 +5575,22 @@ function main(savedOptions) {
 						type:"br"
 					},{
 						id:"forbiddenFeedTitle",
+						value:"",
+						type:"input",
+						style:"margin-left:5px;width:310px"
+					}
+				],
+				page:"feed,profile"
+			},{
+				text:"隐藏以下发布方式的新鲜事######",
+				ctrl:[
+					{
+						type:"info",
+						value:"发布方式为“通过XX发布”中的XX，忽略其中的空格。多个发布方式用|分隔，如“美图秀秀iPhone版|开心测试”。"
+					},{
+						type:"br"
+					},{
+						id:"forbiddenFeedSource",
 						value:"",
 						type:"input",
 						style:"margin-left:5px;width:310px"
@@ -5751,7 +5780,7 @@ function main(savedOptions) {
 							name:autoCheckFeeds,
 							stage:3,
 							fire:true,
-							args:["@feedGroup","@forbiddenFeedTitle","@forbiddenFeedId","@trustedFeedId","@checkFeedReply"]
+							args:["@feedGroup","@forbiddenFeedTitle","@forbiddenFeedSource","@forbiddenFeedId","@trustedFeedId","@checkFeedReply"]
 						}]
 					},{
 						id:"checkFeedReply",
@@ -7451,7 +7480,7 @@ function $page(category,url) {
 	const pages={
 		home:"renren\\.com/\\d+$|renren\\.com/\\d+[#?]|/[a-zA-Z0-9\\-]{5,}\\.renren\\.com/|guide\\.renren\\.com/[Gg]uide",	// 首页，后面的是新注册用户的首页
 		feed:"renren\\.com/\\d+$|renren\\.com/\\d+[#?]|/guide\\.renren\\.com/[Gg]uide#?$|#/guide",	// 首页新鲜事，后面的是新注册用户的首页
-		profile:"renren\\.com/[Pp]rofile|renren\\.com/[^/]+/[Pp]rofile|/[a-zA-Z0-9_\\-]{5,}\\.renren\\.com/$|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|[a-zA-Z0-9_]{5,}\\.renren\\.com/innerProfile|renren\\.com/[a-zA-Z0-9_]{6,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personal/link/
+		profile:"renren\\.com/[Pp]rofile|renren\\.com/[^/]+/[Pp]rofile|/[a-zA-Z0-9_\\-]{5,}\\.renren\\.com/$|renren\\.com/[0-9]+/[Pp]rofile|/renren\\.com/\\?|/www\\.renren\\.com/\\?|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?id=|/[a-zA-Z0-9_]{5,}\\.renren.com/\\?.*&id=|[a-zA-Z0-9_]{5,}\\.renren\\.com/innerProfile|renren\\.com/[a-zA-Z0-9_]{6,20}$", // 个人主页，最后一个是个人网址。http://safe.renren.com/personal/link/
 		blog:"/blog\\.renren\\.com/|#//blog/|#!//blog/",	// 日志
 		forum:"/club\\.renren\\.com/",	// 论坛
 		lover:"/lover\\.renren\\.com/",	// 情侣空间
