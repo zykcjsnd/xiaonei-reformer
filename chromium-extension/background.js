@@ -16,6 +16,13 @@ function(request, sender, sendResponse) {
 				}
 			}
 			break;
+		case "storage":
+			if (request.data) {
+				localStorage.setItem(request.pref,request.data);
+			} else {
+				sendResponse({data:localStorage.getItem("xnr_options")});
+			}
+			break;
 		case "get":
 			var httpReq= new XMLHttpRequest();
 			httpReq.onload=function() {

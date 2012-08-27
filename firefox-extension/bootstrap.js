@@ -55,6 +55,17 @@ const XNRCore = {
 		Services.console.logStringMessage(msg);
 	},
 
+	storage: function(name, data) {
+		var path = "extensions.xiaonei_reformer." + name;
+		if (arguments.length === 2) {
+			var str = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
+			str.data = data;
+			Services.prefs.setComplexValue(path, Ci.nsISupportsString, str);
+		} else {
+			return Services.prefs.getComplexValue(path, Ci.nsISupportsString).data || "";
+		}
+	},
+
 	injectScript: function (contentDocument) {
 		const whitelist="^https?://.*\\.renren\\.com/|^https?://renren\\.com/";
 		const blacklist="^http://wpi\\.renren\\.com/|ajaxproxy";
@@ -80,6 +91,7 @@ const XNRCore = {
 		sandbox.importFunction(XNRCore.request, "XNR_get");
 		sandbox.importFunction(XNRCore.album, "XNR_album");
 		sandbox.importFunction(XNRCore.log, "XNR_log");
+		sandbox.importFunction(XNRCore.storage, "XNR_storage");
 
 		// load my script
 		var file = XNRCore.extPath.clone();
