@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.1.493
-// @miniver        493
+// @version        3.4.1.494
+// @miniver        494
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -36,7 +36,9 @@
 
 (function(){
 
-if (window.self != window.top) {
+if (window.top == null) {
+	return;
+} else if (window.self != window.top) {
 	if(document.designMode=="on") {
 		// 不在内容可以编辑的frame中运行
 		return;
@@ -50,8 +52,8 @@ if (window.self != window.top) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.4.0.491";
-XNR.miniver=491;
+XNR.version="3.4.1.494";
+XNR.miniver=494;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -1931,19 +1933,6 @@ function limitHeadList(evt,amountString) {
 			list.child(amount).remove();
 		}
 	});
-};
-
-// 修正导航栏项目高度
-function fixNavItemHeight() {
-	$patchCSS(".navigation .menu-title a{max-height:35px}");
-};
-
-// 修正论坛排版错误
-function fixClubTypesetting() {
-	// 帖子正文
-	$patchCSS(".content{overflow:visible}");
-	// 子导航栏
-	$patchCSS("#sub-nav{overflow:visible}#sub-nav>ul{clear:both}");
 };
 
 // 自定义页面样式
@@ -4811,7 +4800,7 @@ function notifyFriendship() {
 						$get("http://www.renren.com/showcard?friendID=" + oldFriends[idx].id, arguments.callee, idx);
 					} else {
 						$(".xnr_fs").remove();
-						var dialog = $("@div").attr("class", "xnr_dialog xnr_fs").html('<style>.xnr_fs{width:550px;z-index:100000;top:30%}.xnr_fs .title{font-weight:bold}.xnr_fs .body{background:#FFF;clear:both;height:240px;overflow-x:hidden;overflow-y:scroll}.xnr_fs li{float:left;margin:8px;height:64px;width:160px;overflow:hidden}.xnr_fs a{text-decoration:none}.xnr_fs .picbox{width:50px;height:50px;padding:2px;border:1px solid lightgray;float:left}.xnr_fs .pic{width:50px;height:50px;display:block;font-size:13px;font-weight:bold;color:red;line-height:50px;text-align:center}.xnr_fs h3,.xnr_fs h4{overflow:hidden;padding-left:3px;text-overflow:ellipsis}.xnr_fs h3{font-size:14px;font-weight:bold;white-space:nowrap}.xnr_fs h4{font-size:12px;font-weight:normal;color:#555}</style><div class="title"></div><div class="body"><ul class="flist"></ul></div><div class="btns"><input class="ok" type="button" value="确定"></input></div>');
+						var dialog = $("@div").attr("class", "xnr_dialog xnr_fs").html('<style>.xnr_fs{width:410px;z-index:100000}.xnr_fs .title{font-weight:bold}.xnr_fs .body{background:#FFF;clear:both;height:240px;overflow-x:hidden;overflow-y:scroll}.xnr_fs li{float:left;margin:14px 0 0 14px;height:64px;width:175px;overflow:hidden}.xnr_fs a{text-decoration:none}.xnr_fs .picbox{width:50px;height:50px;padding:2px;border:1px solid lightgray;float:left}.xnr_fs .pic{width:50px;height:50px;display:block;font-size:13px;font-weight:bold;color:red;line-height:50px;text-align:center;text-shadow:rgba(255,0,0,0.4) 2px 2px 3px}.xnr_fs h3,.xnr_fs h4{overflow:hidden;padding-left:3px;text-overflow:ellipsis}.xnr_fs h3{font-size:14px;font-weight:bold;white-space:nowrap}.xnr_fs h4{font-size:12px;font-weight:normal;color:#555}</style><div class="title"></div><div class="body"><ul class="flist"></ul></div><div class="btns"><input class="ok" type="button" value=">_<"></input></div>');
 						dialog.find(".title").text("哎哟！在过去"+dateInterval(lastCheck, now)+"里，以下 "+oldFriends.length+" 人与你解除了好友关系");
 						dialog.find(".btns input").bind("click", function() {
 							dialog.remove();
@@ -6036,7 +6025,7 @@ function main(savedOptions) {
 						type:"edit",
 						style:"width:99%;height:80px;overflow:auto;word-wrap:normal;margin-top:5px",
 						attr:{wrap:"off"},
-						value:"论坛\nhttp://club.renren.com/\n情侣空间\nhttp://lover.renren.com/dispatch\n"
+						value:"情侣空间\nhttp://lover.renren.com/dispatch\n新浪微博\nhttp://www.weibo.com/\n"
 					}
 				],
 				master:0
@@ -6098,41 +6087,6 @@ function main(savedOptions) {
 				],
 				master:0,
 				page:"profile"
-			},{
-				text:"##修正导航栏项目高度##",
-				agent:FIREFOX | USERSCRIPT,
-				ctrl:[
-					{
-						id:"fixNavItemHeight",
-						value:false,
-						fn:[{
-							name:fixNavItemHeight,
-							stage:0,
-							fire:true
-						}]
-					},{
-						type:"info",
-						value:"如果您将浏览器字体的最小大小设成大于12，可能会出现导航栏上的项目高度过大的错误。如果您遇到这个问题，请启用此功能。"
-					}
-				]
-			},{
-				text:"##修正论坛排版错误##",
-				agent:FIREFOX | USERSCRIPT,
-				ctrl:[
-					{
-						id:"fixClubTypesetting",
-						value:false,
-						fn:[{
-							name:fixClubTypesetting,
-							stage:0,
-							fire:true,
-						}]
-					},{
-						type:"info",
-						value:"如果您将浏览器字体的最小大小设成大于12，可能会出现论坛的栏目导航栏和帖子正文偏右的错误。如果您遇到这个问题，请启用此功能。",
-					}
-				],
-				page:"forum"
 			},{
 				text:"##自定义页面样式######",
 				ctrl:[
@@ -7880,7 +7834,7 @@ function $save(name,value) {
 };
 
 /*
- * 读写全局存储空间
+ * 读写全局持久存储空间
  */
 function $storage(name, data) {
 	if (typeof data === "function") {
@@ -8504,7 +8458,9 @@ PageKit.prototype={
 		this.nodes=[];
 		for(var i=0;i<o.length;i++) {
 			var s=o[i];
-			if(typeof s=="string") {
+			if (s==null) {
+				continue;
+			} else if(typeof s=="string") {
 				if(s=="") {
 					// 创建文本节点
 					this.nodes=this.nodes.concat(document.createTextNode(""));

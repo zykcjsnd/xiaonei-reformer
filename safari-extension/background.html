@@ -25,7 +25,7 @@ safari.application.addEventListener("message",function(msg) {
 				localStorage.setItem(msg.message.pref,msg.message.data);
 			} else {
 				var data=localStorage.getItem(msg.message.pref);
-				msg.target.page.dispatchMessage("xnr_storage_resp",{id:msg.message.id,data:JSON.parse(data)});
+				msg.target.page.dispatchMessage("xnr_storage_resp",{id:msg.message.id,data:data});
 			}
 			break;
 		case "xnr_get":

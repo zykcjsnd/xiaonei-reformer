@@ -62,7 +62,11 @@ const XNRCore = {
 			str.data = data;
 			Services.prefs.setComplexValue(path, Ci.nsISupportsString, str);
 		} else {
-			return Services.prefs.getComplexValue(path, Ci.nsISupportsString).data || "";
+			try {
+				return Services.prefs.getComplexValue(path, Ci.nsISupportsString).data || "";
+			} catch(ex) {
+				return "";
+			}
 		}
 	},
 

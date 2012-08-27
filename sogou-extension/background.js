@@ -3,7 +3,7 @@ function(request, sender, sendResponse) {
 	switch(request.action) {
 		case "save":
 			localStorage.setItem("xnr_options",request.data);
-			break;
+			return;
 		case "load":
 			var options=localStorage.getItem("xnr_options");
 			if(options==null) {
@@ -15,13 +15,20 @@ function(request, sender, sendResponse) {
 					sendResponse({options:{}});
 				}
 			}
-			break;
+			return;
+		case "storage":
+			if (request.data) {
+				localStorage.setItem(request.pref,request.data);
+			} else {
+				sendResponse({data:localStorage.getItem(request.pref)});
+			}
+			return;
 		case "get":
 			var httpReq= new XMLHttpRequest();
 			httpReq.onload=function() {
 				if (httpReq.readyState == 4) {
 					// BUG: http://ie.sogou.com/bbs/viewthread.php?tid=513537
-					// sendResponse({data:(httpReq.status==200?httpReq.responseText:null)});
+					//sendResponse({data:(httpReq.status==200?httpReq.responseText:null)});
 					sogouExplorer.tabs.sendRequest(sender.tab.id, {id:request.id, data:(httpReq.status==200?httpReq.responseText:null)});
 				}
 			};
@@ -32,9 +39,9 @@ function(request, sender, sendResponse) {
 			httpReq.open(request.method,request.url,true);
 			//httpReq.setRequestHeader("Cache-Control","no-cache");
 			httpReq.send();
-			break;
+			return true;
 		case "album":
 			sogouExplorer.tabs.create({url:sogouExplorer.extension.getURL("album.html")+"#"+encodeURIComponent(JSON.stringify(request.data))});
-			break;
+			return;
 	}
 });
