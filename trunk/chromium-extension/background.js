@@ -3,7 +3,7 @@ function(request, sender, sendResponse) {
 	switch(request.action) {
 		case "save":
 			localStorage.setItem("xnr_options",request.data);
-			break;
+			return;
 		case "load":
 			var options=localStorage.getItem("xnr_options");
 			if(options==null) {
@@ -15,14 +15,14 @@ function(request, sender, sendResponse) {
 					sendResponse({options:{}});
 				}
 			}
-			break;
+			return;
 		case "storage":
 			if (request.data) {
 				localStorage.setItem(request.pref,request.data);
 			} else {
-				sendResponse({data:localStorage.getItem("xnr_options")});
+				sendResponse({data:localStorage.getItem(request.pref)});
 			}
-			break;
+			return;
 		case "get":
 			var httpReq= new XMLHttpRequest();
 			httpReq.onload=function() {
@@ -36,9 +36,9 @@ function(request, sender, sendResponse) {
 			httpReq.open(request.method,request.url,true);
 			//httpReq.setRequestHeader("Cache-Control","no-cache");
 			httpReq.send();
-			break;
+			return true;
 		case "album":
 			chrome.tabs.create({url:chrome.extension.getURL("album.html")+"#"+encodeURIComponent(JSON.stringify(request.data))});
-			break;
+			return;
 	}
 });
