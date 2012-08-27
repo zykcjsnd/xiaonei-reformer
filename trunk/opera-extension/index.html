@@ -16,6 +16,14 @@
 					}
 					event.source.postMessage(JSON.stringify({reqId:request.reqId,data:options})); 
 					break;
+				case "storage":
+					if (request.data) {
+						localStorage.setItem(request.pref, request.data);
+					} else {
+						var data = localStorage.getItem(request.pref);
+						event.source.postMessage(JSON.stringify({reqId:request.reqId,data:data})); 
+					}
+					break;
 				case "get":
 					var httpReq= new XMLHttpRequest();
 					httpReq.onload=function() {

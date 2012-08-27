@@ -20,6 +20,14 @@ safari.application.addEventListener("message",function(msg) {
 				}
 			}
 			break;
+		case "xnr_storage":
+			if (msg.message.data) {
+				localStorage.setItem(msg.message.pref,msg.message.data);
+			} else {
+				var data=localStorage.getItem(msg.message.pref);
+				msg.target.page.dispatchMessage("xnr_storage_resp",{id:msg.message.id,data:JSON.parse(data)});
+			}
+			break;
 		case "xnr_get":
 			var httpReq=new XMLHttpRequest();
 			httpReq.onload=function() {

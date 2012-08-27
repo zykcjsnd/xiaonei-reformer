@@ -714,5 +714,17 @@
   "(冰棒)": {
     "t": "冰棒",
     "s": "/imgpro/icons/statusface/dbb.gif"
+  },
+  "(金牌)": {
+    "t": "金牌",
+    "s": "/imgpro/icons/statusface/金牌.gif"
+  },
+  "(银牌)": {
+    "t": "银牌",
+    "s": "/imgpro/icons/statusface/银牌.gif"
+  },
+  "(铜牌)": {
+    "t": "铜牌",
+    "s": "/imgpro/icons/statusface/铜牌.gif"
   }
 }

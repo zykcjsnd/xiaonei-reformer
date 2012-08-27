@@ -6,11 +6,16 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.0.492
-// @miniver        492
+// @version        3.4.1.493
+// @miniver        493
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
+// @grant          GM_getValue
+// @grant          GM_setValue
+// @grant          GM_xmlhttpRequest
+// @grant          GM_log
+// @grant          GM_getResourceURL
 // ==/UserScript==
 //
 // Copyright (C) 2008-2012 Xu Zhen
@@ -2226,6 +2231,9 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(long5)":	{t:"龙5",			s:"/imgpro/icons/statusface/long5.gif"},
 		"(long6)":	{t:"龙6",			s:"/imgpro/icons/statusface/long6.gif"},
 		"(vdlove)":	{t:"爱就大声说",	s:"/imgpro/icons/statusface/vdlove.gif"},
+		"(金牌)":	{t:"金牌",			s:"/imgpro/icons/statusface/金牌.gif"},
+		"(银牌)":	{t:"银牌",			s:"/imgpro/icons/statusface/银牌.gif"},
+		"(铜牌)":	{t:"铜牌",			s:"/imgpro/icons/statusface/铜牌.gif"},
 		"(t)":		{t:"火炬",			s:"/img/ems/torch.gif"},
 		"(hjl)":	{t:"火炬",			s:"/imgpro/icons/statusface/hx.gif"}
 	};
@@ -4165,7 +4173,7 @@ function enableShortcutMenu(evt) {
 			menu.m.remove();
 			$dealloc("shortcut_menu");
 		}
-		if(t.tagName=="SPAN" && t.childElementCount==0 && !t.nextElementSibling && !t.previousElementSibling && t.parentNode.tagName=="A") {
+		if(t.tagName!="A" && t.childElementCount==0 && !t.nextElementSibling && !t.previousElementSibling && t.parentNode.tagName=="A" && !t.style.backgroundImage) {
 			t=t.parentNode;
 		}
 		if(t.tagName!="A" || (!/\/profile\.do\?/.test(t.href) && !/\/\/www\.renren\.com\/g\//.test(t.href) && !/\/www\.renren\.com\/\d+$|\/www\.renren\.com\/\d+[?#]/.test(t.href) && !/\/\d+\/profile\?/.test(t.href))) {
@@ -4476,45 +4484,6 @@ function searchShare() {
 	}
 };
 
-// 清空分享
-function delAllShares() {
-	if(!XNR.url.match("//share/share/collection|//share/share/"+XNR.userId)) {
-		return;
-	}
-	$("@a").text("清空列出的分享").attr("href", "#nogo").addTo($("@div").css({padding:"5px","text-align":"center",cursor:"pointer"}).move("before",$(".j-share-list"))).bind("click",function() {
-		if($(".share-itembox").empty()) {
-			return;
-		}
-		if(!window.confirm("确实要删除所有在这里显示的分享？")) {
-			return;
-		}
-		var ids=[];
-		$(".share-itembox").each(function() {
-			if($(this).css("display")!="none") {
-				var id=this.id.match("\\d+");
-				if(id) {
-					ids.push(id);
-				}
-			}
-		});
-		var total = ids.length;
-		var box = $("@div").css({zIndex:"999999", width:"100%", height:"100%", position:"fixed", background:"rgba(0,0,0,0.8)", color:"#fff", left:0, top:0, textAlign:"center", verticalAlign:"middle", lineHeight:document.documentElement.clientHeight+"px"}).addTo(document);
-		if (total > 0) {
-			var deleter = function() {
-				if (ids.length > 0) {
-					box.text("处理中，请稍候..."+parseInt((total-ids.length)*100/total)+"%");
-					var id = ids.shift();
-					$get("http://share.renren.com/share/EditShare.do?action=del&sid="+id+"&type="+XNR.userId,deleter,null,"POST");
-				} else {
-					box.text("处理完毕，将刷新页面...");
-					window.location.reload();
-				}
-			};
-			deleter();
-		}
-	});
-};
-
 // 禁止显示名片
 function removeNameCard() {
 	const code="window.NameCard=null";
@@ -4654,78 +4623,221 @@ function showMusicFileLink() {
 	$script(code);
 };
 
-// 清空留言板
-function delAllNotes() {
-	$("@a").text("清空列出的留言").addTo($("@div").css({padding:"5px","text-align":"center",cursor:"pointer"}).move("before",$("#talk"))).bind("click",function() {
-		if($("#talk .comment").empty()) {
-			return;
-		}
-		if(!window.confirm("确实要删除所有在这里显示的留言？")) {
-			return;
-		}
-		var ids=[];
-		$("#talk .comment").each(function() {
-			var id=this.id.match("\\d+");
-			if(!id) {
+// 清空分享、留言板、状态
+function delAllContents() {
+	if($page("share") && XNR.url.match("//share/share/collection|//share/share/"+XNR.userId)) {
+		// 分享
+		$("@a").text("清空列出的分享").attr("href", "#nogo").addTo($("@div").css({padding:"5px","text-align":"center",cursor:"pointer"}).move("before",$(".j-share-list"))).bind("click",function() {
+			if($(".share-itembox").empty()) {
 				return;
 			}
-			var cmd=/delComment\('.*?','(.*?)','.*?',\d+\)/.exec($(this).find("a[onclick^='delComment']").attr("onclick"));
-			ids.push({"id":id,"owner":(cmd?cmd[1]:XNR.userId)});
-		});
-		var total = ids.length;
-		var box = $("@div").css({zIndex:"999999", width:"100%", height:"100%", position:"fixed", background:"rgba(0,0,0,0.8)", color:"#fff", left:0, top:0, textAlign:"center", verticalAlign:"middle", lineHeight:document.documentElement.clientHeight+"px"}).addTo(document);
-		if (total > 0) {
-			var deleter = function() {
-				if (ids.length > 0) {
-					box.text("处理中，请稍候..."+parseInt((total-ids.length)*100/total)+"%");
-					var ido = ids.shift();
-					$get("http://gossip.renren.com/delgossip.do?age=recent&id="+ido.id+"&owner="+ido.owner,deleter,null,"POST");
-				} else {
-					box.text("处理完毕，将刷新页面...");
-					window.location.reload();
+			if(!window.confirm("确实要删除所有在这里显示的分享？")) {
+				return;
+			}
+			var ids=[];
+			$(".share-itembox").each(function() {
+				if($(this).css("display")!="none") {
+					var id=this.id.match("\\d+");
+					if(id) {
+						ids.push(id);
+					}
 				}
-			};
-			deleter();
-		}
-	});
-};
-
-// 清空状态
-function delAllStatus() {
-	if(!XNR.url.match("\\?id="+XNR.userId)) {
-		return;
-	}
-	$("@a").text("清空列出的状态").addTo($("@div").css({padding:"5px","text-align":"center",cursor:"pointer"}).move("before",$("ul.status-list"),0)).bind("click",function() {
-		if($("ul.status-list li a[onclick*='delMyDoing(']").empty()) {
-			return;
-		}
-		if(!window.confirm("确实要删除所有在这里显示的状态？")) {
-			return;
-		}
-		var ids=[];
-		$("ul.status-list li a[onclick*='delMyDoing(']").each(function() {
-			var cmd=/delMyDoing\(.*?,'(\d+)'\)/.exec($(this).attr("onclick"));
-			if (cmd) {
-				ids.push(cmd[1]);
+			});
+			var total = ids.length;
+			var box = $("@div").css({zIndex:"999999", width:"100%", height:"100%", position:"fixed", background:"rgba(0,0,0,0.8)", color:"#fff", left:0, top:0, textAlign:"center", verticalAlign:"middle", lineHeight:document.documentElement.clientHeight+"px"}).addTo(document);
+			if (total > 0) {
+				var deleter = function() {
+					if (ids.length > 0) {
+						box.text("处理中，请稍候..."+parseInt((total-ids.length)*100/total)+"%");
+						var id = ids.shift();
+						$get("http://share.renren.com/share/EditShare.do?action=del&sid="+id+"&type="+XNR.userId,deleter,null,"POST");
+					} else {
+						box.text("处理完毕，将刷新页面...");
+						window.location.reload();
+					}
+				};
+				deleter();
 			}
 		});
-		var total = ids.length;
-		var box = $("@div").css({zIndex:"999999", width:"100%", height:"100%", position:"fixed", background:"rgba(0,0,0,0.8)", color:"#fff", left:0, top:0, textAlign:"center", verticalAlign:"middle", lineHeight:document.documentElement.clientHeight+"px"}).addTo(document);
-		if (total > 0) {
-			var deleter = function() {
-				if (ids.length > 0) {
-					box.text("处理中，请稍候..."+parseInt((total-ids.length)*100/total)+"%");
-					var id = ids.shift();
-					$get("http://status.renren.com/doing/deleteDoing.do?id="+id,deleter,null,"POST");
-				} else {
-					box.text("处理完毕，将刷新页面...");
-					window.location.reload();
+	} else if ($page("gossip")) {
+		$("@a").text("清空列出的留言").addTo($("@div").css({padding:"5px","text-align":"center",cursor:"pointer"}).move("before",$("#talk"))).bind("click",function() {
+			if($("#talk .comment").empty()) {
+				return;
+			}
+			if(!window.confirm("确实要删除所有在这里显示的留言？")) {
+				return;
+			}
+			var ids=[];
+			$("#talk .comment").each(function() {
+				var id=this.id.match("\\d+");
+				if(!id) {
+					return;
 				}
-			};
-			deleter();
-		}
-	});
+				var cmd=/delComment\('.*?','(.*?)','.*?',\d+\)/.exec($(this).find("a[onclick^='delComment']").attr("onclick"));
+				ids.push({"id":id,"owner":(cmd?cmd[1]:XNR.userId)});
+			});
+			var total = ids.length;
+			var box = $("@div").css({zIndex:"999999", width:"100%", height:"100%", position:"fixed", background:"rgba(0,0,0,0.8)", color:"#fff", left:0, top:0, textAlign:"center", verticalAlign:"middle", lineHeight:document.documentElement.clientHeight+"px"}).addTo(document);
+			if (total > 0) {
+				var deleter = function() {
+					if (ids.length > 0) {
+						box.text("处理中，请稍候..."+parseInt((total-ids.length)*100/total)+"%");
+						var ido = ids.shift();
+						$get("http://gossip.renren.com/delgossip.do?age=recent&id="+ido.id+"&owner="+ido.owner,deleter,null,"POST");
+					} else {
+						box.text("处理完毕，将刷新页面...");
+						window.location.reload();
+					}
+				};
+				deleter();
+			}
+		});
+	} else if ($page("status") && XNR.url.match("\\?id="+XNR.userId)) {
+		// 清空状态
+		$("@a").text("清空列出的状态").addTo($("@div").css({padding:"5px","text-align":"center",cursor:"pointer"}).move("before",$("ul.status-list"),0)).bind("click",function() {
+			if($("ul.status-list li a[onclick*='delMyDoing(']").empty()) {
+				return;
+			}
+			if(!window.confirm("确实要删除所有在这里显示的状态？")) {
+				return;
+			}
+			var ids=[];
+			$("ul.status-list li a[onclick*='delMyDoing(']").each(function() {
+				var cmd=/delMyDoing\(.*?,'(\d+)'\)/.exec($(this).attr("onclick"));
+				if (cmd) {
+					ids.push(cmd[1]);
+				}
+			});
+			var total = ids.length;
+			var box = $("@div").css({zIndex:"999999", width:"100%", height:"100%", position:"fixed", background:"rgba(0,0,0,0.8)", color:"#fff", left:0, top:0, textAlign:"center", verticalAlign:"middle", lineHeight:document.documentElement.clientHeight+"px"}).addTo(document);
+			if (total > 0) {
+				var deleter = function() {
+					if (ids.length > 0) {
+						box.text("处理中，请稍候..."+parseInt((total-ids.length)*100/total)+"%");
+						var id = ids.shift();
+						$get("http://status.renren.com/doing/deleteDoing.do?id="+id,deleter,null,"POST");
+					} else {
+						box.text("处理完毕，将刷新页面...");
+						window.location.reload();
+					}
+				};
+				deleter();
+			}
+		});
+	}
 };
+
+// 好友关系解除提醒
+function notifyFriendship() {
+	function dateInterval(dateFrom, dateTo) {
+		var d1 = new Date(dateFrom);
+		var d2 = new Date(dateTo);
+		if (d2.getTime() < d1.getTime()) {
+			var d3 = d2;
+			d2 = d1;
+			d1 = d3;
+		}
+		var y = d2.getFullYear() - d1.getFullYear();
+		var M = d2.getMonth() - d1.getMonth();
+		var d = d2.getDate() - d1.getDate();
+		var H = d2.getHours() - d1.getHours();
+		var m = d2.getMinutes() - d1.getMinutes();
+		if (y > 0) {
+			return " " + y + " 年又 " + M + " 个月";
+		} else if (M > 0) {
+			return " " + M + " 个月";
+		} else if (d > 0) {
+			return " " + d + " 天";
+		} else if (H > 0) {
+			return " " + H + " 小时"
+		} else if (m > 0) {
+			return " " + m + " 分钟"
+		} else {
+			return "一段时间";
+		}
+	}
+	$storage("friends_" + XNR.userId, function(dataString) {
+		var oldFriends = [];
+		var lastCheck = 0;
+		if (dataString != null) {
+			try {
+				var data = JSON.parse(dataString);
+				oldFriends = data.friends || [];
+				lastCheck = data.time || 0;
+			} catch(ex) {
+			}
+		}
+		
+		var now = new Date().getTime();
+		if (now - lastCheck < 3600000) {
+			// 检查间隔时间至少一小时
+			return;
+		}
+
+		$get('http://friend.renren.com/recommendSelector.do?p={"init":true,"uid":true,"uhead":true,"uname":true,"group":false,"net":true,"param":{}}', function(html) {
+			if(!html) {
+				return;
+			}
+			try {
+				var curFriends = JSON.parse(html).candidate;
+			} catch(ex) {
+				return;
+			}
+			var friendHash = {};
+			for (var i = curFriends.length - 1; i >= 0; i--) {
+				friendHash[curFriends[i].id] = 1;
+			}
+			for (var i = oldFriends.length - 1; i >= 0; i--) {
+				if (oldFriends[i].id in friendHash) {
+					oldFriends.splice(i, i);
+				}
+			}
+			friendHash = null;
+			if (oldFriends.length == 0) {
+				$storage("friends_" + XNR.userId, JSON.stringify({friends:curFriends, time:now}));
+			} else {
+				var fi = 0;
+				$get("http://www.renren.com/showcard?friendID=" + oldFriends[fi].id, function(html, url, idx) {
+					if (html) {
+						try {
+							// 解除好友关系后名片就看不到了，停用账号还可以看到
+							JSON.parse(html);
+							oldFriends[idx].gone = true;
+						} catch(ex) {
+						}
+					}
+					idx++;
+					if (idx < oldFriends.length) {
+						$get("http://www.renren.com/showcard?friendID=" + oldFriends[idx].id, arguments.callee, idx);
+					} else {
+						$(".xnr_fs").remove();
+						var dialog = $("@div").attr("class", "xnr_dialog xnr_fs").html('<style>.xnr_fs{width:550px;z-index:100000;top:30%}.xnr_fs .title{font-weight:bold}.xnr_fs .body{background:#FFF;clear:both;height:240px;overflow-x:hidden;overflow-y:scroll}.xnr_fs li{float:left;margin:8px;height:64px;width:160px;overflow:hidden}.xnr_fs a{text-decoration:none}.xnr_fs .picbox{width:50px;height:50px;padding:2px;border:1px solid lightgray;float:left}.xnr_fs .pic{width:50px;height:50px;display:block;font-size:13px;font-weight:bold;color:red;line-height:50px;text-align:center}.xnr_fs h3,.xnr_fs h4{overflow:hidden;padding-left:3px;text-overflow:ellipsis}.xnr_fs h3{font-size:14px;font-weight:bold;white-space:nowrap}.xnr_fs h4{font-size:12px;font-weight:normal;color:#555}</style><div class="title"></div><div class="body"><ul class="flist"></ul></div><div class="btns"><input class="ok" type="button" value="确定"></input></div>');
+						dialog.find(".title").text("哎哟！在过去"+dateInterval(lastCheck, now)+"里，以下 "+oldFriends.length+" 人与你解除了好友关系");
+						dialog.find(".btns input").bind("click", function() {
+							dialog.remove();
+						});
+						var ul = dialog.find(".flist");
+						for (var i = 0; i < oldFriends.length; i++) {
+							var f = oldFriends[i];
+							var li = $("@li");
+							var picbox = $("@span").attr("class","picbox").addTo(li);
+							var pic = $("@span").attr("class","pic").css("background", "url("+f.head+")");
+							if (f.gone) {
+								pic.text("已注销");
+							}
+							$("@a").attr("href","http://www.renren.com/profile.do?id="+f.id).attr("title",f.name).add(pic).addTo(picbox);
+							$("@a").attr("href","http://www.renren.com/profile.do?id="+f.id).attr("title",f.name).add($("@h3").text(f.name)).addTo(li);
+							$("@h4").text(f.netName).addTo(li);
+							li.addTo(ul);
+						}
+						dialog.addTo(document.body).css({"top":parseInt(window.innerHeight-dialog.prop("offsetHeight"))/2+"px","left":parseInt(window.innerWidth-dialog.prop("offsetWidth"))/2+"px"});
+						$storage("friends_" + XNR.userId, JSON.stringify({friends:curFriends, time:now}));
+					}
+				}, fi);
+			}
+		});
+	});
+}
 
 // 解除超级拖拽功能的封印。FIXME：中二了
 function repaireSuperDrag() {
@@ -6438,18 +6550,6 @@ function main(savedOptions) {
 				],
 				page:"share,blog,status"
 			},{
-				text:"##增加批量清理分享功能",
-				ctrl:[{
-					id:"delAllShares",
-					value:false,
-					fn:[{
-						name:delAllShares,
-						stage:2,
-						fire:true
-					}]
-				}],
-				page:"share"
-			},{
 				text:"##允许直接回复分享的全站评论##",
 				ctrl:[{
 					id:"allowReplyToAllPeople",
@@ -6509,31 +6609,31 @@ function main(savedOptions) {
 				}],
 				page:"musicbox"
 			},{
-				text:"##增加批量清理留言板功能",
+				text:"##增加批量清理分享/留言板/状态功能",
 				ctrl:[{
-					id:"delAllNotes",
-					value:false,
+					id:"delAllContents",
+					value:true,
 					fn:[{
-						name:delAllNotes,
+						name:delAllContents,
 						stage:2,
 						fire:true
 					}]
 				}],
-				page:"gossip"
+				page:"share,gossip,status"
 			},{
-				text:"##增加批量清理状态功能",
-				ctrl:[{
-					id:"delAllStatus",
+				text: "##好友关系解除提醒##",
+				ctrl: [{
+					id: "notifyFriendship",
 					value:false,
 					fn:[{
-						name:delAllStatus,
+						name:notifyFriendship,
 						stage:2,
 						fire:true
 					}]
 				}],
-				page:"status"
+				login:true,
 			},{
-				text: "##解决浏览器内置的超级拖拽功能失效问题##",
+				text: "##解决浏览器内建的超级拖拽功能失效问题##",
 				ctrl:[{
 					id:"repaireSuperDrag",
 					value:false,
@@ -6569,7 +6669,7 @@ function main(savedOptions) {
 						value:"24小时内最多检查一次"
 					}
 				],
-				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT
+				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT | SOGOU
 			},{
 				text:"最后一次检查更新时间：##",
 				ctrl:[{
@@ -6578,7 +6678,7 @@ function main(savedOptions) {
 					value:0,
 					format:"date"
 				}],
-				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT
+				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT | SOGOU
 			},{
 				text:"##",
 				ctrl:[{
@@ -6590,7 +6690,7 @@ function main(savedOptions) {
 						args:[null,"@checkLink","@updateLink","@lastUpdate"]
 					}],
 				}],
-				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT
+				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT | SOGOU
 			},{
 				text:"检查更新地址：##",
 				ctrl:[{
@@ -6620,7 +6720,7 @@ function main(savedOptions) {
 					style:"width:330px",
 					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的检查更新地址"}
 				}],
-				agent:FIREFOX | OPERA_EXT
+				agent:FIREFOX | OPERA_EXT | SOGOU
 			},{
 				text:"扩展下载地址：##",
 				ctrl:[{
@@ -6652,8 +6752,18 @@ function main(savedOptions) {
 				}],
 				agent:OPERA_EXT
 			},{
+				text:"扩展下载地址：##",
+				ctrl:[{
+					id:"updateLink",
+					type:"input",
+					value:"http://xiaonei-reformer.googlecode.com/files/xiaonei_reformer-sogou.sext",
+					style:"width:330px;",
+					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的扩展下载地址"},
+				}],
+				agent:SOGOU
+			},{
 				text:"* 以上地址保存后生效",
-				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT
+				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT | SOGOU
 			},{
 				text:"##升级后显示通知",
 				ctrl:[{
@@ -7146,10 +7256,12 @@ function main(savedOptions) {
 		var icons_safari='data:image/png;base64,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%3D';
 		var icons_opera='data:image/png;base64,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%3D';
 		// 生成选项菜单
-		var menuHTML='<style type="text/css">.xnr_op{width:500px;position:fixed;z-index:200000;color:black;font-size:12px;background:rgba(0,0,0,0.5);padding:10px;-moz-border-radius:8px;border-radius:8px}.xnr_op *{padding:0;margin:0;line-height:normal}.xnr_op h1{font-size:18px;font-weight:bold}.xnr_op a{color:#3B5990}.xnr_op table{width:100%;border-collapse:collapse}.xnr_op .title{padding:4px;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none;cursor:default}.xnr_op .btns{background:#F0F5F8;text-align:right;border-top:1px solid lightgray}.xnr_op .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px;cursor:pointer}.xnr_op .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_op .ok:active{border-color:#124680 #B8D4E8 #B8D4E8 #124680}.xnr_op .cancel{background:#F0F0F0;border-color:white #848484 #848484 white;color:black}.xnr_op .cancel:active{border-color:#848484 white white #848484}.xnr_op .options{height:300px;background:#FFFFFA;clear:both}.xnr_op .category{width:119px;border-right:1px solid lightgray;overflow-x:hidden;overflow-y:auto;height:300px;float:left}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages{width:380px;margin-left:120px}.xnr_op .p{overflow:auto;height:280px;padding:10px}.xnr_op .p>div{min-height:19px;padding:2px 0;width:100%}.xnr_op .p>div *{vertical-align:middle}.xnr_op .group{margin-left:5px;margin-top:3px;table-layout:fixed}.xnr_op .group td{padding:2px 0}.xnr_op input[type="checkbox"]{margin-right:4px;cursor:pointer}.xnr_op button{background-color:#EFEFEF;background:-moz-linear-gradient(top,#FDFCFB,#E7E2DB);background:-o-linear-gradient(top,#FDFCFB,#E7E2DB);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#E7E2DB));color:black;border-color:#877C6C #A99D8C #A99D8C;border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;font-size:12px;padding:'+(XNR.acore==GECKO?1:3)+'px}.xnr_op button:hover:not([disabled]){background-color:#CCC4B9;background:-moz-linear-gradient(top,#FDFCFB,#CCC4B9);background:-o-linear-gradient(top,#FDFCFB,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#CCC4B9))}.xnr_op button[disabled]{color:grey}.xnr_op button:active:not([disabled]){background:#C1BDB6;background:-moz-linear-gradient(top,#C1BDB6,#CCC4B9);background:-o-linear-gradient(top,#C1BDB6,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#C1BDB6),to(#CCC4B9))}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op .p span{cursor:default}.xnr_op span[tooltip]{margin:0 2px;height:16px;width:16px;display:inline-block;cursor:help}.xnr_op span.info{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAuUlEQVQ4y2NgoDbQ9upiiK5eznD17sv/yDi2ajlYDi9wSZ+NoREdu2bNxa7ZJnkWXHPepH1YMUzeNnU6prPRNaMDdEOU3boRBoSWLWXApxmbIRHlyxAG4LIdFx+mHqcByBifNwgagE0zWQbgig24AWFogUgIgxNW7QpEIIKiBJsr8DlfxXMSalpwTpuJPyFN2ItIjXlzsKdGx9h2gknZLqYFf37gktJmCM2dhGFQaE4/A6eYKtUzLwMAfM0C2p5qSS4AAAAASUVORK5CYII%3D")}.xnr_op span.warn{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA1ElEQVQ4y2NgoCVYz8BgsJyBwYQszUCNsv8ZGP6D8FIGBlWSDYBphmGSNC9jYNAGabqUkvL/cmYm2IAlDAympNsOA6S4YjUDgxVI8dX8fLj+6+XlYAPWsbB4kGQ7hMtAvCvWsrN7gxRdq6jAMOBWSwvYgE1sbJFE+x3FBUiuaGBgYMKp+Xpz839c4P7UqWA1QJfmomgGmYgR8thcgOSKmQwMrBi23+js/E8IPJ47FyNAudBTHbEY7gJjBgbdDgaG7k4GhqmEcDcDw2Qg7ogA5hWq5FgAlMwfVWL5pDoAAAAASUVORK5CYII%3D")}.xnr_op input:not([type]),.xnr_op textarea{border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;padding:1px;border-color:#877C6C #A99D8C #A99D8C}.xnr_op input:not([type]):focus,.xnr_op textarea:focus{border-color:#3A6389;-moz-box-shadow:inset 0 0 1px #005EAC;-webkit-box-shadow:inset 0 0 1px #005EAC;box-shadow:inset 0 0 1px #005EAC}.xnr_op textarea{resize:none;-moz-resize:none}.xnr_op .fp{text-align:center;vertical-align:middle;width:400px;height:300px;display:table-cell}.xnr_op .fp>*{padding:5px}.xnr_op .icons>a{margin:8px}.xnr_op .icons img{width:29px}.xnr_op .icons img:hover{-webkit-transform:scale(1.1);-moz-transform:scale(1.1);-o-transform:scale(1.1)}</style>';
+		var basicCSS='.xnr_dialog{position:fixed;color:black;font-size:12px;background:rgba(0,0,0,0.5);padding:10px;-moz-border-radius:8px;border-radius:8px}.xnr_dialog *{padding:0;margin:0;line-height:normal}.xnr_dialog h1{font-size:18px;font-weight:bold}.xnr_dialog a{color:#3B5990}.xnr_dialog table{width:100%;border-collapse:collapse}.xnr_dialog .title{padding:4px;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none;cursor:default}.xnr_dialog .btns{background:#F0F5F8;text-align:right;border-top:1px solid lightgray}.xnr_dialog .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px;cursor:pointer}.xnr_dialog .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_dialog .ok:active{border-color:#124680 #B8D4E8 #B8D4E8 #124680}.xnr_dialog .cancel{background:#F0F0F0;border-color:white #848484 #848484 white;color:black}.xnr_dialog .cancel:active{border-color:#848484 white white #848484}';
+		var menuHTML='<style type="text/css">.xnr_op{width:500px;z-index:200000}.xnr_op .options{height:300px;background:#FFFFFA;clear:both}.xnr_op .category{width:119px;border-right:1px solid lightgray;overflow-x:hidden;overflow-y:auto;height:300px;float:left}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages{width:380px;margin-left:120px}.xnr_op .p{overflow:auto;height:280px;padding:10px}.xnr_op .p>div{min-height:19px;padding:2px 0;width:100%}.xnr_op .p>div *{vertical-align:middle}.xnr_op .group{margin-left:5px;margin-top:3px;table-layout:fixed}.xnr_op .group td{padding:2px 0}.xnr_op input[type="checkbox"]{margin-right:4px;cursor:pointer}.xnr_op button{background-color:#EFEFEF;background:-moz-linear-gradient(top,#FDFCFB,#E7E2DB);background:-o-linear-gradient(top,#FDFCFB,#E7E2DB);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#E7E2DB));color:black;border-color:#877C6C #A99D8C #A99D8C;border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;font-size:12px;padding:'+(XNR.acore==GECKO?1:3)+'px}.xnr_op button:hover:not([disabled]){background-color:#CCC4B9;background:-moz-linear-gradient(top,#FDFCFB,#CCC4B9);background:-o-linear-gradient(top,#FDFCFB,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#CCC4B9))}.xnr_op button[disabled]{color:grey}.xnr_op button:active:not([disabled]){background:#C1BDB6;background:-moz-linear-gradient(top,#C1BDB6,#CCC4B9);background:-o-linear-gradient(top,#C1BDB6,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#C1BDB6),to(#CCC4B9))}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op .p span{cursor:default}.xnr_op span[tooltip]{margin:0 2px;height:16px;width:16px;display:inline-block;cursor:help}.xnr_op span.info{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAuUlEQVQ4y2NgoDbQ9upiiK5eznD17sv/yDi2ajlYDi9wSZ+NoREdu2bNxa7ZJnkWXHPepH1YMUzeNnU6prPRNaMDdEOU3boRBoSWLWXApxmbIRHlyxAG4LIdFx+mHqcByBifNwgagE0zWQbgig24AWFogUgIgxNW7QpEIIKiBJsr8DlfxXMSalpwTpuJPyFN2ItIjXlzsKdGx9h2gknZLqYFf37gktJmCM2dhGFQaE4/A6eYKtUzLwMAfM0C2p5qSS4AAAAASUVORK5CYII%3D")}.xnr_op span.warn{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA1ElEQVQ4y2NgoCVYz8BgsJyBwYQszUCNsv8ZGP6D8FIGBlWSDYBphmGSNC9jYNAGabqUkvL/cmYm2IAlDAympNsOA6S4YjUDgxVI8dX8fLj+6+XlYAPWsbB4kGQ7hMtAvCvWsrN7gxRdq6jAMOBWSwvYgE1sbJFE+x3FBUiuaGBgYMKp+Xpz839c4P7UqWA1QJfmomgGmYgR8thcgOSKmQwMrBi23+js/E8IPJ47FyNAudBTHbEY7gJjBgbdDgaG7k4GhqmEcDcDw2Qg7ogA5hWq5FgAlMwfVWL5pDoAAAAASUVORK5CYII%3D")}.xnr_op input:not([type]),.xnr_op textarea{border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;padding:1px;border-color:#877C6C #A99D8C #A99D8C}.xnr_op input:not([type]):focus,.xnr_op textarea:focus{border-color:#3A6389;-moz-box-shadow:inset 0 0 1px #005EAC;-webkit-box-shadow:inset 0 0 1px #005EAC;box-shadow:inset 0 0 1px #005EAC}.xnr_op textarea{resize:none;-moz-resize:none}.xnr_op .fp{text-align:center;vertical-align:middle;width:400px;height:300px;display:table-cell}.xnr_op .fp>*{padding:5px}.xnr_op .icons>a{margin:8px}.xnr_op .icons img{width:29px}.xnr_op .icons img:hover{-webkit-transform:scale(1.1);-moz-transform:scale(1.1);-o-transform:scale(1.1)}</style>';
 		menuHTML+='<div class="title">改造选项</div><div class="options"><div class="category"><ul>'+categoryHTML+'</ul></div><div class="pages"><div class="fp"><h1>人人网改造器 '+XNR.version+'</h1><p><b>Copyright © 2008-2012</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p><p class="icons"><a href="http://userscripts.org/scripts/show/45836" title="GreaseMonkey脚本" target="_blank"><img src="'+icons_gm+'"/></a><a href="https://chrome.google.com/extensions/detail/bafellppfmjodafekndapfceggodmkfc" title="Chrome/Chromium扩展" target="_blank"><img src="'+icons_chrome+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Firefox扩展" target="_blank"><img src="'+icons_fx+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Safari扩展" target="_blank"><img src="'+icons_safari+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Opera扩展" target="_blank"><img src="'+icons_opera+'"/></a></p></div></div></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div>';
 	
-		var menu=$("@div").attr("class","xnr_op").css("display","none").html(menuHTML).addTo(document);
+		$("@style").attr("type","text/css").text(basicCSS).addTo(document);
+		var menu=$("@div").attr("class","xnr_op xnr_dialog").css("display","none").html(menuHTML).addTo(document);
 		// 添加类别页，绑定提示信息事件
 		menu.find(".pages").add($(categoryPages)).bind("mouseover",function(evt) {
 			var t=$(evt.target);
@@ -7768,6 +7880,81 @@ function $save(name,value) {
 };
 
 /*
+ * 读写全局存储空间
+ */
+function $storage(name, data) {
+	if (typeof data === "function") {
+		var ret;
+		switch(XNR.agent) {
+			case USERSCRIPT:
+				data(GM_getValue(name, null));
+				break;;
+			case CHROME:
+				chrome.extension.sendRequest({action:"storage", pref:name}, function(response) {
+					data(response.data);
+				});
+				break;
+			case SOGOU:
+				sogouExplorer.extension.sendRequest({action:"storage", pref:name}, function(response) {
+					data(response.data);
+				});
+				break;
+			case FIREFOX:
+				data(XNR_storage(name));
+				break;
+			case SAFARI:
+				var reqId=parseInt(Math.random() * 1000000);
+				safari.self.addEventListener("message", function(msg) {
+					if(msg.name=="xnr_storage_resp" && msg.message.id==reqId) {
+						safari.self.removeEventListener("message",arguments.callee,false);
+						data(msg.message.data);
+					}
+				},false);
+			    safari.self.tab.dispatchMessage("xnr_storage", {pref:name, id:reqId});
+				break;
+			case OPERA_UJS:
+				data(window.opera.scriptStorage[name]);
+				break;
+			case OPERA_EXT:
+				XNR.oexSendRequest({action:"storage", pref:name},function(response) {
+					data(response);
+				});
+				break;
+			case MAXTHON:
+				data(XNR.rt.storage.getConfig(name));
+				break;
+		}
+	} else {
+		switch(XNR.agent) {
+			case USERSCRIPT:
+				GM_setValue(name, data);
+				break;
+			case FIREFOX:
+				XNR_storage(name, data);
+				break;
+			case CHROME:
+				chrome.extension.sendRequest({action:"storage", pref:name, data:data});
+				break;
+			case SOGOU:
+				sogouExplorer.extension.sendRequest({action:"storage", pref:name, data:data});
+				break;
+			case SAFARI:
+				safari.self.tab.dispatchMessage("xnr_storage", {pref:name, data:data});
+				break;
+			case OPERA_UJS:
+				XNR.scriptStorage[name]=data;
+				break;
+			case OPERA_EXT:
+				XNR.oexSendRequest({action:"storage", pref:name, data:data});
+				break;
+			case MAXTHON:
+				XNR.rt.storage.setConfig(name, data);
+				break;
+		}
+	}
+}
+
+/*
  * 发送HTTP请求。支持跨域。Chrome/Safari跨域还需要配置权限。
  * 参数
  *   [String]url:页面地址
@@ -8249,10 +8436,11 @@ function $pager(pager) {
  * 格式化日期。如果不是Firefox扩展的安全限制，可以直接作为Date的方法。。。
  * 参数
  *   [Date]d:日期对象
+ *   [String]fmt:格式文本，可空，默认"yyyy-MM-dd HH:mm:ss"
  * 返回值
- *   [String]:yyyy-MM-dd HH:mm:ss格式的文本，出错返回“未知”
+ *   [String]:按格式文本返回时间，出错返回“未知”
  */
-function $formatDate(d) {
+function $formatDate(d, fmt) {
 	if(!(d instanceof Date)) {
 		if(d===0) {
 			return "未知";
@@ -8271,7 +8459,9 @@ function $formatDate(d) {
 		"m+": d.getMinutes(),	// 分
 		"s+": d.getSeconds(),	// 秒
 	};
-	var fmt="yyyy-MM-dd HH:mm:ss";
+	if (!fmt) {
+		fmt="yyyy-MM-dd HH:mm:ss";
+	}
     for(var i in formats) {
     	if(new RegExp("("+i+")").test(fmt)) {
 			prefix="";
@@ -8628,13 +8818,13 @@ PageKit.prototype={
 				};
 				return this;
 			case "string":
-				if(v===undefined) {
+				if(arguments.length===1) {
 					try {
 						return this.get().getAttribute(o);
 					} catch(ex) {
 						return null;
 					}
-				} else if(v===null) {
+				} else if(v==null) {
 					this.each(function() {
 						this.removeAttribute(o);
 					});
@@ -8659,7 +8849,7 @@ PageKit.prototype={
 				};
 				return this;
 			case "string":
-				if(v===undefined) {
+				if(arguments.length===1) {
 					try {
 						return this.get()[o];
 					} catch(ex) {
