@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.1.494
-// @miniver        494
+// @version        3.4.1.495
+// @miniver        495
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -52,8 +52,8 @@ if (window.top == null) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.4.1.494";
-XNR.miniver=494;
+XNR.version="3.4.1.495";
+XNR.miniver=495;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -4778,7 +4778,7 @@ function notifyFriendship() {
 			}
 			for (var i = oldFriends.length - 1; i >= 0; i--) {
 				if (oldFriends[i].id in friendHash) {
-					oldFriends.splice(i, i);
+					oldFriends.splice(i, 1);
 				}
 			}
 			friendHash = null;
