@@ -726,5 +726,9 @@
   "(铜牌)": {
     "t": "铜牌",
     "s": "/imgpro/icons/statusface/铜牌.gif"
+  },
+  "(kx)": {
+    "t": "开学",
+    "s": "/imgpro/icons/statusface/kx.gif"
   }
 }

@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.1.496
-// @miniver        496
+// @version        3.4.1.497
+// @miniver        497
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-end
@@ -52,8 +52,8 @@ if (window.top == null) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.4.1.495";
-XNR.miniver=495;
+XNR.version="3.4.1.497";
+XNR.miniver=497;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -669,7 +669,7 @@ function ignoreNotification() {
 
 
 // 隐藏特定类型/标题新鲜事
-function hideFeeds(evt,feeds,mark,badTitles,badSources,badIds,goodIds,hideOld,hideDays) {
+function hideFeeds(evt,feeds,mark,badTitles,badSources,badLinks,badIds,goodIds,hideOld,hideDays) {
 	if(evt && evt.target.tagName!="ARTICLE") {
 		return;
 	}
@@ -690,12 +690,16 @@ function hideFeeds(evt,feeds,mark,badTitles,badSources,badIds,goodIds,hideOld,hi
 		// 目标浏览器都支持Array.filter()和some(): http://kangax.github.com/es5-compat-table/
 		var badSourcesArray = badSources.replace(/\s/g,"").toLowerCase().split("|").filter(function(s){return !!s});
 	}
+	if (badLinks) {
+		var badLinksArray = badLinks.toLowerCase().split("\n").filter(function(l){return !!l});
+	}
 	(evt?$(evt.target):$("div.feed-list>article")).filter(function(elem) {
 		var feed=$(elem);
 		var fh3=feed.find("h3");
 		var fshareTitle=feed.find(".content").find(".title,.video-title,.blog-title,.link-title").text();
 		var fstatus=feed.find(".content .original-stauts");
-		var source=feed.find(".details .legend span.from").text().replace(/\s/g,"").replace(/^通过|发布$/g,"").toLowerCase();
+		var fsource=feed.find(".details .legend span.from").text().replace(/\s/g,"").replace(/^通过|发布$/g,"").toLowerCase();
+		var flinks=feed.find("a[href]");
 		if(goodIds && fh3.find(gidFilter).exist()) {
 			return false;
 		}
@@ -710,8 +714,13 @@ function hideFeeds(evt,feeds,mark,badTitles,badSources,badIds,goodIds,hideOld,hi
 				return true;
 			}
 		}
-		if(badSources && source) {
-			if (badSourcesArray.some(function(s){ return (s.charAt(0)=="!")?(source==s.substring(1)):(source.indexOf(s)>=0) })) {
+		if(badSources && badSourcesArray.length > 0 && fsource) {
+			if (badSourcesArray.some(function(s){ return (s.charAt(0)=="!")?(fsource==s.substring(1)):(fsource.indexOf(s)>=0) })) {
+				return true;
+			}
+		}
+		if(badLinks && badLinksArray.length > 0 && flinks.exist()) {
+			if (badLinksArray.some(function(l){ for(var i=flinks.size()-1;i>=0;i--){if(flinks.get(i).href.toLowerCase().indexOf(l)>=0){return true}}return false })) {
 				return true;
 			}
 		}
@@ -915,7 +924,7 @@ function showFeedToolbar() {
 };
 
 // 自动检查提醒新鲜事更新
-function autoCheckFeeds(feedFilter,badTitles,badSources,badIds,goodIds,checkReply) {
+function autoCheckFeeds(feedFilter,badTitles,badSources,badLinks,badIds,goodIds,checkReply) {
 	// 每隔90秒检查一次
 	const interval=90;
 
@@ -948,13 +957,17 @@ function autoCheckFeeds(feedFilter,badTitles,badSources,badIds,goodIds,checkRepl
 				if (badSources) {
 					var badSourcesArray = badSources.replace(/\s/g,"").toLowerCase().split("|").filter(function(s){return !!s});
 				}
+				if (badLinks) {
+					var badLinksArray = badLinks.toLowerCase().split("\n").filter(function(l){return !!l});
+				}
 				// 滤除新鲜事
 				for(var i=feedList.heirs()-1;i>=0;i--) {
 					var feed=feedList.child(i);
 					var fh3=feed.find("h3");
 					var fshareTitle=feed.find(".content").find(".title,.video-title,.blog-title").text();
 					var fstatus=feed.find(".content .original-stauts");
-					var source=feed.find(".details .legend span.from").text().replace(/\s/g,"").replace(/^通过|发布$/g,"").toLowerCase();
+					var fsource=feed.find(".details .legend span.from").text().replace(/\s/g,"").replace(/^通过|发布$/g,"").toLowerCase();
+					var flinks=feed.find("a[href]");
 					if(goodIds && fh3.find(gidFilter).exist()) {
 						// 在白名单上
 						continue;
@@ -976,8 +989,14 @@ function autoCheckFeeds(feedFilter,badTitles,badSources,badIds,goodIds,checkRepl
 							continue;
 						}
 					}
-					if(badSources && source) {
-						if (badSourcesArray.some(function(s){ return (s.charAt(0)=="!")?(source==s.substring(1)):(source.indexOf(s)>=0) })) {
+					if(badSources && badSourcesArray.length > 0 && fsource) {
+						if (badSourcesArray.some(function(s){ return (s.charAt(0)=="!")?(fsource==s.substring(1)):(fsource.indexOf(s)>=0) })) {
+							feed.remove();
+							continue;
+						}
+					}
+					if(badLinks && badLinksArray.length > 0 && flinks.exist()) {
+						if (badLinksArray.some(function(l){ for(var i=flinks.size()-1;i>=0;i--){if(flinks.get(i).href.toLowerCase().indexOf(l)>=0){return true}}return false })) {
 							feed.remove();
 							continue;
 						}
@@ -2215,6 +2234,7 @@ function addExtraEmotions(nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(qgz)":	{t:"人人求工作",	s:"/imgpro/icons/statusface/offer.gif"},
 		"(南非)":	{t:"南非",			s:"/imgpro/icons/new-statusface/nanfei.gif"},
 		"(kxl)":	{t:"开学啦",		s:"/imgpro/icons/statusface/kaixuela-wide.gif",w:true},
+		"(kx)":		{t:"开学",			s:"/imgpro/icons/statusface/kx.gif"},
 		"(jz)":		{t:"捐建小学",		s:"/imgpro/icons/statusface/grass.gif"},
 		"(nasa)":	{t:"NASA",			s:"/imgpro/icons/statusface/nasa.gif"},
 		"(hz)":		{t:"传递爱心",		s:"/imgpro/icons/statusface/cdax.gif"},
@@ -4742,7 +4762,11 @@ function notifyFriendship() {
 		var H = d2.getHours() - d1.getHours();
 		var m = d2.getMinutes() - d1.getMinutes();
 		if (y > 0) {
-			return " " + y + " 年又 " + M + " 个月";
+			if (M > 0) {
+				return " " + y + " 年又 " + M + " 个月";
+			} else {
+				return " " + y + " 年";
+			}
 		} else if (M > 0) {
 			return " " + M + " 个月";
 		} else if (d > 0) {
@@ -5537,7 +5561,7 @@ function main(savedOptions) {
 					fn:[{
 						name:hideFeeds,
 						stage:1,
-						args:[null,"@feedGroup","@markFeedAsRead","@forbiddenFeedTitle","@forbiddenFeedSource","@forbiddenFeedId","@trustedFeedId","@hideOldFeeds","@oldFeedDays"],
+						args:[null,"@feedGroup","@markFeedAsRead","@forbiddenFeedTitle","@forbiddenFeedSource","@forbiddenFeedLink","@forbiddenFeedId","@trustedFeedId","@hideOldFeeds","@oldFeedDays"],
 						trigger:{"div.feed-list":"DOMNodeInserted"},
 					}],
 				}],
@@ -5707,6 +5731,22 @@ function main(savedOptions) {
 						value:"",
 						type:"input",
 						style:"margin-left:5px;width:310px"
+					}
+				],
+				page:"feed,profile"
+			},{
+				text:"隐藏包含以下链接的新鲜事######",
+				ctrl:[
+					{
+						type:"info",
+						value:"当新鲜事中任意一个链接包含任意一行中的内容时即被隐藏，忽略大小写。"
+					},{
+						type:"br"
+					},{
+						id:"forbiddenFeedLink",
+						value:"",
+						type:"edit",
+						style:"margin-left:5px;width:310px;height:50px"
 					}
 				],
 				page:"feed,profile"
@@ -5893,7 +5933,7 @@ function main(savedOptions) {
 							name:autoCheckFeeds,
 							stage:3,
 							fire:true,
-							args:["@feedGroup","@forbiddenFeedTitle","@forbiddenFeedSource","@forbiddenFeedId","@trustedFeedId","@checkFeedReply"]
+							args:["@feedGroup","@forbiddenFeedTitle","@forbiddenFeedSource","@forbiddenFeedLink","@forbiddenFeedId","@trustedFeedId","@checkFeedReply"]
 						}]
 					},{
 						id:"checkFeedReply",
