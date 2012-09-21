@@ -6,11 +6,11 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.1.497
-// @miniver        497
+// @version        3.4.1.498
+// @miniver        498
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
-// @run-at         document-end
+// @run-at         document-start
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_xmlhttpRequest
@@ -34,7 +34,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ///
 
-(function(){
+(function() {
+
+// document-start在GM1.0以下的版本中，执行时documentElement尚未建立
+if (document.documentElement == null) {
+	setTimeout(arguments.callee, 10);
+	return;
+}
 
 if (window.top == null) {
 	return;
@@ -3434,7 +3440,7 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 				}
 				break;
 		}
-		if(!thumbnail || thumbnail.match("/large|_large|large_|original_|/photos/0/0/|/page_pic/|/homeAd/|/[sa]\\.xnimg\\.cn/|app\\.xnimg\\.cn|/L[^/]+$")) {
+		if((!thumbnail || thumbnail.match("/large|_large|large_|original_|/photos/0/0/|/page_pic/|/homeAd/|/[sa]\\.xnimg\\.cn/|app\\.xnimg\\.cn|/L[^/]+$")) && !t.getAttribute("data-large") && !t.getAttribute("data-src") && !t.getAttribute("data-photo")) {
 			if(/large|original/.test(thumbnail) && t.tagName=="IMG" && (t.naturalWidth * 0.8 > t.width || t.naturalHeight * 0.8 > t.height)) {
 				// 已经是大图了，只是被限制了大小
 				imgId=thumbnail.substring(thumbnail.lastIndexOf("_"));
