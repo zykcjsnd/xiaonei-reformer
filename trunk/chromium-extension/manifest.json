@@ -1,6 +1,6 @@
 {
 	"name": "人人网改造器",
-	"version": "3.4.1.497",
+	"version": "3.4.1.499",
 	"manifest_version": 2,
 	"description": "让人人网（renren.com）用起来舒服一点",
 	"icons": { "16": "image/logo_16.png", "64": "image/logo_64.png", "128": "image/logo_128.png" },
