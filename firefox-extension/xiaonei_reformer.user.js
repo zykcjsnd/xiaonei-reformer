@@ -6,11 +6,11 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.1.497
-// @miniver        497
+// @version        3.4.1.499
+// @miniver        499
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
-// @run-at         document-end
+// @run-at         document-start
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_xmlhttpRequest
@@ -34,7 +34,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ///
 
-(function(){
+(function() {
+
+// document-start在GM1.0以下的版本中，执行时documentElement尚未建立
+if (document.documentElement == null) {
+	setTimeout(arguments.callee, 10);
+	return;
+}
 
 if (window.top == null) {
 	return;
@@ -52,8 +58,8 @@ if (window.top == null) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.4.1.497";
-XNR.miniver=497;
+XNR.version="3.4.1.499";
+XNR.miniver=499;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -356,6 +362,7 @@ function removeHomeGadgets(gadgetOpt) {
 		"newStar":".star-new,#highSchoolStar",	// 人气之星
 		"contact":".side-item.get-touch",	// 联系朋友
 		"groups":".site-menu-minigroups, #site-menu-nav>.minigroups",	// 我的群
+		"hotSearch":"#allHotSearch"	// 综合搜索榜
 	};
 	const filters={
 		"webFunction":{t:".side-item",f:".web-function"},	// 站内功能
@@ -3157,7 +3164,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 		}
 
 		// 普通模式
-		links=$(".photo-list span.img a, table.photoList td.photoPan>a, .photo-list>ul>li>a.cover, ul.album-list>li>a.photo-box");
+		links=$(".photo-list span.img a, table.photoList td.photoPan>a, .photo-list>ul>li>a.cover, ul.album-list>li>a.photo-box, .photo-list ul>li>a.picture");
 		var totalImage=links.size();
 		if(totalImage==0) {
 			return;
@@ -3434,7 +3441,7 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 				}
 				break;
 		}
-		if(!thumbnail || thumbnail.match("/large|_large|large_|original_|/photos/0/0/|/page_pic/|/homeAd/|/[sa]\\.xnimg\\.cn/|app\\.xnimg\\.cn|/L[^/]+$")) {
+		if((!thumbnail || thumbnail.match("/large|_large|large_|original_|/photos/0/0/|/page_pic/|/homeAd/|/[sa]\\.xnimg\\.cn/|app\\.xnimg\\.cn|/L[^/]+$")) && !t.getAttribute("data-large") && !t.getAttribute("data-src") && !t.getAttribute("data-photo")) {
 			if(/large|original/.test(thumbnail) && t.tagName=="IMG" && (t.naturalWidth * 0.8 > t.width || t.naturalHeight * 0.8 > t.height)) {
 				// 已经是大图了，只是被限制了大小
 				imgId=thumbnail.substring(thumbnail.lastIndexOf("_"));
@@ -4226,7 +4233,7 @@ function enableShortcutMenu(evt) {
 			"Ta的日志":"http://blog.renren.com/blog/0/friendsNews?friend=@@",	// &__view=async-html",
 			// 没有上面这个好用
 			// "Ta的日志":"http://blog.renren.com/GetBlog.do?id=@@",	// http://blog.renren.com/blog/@@/friends
-			"Ta的公开资料":"http://browse.renren.com/searchEx.do?ajax=1&q=@@",
+			// "Ta的公开资料":"http://browse.renren.com/s/all/ajax?q=@@&limit=1&p=&offset=0", // 用处不大
 			"Ta的状态":"http://status.renren.com/status/@@",
 			"Ta的行踪":"http://places.renren.com/web/lbsApp?pt=7&userId=@@",	// &__view=async-html",
 			"Ta的好友":"http://friend.renren.com/GetFriendList.do?id=@@",
@@ -5351,6 +5358,10 @@ function main(savedOptions) {
 					},{
 						id:"contact",
 						text:"##联系朋友",
+						value:false
+					},{
+						id:"hotSearch",
+						text:"##综合搜索榜",
 						value:false
 					}
 				],
