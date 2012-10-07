@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.1.499
-// @miniver        499
+// @version        3.4.1.501
+// @miniver        501
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -58,8 +58,8 @@ if (window.top == null) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.4.1.499";
-XNR.miniver=499;
+XNR.version="3.4.1.501";
+XNR.miniver=501;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -2189,6 +2189,7 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(禅师)":	{t:"禅师",			s:"/imgpro/icons/statusface/chsh.gif"},
 	};
 	var eEmList={
+		"(guoqing)":		{t:"国庆",		s:"/imgpro/icons/statusface/guoqing.gif"},
 		"(gq)":		{t:"国庆快乐",		s:"/imgpro/icons/statusface/nationalday2010.gif"},
 		"(gq2)":	{t:"国庆快乐",		s:"/imgpro/icons/statusface/national-day-balloon.gif"},
 		"(gq3)":	{t:"我爱中国",		s:"/imgpro/icons/statusface/national-day-i-love-zh.gif"},
@@ -4807,6 +4808,10 @@ function notifyFriendship() {
 			return "一段时间";
 		}
 	}
+	if ($cookie("id","0") != XNR.userId) {
+		// 当前cookie中记录的id和进入页面时记录的不同，说明已经换其他账号登录了
+		return;
+	}
 	$storage("friends_" + XNR.userId, function(dataString) {
 		var oldFriends = [];
 		var lastCheck = 0;
@@ -4827,6 +4832,9 @@ function notifyFriendship() {
 
 		$get('http://friend.renren.com/recommendSelector.do?p={"init":true,"uid":true,"uhead":true,"uname":true,"group":false,"net":true,"param":{}}&t='+Math.random(), function(html) {
 			if(!html) {
+				return;
+			}
+			if ($cookie("id","0") != XNR.userId) {
 				return;
 			}
 			try {
@@ -4851,6 +4859,9 @@ function notifyFriendship() {
 			} else {
 				var fi = 0;
 				$get("http://www.renren.com/showcard?friendID=" + oldFriends[fi].id, function(html, url, idx) {
+					if ($cookie("id","0") != XNR.userId) {
+						return;
+					}
 					if (html) {
 						try {
 							// 解除好友关系后名片就看不到了，停用账号还可以看到

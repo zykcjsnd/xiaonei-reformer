@@ -730,5 +730,9 @@
   "(kx)": {
     "t": "开学",
     "s": "/imgpro/icons/statusface/kx.gif"
+  },
+  "(guoqing)": {
+    "t": "国庆",
+    "s": "/imgpro/icons/statusface/guoqing.gif"
   }
 }
