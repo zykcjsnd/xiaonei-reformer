@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<widget xmlns="http://www.w3.org/ns/widgets" version="3.4.1.499" id="extensions:xiaonei-reformer" defaultlocale="zh-cn">
+<widget xmlns="http://www.w3.org/ns/widgets" version="3.4.1.501" id="extensions:xiaonei-reformer" defaultlocale="zh-cn">
 	<name xml:lang="en">Xiaonei Reformer</name>
 	<name xml:lang="zh-cn">人人网改造器</name>
 	<description xml:lang="en">enhance your experience on renren.com (formerly xiaonei.com)</description>
