@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.1.501
-// @miniver        501
+// @version        3.4.2.503
+// @miniver        503
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -58,8 +58,8 @@ if (window.top == null) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.4.1.501";
-XNR.miniver=501;
+XNR.version="3.4.2.503";
+XNR.miniver=503;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -174,7 +174,7 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .advert-con, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #pro-clent-ad, .pro-clent-ad, .buddy-clent-ad, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], .sec.promotion, iframe[src*='adsupport.renren.com']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .advert-con, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #pro-clent-ad, .pro-clent-ad, .buddy-clent-ad, .wp-rrzm-popup, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], div[id*='AdBox'], .mentos-lbox, .sec.promotion, iframe[src*='adsupport.renren.com']";
 	if (!/im\.renren\.com/.test(XNR.url)) {
 		$ban(ads);
 	}
@@ -349,6 +349,8 @@ function removeHomeGadgets(gadgetOpt) {
 	const gadgets={
 		"topNotice":".notice-holder, #notice_system",		// 顶部通知
 		"footprint":"#footPrint",	// 最近来访
+		"myApp": "#site-menu-apps-mine, #sidebar:not(.useNewLeftBar) #site-menu-nav",	// 我的应用
+		"webFunction": "#site-menu-apps-func",	// 站内功能
 		"appState": "#appDynamic",	// 应用动态
 		"recommendApp": ".app-center-popup,#apps-count",	// 应用推荐
 		"vipToolbox": "#vipToolBox",	// 会员专区
@@ -358,11 +360,11 @@ function removeHomeGadgets(gadgetOpt) {
 		"sponsors":"#sponsorsWidget,.wide-sponsors",	// 赞助商内容
 		"birthday":"#homeBirthdayPart",	// 好友生日
 		"survey":".side-item.sales-poll",	// 人人网调查
-		"friendPhoto":"#friendPhoto",	// 朋友的照片
+		"friendPhoto":"#friendPhoto",	// 朋友的照片/过往的今天
 		"newStar":".star-new,#highSchoolStar",	// 人气之星
 		"contact":".side-item.get-touch",	// 联系朋友
 		"groups":".site-menu-minigroups, #site-menu-nav>.minigroups",	// 我的群
-		"hotSearch":"#allHotSearch"	// 综合搜索榜
+		"hotSearch":"#allHotSearch,.hotSearch"	// 综合搜索榜
 	};
 	const filters={
 		"webFunction":{t:".side-item",f:".web-function"},	// 站内功能
@@ -384,7 +386,7 @@ function removeHomeGadgets(gadgetOpt) {
 	}
 
 	if(gadgetOpt["appList"]) {
-		$patchCSS("#site-menu-apps-nav{display:none}"); // 应用列表
+		$patchCSS("#site-menu-apps-nav,.site-menu-nav-box{display:none}"); // 应用列表
 	}
 
 	$wait(1,function() {
@@ -560,11 +562,25 @@ function rejectRequest(req,blockApp,igNotification,igReminder) {
 			// 小组邀请
 			if(req["xiaozuRequest"]) {
 				var command;
-				var regexpr = /xiaozu-i_refuse:.*?\/(\d+)\//g;
+				var regexpr = /xiaozuInvite_refuse:.*?\/(\d+)\//g;
 				while (command = regexpr.exec(html)) {
 					links.push("http://xiaozu.renren.com/xiaozu/" + command[1] + "/invite/refuse");
 				}
 			}
+			// 小站邀请
+			if(req["xiaozhanRequest"]) {
+				var command;
+				var regexpr = /xiaozhan_refuse:([^,]+),(\d+),(\d+),/g;
+				while (command = regexpr.exec(html)) {
+					links.push("http://zhan.renren.com/"+ command[1] + "/recommend/refuse?inviterId=" + command[2] + "&siteId=" + command[3]);
+				}
+				var regexpr = /xzInvite_refuse:([^,]+),(\d+),(\d+),/g;
+				while (command = regexpr.exec(html)) {
+					links.push("http://zhan.renren.com/"+ command[1] + "/zhanCreateInvite/refuse?inviterId=" + command[2] + "&siteId=" + command[3]);
+				}
+
+			}
+
 			// 通讯录请求
 			if(req["addbookRequest"]) {
 				var command;
@@ -613,8 +629,16 @@ function batchProcessRequest() {
 	addLink("addr", "拒绝", "交换名片请求", "http://www.renren.com/address/ignorecard?id=${0}", /\d+/);
 
 	// 小组邀请
-	addLink("xiaozu-i", "接受", "小组邀请", "http://xiaozu.renren.com/xiaozu/${1}/add", /\/(\d+)\//);
-	addLink("xiaozu-i", "忽略", "小组邀请", "http://xiaozu.renren.com/xiaozu/${1}/invite/refuse", /\/(\d+)\//);
+	addLink("xiaozuInvite", "接受", "小组邀请", "http://xiaozu.renren.com/xiaozu/${1}/add", /\/(\d+)\//);
+	addLink("xiaozuInvite", "忽略", "小组邀请", "http://xiaozu.renren.com/xiaozu/${1}/invite/refuse", /\/(\d+)\//);
+
+	// 小站邀请
+	addLink("xiaozhan", "接受", "小站推荐", "http://zhan.renren.com/${1}/recommend/accept?inviterId=${2}&siteId=${3}", /:([^,]+),(\d+),(\d+),/);
+	addLink("xiaozhan", "忽略", "小站推荐", "http://zhan.renren.com/${1}/recommend/reject?inviterId=${2}&siteId=${3}", /:([^,]+),(\d+),(\d+),/);
+
+	// 小站创建邀请
+	addLink("xzInvite", "接受", "小站邀请", "http://zhan.renren.com/${1}/zhanCreateInvite/accept?inviterId=${2}&siteId=${3}", /:([^,]+),(\d+),(\d+),/);
+	addLink("xzInvite", "忽略", "小站邀请", "http://zhan.renren.com/${1}/zhanCreateInvite/reject?inviterId=${2}&siteId=${3}", /:([^,]+),(\d+),(\d+),/);
 
 	// 应用请求
 	addLink("appmessage", "接受", "应用请求", "http://app.renren.com/request/handleRequest.do?rid=${1}&appId=${2}&type=${3}", /:(\d+),(\d+),(\d+)/);
@@ -2144,6 +2168,7 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(yb)":		{t:"元宝",			s:"/imgpro/icons/statusface/yuanbao.gif"},
 		"(xx)":		{t:"星星",			s:"/imgpro/icons/statusface/xx.gif"},
 		"(nz)":		{t:"奶嘴",			s:"/imgpro/icons/statusface/nz.gif"},
+		"(石化)":	{t:"石化",			s:"/imgpro/icons/statusface/sh.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
@@ -2187,6 +2212,7 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(cb)":		{t:"蟹蟹",			s:"/imgpro/icons/statusface/crab.gif"},
 		"(see)":	{t:"看海",			s:"/imgpro/icons/statusface/seesea.gif"},
 		"(禅师)":	{t:"禅师",			s:"/imgpro/icons/statusface/chsh.gif"},
+		"(twg)":	{t:"style",			s:"/imgpro/icons/statusface/style.gif"},
 	};
 	var eEmList={
 		"(guoqing)":		{t:"国庆",		s:"/imgpro/icons/statusface/guoqing.gif"},
@@ -3495,7 +3521,7 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 			return;
 		}
 		largeData = t.getAttribute("data-photo");
-		if (largeData && /large:'([^']+)'/.exec(largeData)) {
+		if (largeData && /large:['"]([^'"]+)['"]/.exec(largeData)) {
 			_showViewer(evt.pageX,RegExp.$1,imgId,autoShrink,true);
 			return;
 		}
@@ -4140,36 +4166,46 @@ function removeBestFriendRestriction() {
 
 // 允许修改昵称
 function removeNicknameRestriction() {
-	try {
-		if($("#feedInfoAjaxDiv").empty()) {
-			return;
-		}
-		var input=$("#nkname");
-		if(input.empty()) {
-			if($("#basicInfo_form>p>#name").empty()) {
-				return;
-			}
-			var holder=$(".status-holder");
-			try {
-				var nkname=holder.get().childNodes[holder.find("h1.username").index()+1].textContent;
-				nkname=nkname.replace(/\n/g,"").replace(/^[ \t]+|[ \t]+$/,"").replace(/^\(/,"").replace(/\)$/,"");
-			} catch(ex) {
-				var nkname="";
-			}
-			$("@p").html('<label for="nkname"><span>昵称:\n</span>\t</label><input type="text" class="input-text" id="nkname" value="" tabindex="1" maxlength="12" name="name"/>').move("after",$("#basicInfo_form>p").filter("#name"));
-			$("#nkname").val(nkname);
-		} else if(input.attr("readonly")) {
-			input.attr({readonly:null});
-			input.superior().find("span.hint.gray").remove();
-		} else {
-			return;
-		}
-		const code="window.XN.page.ProfileEdit.basicInfo.checkNkName=function(){}";
-		$script(code);
-	} catch(ex) {
-		$error("removeNicknameRestriction",ex);
+	if($("#basicInfo_form").empty()) {
+		return;
 	}
+	var input=$("#nkname");
+	if(input.empty()) {
+		if($("#basicInfo_form>p>#name").empty()) {
+			return;
+		}
+		var holder=$(".status-holder");
+		try {
+			var nkname=holder.get().childNodes[holder.find("h1.username").index()+1].textContent;
+			nkname=nkname.replace(/\n/g,"").replace(/^[ \t]+|[ \t]+$/,"").replace(/^\(/,"").replace(/\)$/,"");
+		} catch(ex) {
+			var nkname="";
+		}
+		$("@p").html('<label for="nkname"><span>昵称:\n</span>\t</label><input type="text" class="input-text" id="nkname" value="" tabindex="1" maxlength="12" name="name"/>').move("after",$("#basicInfo_form>p").filter("#name"));
+		$("#nkname").val(nkname);
+	} else if(input.attr("readonly")) {
+		input.attr({readonly:null});
+		input.superior().find("span.hint.gray").remove();
+	} else {
+		return;
+	}
+	const code="window.XN.page.ProfileEdit.basicInfo.checkNkName=function(){}";
+	$script(code);
 };
+
+// 允许不填写家乡/所在地/出生月日
+function removeLocationRestriction() {
+	if($("#basicInfo_form").empty()) {
+		return;
+	}
+	if($("#myProvince").empty()) {
+		return;
+	}
+	$("label[for='myProvince'] em,label[for='homeprovince'] em").remove();
+	const code="var a=window.XN.page.ProfileEdit.basicInfo.checkData=function(){return true}";
+	$script(code);
+};
+
 
 // 显示上一次登录信息
 function showLoginInfo(lastHash) {
@@ -5328,6 +5364,10 @@ function main(savedOptions) {
 						text:"##应用列表",
 						value:false,
 					},{
+						id:"myApp",
+						text:"##我的应用",
+						value:false
+					},{
 						id:"recommendApp",
 						text:"##应用推荐",
 						value:false,
@@ -5381,7 +5421,7 @@ function main(savedOptions) {
 						value:false,
 					},{
 						id:"friendPhoto",
-						text:"##朋友的照片",
+						text:"##朋友的照片/过往的今天",
 						value:false,
 					},{
 						id:"newStar",
@@ -5543,6 +5583,10 @@ function main(savedOptions) {
 					},{
 						id:"pageRequest",
 						text:"##公共主页邀请",
+						value:false
+					},{
+						id:"xiaozhanRequest",
+						text:"##小站邀请",
 						value:false
 					}
 				]
@@ -6520,11 +6564,30 @@ function main(savedOptions) {
 							name:removeNicknameRestriction,
 							stage:2,
 							fire:"trigger",
-							trigger:{"#ajaxContainer":"DOMNodeInserted"}
+							trigger:{"#ajaxContainer":"DOMNodeInserted", "#feedInfoAjaxDiv #basicInfo":"DOMNodeInserted"}
 						}]
 					},{
 						type:"info",
 						value:"启用本功能后，在个人主页“资料”->“资料编辑”->“基本信息”中编辑昵称"
+					}
+				],
+				page:"profile",
+				login:true
+			},{
+				text:"##允许不填写家乡/所在地/出生月日##",
+				ctrl:[
+					{
+						id:"removeLocationRestriction",
+						value:false,
+						fn:[{
+							name:removeLocationRestriction,
+							stage:2,
+							fire:"trigger",
+							trigger:{"#ajaxContainer":"DOMNodeInserted", "#feedInfoAjaxDiv #basicInfo":"DOMNodeInserted"}
+						}]
+					},{
+						type:"info",
+						value:"启用本功能后，在个人主页“资料”->“资料编辑”->“基本信息”中将家乡和/或所在地设置为“省份”，出生月日分别设置成“选择月份”、“选择日期”后保存"
 					}
 				],
 				page:"profile",
@@ -7311,7 +7374,7 @@ function main(savedOptions) {
 		// 生成选项菜单
 		var basicCSS='.xnr_dialog{position:fixed;color:black;font-size:12px;background:rgba(0,0,0,0.5);padding:10px;-moz-border-radius:8px;border-radius:8px}.xnr_dialog *{padding:0;margin:0;line-height:normal}.xnr_dialog h1{font-size:18px;font-weight:bold}.xnr_dialog a{color:#3B5990}.xnr_dialog table{width:100%;border-collapse:collapse}.xnr_dialog .title{padding:4px;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none;cursor:default}.xnr_dialog .btns{background:#F0F5F8;text-align:right;border-top:1px solid lightgray}.xnr_dialog .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px;cursor:pointer}.xnr_dialog .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_dialog .ok:active{border-color:#124680 #B8D4E8 #B8D4E8 #124680}.xnr_dialog .cancel{background:#F0F0F0;border-color:white #848484 #848484 white;color:black}.xnr_dialog .cancel:active{border-color:#848484 white white #848484}';
 		var menuHTML='<style type="text/css">.xnr_op{width:500px;z-index:200000}.xnr_op .options{height:300px;background:#FFFFFA;clear:both}.xnr_op .category{width:119px;border-right:1px solid lightgray;overflow-x:hidden;overflow-y:auto;height:300px;float:left}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages{width:380px;margin-left:120px}.xnr_op .p{overflow:auto;height:280px;padding:10px}.xnr_op .p>div{min-height:19px;padding:2px 0;width:100%}.xnr_op .p>div *{vertical-align:middle}.xnr_op .group{margin-left:5px;margin-top:3px;table-layout:fixed}.xnr_op .group td{padding:2px 0}.xnr_op input[type="checkbox"]{margin-right:4px;cursor:pointer}.xnr_op button{background-color:#EFEFEF;background:-moz-linear-gradient(top,#FDFCFB,#E7E2DB);background:-o-linear-gradient(top,#FDFCFB,#E7E2DB);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#E7E2DB));color:black;border-color:#877C6C #A99D8C #A99D8C;border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;font-size:12px;padding:'+(XNR.acore==GECKO?1:3)+'px}.xnr_op button:hover:not([disabled]){background-color:#CCC4B9;background:-moz-linear-gradient(top,#FDFCFB,#CCC4B9);background:-o-linear-gradient(top,#FDFCFB,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#CCC4B9))}.xnr_op button[disabled]{color:grey}.xnr_op button:active:not([disabled]){background:#C1BDB6;background:-moz-linear-gradient(top,#C1BDB6,#CCC4B9);background:-o-linear-gradient(top,#C1BDB6,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#C1BDB6),to(#CCC4B9))}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op .p span{cursor:default}.xnr_op span[tooltip]{margin:0 2px;height:16px;width:16px;display:inline-block;cursor:help}.xnr_op span.info{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAuUlEQVQ4y2NgoDbQ9upiiK5eznD17sv/yDi2ajlYDi9wSZ+NoREdu2bNxa7ZJnkWXHPepH1YMUzeNnU6prPRNaMDdEOU3boRBoSWLWXApxmbIRHlyxAG4LIdFx+mHqcByBifNwgagE0zWQbgig24AWFogUgIgxNW7QpEIIKiBJsr8DlfxXMSalpwTpuJPyFN2ItIjXlzsKdGx9h2gknZLqYFf37gktJmCM2dhGFQaE4/A6eYKtUzLwMAfM0C2p5qSS4AAAAASUVORK5CYII%3D")}.xnr_op span.warn{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA1ElEQVQ4y2NgoCVYz8BgsJyBwYQszUCNsv8ZGP6D8FIGBlWSDYBphmGSNC9jYNAGabqUkvL/cmYm2IAlDAympNsOA6S4YjUDgxVI8dX8fLj+6+XlYAPWsbB4kGQ7hMtAvCvWsrN7gxRdq6jAMOBWSwvYgE1sbJFE+x3FBUiuaGBgYMKp+Xpz839c4P7UqWA1QJfmomgGmYgR8thcgOSKmQwMrBi23+js/E8IPJ47FyNAudBTHbEY7gJjBgbdDgaG7k4GhqmEcDcDw2Qg7ogA5hWq5FgAlMwfVWL5pDoAAAAASUVORK5CYII%3D")}.xnr_op input:not([type]),.xnr_op textarea{border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;padding:1px;border-color:#877C6C #A99D8C #A99D8C}.xnr_op input:not([type]):focus,.xnr_op textarea:focus{border-color:#3A6389;-moz-box-shadow:inset 0 0 1px #005EAC;-webkit-box-shadow:inset 0 0 1px #005EAC;box-shadow:inset 0 0 1px #005EAC}.xnr_op textarea{resize:none;-moz-resize:none}.xnr_op .fp{text-align:center;vertical-align:middle;width:400px;height:300px;display:table-cell}.xnr_op .fp>*{padding:5px}.xnr_op .icons>a{margin:8px}.xnr_op .icons img{width:29px}.xnr_op .icons img:hover{-webkit-transform:scale(1.1);-moz-transform:scale(1.1);-o-transform:scale(1.1)}</style>';
-		menuHTML+='<div class="title">改造选项</div><div class="options"><div class="category"><ul>'+categoryHTML+'</ul></div><div class="pages"><div class="fp"><h1>人人网改造器 '+XNR.version+'</h1><p><b>Copyright © 2008-2012</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p><p class="icons"><a href="http://userscripts.org/scripts/show/45836" title="GreaseMonkey脚本" target="_blank"><img src="'+icons_gm+'"/></a><a href="https://chrome.google.com/extensions/detail/bafellppfmjodafekndapfceggodmkfc" title="Chrome/Chromium扩展" target="_blank"><img src="'+icons_chrome+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Firefox扩展" target="_blank"><img src="'+icons_fx+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Safari扩展" target="_blank"><img src="'+icons_safari+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Opera扩展" target="_blank"><img src="'+icons_opera+'"/></a></p></div></div></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div>';
+		menuHTML+='<div class="title">改造选项</div><div class="options"><div class="category"><ul>'+categoryHTML+'</ul></div><div class="pages"><div class="fp"><h1><span>人人网改造器</span> <span>'+XNR.version+'</span></h1><p><b>Copyright © 2008-2012</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p><p class="icons"><a href="http://userscripts.org/scripts/show/45836" title="GreaseMonkey脚本" target="_blank"><img src="'+icons_gm+'"/></a><a href="https://chrome.google.com/extensions/detail/bafellppfmjodafekndapfceggodmkfc" title="Chrome/Chromium扩展" target="_blank"><img src="'+icons_chrome+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Firefox扩展" target="_blank"><img src="'+icons_fx+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Safari扩展" target="_blank"><img src="'+icons_safari+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Opera扩展" target="_blank"><img src="'+icons_opera+'"/></a></p></div></div></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div>';
 	
 		$("@style").attr("type","text/css").text(basicCSS).addTo(document);
 		var menu=$("@div").attr("class","xnr_op xnr_dialog").css("display","none").html(menuHTML).addTo(document);
@@ -7479,6 +7542,11 @@ function main(savedOptions) {
 		var entry=$("@div").attr("class","menu xnr_opt").add($("@div").attr("class","menu-title").add($("@a").attr({href:"javascript:;",onclick:"return false;"}).text("改造")));
 		entry.find("a").bind("click",function() {
 			menu.show().css({"top":parseInt(window.innerHeight-menu.prop("offsetHeight"))/2+"px","left":parseInt(window.innerWidth-menu.prop("offsetWidth"))/2+"px"});
+			var n = [20154,20154,32593,25913,36896,22120];
+			for (var i=0;i<n.length;i++) {
+				n[i]=String.fromCharCode(n[i]);
+			}
+			menu.find(".fp>h1>span").eq(0).text(n.join(''));
 			// 进行设置的提醒已经没必要了
 			$("#xnr_optip").remove();
 		});

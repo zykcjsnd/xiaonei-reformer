@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.1.502
-// @miniver        502
+// @version        3.4.2.503
+// @miniver        503
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -58,8 +58,8 @@ if (window.top == null) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.4.1.501";
-XNR.miniver=501;
+XNR.version="3.4.2.503";
+XNR.miniver=503;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -174,7 +174,7 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .advert-con, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #pro-clent-ad, .pro-clent-ad, .buddy-clent-ad, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], .sec.promotion, iframe[src*='adsupport.renren.com']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .advert-con, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #pro-clent-ad, .pro-clent-ad, .buddy-clent-ad, .wp-rrzm-popup, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], div[id*='AdBox'], .mentos-lbox, .sec.promotion, iframe[src*='adsupport.renren.com']";
 	if (!/im\.renren\.com/.test(XNR.url)) {
 		$ban(ads);
 	}
@@ -349,6 +349,8 @@ function removeHomeGadgets(gadgetOpt) {
 	const gadgets={
 		"topNotice":".notice-holder, #notice_system",		// 顶部通知
 		"footprint":"#footPrint",	// 最近来访
+		"myApp": "#site-menu-apps-mine, #sidebar:not(.useNewLeftBar) #site-menu-nav",	// 我的应用
+		"webFunction": "#site-menu-apps-func",	// 站内功能
 		"appState": "#appDynamic",	// 应用动态
 		"recommendApp": ".app-center-popup,#apps-count",	// 应用推荐
 		"vipToolbox": "#vipToolBox",	// 会员专区
@@ -358,11 +360,11 @@ function removeHomeGadgets(gadgetOpt) {
 		"sponsors":"#sponsorsWidget,.wide-sponsors",	// 赞助商内容
 		"birthday":"#homeBirthdayPart",	// 好友生日
 		"survey":".side-item.sales-poll",	// 人人网调查
-		"friendPhoto":"#friendPhoto",	// 朋友的照片
+		"friendPhoto":"#friendPhoto",	// 朋友的照片/过往的今天
 		"newStar":".star-new,#highSchoolStar",	// 人气之星
 		"contact":".side-item.get-touch",	// 联系朋友
 		"groups":".site-menu-minigroups, #site-menu-nav>.minigroups",	// 我的群
-		"hotSearch":"#allHotSearch"	// 综合搜索榜
+		"hotSearch":"#allHotSearch,.hotSearch"	// 综合搜索榜
 	};
 	const filters={
 		"webFunction":{t:".side-item",f:".web-function"},	// 站内功能
@@ -384,7 +386,7 @@ function removeHomeGadgets(gadgetOpt) {
 	}
 
 	if(gadgetOpt["appList"]) {
-		$patchCSS("#site-menu-apps-nav{display:none}"); // 应用列表
+		$patchCSS("#site-menu-apps-nav,.site-menu-nav-box{display:none}"); // 应用列表
 	}
 
 	$wait(1,function() {
@@ -2166,6 +2168,7 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(yb)":		{t:"元宝",			s:"/imgpro/icons/statusface/yuanbao.gif"},
 		"(xx)":		{t:"星星",			s:"/imgpro/icons/statusface/xx.gif"},
 		"(nz)":		{t:"奶嘴",			s:"/imgpro/icons/statusface/nz.gif"},
+		"(石化)":	{t:"石化",			s:"/imgpro/icons/statusface/sh.gif"},
 		"(哨子)":	{t:"哨子",			s:"/imgpro/icons/new-statusface/shaozi.gif"},
 		"(fb)":		{t:"足球",			s:"/imgpro/icons/new-statusface/football.gif"},
 		"(rc)":		{t:"红牌",			s:"/imgpro/icons/new-statusface/redCard.gif"},
@@ -2209,6 +2212,7 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(cb)":		{t:"蟹蟹",			s:"/imgpro/icons/statusface/crab.gif"},
 		"(see)":	{t:"看海",			s:"/imgpro/icons/statusface/seesea.gif"},
 		"(禅师)":	{t:"禅师",			s:"/imgpro/icons/statusface/chsh.gif"},
+		"(twg)":	{t:"style",			s:"/imgpro/icons/statusface/style.gif"},
 	};
 	var eEmList={
 		"(guoqing)":		{t:"国庆",		s:"/imgpro/icons/statusface/guoqing.gif"},
@@ -3517,7 +3521,7 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 			return;
 		}
 		largeData = t.getAttribute("data-photo");
-		if (largeData && /large:'([^']+)'/.exec(largeData)) {
+		if (largeData && /large:['"]([^'"]+)['"]/.exec(largeData)) {
 			_showViewer(evt.pageX,RegExp.$1,imgId,autoShrink,true);
 			return;
 		}
@@ -4162,36 +4166,46 @@ function removeBestFriendRestriction() {
 
 // 允许修改昵称
 function removeNicknameRestriction() {
-	try {
-		if($("#feedInfoAjaxDiv").empty()) {
-			return;
-		}
-		var input=$("#nkname");
-		if(input.empty()) {
-			if($("#basicInfo_form>p>#name").empty()) {
-				return;
-			}
-			var holder=$(".status-holder");
-			try {
-				var nkname=holder.get().childNodes[holder.find("h1.username").index()+1].textContent;
-				nkname=nkname.replace(/\n/g,"").replace(/^[ \t]+|[ \t]+$/,"").replace(/^\(/,"").replace(/\)$/,"");
-			} catch(ex) {
-				var nkname="";
-			}
-			$("@p").html('<label for="nkname"><span>昵称:\n</span>\t</label><input type="text" class="input-text" id="nkname" value="" tabindex="1" maxlength="12" name="name"/>').move("after",$("#basicInfo_form>p").filter("#name"));
-			$("#nkname").val(nkname);
-		} else if(input.attr("readonly")) {
-			input.attr({readonly:null});
-			input.superior().find("span.hint.gray").remove();
-		} else {
-			return;
-		}
-		const code="window.XN.page.ProfileEdit.basicInfo.checkNkName=function(){}";
-		$script(code);
-	} catch(ex) {
-		$error("removeNicknameRestriction",ex);
+	if($("#basicInfo_form").empty()) {
+		return;
 	}
+	var input=$("#nkname");
+	if(input.empty()) {
+		if($("#basicInfo_form>p>#name").empty()) {
+			return;
+		}
+		var holder=$(".status-holder");
+		try {
+			var nkname=holder.get().childNodes[holder.find("h1.username").index()+1].textContent;
+			nkname=nkname.replace(/\n/g,"").replace(/^[ \t]+|[ \t]+$/,"").replace(/^\(/,"").replace(/\)$/,"");
+		} catch(ex) {
+			var nkname="";
+		}
+		$("@p").html('<label for="nkname"><span>昵称:\n</span>\t</label><input type="text" class="input-text" id="nkname" value="" tabindex="1" maxlength="12" name="name"/>').move("after",$("#basicInfo_form>p").filter("#name"));
+		$("#nkname").val(nkname);
+	} else if(input.attr("readonly")) {
+		input.attr({readonly:null});
+		input.superior().find("span.hint.gray").remove();
+	} else {
+		return;
+	}
+	const code="window.XN.page.ProfileEdit.basicInfo.checkNkName=function(){}";
+	$script(code);
 };
+
+// 允许不填写家乡/所在地/出生月日
+function removeLocationRestriction() {
+	if($("#basicInfo_form").empty()) {
+		return;
+	}
+	if($("#myProvince").empty()) {
+		return;
+	}
+	$("label[for='myProvince'] em,label[for='homeprovince'] em").remove();
+	const code="var a=window.XN.page.ProfileEdit.basicInfo.checkData=function(){return true}";
+	$script(code);
+};
+
 
 // 显示上一次登录信息
 function showLoginInfo(lastHash) {
@@ -5350,6 +5364,10 @@ function main(savedOptions) {
 						text:"##应用列表",
 						value:false,
 					},{
+						id:"myApp",
+						text:"##我的应用",
+						value:false
+					},{
 						id:"recommendApp",
 						text:"##应用推荐",
 						value:false,
@@ -5403,7 +5421,7 @@ function main(savedOptions) {
 						value:false,
 					},{
 						id:"friendPhoto",
-						text:"##朋友的照片",
+						text:"##朋友的照片/过往的今天",
 						value:false,
 					},{
 						id:"newStar",
@@ -6546,11 +6564,30 @@ function main(savedOptions) {
 							name:removeNicknameRestriction,
 							stage:2,
 							fire:"trigger",
-							trigger:{"#ajaxContainer":"DOMNodeInserted"}
+							trigger:{"#ajaxContainer":"DOMNodeInserted", "#feedInfoAjaxDiv #basicInfo":"DOMNodeInserted"}
 						}]
 					},{
 						type:"info",
 						value:"启用本功能后，在个人主页“资料”->“资料编辑”->“基本信息”中编辑昵称"
+					}
+				],
+				page:"profile",
+				login:true
+			},{
+				text:"##允许不填写家乡/所在地/出生月日##",
+				ctrl:[
+					{
+						id:"removeLocationRestriction",
+						value:false,
+						fn:[{
+							name:removeLocationRestriction,
+							stage:2,
+							fire:"trigger",
+							trigger:{"#ajaxContainer":"DOMNodeInserted", "#feedInfoAjaxDiv #basicInfo":"DOMNodeInserted"}
+						}]
+					},{
+						type:"info",
+						value:"启用本功能后，在个人主页“资料”->“资料编辑”->“基本信息”中将家乡和/或所在地设置为“省份”，出生月日分别设置成“选择月份”、“选择日期”后保存"
 					}
 				],
 				page:"profile",
