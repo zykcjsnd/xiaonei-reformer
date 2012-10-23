@@ -734,5 +734,13 @@
   "(guoqing)": {
     "t": "国庆",
     "s": "/imgpro/icons/statusface/guoqing.gif"
+  },
+  "(twg)": {
+    "t": "style",
+    "s": "/imgpro/icons/statusface/style.gif"
+  },
+  "(石化)": {
+    "t": "石化",
+    "s": "/imgpro/icons/statusface/sh.gif"
   }
 }
