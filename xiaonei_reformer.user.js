@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.2.503
-// @miniver        503
+// @version        3.4.2.504
+// @miniver        504
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -58,8 +58,8 @@ if (window.top == null) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.4.2.503";
-XNR.miniver=503;
+XNR.version="3.4.2.504";
+XNR.miniver=504;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -174,7 +174,7 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .advert-con, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #pro-clent-ad, .pro-clent-ad, .buddy-clent-ad, .wp-rrzm-popup, .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], div[id*='AdBox'], .mentos-lbox, .sec.promotion, iframe[src*='adsupport.renren.com']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .advert-con, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #pro-clent-ad, .pro-clent-ad, .buddy-clent-ad, .wp-rrzm-popup, .panelbarbutton[style*='width'][style*='97px'], .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], div[id*='AdBox'], .mentos-lbox, .sec.promotion, iframe[src*='adsupport.renren.com']";
 	if (!/im\.renren\.com/.test(XNR.url)) {
 		$ban(ads);
 	}
@@ -210,6 +210,13 @@ function removePageTheme() {
 	// 去除首页模板（直接去除会导致首页换肤功能出错）
 	$("#hometpl_style style").text("");
 
+	$("head style").each(function() {
+		var theme = $(this);
+		if (theme.text().indexOf("皮肤") > 0 && theme.text().split("background").length > 5) {
+			theme.remove();
+		}
+	});
+
 	// 删除紫豆模板
 	$("#diyStyleId").remove();
 	$("head style").each(function() {
@@ -226,18 +233,6 @@ function removePageTheme() {
 		var skin=$("head>link[href*='profile-skin.css'],head>link[href*='home-all-min.css']");
 		if(skin.empty()) {
 			$("@link").attr({type:"text/css",rel:"stylesheet",href:"http://s.xnimg.cn/csspro/apps/profile-skin.css"}).addTo($("head"));
-		}
-	}
-	// 修复Logo
-	var bgImage = $(".menu-bar").curCSS("background-image");
-	if (bgImage == null || bgImage == "none") {
-		var logo = $("img[src*='viplogo-renren.png']");
-		if (logo.size()) {
-			logo.attr({
-				height: null,
-				width: null,
-				src: logo.attr("src").replace("viplogo-renren.png", "logo-renren.png"),
-			});
 		}
 	}
 };
@@ -271,7 +266,7 @@ function removeFloatObject() {
 
 // 去除页面自定义鼠标指针
 function removeMouseCursor() {
-	$patchCSS("#opi{cursor:auto !important}");
+	$patchCSS("#opi,#container{cursor:auto !important}");
 };
 
 // 去除VIP页面入场动画
@@ -288,6 +283,12 @@ function removeEnterCartoon() {
 		}
 		p.remove();
 	});
+};
+
+// 去除VIP主页挂件
+function removePendant() {
+	// 是的，就是Contenter
+	$ban("#pendantContenter");
 };
 
 // 去除日志信纸
@@ -1187,9 +1188,12 @@ function removeNavItems(navLinks) {
 	var items={
 		"friend":"#friendMenuActive",
 		"explore":".menu .menu-title a[href*='explore.renren.com']",
+		"app":".menu .menu-title a[href*='app.renren.com']",	// 紫豆导航栏
+		"game":".menu .menu-title a[href*='game.renren.com']",	// 紫豆导航栏
 		"reminder": "#navMessage .remind",
 		"request": "#navMessage .apply",
-		"notification": "#navMessage .notice"
+		"notification": "#navMessage .notice",
+		"mail": ".menu .menu-title a#global_inbox_link",	// 紫豆导航栏
 	};
 	var style="";
 	for(var l in items) {
@@ -1215,10 +1219,13 @@ function widenNavBar() {
 	});
 };
 
-// 使用旧式风格导航栏
-function useOldStyleNav() {
-	var css=".navigation-new .nav-main .menu-title a{font-weight:normal;padding:0 7px}.navigation-new .nav-main .drop-menu-btn{visibility:hidden !important;width:"+(XNR.acore==PRESTO?"1":"0")+"px;margin:0}.navigation-new .nav-other .account-action .menu-title a{background:none;padding:0 5px} .site-nav .nav-drop-menu-profile{left:202px}";
+// 使用紧凑风格导航栏
+function useCompactStyleNav() {
+	var css=".navigation-new .nav-main .menu-title{width:auto} .navigation-new .nav-main .menu-title a{padding:0 7px} .navigation-new .nav-main .menu-title-active a#showProfileMenu{padding:0 6px} .navigation-new .nav-main .nav-drop-menu-btn{display:none !important} .navigation-new .nav-main #profileMenuActive{width:auto} .navigation-new .nav-main .menu-title #showProfileMenu{padding:0 7px} .navigation-new .nav-other .account-action .menu-title a{background:none;padding:0 5px} .site-nav .nav-drop-menu-profile{left:202px}";
+	css+="#dropmenuHolder>#profileMenu,#dropmenuHolder>#friendMenu{top:31px !important}.navigation-new .nav-main .drop-menu-btn{display:none !important}";	// 紫豆导航栏
 	$patchCSS(css);
+
+	// 紫豆导航栏的特殊处理
 	$wait(1,function() {
 		$(".navigation-new .nav-main .menu-title a").filter(".drop-menu-btn[id]").bind("mouseover",function(evt) {
 			if(evt.target.tagName=="A") {
@@ -1780,7 +1787,8 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 			],
 			"zidou_nav.css":[
 				".navigation .nav-main .menu-title a:hover,.navigation .menu-title a:hover{background-color:transparent;color:"+FCOLOR+"}",
-				".navigation .nav-main .menu-title a,.navigation #searchMenu .menu-title a,.navigation .nav-other .menu-title a,.navigation .nav-main .menu-title a.searchcolor{color:"+FCOLOR+"}",
+				".navigation .nav-main .menu-title a, .navigation #searchMenu .menu-title a, .navigation .nav-other .menu-title a, .navigation .nav-main .menu-title a:visited, .navigation #searchMenu .menu-title a:visited, .navigation .nav-other .menu-title a:visited{color:"+FCOLOR+"}",
+				".navigation-new .nav-main .menu-title a:hover, .navigation-new .nav-main .menu-title a.hover{background-color:"+BCOLOR+";color:#FFFFFF}",
 			],
 			"blog-async.css":[
 				"a.sbutton{color:#333333}",
@@ -3489,7 +3497,7 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 				}
 				break;
 		}
-		if((!thumbnail || thumbnail.match("/large|_large|large_|original_|/photos/0/0/|/page_pic/|/homeAd/|/[sa]\\.xnimg\\.cn/|app\\.xnimg\\.cn|/L[^/]+$")) && !t.getAttribute("data-large") && !t.getAttribute("data-src") && !t.getAttribute("data-photo")) {
+		if((!thumbnail || (thumbnail.match("/large|_large|large_|original_|/photos/0/0/|/page_pic/|/homeAd/|/[sa]\\.xnimg\\.cn/|app\\.xnimg\\.cn|/L[^/]+$") && !thumbnail.match("[0-9a-zA-Z]{10,}_(p_)?(large|original)"))) && !t.getAttribute("data-large") && !t.getAttribute("data-src") && !t.getAttribute("data-photo")) {
 			if(/large|original/.test(thumbnail) && t.tagName=="IMG" && (t.naturalWidth * 0.8 > t.width || t.naturalHeight * 0.8 > t.height)) {
 				// 已经是大图了，只是被限制了大小
 				imgId=thumbnail.substring(thumbnail.lastIndexOf("_"));
@@ -5267,6 +5275,19 @@ function main(savedOptions) {
 				}],
 				page:"profile"
 			},{
+				text:"##去除VIP主页挂件",
+				ctrl:[{
+					id:"removePendant",
+					value:false,
+					fn:[{
+						name:removePendant,
+						stage:0,
+						fire:true,
+						once:true
+					}]
+				}],
+				page:"profile"
+			},{
 				text:"##去除日志信纸",
 				ctrl:[{
 					id:"removeBlogTheme",
@@ -6085,6 +6106,14 @@ function main(savedOptions) {
 						text:"##探索",
 						value:false
 					},{
+						id:"app",
+						text:"##应用",
+						value:false
+					},{
+						id:"game",
+						text:"##游戏",
+						value:false
+					},{
 						id:"reminder",
 						text:"##提醒",
 						value:false
@@ -6095,6 +6124,10 @@ function main(savedOptions) {
 					},{
 						id:"notification",
 						text:"##通知",
+						value:false
+					},{
+						id:"mail",
+						text:"##站内信",
 						value:false
 					}
 				]
@@ -6110,12 +6143,12 @@ function main(savedOptions) {
 					}],
 				}]
 			},{
-				text:"##使用旧式风格",
+				text:"##使用紧凑风格",
 				ctrl:[{
-					id:"useOldStyleNav",
+					id:"useCompactStyleNav",
 					value:false,
 					fn:[{
-						name:useOldStyleNav,
+						name:useCompactStyleNav,
 						stage:0,
 						fire:true
 					}],
@@ -6132,7 +6165,7 @@ function main(savedOptions) {
 					}],
 				}]
 			},{
-				text:"##使用浮动方式",
+				text:"##全面使用浮动方式",
 				ctrl:[{
 					id:"useFloatingNav",
 					value:false,
