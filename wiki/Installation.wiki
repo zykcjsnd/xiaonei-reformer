@@ -3,7 +3,7 @@
 鉴于有部分使用者（几乎都是Google Chrome用户）不知道如何安装，在此编写了这么一个安装向导。
 
 首先声明：
- * 目前以及在将来可预见的一段时间内，本程序只会支持Google Chrome/Chromium/Firefox/Safari/Opera浏览器，所以不要指望它能够在别的浏览器上正常安装/使用。
+ * 不要指望它能够在下面目录中未列出的浏览器上正常安装/使用。
  * 如果你怀疑本程序有任何不良行为，请不要安装/自行卸载。你可以来信询问，但不欢迎质问。
 
 目录
@@ -11,10 +11,13 @@
  * [Installation#Firefox Firefox]
  * [Installation#Safari Safari]
  * [Installation#Opera Opera]
+ * [Installation#Maxthon3 傲游3浏览器]
+ * [Installation#Sogou 搜狗高速浏览器]
+ * [Installation#ChromiumBased 其他基于Chromium的浏览器（枫树浏览器/云游浏览器/猎豹浏览器/世界之窗浏览器极速版/360极速浏览器/115极速浏览器等）]
 
 =Google Chrome/Chromium=
 ==安装浏览器（以Google Chrome为例，我知道用Chromium的用户一般水平都比较高；）==
-推荐到[http://www.google.com/chrome 官方网站]去下载安装程序并运行。这样安装上的是正式版本。并不推荐使用beta、dev甚至daily版，尤其是dev版和daily版。因为其发布目的只是让开发人员（也就是像我这样的家伙）进行测试，本身可能存在很多问题，并不适合一般用户使用。
+推荐到[http://www.google.com/chrome 官方网站]去下载安装程序并运行。这样安装上的是正式版本。并不推荐使用beta、dev甚至daily版，尤其是dev版和daily版。因为其发布目的只是让开发人员测试，本身可能存在很多问题，并不适合一般用户使用。
 ==下载/安装扩展程序==
 安装完Chrome浏览器后，运行它，并到[https://chrome.google.com/extensions/detail/bafellppfmjodafekndapfceggodmkfc 扩展下载页面]去安装扩展。
 
@@ -95,5 +98,22 @@ http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_o2.png
 http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_o1.png
 
 这一步非常重要，如果不修改，脚本将无法正常运行。关于脚本存储的更多信息，参考[http://www.opera.com/docs/userjs/specs/#scriptstorage 这里]。
-
 </font>
+
+
+=Maxthon3=
+==安装傲游3浏览器==
+到[http://www.maxthon.cn/mx3/ 官方下载页面]去下载最新版傲游3浏览器进行安装
+==安装扩展==
+用傲游3打开[http://extension.maxthon.cn/detail/index.php?view_id=1288 扩展安装页面]，点击“安装”按钮进行安装
+
+
+=Sogou=
+==安装搜狗高速浏览器==
+到[http://ie.sogou.com/ 官方下载页面]去下载最新版搜狗高速浏览器进行安装
+==安装扩展==
+下载 [http://xiaonei-reformer.googlecode.com/files/xiaonei_reformer-sogou.sext 搜狗浏览器专用扩展]，双击安装
+
+
+=ChromiumBased=
+这些浏览器都是基于Chromium开发的，可以直接使用Google Chrome/Chromium的扩展。具体安装方法见[Installation#Google_Chrome/Chromium Google Chrome/Chromium部分]，不再一一叙述
