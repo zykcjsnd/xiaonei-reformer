@@ -116,4 +116,4 @@ http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/installation_o1.png
 
 
 =ChromiumBased=
-这些浏览器都是基于Chromium开发的，可以直接使用Google Chrome/Chromium的扩展。具体安装方法见[Installation#Google_Chrome/Chromium Google Chrome/Chromium部分]，不再一一叙述
+这些浏览器都是基于Chromium开发的，可以直接使用Google Chrome/Chromium的扩展。具体安装方法见[Installation#%E4%B8%8B%E8%BD%BD/%E5%AE%89%E8%A3%85%E6%89%A9%E5%B1%95%E7%A8%8B%E5%BA%8F Google Chrome/Chromium部分]，不再一一叙述
