@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.2.504
-// @miniver        504
+// @version        3.4.2.505
+// @miniver        505
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -884,72 +884,6 @@ function markOnlineFriend(evt) {
 	}
 };
 
-// 收起新鲜事回复
-function flodFeedComment() {
-	// 先隐藏起来
-	var p=$patchCSS(".feed-list .details>.replies{display:none}");
-	// 修改loadJSON方法，loadJSON原方法最后会调用show强制显示
-	var code="var count=0;"+
-	"(function(){"+
-		"try{"+
-			"var c=['','4Qun','4Zhan'];"+
-			"for(var i=0;i<c.length;i++){"+
-				"var p=window.XN.app.status['replyEditor'+c[i]].prototype;"+
-				"var code=p.loadJSON.toString().replace(/function *\\(json\\) *{/,'').replace(/}$/,'').replace(/this.show\\([^\\)]*\\)/,'this.hide()');"+
-				"p.loadJSON=new Function('json',code)"+
-			"}"+
-		"}catch(e){"+
-			"count++;"+
-			"if(count<5)"+
-				"setTimeout(arguments.callee,500);"+
-		"}"+
-	"})()";
-	$script(code);
-	$wait(1,function() {
-		var list=[];
-		$(".feed-list").find(".details .legend a[id^='reply']").each(function() {
-			list.push(this.id.match("[0-9]+$")[0]);
-		});
-		if(list.length>0) {
-			// hide()中会执行this._inputHelper.focus()，导致页面往下滚动，故hide前先将其无效化
-			var code="try{var list="+JSON.stringify(list)+";var uf=function(){};for(var i=0;i<list.length;i++){var e=getReplyEditor(list[i],'f');var t=e.getEl('input');var f=t.focus;t.focus=uf;e.hide();t.focus=f}}catch(e){}";
-			$script(code);
-		}
-		p.remove();
-	});
-};
-
-// 展开新鲜事回复时强制重载
-function refreshFeedReply() {
-	const code="var count=0;"+
-	"(function(){"+
-		"try{"+
-			"var f=XN.app.status.replyEditor.prototype;"+
-			"if(f.showO)"+
-				"return;"+
-			"f.showO=f.show;"+
-			"f.show=function(mode){"+
-				"var id=this.getID('show_more_link');"+
-				"if(!$(id)){"+
-					"var c=document.createElement('div');"+
-					"c.id=id;"+
-					"c.className='statuscmtitem showmorereply';"+
-					"$(this.getID('replyList')).appendChild(c)"+
-				"}"+
-				"this.loadFromJSON=true;"+
-				"this._hasLoadAll=false;"+
-				//"this._replyCount=0;"+  如果是 显示XX条中的最新YY条 这种，会导致数量错误，对楼层计数功能有影响
-				"this.showO(mode)"+
-			"}"+
-		"}catch(ex){"+
-			"count++;"+
-			"if(count<10)"+
-				"setTimeout(arguments.callee,200)"+
-		"}"+
-	"})()";
-	$script(code);
-};
-
 // 总是显示新鲜事控制按钮
 function showFeedToolbar() {
 	$patchCSS(".feed-toolbar{visibility:visible !important}");
@@ -1312,7 +1246,7 @@ function addNavItems(content) {
 	}
 	var items=content.split("\n");
 	for(var i=0;i<items.length-1;i+=2) {
-		$("@div").html('<div class="menu-title"><a href="'+items[i+1]+'" target="_blank">'+items[i]+'<span class="drop-menu-btn"></span></a></div>').attr("class","menu").addTo(nav);
+		$("@div").html('<div class="menu-title" style="width:auto"><a href="'+items[i+1]+'" target="_blank">'+items[i]+'<span class="drop-menu-btn"></span></a></div>').attr("class","menu").addTo(nav);
 	}
 	//防止被自作主张改动链接
 	$script("try{var e=document.body.querySelectorAll('.nav-main .menu-title>a');for(var i=0;i<e.length;i++){e[i]._ad_rd=true}}catch(ex){}");
@@ -5994,30 +5928,6 @@ function main(savedOptions) {
 				}],
 				login:true,
 				page:"feed,profile"
-			},{
-				text:"##默认收起新鲜事回复",
-				ctrl:[{
-					id:"flodFeedComment",
-					value:false,
-					fn:[{
-						name:flodFeedComment,
-						stage:0,
-						fire:true
-					}]
-				}],
-				page:"feed,profile,pages"
-			},{
-				text:"##展开新鲜事回复时获取最新回复",
-				ctrl:[{
-					id:"refreshFeedReply",
-					value:false,
-					fn:[{
-						name:refreshFeedReply,
-						stage:2,
-						fire:true
-					}]
-				}],
-				page:"feed,profile,status,pages"
 			},{
 				text:"##总是显示新鲜事控制按钮",
 				ctrl:[{
