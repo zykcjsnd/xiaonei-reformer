@@ -742,5 +742,25 @@
   "(石化)": {
     "t": "石化",
     "s": "/imgpro/icons/statusface/sh.gif"
+  },
+  "(光棍)": {
+    "t": "光棍",
+    "s": "/imgpro/icons/statusface/光棍.gif"
+  },
+  "(走你)": {
+    "t": "走你",
+    "s": "/imgpro/icons/statusface/zn.gif"
+  },
+  "(七周年)": {
+    "t": "七周年",
+    "s": "/imgpro/icons/statusface/7years.gif"
+  },
+  "(69)": {
+    "t": "翻转",
+    "s": "/imgpro/icons/statusface/fanzhuan.gif"
+  },
+  "(2012)": {
+    "t": "世界末日",
+    "s": "/imgpro/icons/statusface/2012.gif"
   }
 }
