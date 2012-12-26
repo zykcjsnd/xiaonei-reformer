@@ -2252,22 +2252,22 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(jobs)":	{t:"乔布斯",		s:"/imgpro/icons/statusface/jobs.gif"},
 	};
 	var sfEmList={
-		"(shafa1)":		{t:"抢沙发1",		s:"/imgpro/icons/statusface/rrdesk/red.gif"},
-		"(shafa2)":		{t:"抢沙发2",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
-		"(shafa3)":		{t:"抢沙发3",		s:"/imgpro/icons/statusface/rrdesk/coffee.gif"},
-	//	"(shafa4)":		{t:"抢沙发4",		s:"/imgpro/icons/statusface/rrdesk/coffee.gif"},
-		"(shafa5)":		{t:"抢沙发5",		s:"/imgpro/icons/statusface/rrdesk/pink.gif"},
-	//	"(shafa6)":		{t:"抢沙发6",		s:"/imgpro/icons/statusface/rrdesk/red.gif"},
-	//	"(shafa7)":		{t:"抢沙发7",		s:"/imgpro/icons/statusface/rrdesk/pink.gif"},
-		"(shafa8)":		{t:"抢沙发8",		s:"/imgpro/icons/statusface/rrdesk/yinghua.gif"},
-		"(shafa9)":		{t:"抢沙发9",		s:"/imgpro/icons/statusface/rrdesk/black.gif"},
-		"(shafa10)":	{t:"抢沙发10",		s:"/imgpro/icons/statusface/rrdesk/long.gif"},
-	//	"(shafa11)":	{t:"抢沙发11",		s:"/imgpro/icons/statusface/rrdesk/black.gif"},
-	//	"(shafa12)":	{t:"抢沙发12",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
-	//	"(shafa13)":	{t:"抢沙发13",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
-	//	"(shafa14)":	{t:"抢沙发14",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
-	//	"(shafa15)":	{t:"抢沙发15",		s:"/imgpro/icons/statusface/rrdesk/black.gif"},
-	//	"(shafa16)":	{t:"抢沙发16",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
+		"(shafa1)":		{t:"抢沙发1",		s:"/imgpro/icons/statusface/rrdesk/kf.gif"},
+	//	"(shafa2)":		{t:"抢沙发2",		s:"/imgpro/icons/statusface/rrdesk/kf.gif"},
+		"(shafa3)":		{t:"抢沙发3",		s:"/imgpro/icons/statusface/rrdesk/gloves.gif"},
+		"(shafa4)":		{t:"抢沙发4",		s:"/imgpro/icons/statusface/rrdesk/hat.gif"},
+	//	"(shafa5)":		{t:"抢沙发5",		s:"/imgpro/icons/statusface/rrdesk/hat.gif"},
+		"(shafa6)":		{t:"抢沙发6",		s:"/imgpro/icons/statusface/rrdesk/heart.gif"},
+	//	"(shafa7)":		{t:"抢沙发7",		s:"/imgpro/icons/statusface/rrdesk/heart.gif"},
+		"(shafa8)":		{t:"抢沙发8",		s:"/imgpro/icons/statusface/rrdesk/jiaoxi.gif"},
+	//	"(shafa9)":		{t:"抢沙发9",		s:"/imgpro/icons/statusface/rrdesk/jiaoxi.gif"},
+		"(shafa10)":	{t:"抢沙发10",		s:"/imgpro/icons/statusface/rrdesk/muffle.gif"},
+		"(shafa11)":	{t:"抢沙发11",		s:"/imgpro/icons/statusface/rrdesk/sds.gif"},
+	//	"(shafa12)":	{t:"抢沙发12",		s:"/imgpro/icons/statusface/rrdesk/sds.gif"},
+		"(shafa13)":	{t:"抢沙发13",		s:"/imgpro/icons/statusface/rrdesk/snow.gif"},
+		"(shafa14)":	{t:"抢沙发14",		s:"/imgpro/icons/statusface/rrdesk/sdlr.gif"},
+	//	"(shafa15)":	{t:"抢沙发15",		s:"/imgpro/icons/statusface/rrdesk/sdlr.gif"},
+		"(shafa16)":	{t:"抢沙发16",		s:"/imgpro/icons/statusface/rrdesk/mao.gif"},
 	};
 
 	var aEmList={
@@ -2301,6 +2301,7 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(七周年)":	{t:"七周年",		s:"/imgpro/icons/statusface/7years.gif"},
 		"(jd)":		{t:"建党90周年",	s:"/imgpro/icons/statusface/party90.gif"},
 		"(2012)":	{t:"世界末日",		s:"/imgpro/icons/statusface/2012.gif"},
+		"(qh)":		{t:"清华校庆",		s:"/imgpro/icons/statusface/tsinghua100.gif"},
 	};
 
 	for(var e in emList) {
@@ -2379,10 +2380,10 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 	var jjEmo = ["", "被雷到", "打酱油", "得意的笑", "顶", "灌水", "激光", "泪奔", "楼上的", "楼下的", "楼主", "如题", "撒泼", "沙发", "生气", "胜利", "受惊", "刷屏", "吐", "捂嘴偷笑", "阴险"];
 
 	for (var i = 1; i < alEmo.length; i++) {
-		allEmo["[al"+(i<10?"0"+i:i)+"]"] = { kind:1, types:2, alt:alEmo[i], src:"/imgpro/emotions/ali/"+i+".gif"};
+		allEmo["[al"+(i<10?"0"+i:i)+"]"] = { kind:1, types:2, size:2, alt:alEmo[i], src:"/imgpro/emotions/ali/"+i+".gif"};
 	}
 	for (var i = 1; i < jjEmo.length; i++) {
-		allEmo["[jj"+(i<10?"0"+i:i)+"]"] = { kind:2, types:2, alt:jjEmo[i], src:"/imgpro/emotions/jiongjiong/"+i+".gif"};
+		allEmo["[jj"+(i<10?"0"+i:i)+"]"] = { kind:2, types:2, size:2, alt:jjEmo[i], src:"/imgpro/emotions/jiongjiong/"+i+".gif"};
 	}
 
 	// 其他异步加载的状态表情列表
