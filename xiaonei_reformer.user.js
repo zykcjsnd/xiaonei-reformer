@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.3.506
-// @miniver        506
+// @version        3.4.3.508
+// @miniver        508
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -2107,6 +2107,8 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(三行情书)":{t:"三行情书",		s:"/imgpro/icons/statusface/xin.gif"},
 		"(knx)":	{t:"康乃馨",		s:"/imgpro/icons/statusface/carnation.gif"},
 		"(520)":	{t:"520",			s:"/imgpro/icons/statusface/heart.gif"},
+		"(al)":		{t:"暗恋",			s:"/imgpro/icons/statusface/520.gif"},
+		"(暗恋特权)":{t:"暗恋特权",		s:"/imgpro/icons/statusface/anlian.gif"},
 		"(bby)":	{t:"小男孩",		s:"/imgpro/icons/statusface/boy2011.gif"},
 		"(bgi)":	{t:"小女孩",		s:"/imgpro/icons/statusface/girl2011.gif"},
 		"(bal)":	{t:"气球",			s:"/imgpro/icons/statusface/balloon.gif"},
@@ -3536,8 +3538,15 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 		}
 		largeData = t.getAttribute("data-photo");
 		if (largeData && /large:['"]([^'"]+)['"]/.exec(largeData)) {
-			_showViewer(evt.pageX,RegExp.$1,imgId,autoShrink,true);
-			return;
+			image=RegExp.$1;
+			if (/\/p_large_|\/large_|\/original|\/xlarge/.test(image)) {
+				_showViewer(evt.pageX,image,imgId,autoShrink,true);
+				return;
+			} else if (/\/main_/.test(image)) {
+				// 很像是通过普通上传模式上传的图片，直接换成original算了
+				_showViewer(evt.pageX,image.replace("/main_", "/original_"),imgId,autoShrink,true);
+				return;
+			}
 		}
 		largeData = t.getAttribute("largesrc");
 		if (largeData) {
@@ -3555,6 +3564,15 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 		image=_imageCache(imgId);
 		if(image) {
 			_showViewer(evt.pageX,image,imgId,autoShrink,true);
+			return;
+		}
+
+		// 在属性中有大图信息，需要进一步查询
+		largeData = t.getAttribute("data-photo");
+		if (largeData && /owner:['"]\d+['"]/.test(largeData) && /id:['"]\d+['"]/.test(largeData)) {
+			var owner=/owner:['"](\d+)['"]/.exec(largeData)[1];
+			var id=/id:['"](\d+)['"]/.exec(largeData)[1];
+			_loadImage("photo-info",indirect,autoShrink,evt,imgId,"http://photo.renren.com/photo/"+owner+"/photo-"+id+"/layer");
 			return;
 		}
 	
@@ -3783,6 +3801,10 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 					break;
 				case "xiaozhan":
 					_getXiaozhanImage(pageURL,imgId,autoShrink);
+					break;
+				case "photo-info":
+					_getPhotoInfo(pageURL,imgId,autoShrink);
+					break;
 			}
 		} else {
 			var node=_showMagnifier(evt.target);
@@ -4169,7 +4191,24 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 			$get(pageURL, analyzer);
 		}
 	};
-
+	// 获取data-photo属性中描述的图片信息
+	function _getPhotoInfo(pageURL,imgId,autoShrink) {
+		$get(pageURL,function(html){
+			if (html) {
+				try {
+					var o = JSON.parse(html);
+					if (o.photo && o.photo.largeUrl) {
+						var src=o.photo.largeUrl;
+						_imageCache(imgId,src);
+						_showViewer(null,src,imgId,autoShrink);
+						return;
+					}
+				} catch(ex) {
+				}
+			}
+			_showViewer(null,"error",imgId,autoShrink);
+		});
+	};
 };
 
 // 清除大图地址缓存
@@ -8463,7 +8502,7 @@ function $feedType(feed) {
 					return "photo";
 				}
 			case 8:
-				// 收到礼物:801, 收到活动礼物(?):802
+				// 收到礼物:801, 收到活动礼物(?):802，活动获得礼卷:805，过生日收礼物:807
 				return "gift";
 			case 10:
 				// 今日热点投票:1008
