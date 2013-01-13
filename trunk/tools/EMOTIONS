@@ -762,5 +762,13 @@
   "(2012)": {
     "t": "世界末日",
     "s": "/imgpro/icons/statusface/2012.gif"
+  },
+  "(socks)": {
+    "t": "圣诞袜",
+    "s": "/imgpro/icons/statusface/stocking.gif"
+  },
+  "(小黄鸡)": {
+    "t": "小黄鸡",
+    "s": "/imgpro/icons/statusface/xhj.gif"
   }
 }

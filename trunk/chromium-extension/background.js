@@ -1,21 +1,28 @@
-chrome.extension.onRequest.addListener(
+chrome.extension.onMessage.addListener(
 function(request, sender, sendResponse) {
 	switch(request.action) {
 		case "save":
-			localStorage.setItem("xnr_options",request.data);
+			chrome.storage.sync.clear(function() {
+				chrome.storage.sync.set(request.data);
+			});
 			return;
 		case "load":
 			var options=localStorage.getItem("xnr_options");
-			if(options==null) {
-				sendResponse({options:{}});
-			} else {
+			if (options) {
+				localStorage.removeItem("xnr_options");
 				try {
-					sendResponse({options:JSON.parse(options)});
+					options = JSON.parse(options);
 				} catch(ex) {
-					sendResponse({options:{}});
+					options = {};
 				}
+				chrome.storage.sync.set(options);
+				sendResponse({options: options});
+			} else {
+				chrome.storage.sync.get(function(data) {
+					sendResponse({options:data || {}});
+				});
 			}
-			return;
+			return true;
 		case "storage":
 			if (request.data) {
 				localStorage.setItem(request.pref,request.data);
