@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.3.506
-// @miniver        506
+// @version        3.4.4.509
+// @miniver        509
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -58,8 +58,8 @@ if (window.top == null) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.4.3.506";
-XNR.miniver=506;
+XNR.version="3.4.4.509";
+XNR.miniver=509;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -174,7 +174,7 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .advert-con, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #christmas-box, #pro-clent-ad, .pro-clent-ad, .buddy-clent-ad, .wp-rrzm-popup, .panelbarbutton[style*='width'][style*='97px'], .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], div[id*='AdBox'], .mentos-lbox, .sec.promotion, iframe[src*='adsupport.renren.com']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .advert-con, .kfc-side, .imAdv, .kfc-banner, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #christmas-box, #ad_box, #pro-clent-ad, .pro-clent-ad, .buddy-clent-ad, .wp-rrzm-popup, .panelbarbutton[style*='width'][style*='97px'], .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], div[id*='AdBox'], .mentos-lbox, .sec.promotion, iframe[src*='adsupport.renren.com']";
 	if (!/im\.renren\.com/.test(XNR.url)) {
 		$ban(ads);
 	}
@@ -2107,6 +2107,8 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(三行情书)":{t:"三行情书",		s:"/imgpro/icons/statusface/xin.gif"},
 		"(knx)":	{t:"康乃馨",		s:"/imgpro/icons/statusface/carnation.gif"},
 		"(520)":	{t:"520",			s:"/imgpro/icons/statusface/heart.gif"},
+		"(al)":		{t:"暗恋",			s:"/imgpro/icons/statusface/520.gif"},
+		"(暗恋特权)":{t:"暗恋特权",		s:"/imgpro/icons/statusface/anlian.gif"},
 		"(bby)":	{t:"小男孩",		s:"/imgpro/icons/statusface/boy2011.gif"},
 		"(bgi)":	{t:"小女孩",		s:"/imgpro/icons/statusface/girl2011.gif"},
 		"(bal)":	{t:"气球",			s:"/imgpro/icons/statusface/balloon.gif"},
@@ -2162,6 +2164,7 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(禅师)":	{t:"禅师",			s:"/imgpro/icons/statusface/chsh.gif"},
 		"(twg)":	{t:"style",			s:"/imgpro/icons/statusface/style.gif"},
 		"(走你)":	{t:"走你",			s:"/imgpro/icons/statusface/zn.gif"},
+		"(小黄鸡)":	{t:"小黄鸡",		s:"/imgpro/icons/statusface/xhj.gif"},
 	};
 	var eEmList={
 		"(guoqing)":		{t:"国庆",		s:"/imgpro/icons/statusface/guoqing.gif"},
@@ -2252,22 +2255,22 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(jobs)":	{t:"乔布斯",		s:"/imgpro/icons/statusface/jobs.gif"},
 	};
 	var sfEmList={
-		"(shafa1)":		{t:"抢沙发1",		s:"/imgpro/icons/statusface/rrdesk/red.gif"},
-		"(shafa2)":		{t:"抢沙发2",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
-		"(shafa3)":		{t:"抢沙发3",		s:"/imgpro/icons/statusface/rrdesk/coffee.gif"},
-	//	"(shafa4)":		{t:"抢沙发4",		s:"/imgpro/icons/statusface/rrdesk/coffee.gif"},
-		"(shafa5)":		{t:"抢沙发5",		s:"/imgpro/icons/statusface/rrdesk/pink.gif"},
-	//	"(shafa6)":		{t:"抢沙发6",		s:"/imgpro/icons/statusface/rrdesk/red.gif"},
-	//	"(shafa7)":		{t:"抢沙发7",		s:"/imgpro/icons/statusface/rrdesk/pink.gif"},
-		"(shafa8)":		{t:"抢沙发8",		s:"/imgpro/icons/statusface/rrdesk/yinghua.gif"},
-		"(shafa9)":		{t:"抢沙发9",		s:"/imgpro/icons/statusface/rrdesk/black.gif"},
-		"(shafa10)":	{t:"抢沙发10",		s:"/imgpro/icons/statusface/rrdesk/long.gif"},
-	//	"(shafa11)":	{t:"抢沙发11",		s:"/imgpro/icons/statusface/rrdesk/black.gif"},
-	//	"(shafa12)":	{t:"抢沙发12",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
-	//	"(shafa13)":	{t:"抢沙发13",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
-	//	"(shafa14)":	{t:"抢沙发14",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
-	//	"(shafa15)":	{t:"抢沙发15",		s:"/imgpro/icons/statusface/rrdesk/black.gif"},
-	//	"(shafa16)":	{t:"抢沙发16",		s:"/imgpro/icons/statusface/rrdesk/8qiangsf.gif"},
+		"(shafa1)":		{t:"抢沙发1",		s:"/imgpro/icons/statusface/rrdesk/kf.gif"},
+	//	"(shafa2)":		{t:"抢沙发2",		s:"/imgpro/icons/statusface/rrdesk/kf.gif"},
+		"(shafa3)":		{t:"抢沙发3",		s:"/imgpro/icons/statusface/rrdesk/gloves.gif"},
+		"(shafa4)":		{t:"抢沙发4",		s:"/imgpro/icons/statusface/rrdesk/hat.gif"},
+	//	"(shafa5)":		{t:"抢沙发5",		s:"/imgpro/icons/statusface/rrdesk/hat.gif"},
+		"(shafa6)":		{t:"抢沙发6",		s:"/imgpro/icons/statusface/rrdesk/heart.gif"},
+	//	"(shafa7)":		{t:"抢沙发7",		s:"/imgpro/icons/statusface/rrdesk/heart.gif"},
+		"(shafa8)":		{t:"抢沙发8",		s:"/imgpro/icons/statusface/rrdesk/jiaoxi.gif"},
+	//	"(shafa9)":		{t:"抢沙发9",		s:"/imgpro/icons/statusface/rrdesk/jiaoxi.gif"},
+		"(shafa10)":	{t:"抢沙发10",		s:"/imgpro/icons/statusface/rrdesk/muffle.gif"},
+		"(shafa11)":	{t:"抢沙发11",		s:"/imgpro/icons/statusface/rrdesk/sds.gif"},
+	//	"(shafa12)":	{t:"抢沙发12",		s:"/imgpro/icons/statusface/rrdesk/sds.gif"},
+		"(shafa13)":	{t:"抢沙发13",		s:"/imgpro/icons/statusface/rrdesk/snow.gif"},
+		"(shafa14)":	{t:"抢沙发14",		s:"/imgpro/icons/statusface/rrdesk/sdlr.gif"},
+	//	"(shafa15)":	{t:"抢沙发15",		s:"/imgpro/icons/statusface/rrdesk/sdlr.gif"},
+		"(shafa16)":	{t:"抢沙发16",		s:"/imgpro/icons/statusface/rrdesk/mao.gif"},
 	};
 
 	var aEmList={
@@ -2301,6 +2304,7 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(七周年)":	{t:"七周年",		s:"/imgpro/icons/statusface/7years.gif"},
 		"(jd)":		{t:"建党90周年",	s:"/imgpro/icons/statusface/party90.gif"},
 		"(2012)":	{t:"世界末日",		s:"/imgpro/icons/statusface/2012.gif"},
+		"(qh)":		{t:"清华校庆",		s:"/imgpro/icons/statusface/tsinghua100.gif"},
 	};
 
 	for(var e in emList) {
@@ -2379,10 +2383,10 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 	var jjEmo = ["", "被雷到", "打酱油", "得意的笑", "顶", "灌水", "激光", "泪奔", "楼上的", "楼下的", "楼主", "如题", "撒泼", "沙发", "生气", "胜利", "受惊", "刷屏", "吐", "捂嘴偷笑", "阴险"];
 
 	for (var i = 1; i < alEmo.length; i++) {
-		allEmo["[al"+(i<10?"0"+i:i)+"]"] = { kind:1, types:2, alt:alEmo[i], src:"/imgpro/emotions/ali/"+i+".gif"};
+		allEmo["[al"+(i<10?"0"+i:i)+"]"] = { kind:1, types:2, size:2, alt:alEmo[i], src:"/imgpro/emotions/ali/"+i+".gif"};
 	}
 	for (var i = 1; i < jjEmo.length; i++) {
-		allEmo["[jj"+(i<10?"0"+i:i)+"]"] = { kind:2, types:2, alt:jjEmo[i], src:"/imgpro/emotions/jiongjiong/"+i+".gif"};
+		allEmo["[jj"+(i<10?"0"+i:i)+"]"] = { kind:2, types:2, size:2, alt:jjEmo[i], src:"/imgpro/emotions/jiongjiong/"+i+".gif"};
 	}
 
 	// 其他异步加载的状态表情列表
@@ -3415,7 +3419,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 					} else if(XNR.agent==FIREFOX) {
 						XNR_album(album);
 					} else if(XNR.agent==CHROME) {
-						chrome.extension.sendRequest({action:"album",data:album});
+						chrome.extension.sendMessage({action:"album",data:album});
 					} else if(XNR.agent==SAFARI) {
 						safari.self.tab.dispatchMessage("xnr_album",album);
 					} else if(XNR.agent==MAXTHON) {
@@ -3522,6 +3526,19 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 		}
 		imgId=thumbnail.substring(thumbnail.lastIndexOf("_"));
 
+		// 早期的图片（http://fm071.img.renren.com/pic001/20070201/2002/H[0-9]+[A-Z]+.jpg），改imgId
+		if(thumbnail.match(/http:\/\/.*?\.img\.renren\.com\/pic\d+\/\d{8}\/\d+\/H.*?\.jpg/)) {
+			imgId=thumbnail.substring(thumbnail.lastIndexOf("/H")+2);
+		}
+
+		// 是否已得到图像地址
+		image=_imageCache(imgId);
+		if(image) {
+			_showViewer(evt.pageX,image,imgId,autoShrink,true);
+			return;
+		}
+
+
 		// 大图信息已经放在某个属性上
 		var largeData = t.getAttribute("data-large");
 		if (largeData) {
@@ -3535,8 +3552,28 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 		}
 		largeData = t.getAttribute("data-photo");
 		if (largeData && /large:['"]([^'"]+)['"]/.exec(largeData)) {
-			_showViewer(evt.pageX,RegExp.$1,imgId,autoShrink,true);
-			return;
+			image=RegExp.$1;
+			if (/\/p_large_|\/large_|\/original|\/xlarge/.test(image)) {
+				_showViewer(evt.pageX,image,imgId,autoShrink,true);
+				return;
+			} else if (/\/main_/.test(image)) {
+				// 很像是通过普通上传模式上传的图片，直接换成large/original试一下
+				_showViewer(evt.pageX,null,imgId,autoShrink,true);
+				var testImg = new Image();
+				testImg.onerror = function() {
+					if (testImg.src.indexOf("/large_") > 0) {
+						testImg.src = testImg.src.replace("/large_", "/original_");
+					} else {
+						_showViewer(evt.pageX,testImg.src,imgId,autoShrink,true);
+					}
+				};
+				testImg.onload = function() {
+					_imageCache(imgId,testImg.src);
+					_showViewer(evt.pageX,testImg.src,imgId,autoShrink,true);
+				};
+				testImg.src = image.replace("/main_", "/large_");
+				return;
+			}
 		}
 		largeData = t.getAttribute("largesrc");
 		if (largeData) {
@@ -3545,15 +3582,12 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 		}
 
 
-		// 早期的图片（http://fm071.img.renren.com/pic001/20070201/2002/H[0-9]+[A-Z]+.jpg），改imgId
-		if(thumbnail.match(/http:\/\/.*?\.img\.renren\.com\/pic\d+\/\d{8}\/\d+\/H.*?\.jpg/)) {
-			imgId=thumbnail.substring(thumbnail.lastIndexOf("/H")+2);
-		}
-
-		// 是否已得到图像地址
-		image=_imageCache(imgId);
-		if(image) {
-			_showViewer(evt.pageX,image,imgId,autoShrink,true);
+		// 在属性中有大图信息，需要进一步查询
+		largeData = t.getAttribute("data-photo");
+		if (largeData && /owner:['"]\d+['"]/.test(largeData) && /id:['"]\d+['"]/.test(largeData)) {
+			var owner=/owner:['"](\d+)['"]/.exec(largeData)[1];
+			var id=/id:['"](\d+)['"]/.exec(largeData)[1];
+			_loadImage("photo-info",indirect,autoShrink,evt,imgId,"http://photo.renren.com/photo/"+owner+"/photo-"+id+"/layer");
 			return;
 		}
 	
@@ -3693,6 +3727,8 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 		} else if(pageURL.indexOf("/profile.do?")!=-1) {
 			// 直接链接到对方页面的头像图片
 			pageURL="http://photo.renren.com/getalbumprofile.do?owner="+/id=(\d+)/.exec(pageURL)[1];
+		} else if(/\/(\d+)\/profile/.test(pageURL)) {
+			pageURL="http://photo.renren.com/getalbumprofile.do?owner="+RegExp.$1;
 		}
 
 		if($page("share",pageURL)) {
@@ -3782,6 +3818,10 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 					break;
 				case "xiaozhan":
 					_getXiaozhanImage(pageURL,imgId,autoShrink);
+					break;
+				case "photo-info":
+					_getPhotoInfo(pageURL,imgId,autoShrink);
+					break;
 			}
 		} else {
 			var node=_showMagnifier(evt.target);
@@ -3796,16 +3836,12 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 	function _showMagnifier(target) {
 		var node=$("@img").attr({style:"z-index:199999;position:absolute;opacity:0.7",height:22,width:22}).attr("src","data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAMAAADzapwJAAAAw1BMVEUxlJ9TVVJWWFVZW1hhYmBPe7JRfbR4endVf7dVg7Rfg7Zah7ljh7qChIFki7iJi4iKjImWm52cnpt4qNSho6CCrNOmqKWFrtaIstqJs9uSttiUuNqXvN6ZvuC3uraevtuzvMSgwN29v7ylxeK6wsqtxOOvxuW9xc2pyebAxsi1yeKvy+O3yuS7yt61zd+zzua7zujKz9G90erG0uDF1enO1t/O2ujZ3uHY4enZ4urc4uTi6Ord6ffh6fLp6+jl7fbp8frKBh0+AAAAAXRSTlMAQObYZgAAAQtJREFUGNN10O1ygjAQBdBoS0wjkoC2tAQECioWFD+ItqYQ3v+pZCggztj7J5mTnZ3dAFCH1AH3IXrIheChfvdAPbF1GXO3wqM95SpEaZrEL1DlnRNPzcsSH1IsZa56bR9dwHI8zg6VYwmF3hSHG1zWmkRIok34V064m+J0t0vjKPCR7fKGhZXESRwtF4HvMMsUHfvR8itaBIHPzGnH3J0qH8y2mfVuKq9+22R1VHJo1YG/8LhqJjQEyiGyHcdBKEfCaJcMNSklCgJUHVrYrUnPGsZJFYy1c++z6Lr4PmXZ6adYk9nb882N/aUoLntjAsj88+ZgQiklo+oyHJG+dxn87/Onhz57xGAwBFen2iHevJ8kLwAAAABJRU5ErkJggg%3D%3D").attr({onmouseover:"this.style.opacity=1",onmouseout:"this.style.opacity=0.7"});
 		var t=$(target);
-		if(target.parentNode.tagName!="I" && target.parentNode.className!="avatar" && target.parentNode.className!="clipImageBig") {
-			var rect=t.rect(true);
-		} else {
-			// 高度与宽度不一致的头像
+		var rect=t.rect(true);
+		if (!/\s(avatar|clipImageBig)\s/.test(" "+target.parentNode.className+" ") && rect.height != rect.width) {
+			// 高度与宽度不一致的图像
 			var rect1=$(target.parentNode).rect(true);
-			var rect2=t.rect(true);
-			if(rect1.height>rect2.height) {
-				var rect=rect2;
-			} else {
-				var rect=rect1;
+			if(rect1.height<rect.height && rect1.width <= rect.width) {
+				rect=rect1;
 			}
 		}
 		var tpp=$(target.parentNode.parentNode);
@@ -4168,7 +4204,24 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 			$get(pageURL, analyzer);
 		}
 	};
-
+	// 获取data-photo属性中描述的图片信息
+	function _getPhotoInfo(pageURL,imgId,autoShrink) {
+		$get(pageURL,function(html){
+			if (html) {
+				try {
+					var o = JSON.parse(html);
+					if (o.photo && o.photo.largeUrl) {
+						var src=o.photo.largeUrl;
+						_imageCache(imgId,src);
+						_showViewer(null,src,imgId,autoShrink);
+						return;
+					}
+				} catch(ex) {
+				}
+			}
+			_showViewer(null,"error",imgId,autoShrink);
+		});
+	};
 };
 
 // 清除大图地址缓存
@@ -4303,29 +4356,39 @@ function enableShortcutMenu(evt) {
 			menu.m.remove();
 			$dealloc("shortcut_menu");
 		}
+		if(t.tagName=="IMG") {
+			return;
+		}
 		if(t.tagName!="A" && t.childElementCount==0 && !t.nextElementSibling && !t.previousElementSibling && t.parentNode.tagName=="A" && !t.style.backgroundImage) {
 			t=t.parentNode;
 		}
-		if(t.tagName!="A" || (!/\/profile\.do\?/.test(t.href) && !/\/\/www\.renren\.com\/g\//.test(t.href) && !/\/www\.renren\.com\/\d+$|\/www\.renren\.com\/\d+[?#]/.test(t.href) && !/\/\d+\/profile\?/.test(t.href))) {
+		
+		if(t.tagName!="A") {
 			return;
 		}
-		if(t.id || /#|&v=/.test(t.href) || t.style.backgroundImage) {
-			return;
-		}
-		var text=$(t).text().replace(/[ \t\n\r]/g,"");
-		if(text=="" || text.length>=15) {	// 名字长度<=12,可能前面有@
-			return;
-		}
-		if(/\/\/www\.renren\.com\/g\//.test(t.href)) {
-			var id=/\/g\/([0-9]+)/.exec(t.href)[1];
-			if (parseInt(id) >= 600000000) {
-				// 公共主页/情侣空间
+		var id = t.getAttribute("namecard");
+		if (!id || !/^\d+$/.test(id)) {
+			if (!/\/profile\.do\?/.test(t.href) && !/\/\/www\.renren\.com\/g\//.test(t.href) && !/\/www\.renren\.com\/\d+$|\/www\.renren\.com\/\d+[?#\/]/.test(t.href) && !/\/\d+\/profile\?/.test(t.href)) {
 				return;
 			}
-		} else if (/\/www\.renren\.com\/\d+/.test(t.href)) {
-			var id=/([0-9]+)/.exec(t.href)[1];
-		} else {
-			var id=/[&?]id=([0-9]+)/.exec(t.href)[1];
+			if(t.id || /#|&v=/.test(t.href) || t.style.backgroundImage) {
+				return;
+			}
+			var text=$(t).text().replace(/[ \t\n\r]/g,"");
+			if(text=="" || text.length>=15) {	// 名字长度<=12,可能前面有@
+				return;
+			}
+			if(/\/\/www\.renren\.com\/g\//.test(t.href)) {
+				var id=/\/g\/([0-9]+)/.exec(t.href)[1];
+				if (parseInt(id) >= 600000000) {
+					// 公共主页/情侣空间
+					return;
+				}
+			} else if (/\/www\.renren\.com\/\d+/.test(t.href)) {
+				var id=/([0-9]+)/.exec(t.href)[1];
+			} else {
+				var id=/[&?]id=([0-9]+)/.exec(t.href)[1];
+			}
 		}
 		if(XNR.userId==id) {
 			return;
@@ -4616,10 +4679,7 @@ function searchShare() {
 
 // 禁止显示名片
 function removeNameCard() {
-	const code="window.NameCard=null";
-	$script(code);
-	// 去除当前所有链接的namecard属性，防止产生异常
-	$("a[namecard]").attr({namecard:null});
+	$ban("#framenamecard");
 };
 
 // 提示图片主说明
@@ -5360,7 +5420,7 @@ function main(savedOptions) {
 						fire:true,
 					}],
 				}],
-				page:"blog"
+				page:"blog,lover_blog,page_blog"
 			},{
 				text:"##去除公共主页上音乐播放器",
 				ctrl:[{
@@ -6748,11 +6808,10 @@ function main(savedOptions) {
 					value:false,
 					fn:[{
 						name:removeNameCard,
-						stage:2,
+						stage:1,
 						fire:true,
 					}]
 				}],
-				page:"feed,profile",
 			},{
 				text:"##显示图片上传者的说明性留言##",
 				ctrl:[
@@ -8039,7 +8098,7 @@ function $save(name,value) {
 			XNR_save(opts);
 			break;
 		case CHROME:
-			chrome.extension.sendRequest({action:"save",data:opts});
+			chrome.extension.sendMessage({action:"save",data:XNR.options});
 			break;
 		case SOGOU:
 			sogouExplorer.extension.sendRequest({action:"save",data:opts});
@@ -8070,7 +8129,7 @@ function $storage(name, data) {
 				data(GM_getValue(name, null));
 				break;;
 			case CHROME:
-				chrome.extension.sendRequest({action:"storage", pref:name}, function(response) {
+				chrome.extension.sendMessage({action:"storage", pref:name}, function(response) {
 					data(response.data);
 				});
 				break;
@@ -8113,7 +8172,7 @@ function $storage(name, data) {
 				XNR_storage(name, data);
 				break;
 			case CHROME:
-				chrome.extension.sendRequest({action:"storage", pref:name, data:data});
+				chrome.extension.sendMessage({action:"storage", pref:name, data:data});
 				break;
 			case SOGOU:
 				sogouExplorer.extension.sendRequest({action:"storage", pref:name, data:data});
@@ -8178,9 +8237,9 @@ function $get(url,func,userData,method) {
 			break;
 		case CHROME:
 			if(func==null) {
-				chrome.extension.sendRequest({action:"get",url:url,method:method});
+				chrome.extension.sendMessage({action:"get",url:url,method:method});
 			} else {
-				chrome.extension.sendRequest({action:"get",url:url,method:method},function(response) {
+				chrome.extension.sendMessage({action:"get",url:url,method:method},function(response) {
 					func.call(window,response.data,url,userData);
 				});
 			}
@@ -8462,7 +8521,7 @@ function $feedType(feed) {
 					return "photo";
 				}
 			case 8:
-				// 收到礼物:801, 收到活动礼物(?):802
+				// 收到礼物:801, 收到活动礼物(?):802，活动获得礼卷:805，过生日收礼物:807
 				return "gift";
 			case 10:
 				// 今日热点投票:1008
@@ -9271,7 +9330,7 @@ switch(XNR.agent) {
 		}
 		break;
 	case CHROME:
-		chrome.extension.sendRequest({action:"load"}, function(response) {
+		chrome.extension.sendMessage({action:"load"}, function(response) {
 			main(response.options);
 		});
 		break;
