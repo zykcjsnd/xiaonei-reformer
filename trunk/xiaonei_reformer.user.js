@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.4.511
-// @miniver        511
+// @version        3.4.4.512
+// @miniver        512
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -174,21 +174,21 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .advert-con, .kfc-side, .imAdv, .kfc-banner, .ad_sprite, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #christmas-box, #pro-clent-ad, .pro-clent-ad, .buddy-clent-ad, .wp-rrzm-popup, .panelbarbutton[style*='width'][style*='97px'], .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], div[id*='AdBox'], .mentos-lbox, .sec.promotion, iframe[src*='adsupport.renren.com']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, div.advert-con, .kfc-side, .imAdv, .kfc-banner, .ad_sprite, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #christmas-box, #pro-clent-ad, .pro-clent-ad, .buddy-clent-ad, .wp-rrzm-popup, .panelbarbutton[style*='width'][style*='97px'], .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], div[id*='AdBox'], .mentos-lbox, .sec.promotion, iframe[src*='adsupport.renren.com']";
 	if (!/im\.renren\.com/.test(XNR.url)) {
 		$ban(ads);
 		// 时间轴主页会需要ad_box存在，不能简单清除
 		$patchCSS("#ad_box{display:none !important}");
 	}
-	$script("const ad_js_version=null",true);
+	$script("const jebe_json=null",true);
+	$script("Object.defineProperty(window,'load_jebe_ads',{value:function(){}})",true);
 	$wait(1,function() {
 		$("#ad_box").html("");
-		$script("window.XN.jebe=1");
 		// .blank-holder在游戏大厅game.renren.com不能删
 		$(".blank-holder").remove(true);
 		// 其他的横幅广告。如2010-06的 kfc-banner
 		$("div[class$='-banner']").filter("a[target='_blank']>img").filter({childElementCount:1}).remove();
-		$script("window.load_jebe_ads=function(){}");
+		$script("window.load_jebe_ads=function(){}");	// safari 5.0和opera 11.5x都不支持上面的Object.defineProperty
 		// 个人主页上的边栏广告
 		var t=$(".col-right>.extra-side>div").eq(0);
 		t.find("a").each(function(){
@@ -197,6 +197,11 @@ function removeAds() {
 				return false;
 			}
 		});
+		// 首页上“过往的今天”需要advert-con存在
+		if ($page("home") && $(".ready-to-fix .advert-con").empty()) {
+			$patchCSS("img.advert-con{display:none !important}");
+			$("@img").addClass("advert-con").addTo($(".ready-to-fix"));
+		}
 	});
 };
 
@@ -373,7 +378,7 @@ function removeHomeGadgets(gadgetOpt) {
 		"newStar":".star-new,#highSchoolStar",	// 人气之星
 		"contact":".side-item.get-touch",	// 联系朋友
 		"groups":".site-menu-minigroups, #site-menu-nav>.minigroups",	// 我的群
-		"hotSearch":"#allHotSearch,.hotSearch"	// 综合搜索榜
+		"hotSearch":"#allHotSearch,.hotSearch,#hotSearch,#home_hot_search_sb"	// 综合搜索榜/热点推荐
 	};
 	const filters={
 		"webFunction":{t:".side-item",f:".web-function"},	// 站内功能
@@ -3554,8 +3559,8 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 			return;
 		}
 		largeData = t.getAttribute("data-photo");
-		if (largeData && /large:['"]([^'"]+)['"]/.exec(largeData)) {
-			image=RegExp.$1;
+		if (largeData && /(['"])?large(['"])?:['"]([^'"]+)['"]/.exec(largeData)) {
+			image=RegExp.$3;
 			if (/\/p_large_|\/large_|\/original|\/xlarge/.test(image)) {
 				_showViewer(evt.pageX,image,imgId,autoShrink,true);
 				return;
@@ -5567,7 +5572,7 @@ function main(savedOptions) {
 						value:false
 					},{
 						id:"hotSearch",
-						text:"##综合搜索榜",
+						text:"##搜索热点",
 						value:false
 					}
 				],
