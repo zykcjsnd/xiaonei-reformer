@@ -2,27 +2,23 @@ chrome.extension.onMessage.addListener(
 function(request, sender, sendResponse) {
 	switch(request.action) {
 		case "save":
-			chrome.storage.sync.clear(function() {
-				chrome.storage.sync.set(request.data);
-			});
+			localStorage.setItem("xnr_options", request.data);
 			return;
 		case "load":
 			var options=localStorage.getItem("xnr_options");
-			if (options) {
-				localStorage.removeItem("xnr_options");
-				try {
-					options = JSON.parse(options);
-				} catch(ex) {
-					options = {};
-				}
-				chrome.storage.sync.set(options);
-				sendResponse({options: options});
-			} else {
+			if (options==null) {
 				chrome.storage.sync.get(function(data) {
-					sendResponse({options:data || {}});
+					sendResponse({options:data||{}});
 				});
+				return true;
+			} else {
+				try {
+					sendResponse({options:JSON.parse(options)});
+				} catch(ex) {
+					sendResponse({options:{}});
+				}
+				return;
 			}
-			return true;
 		case "storage":
 			if (request.data) {
 				localStorage.setItem(request.pref,request.data);
