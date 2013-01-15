@@ -3,7 +3,7 @@
 	<id>com.googlecode.xiaoneireformer</id>
 	<name>人人网改造器</name>
 	<description>让人人网（renren.com）用起来舒服一点</description>
-	<version>3.4.4.510</version>
+	<version>3.4.4.511</version>
 	<author>xz</author>
 	<show_icon>false</show_icon>
 	<request_api_version>1</request_api_version>

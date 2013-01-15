@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.4.510
-// @miniver        510
+// @version        3.4.4.511
+// @miniver        511
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -58,8 +58,8 @@ if (window.top == null) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.4.4.510";
-XNR.miniver=510;
+XNR.version="3.4.4.511";
+XNR.miniver=511;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -8102,7 +8102,7 @@ function $save(name,value) {
 			XNR_save(opts);
 			break;
 		case CHROME:
-			chrome.extension.sendMessage({action:"save",data:XNR.options});
+			chrome.extension.sendMessage({action:"save",data:opts});
 			break;
 		case SOGOU:
 			sogouExplorer.extension.sendRequest({action:"save",data:opts});
