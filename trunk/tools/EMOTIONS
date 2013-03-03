@@ -208,7 +208,7 @@
     "s": "/imgpro/icons/statusface/mzy.gif"
   },
   "(bs)": {
-    "t": "秋高气爽",
+    "t": "蓝天",
     "s": "/imgpro/icons/statusface/bluesky.gif"
   },
   "(kz)": {
@@ -770,5 +770,9 @@
   "(小黄鸡)": {
     "t": "小黄鸡",
     "s": "/imgpro/icons/statusface/xhj.gif"
+  },
+  "(scb)": {
+    "t": "沙尘暴",
+    "s": "/imgpro/icons/statusface/sand-storm.gif"
   }
 }
