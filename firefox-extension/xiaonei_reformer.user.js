@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.4.511
-// @miniver        511
+// @version        3.4.4.513
+// @miniver        513
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -58,8 +58,8 @@ if (window.top == null) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.4.4.511";
-XNR.miniver=511;
+XNR.version="3.4.4.513";
+XNR.miniver=513;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -174,21 +174,21 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, .advert-con, .kfc-side, .imAdv, .kfc-banner, .ad_sprite, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #christmas-box, #pro-clent-ad, .pro-clent-ad, .buddy-clent-ad, .wp-rrzm-popup, .panelbarbutton[style*='width'][style*='97px'], .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], div[id*='AdBox'], .mentos-lbox, .sec.promotion, iframe[src*='adsupport.renren.com']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, div.advert-con, .kfc-side, .imAdv, .kfc-banner, .ad_sprite, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #christmas-box, #pro-clent-ad, .pro-clent-ad, .buddy-clent-ad, .wp-rrzm-popup, .panelbarbutton[style*='width'][style*='97px'], .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], div[id*='AdBox'], .mentos-lbox, .sec.promotion, iframe[src*='adsupport.renren.com']";
 	if (!/im\.renren\.com/.test(XNR.url)) {
 		$ban(ads);
 		// 时间轴主页会需要ad_box存在，不能简单清除
 		$patchCSS("#ad_box{display:none !important}");
 	}
-	$script("const ad_js_version=null",true);
+	$script("const jebe_json=null",true);
+	$script("Object.defineProperty(window,'load_jebe_ads',{value:function(){}})",true);
 	$wait(1,function() {
 		$("#ad_box").html("");
-		$script("window.XN.jebe=1");
 		// .blank-holder在游戏大厅game.renren.com不能删
 		$(".blank-holder").remove(true);
 		// 其他的横幅广告。如2010-06的 kfc-banner
 		$("div[class$='-banner']").filter("a[target='_blank']>img").filter({childElementCount:1}).remove();
-		$script("window.load_jebe_ads=function(){}");
+		$script("window.load_jebe_ads=function(){}");	// safari 5.0和opera 11.5x都不支持上面的Object.defineProperty
 		// 个人主页上的边栏广告
 		var t=$(".col-right>.extra-side>div").eq(0);
 		t.find("a").each(function(){
@@ -197,6 +197,11 @@ function removeAds() {
 				return false;
 			}
 		});
+		// 首页上“过往的今天”需要advert-con存在
+		if ($page("home") && $(".ready-to-fix .advert-con").empty()) {
+			$patchCSS("img.advert-con{display:none !important}");
+			$("@img").addClass("advert-con").addTo($(".ready-to-fix"));
+		}
 	});
 };
 
@@ -369,11 +374,11 @@ function removeHomeGadgets(gadgetOpt) {
 		"sponsors":"#sponsorsWidget,.wide-sponsors",	// 赞助商内容
 		"birthday":"#homeBirthdayPart",	// 好友生日
 		"survey":".side-item.sales-poll",	// 人人网调查
-		"friendPhoto":"#friendPhoto",	// 朋友的照片/过往的今天
+		"friendPhoto":"#friendPhoto",	// 朋友的照片/过往的今天/热门推荐
 		"newStar":".star-new,#highSchoolStar",	// 人气之星
 		"contact":".side-item.get-touch",	// 联系朋友
 		"groups":".site-menu-minigroups, #site-menu-nav>.minigroups",	// 我的群
-		"hotSearch":"#allHotSearch,.hotSearch"	// 综合搜索榜
+		"hotSearch":"#allHotSearch,.hotSearch,#hotSearch,#home_hot_search_sb"	// 综合搜索榜/热点推荐
 	};
 	const filters={
 		"webFunction":{t:".side-item",f:".web-function"},	// 站内功能
@@ -2150,6 +2155,7 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(bs)":		{t:"秋高气爽",		s:"/imgpro/icons/statusface/bluesky.gif"},
 		"(fog)":	{t:"大雾",			s:"/imgpro/icons/statusface/dawu.gif"},
 		"(h)":		{t:"小草",			s:"/imgpro/icons/philips.jpg"},
+		"(scb)":	{t:"沙尘暴",		s:"/imgpro/icons/statusface/sand-storm.gif"},
 	};
 	var bEmList={
 		"(gl)":		{t:"给力",			s:"/imgpro/icons/statusface/geili.gif"},
@@ -3361,7 +3367,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						type:linkOnly					// 只显示链接
 					};
 					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS || XNR.agent==OPERA_EXT || XNR.agent==SOGOU) {
-						var html="<head><meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+album.title.replace("\\","\\\\").replace("'","\\'")+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style><script>function switchLink(){var links=document.querySelectorAll(\"a[title]:not([title=\\'\\'])\");for(var i=0;i<links.length;i++){if(links[i].textContent!=links[i].title){links[i].textContent=links[i].title}else{links[i].textContent=links[i].href}}};function switchIndex(add,max){var links=document.querySelectorAll(\"*[index]\");for(var i=0;i<links.length;i++){if(add){links[i].title=idx(parseInt(links[i].getAttribute(\"index\"))+1,max)+\" \"+links[i].title}else{links[i].title=links[i].title.replace(/^[0-9]+ /,\"\")}}};function idx(n,max){var i=0;for(;max>0;max=parseInt(max/10)){i++}n=\"00000\"+n;return n.substring(n.length-i,n.length)}</script></head><body>";
+						var html="<head><meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+album.title.replace("\\","\\\\").replace("'","\\'")+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style><script>function switchLink(){var links=document.querySelectorAll(\"a[title]:not([title=\\'\\'])\");for(var i=0;i<links.length;i++){if(links[i].textContent!=links[i].title){links[i].textContent=links[i].title}else{links[i].textContent=links[i].href}}};function switchIndex(add,max){var links=document.querySelectorAll(\"*[index]\");for(var i=0;i<links.length;i++){if(add){links[i].title=idx(parseInt(links[i].getAttribute(\"index\")),max)+\" \"+links[i].title}else{links[i].title=links[i].title.replace(/^[0-9]+ /,\"\")}}};function idx(n,max){var i=0;for(;max>0;max=parseInt(max/10)){i++}n=\"00000\"+n;return n.substring(n.length-i,n.length)}</script></head><body>";
 						html+="<p><a target=\"_blank\" href=\"http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum\">下载指南</a>";
 						html+="</p><p>来源："+album.ref+"</p>";
 						if(album.unknown.length>0) {
@@ -3554,8 +3560,8 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 			return;
 		}
 		largeData = t.getAttribute("data-photo");
-		if (largeData && /large:['"]([^'"]+)['"]/.exec(largeData)) {
-			image=RegExp.$1;
+		if (largeData && /(['"])?large(['"])?:['"]([^'"]+)['"]/.exec(largeData)) {
+			image=RegExp.$3;
 			if (/\/p_large_|\/large_|\/original|\/xlarge/.test(image)) {
 				_showViewer(evt.pageX,image,imgId,autoShrink,true);
 				return;
@@ -5003,24 +5009,27 @@ function notifyFriendship() {
 				$storage("friends_" + XNR.userId, JSON.stringify({friends:curFriends, time:now}));
 			} else {
 				var fi = 0;
-				$get("http://www.renren.com/showcard?friendID=" + oldFriends[fi].id, function(html, url, idx) {
+				$get("http://www.renren.com/newnamecard?uid=" + oldFriends[fi].id, function(html, url, idx) {
 					if ($cookie("id","0") != XNR.userId) {
 						return;
 					}
 					if (html) {
 						try {
-							// 解除好友关系后名片就看不到了，停用账号还可以看到
-							JSON.parse(html);
-							oldFriends[idx].gone = true;
+							// 如果仅仅是停用账号，好友关系仍然存在
+							// 如果解除了好友关系后再停用账号，就只当成解除好友关系
+							var k = JSON.parse(html);
+							if (k.isFriend) {
+								oldFriends[idx].gone = true;
+							}
 						} catch(ex) {
 						}
 					}
 					idx++;
 					if (idx < oldFriends.length) {
-						$get("http://www.renren.com/showcard?friendID=" + oldFriends[idx].id, arguments.callee, idx);
+						$get("http://www.renren.com/newnamecard?uid=" + oldFriends[idx].id, arguments.callee, idx);
 					} else {
 						$(".xnr_fs").remove();
-						var dialog = $("@div").attr("class", "xnr_dialog xnr_fs").html('<style>.xnr_fs{width:410px;z-index:100000}.xnr_fs .title{font-weight:bold}.xnr_fs .body{background:#FFF;clear:both;height:240px;overflow-x:hidden;overflow-y:scroll}.xnr_fs li{float:left;margin:14px 0 0 14px;height:64px;width:175px;overflow:hidden}.xnr_fs a{text-decoration:none}.xnr_fs .picbox{width:50px;height:50px;padding:2px;border:1px solid lightgray;float:left}.xnr_fs .pic{width:50px;height:50px;display:block;font-size:13px;font-weight:bold;color:red;line-height:50px;text-align:center;text-shadow:rgba(255,0,0,0.4) 2px 2px 3px}.xnr_fs h3,.xnr_fs h4{overflow:hidden;padding-left:3px;text-overflow:ellipsis}.xnr_fs h3{font-size:14px;font-weight:bold;white-space:nowrap}.xnr_fs h4{font-size:12px;font-weight:normal;color:#555}</style><div class="title"></div><div class="body"><ul class="flist"></ul></div><div class="btns"><input class="ok" type="button" value=">_<"></input></div>');
+						var dialog = $("@div").attr("class", "xnr_dialog xnr_fs").html('<style>.xnr_fs{width:410px;z-index:100000}.xnr_fs .title{font-weight:bold}.xnr_fs .body{background:#FFF;clear:both;height:240px;overflow-x:hidden;overflow-y:scroll}.xnr_fs li{float:left;margin:14px 0 0 14px;height:64px;width:175px;overflow:hidden}.xnr_fs a{text-decoration:none}.xnr_fs .picbox{width:50px;height:50px;padding:2px;border:1px solid lightgray;float:left}.xnr_fs .pic{width:50px;height:50px;display:block;text-align:center}.xnr_fs .pic>.gone{font-size:13px;font-weight:bold;color:#FFF;line-height:50px;background:#000}.xnr_fs h3,.xnr_fs h4{overflow:hidden;padding-left:3px;text-overflow:ellipsis}.xnr_fs h3{font-size:14px;font-weight:bold;white-space:nowrap}.xnr_fs h4{font-size:12px;font-weight:normal;color:#555}</style><div class="title"></div><div class="body"><ul class="flist"></ul></div><div class="btns"><input class="ok" type="button" value=">_<"></input></div>');
 						dialog.find(".title").text("哎哟！在过去"+dateInterval(lastCheck, now)+"里，以下 "+oldFriends.length+" 人与你解除了好友关系");
 						dialog.find(".btns input").bind("click", function() {
 							dialog.remove();
@@ -5032,7 +5041,7 @@ function notifyFriendship() {
 							var picbox = $("@span").attr("class","picbox").addTo(li);
 							var pic = $("@span").attr("class","pic").css("background", "url("+f.head+")");
 							if (f.gone) {
-								pic.text("已注销");
+								$("@span").attr("class","gone").text("已注销").addTo(pic);
 							}
 							$("@a").attr("href","http://www.renren.com/profile.do?id="+f.id).attr("title",f.name).add(pic).addTo(picbox);
 							$("@a").attr("href","http://www.renren.com/profile.do?id="+f.id).attr("title",f.name).add($("@h3").text(f.name)).addTo(li);
@@ -5555,7 +5564,7 @@ function main(savedOptions) {
 						value:false,
 					},{
 						id:"friendPhoto",
-						text:"##朋友的照片/过往的今天",
+						text:"##朋友照片/过往今天/热门推荐",
 						value:false,
 					},{
 						id:"newStar",
@@ -5567,7 +5576,7 @@ function main(savedOptions) {
 						value:false
 					},{
 						id:"hotSearch",
-						text:"##综合搜索榜",
+						text:"##搜索热点推荐",
 						value:false
 					}
 				],
