@@ -55,9 +55,11 @@ http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/download_3.jpeg
 ===Google浏览器===
 Google浏览器到目前为止，还没有发现有扩展能直接根据图片描述命名下载文件，所以需要使用其他下载工具配合。
 
-先同时启用“仅生成图片链接”和“替换模式”。再去安装[https://chrome.google.com/extensions/detail/mfjkgbjaikamkkojmakjclmkianficch 下载助手扩展]，这个扩展可以调用Flashget或迅雷来下载页面上的内容。这里以Flashget为例讲解。安装后浏览器工具栏会多一个箭头图标。
+先同时启用“仅生成图片链接”和“替换模式”。再去安装[https://chrome.google.com/extensions/detail/mfjkgbjaikamkkojmakjclmkianficch 下载助手]（此扩展已在官方商店下架，但还是可以在网上找到其他的下载地址，比如[http://download.tech.qq.com/soft/1/3/81722/index.shtml 这里]）或[https://chrome.google.com/webstore/detail/downloaders/lfjamigppmepikjlacjdpgjaiojdjhoj 下载工具支持]扩展，这两个扩展都可以调用Flashget或迅雷来下载页面上的内容。
 
-在点击“下载当前页图片”后的页面中，先点击“切换链接描述”将显示的链接文字换成图片描述，再点击箭头图标，会调用Flashget来下载所有的图片，如下图
+安装扩展后，下载工具支持扩展需要到选项页面指定外部程序，后面以Flashget（快车）为例讲解，下载助手则不需要特别的设置。然后最好重启浏览器。
+
+在点击“下载当前页图片”后的页面中，先点击“切换链接描述”将显示的链接文字换成图片描述，再点击右键，选择用Flashget（快车）来下载所有的链接，如下图
 
 http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/download_4.jpeg
 
