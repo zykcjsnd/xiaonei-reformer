@@ -61,13 +61,15 @@ Google浏览器到目前为止，还没有发现有扩展能直接根据图片�
 
 在点击“下载当前页图片”后的页面中，先点击“切换链接描述”将显示的链接文字换成图片描述，再点击右键，选择用Flashget（快车）来下载所有的链接，如下图
 
-http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/download_4.jpeg
+http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/download_4.png
 
-如图所示，描述一栏已经中已经是图片描述了，点击下载按钮进行下载。
+点击菜单项后会弹出Flashget（快车）的窗口，如下图所示，描述一栏已经中已经是图片描述了，点击下载按钮进行下载。
+
+http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/download_5.png
 
 当全部文件下载完毕后，转到“完成下载”栏，选择下载的图片（小提示：鼠标先点击第一个文件，再按住Shift键点击最后一个即可选择全部的文件），点击鼠标右键，选择按注释重命名文件即可，如下图所示
 
-http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/download_5.jpeg
+http://xiaonei-reformer.googlecode.com/svn/trunk/wiki/download_6.jpeg
 
 
 ===Opera===
