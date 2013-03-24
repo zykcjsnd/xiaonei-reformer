@@ -774,5 +774,13 @@
   "(scb)": {
     "t": "沙尘暴",
     "s": "/imgpro/icons/statusface/sand-storm.gif"
+  },
+  "(leifeng)": {
+    "t": "雷锋",
+    "s": "/imgpro/icons/statusface/lf.gif"
+  },
+  "(rainy)": {
+    "t": "雨",
+    "s": "/imgpro/icons/statusface/rainy.gif"
   }
 }
