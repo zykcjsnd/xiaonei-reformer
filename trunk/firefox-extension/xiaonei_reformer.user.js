@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.4.513
-// @miniver        513
+// @version        3.4.4.514
+// @miniver        514
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -58,8 +58,8 @@ if (window.top == null) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.4.4.513";
-XNR.miniver=513;
+XNR.version="3.4.4.514";
+XNR.miniver=514;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -814,9 +814,22 @@ function hideFeeds(evt,feeds,mark,badTitles,badSources,badLinks,badIds,goodIds,h
 	});
 };
 
-// 首页默认显示特别关注
-function showAttentionFeeds() {
-	var code = 'var c=0;setTimeout(function(){var t=document.getElementById("feedTabAttention");if(!t){if(t<10){setTimeout(arguments.callee,200);c++}return}var e=document.createEvent("Events");e.initEvent("click",true,true);t.dispatchEvent(e)},100)';
+// 首页默认显示的新鲜事类型
+function setDefaultFeedsType(attention, frcontent) {
+	var ftype;
+	var items = $(".feed-module .feed_type > .item").removeClass("selected");
+	if (attention) {
+		// 特别关注
+		ftype = "attention";
+		items.filter("#group-focus").addClass("selected");
+	} else if (frcontent) {
+		// 好友内容
+		ftype = "frcontent";
+		items.filter("#friend-content").addClass("selected");
+	} else {
+		return;
+	}
+	var code = 'var c=0;function w(){var f=window.newsfeed;if(!f){if(c<10){setTimeout(w,200)}c++;return};f.setType("'+ftype+'");f.reload()};w()';
 	$script(code);
 };
 
@@ -1929,8 +1942,12 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 };
 
 // 去除页面字体限制
-function removeFontRestriction() {
-	$patchCSS("*{font-family:none !important}");
+function removeFontRestriction(keepEnFonts) {
+	if (keepEnFonts) {
+		$patchCSS("*{font-family:Tahoma,Verdana !important}");
+	} else {
+		$patchCSS("*{font-family:none !important}");
+	}
 };
 
 // 限制头像列表中的头像最大数量
@@ -2262,6 +2279,7 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(ta)":		{t:"博派",			s:"/imgpro/icons/statusface/Transformers-Autobot.gif"},
 		"(td)":		{t:"狂派",			s:"/imgpro/icons/statusface/Transformers-Decepticon.gif"},
 		"(jobs)":	{t:"乔布斯",		s:"/imgpro/icons/statusface/jobs.gif"},
+		"(leifeng)":{t:"雷锋",			s:"/imgpro/icons/statusface/lf.gif"},
 	};
 	var sfEmList={
 		"(shafa1)":		{t:"抢沙发1",		s:"/imgpro/icons/statusface/rrdesk/kf.gif"},
@@ -2859,6 +2877,10 @@ function preventTracking0() {
 
 // 阻止统计信息
 function preventTracking2() {
+	// 阻止XN.net.sendStats(url)
+	var code="Object.defineProperty(XN.net, 'sendStats', {value:function(){}})";
+	$script(code);
+
 	// 阻止点击鼠标时发送信息
 	var code="var count=0;"+
 	"(function(){"+
@@ -5008,6 +5030,77 @@ function notifyFriendship() {
 			if (oldFriends.length == 0) {
 				$storage("friends_" + XNR.userId, JSON.stringify({friends:curFriends, time:now}));
 			} else {
+				// 人人网有时会少返回一些好友，先通过名片列表验证一下
+				if ($("iframe[src='http://www.renren.com/ajaxproxy.htm']").empty()) {
+					var frame = $("@iframe").css("display", "none").attr("src", "http://www.renren.com/ajaxproxy.htm");
+					frame.bind("load", localXHR);
+					frame.addTo(document.body);
+				} else {
+					localXHR();
+				}
+			}
+
+			var timer, token;
+
+			function localXHR() {
+				token = "DONE" + parseInt(Math.random() * 1000000);
+				$(document).bind(token, recheck);
+				$script('var f=document.querySelector("iframe[src=\'http://www.renren.com/ajaxproxy.htm\']");'+
+					'var t=f.contentWindow.getTransport();'+
+					't.open("GET","http://www.renren.com/listcards",true);'+
+					't.setRequestHeader("Accept","application/json, text/javascript, */*; q=0.01");'+	// 可以不要
+					't.onload=function(){agent(t.status==200?t.responseText:null)};'+
+					't.onerror=function(){agent(null)};'+
+					't.send();'+
+					'function agent(d){'+
+						'if(d){'+
+							'var c=document.createElement("div");'+
+							'c.textContent=d;'+
+							'c.id="'+token+'";'+
+							'c.style.display="none";'+
+							'document.body.appendChild(c);'+
+						'}'+
+						'var evt=document.createEvent("HTMLEvents");'+
+						'evt.initEvent("'+token+'",true,true);'+
+						'document.documentElement.dispatchEvent(evt)'+
+					'}'
+				);
+				timer = setTimeout(compare, 8000);
+			}
+
+
+			function recheck() {
+				clearTimeout(timer);
+				$(document).unbind(token, recheck);
+				var div = $("#" + token);
+				try {
+					if (div.exist()) {
+						var lists = JSON.parse(div.text()).list;
+						div.remove();
+						var fids = {};
+						for (var i = 0; i < lists.length; i++) {
+							var l = lists[i].list;
+							for (var j = 0; j < l.length; j++) {
+								fids[l[j].id] = true;
+							}
+						}
+						for (var i = oldFriends.length - 1; i >= 0; i--) {
+							if (oldFriends[i].id in fids) {
+								// 上当了，没有解除好友
+								oldFriends.splice(i, 1);
+							}
+						}
+						if (oldFriends.length == 0) {
+							$storage("friends_" + XNR.userId, JSON.stringify({friends:curFriends, time:now}));
+							return;
+						}
+					}
+				} catch(ex) {
+				}
+				compare();
+			}
+
+			function compare() {
 				var fi = 0;
 				$get("http://www.renren.com/newnamecard?uid=" + oldFriends[fi].id, function(html, url, idx) {
 					if ($cookie("id","0") != XNR.userId) {
@@ -5015,9 +5108,9 @@ function notifyFriendship() {
 					}
 					if (html) {
 						try {
+							var k = JSON.parse(html);
 							// 如果仅仅是停用账号，好友关系仍然存在
 							// 如果解除了好友关系后再停用账号，就只当成解除好友关系
-							var k = JSON.parse(html);
 							if (k.isFriend) {
 								oldFriends[idx].gone = true;
 							}
@@ -5248,12 +5341,13 @@ function main(savedOptions) {
 	// [
 	//   {
 	//     [String]id:控件ID。type为hidden/warn/info时无需id
-	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"subcheck"（<div/><input type="checkbox"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）,"warn"（<span class="warn"/>）,"info"（<span class="warn"/>）,"br"（<div/>）, "link"（<a/>）。默认为check
+	//     [String]type:类型，支持如下类型："check"（<input type="checkbox"/>）,"subcheck"（<div/><input type="checkbox"/>）,"subradio"（<div/><input type="radio"/>）,"edit"（<textarea/>）,"button"（<input type="button"/>）,"input"（<input/>）,"label"（<span/>）,"hidden"（不生成实际控件）,"warn"（<span class="warn"/>）,"info"（<span class="warn"/>）,"br"（<div/>）, "link"（<a/>）。默认为check
 	//     [Any]value:默认值。type为hidden或readonly为真时可以没有value
 	//     [Object]verify:{验证规则:失败信息,...}。验证规则为正则字串。可选
 	//     [Object]attr:{属性名:属性值,...}。属性。可选
 	//     [String]style:样式。可选
 	//     [Boolean]readonly:控件只读。可选
+	//     [String]group:仅用于subradio。可选
 	//     [String]format:值格式。显示时会自动转换。目前只支持"date"。注意：一旦设置了format，点击保存按钮时将*不会*保存控件的值，故仅将其用于label类型控件
 	//     [Array]fn:处理函数。可选
 	//   },
@@ -6037,16 +6131,27 @@ function main(savedOptions) {
 					value:false
 				}]
 			},{
-				text:"##首页默认显示特别关注",
+				text:"##首页默认显示的新鲜事类型##特别关注##好友内容",
 				ctrl:[{
-					id:"showAttentionFeeds",
+					id:"setDefaultFeedsType",
 					value:false,
 					fn:[{
-						name:showAttentionFeeds,
+						name:setDefaultFeedsType,
 						stage:1,
+						args:["@attention", "@frcontent"],
 						fire:true,
 						once:true
 					}]
+				},{
+					type:"subradio",
+					id:"attention",
+					group:"defaultFeedsType",
+					value:true
+				},{
+					type:"subradio",
+					id:"frcontent",
+					group:"defaultFeedsType",
+					value:false
 				}],
 				page:"feed"
 			},{
@@ -6320,21 +6425,30 @@ function main(savedOptions) {
 					value:"使用早期的类Facebook配色。在有模板的页面不会修改其配色",
 				}]
 			},{
-				text:"##去除页面字体限制##",
+				text:"##去除页面字体限制####保留默认英文字体##",
 				ctrl:[
 					{
 						id:"removeFontRestriction",
 						value:false,
 						fn:[{
 							name:removeFontRestriction,
+							args:["@keepEnFonts"],
 							stage:0,
 							fire:true
 						}]
 					},{
 						type:"info",
 						value:"使用浏览器本身设定的字体而非网站限制使用的字体"
+					},{
+						type:"subcheck",
+						id:"keepEnFonts",
+						value:true
+					},{
+						type:"warn",
+						value:"改变默认英文字体可能导致页面排版混乱"
 					}
-				]
+				],
+				master:0
 			},{
 				text:"##限制个人主页上头像列表中的头像数量最多为##个",
 				ctrl:[
@@ -7174,13 +7288,13 @@ function main(savedOptions) {
 					// 文本节点
 					if(text[iText]) {
 						if(o.ctrl) {
-							// 寻找前一个check/subcheck作为关联目标
+							// 寻找前一个check/subcheck/subradio作为关联目标
 							var forCheck="";
 							for(var iCtrl=iText-1;iCtrl>=0;iCtrl--) {
 								if(o.ctrl[iCtrl].type=="br") {
 									break;
 								}
-								if(!o.ctrl[iCtrl].type || o.ctrl[iCtrl].type=="check" || o.ctrl[iCtrl].type=="subcheck") {
+								if(!o.ctrl[iCtrl].type || o.ctrl[iCtrl].type=="check" || o.ctrl[iCtrl].type=="subcheck" || o.ctrl[iCtrl].type=="subradio") {
 									forCheck=o.ctrl[iCtrl].id;
 									break;
 								}
@@ -7227,6 +7341,13 @@ function main(savedOptions) {
 						case "subcheck":
 							$("@div").css("height","3px").addTo(block);
 							node=$("@input").css("marginLeft","15px").attr("type","checkbox");
+							break;
+						case "subradio":
+							$("@div").css("height","3px").addTo(block);
+							node=$("@input").css("marginLeft","15px").attr("type","radio");
+							if (control.group) {
+								node.attr("name", control.group);
+							}
 							break;
 						case "edit":
 							node=$("@textarea");
@@ -7504,7 +7625,7 @@ function main(savedOptions) {
 		var icons_opera='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAFtElEQVRYw8WXT2wc9RXHP7/fzI69a2e9if81kWqbRiQSNNgVHMqJbaoe4JKkp9zcnFBBoqQFcaRBHDhUmPSGUNWcQ2kSDpVQD3ag4lBa1a4iChRiOzbYuN71er2zf2Z/83s97Kyz412zNqrUkZ52Rpr33ud9f+/3Zn9KRPh/Xi6AUqrri3L9+hSJxDSOM0WlkgUgCEAEenvB2gKeN4+1t8jlbqqnn17qGlMEJSLfCCBvvZVlYOBlqtUs29uwvd1I2jRr799rDX19cPQoaH2NfP6KevHFpW8NIG++OYPWz7O+3qi2JVnp3j12CgUQITM8THJoKA7U1wfDwxAEl9VLL71xKAB54YUMY2OzVCpTbG7Gqi2urvK3995jo1gEpRaiSJMj6TSPZbOkjx+PqzI6CtZeU6+9dqkTgO5Yejo9y/r6FCsrUC7vmr+6ytzbb5Pz/VcGTp0aumjtoxetfXTg1KmhnO+/8ud336W4uBjz4e5dyOV+Js888/tOqdoUkMuXZ/C858nl4pWIMPvOO2xVq7/8ab3+207B/phIPJfu6Xn9R2fP4jhOvFcGBiAIrqjr13+97xLIpUtZ+vtnyefbGuzrxUU+/Oij5QsiJ7+ps28o9cUPz5wZP37iRFsBDAzA5uYP1AcfzHdegjCcYWPjvnyVyu79VysrOK57tdvWclz36nJzGSqVWAw2NsBxZtrmAIA8+WQW35/C9+PUkW2ur+MmkwtdB0sisZAvlbA7O2it22N5XlYeeiirPv54LgaAMdMUCmBMm/y1Uok68FS5fLsbwFPl8u0/KUVpa4t0KtU+K6pVEPkFsAegXD5Pvd5ObC1+uYyG5YOOVw2F8s5OJt1Y6F2T6FmUOh9bAjlzZopSKbNLuqd5altbOEotHRTAUWqhGgRPmCBARLBRwwlgGwAUR0aywFxDgWp1Cmjv2siMMfsMjH0VoGItvjGdARrP2SMtABPSlKlFqqZjLQwPDWAigJaEMZDmV9gFqAYBoYCiM62x9tAAdWvx6/WO8awoRMLxXQDfGErGJeWYjg51a3EOAeC0KBBPHFWPh0hIDCCwIGL+ZwoYa6mbzvG0cjDWLO8ClI1ZCsQloLOD8y0AAmupWhtV3DCiX89RVFt7wDdm3mLiCjSbBkgevgkzCWC7Q3IBFBDA/C7AY7Xa/PtugtAKoZj71M0lANIwceAeEJn8D1Dbk7hpDlCPJuFuYSVTuik6SVWEqgg1EWpRkKDx4vhBkv/r9OmMjnyCyL/VPCdF0VbnL0IhBhDALYvu6LgdyXbnyJHJbgBmZWXSiXz2Jg8AQVMRe7W1XwA4D9cKob+UcjNtTgFQaQysJ7oBqFrtXG6f5J7uJW+rhTrcbAMA8KV+xQBKe7tOzQBrgA7D6a4NaO25fIcCQqXxtMeOmCvPRvK3AUzDta/DnblBN0OodKyCNcAXmfy0p+fcfsk/TSSeq8H4Ykvypv8JN8OXoT/3K3hj75aNXVUJL9wzhcJEYiQGEQB3GoeR332eSrUtxb89b1qMef2vHRrwe4ljrISlQlnCC13/lAL8BqZS2ps96R7LfFLfpNKyNQeBHzeOUwtofSv6ip4TkcnbwErLdnOV5mH3GAUbLC2FxQuvRnv/QAeTV5V6IK16bjzoZiaLBHwlPobGZPOAB0RIRROmpOCuUo1GjZJ/hyTjup9/1PPvr6v6+Zkw3DrQwWRsbEwppUaUUt8Fhs6ur//8cdPzkwmnP1lRdbap4RPEplvztxeXfjwG6eWurebnesyNDweP/gHYAlZFZG15edl2VWB0dDRjrX1ERB4RkeGUtUMPVirff9x6E6fFHcsoj5TSuOo+QNFaioTBJyq89xcnWLqT7PknUFJKbSilPtNa/11rvbW2tiYHPhsmk8kE0Ccig41pjBaRzHgYnhy1Nt16sP/McXLbWi8rpQqRINtKqTzgVyqV+n5nw/8Cn9goeVWE5FcAAAAASUVORK5CYII%3D';
 		// 生成选项菜单
 		var basicCSS='.xnr_dialog{position:fixed;color:black;font-size:12px;background:rgba(0,0,0,0.5);padding:10px;-moz-border-radius:8px;border-radius:8px}.xnr_dialog *{padding:0;margin:0;line-height:normal}.xnr_dialog h1{font-size:18px;font-weight:bold}.xnr_dialog a{color:#3B5990}.xnr_dialog table{width:100%;border-collapse:collapse}.xnr_dialog .title{padding:4px;background:#3B5998;color:white;text-align:center;font-size:12px;-moz-user-select:none;-khtml-user-select:none;cursor:default}.xnr_dialog .btns{background:#F0F5F8;text-align:right;border-top:1px solid lightgray}.xnr_dialog .btns>input{border-style:solid;border-width:1px;padding:2px 15px;margin:3px;font-size:13px;cursor:pointer}.xnr_dialog .ok{background:#5C75AA;color:white;border-color:#B8D4E8 #124680 #124680 #B8D4E8}.xnr_dialog .ok:active{border-color:#124680 #B8D4E8 #B8D4E8 #124680}.xnr_dialog .cancel{background:#F0F0F0;border-color:white #848484 #848484 white;color:black}.xnr_dialog .cancel:active{border-color:#848484 white white #848484}';
-		var menuHTML='<style type="text/css">.xnr_op{width:500px;z-index:200000}.xnr_op .options{height:300px;background:#FFFFFA;clear:both}.xnr_op .category{width:119px;border-right:1px solid lightgray;overflow-x:hidden;overflow-y:auto;height:300px;float:left}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages{width:380px;margin-left:120px}.xnr_op .p{overflow:auto;height:280px;padding:10px}.xnr_op .p>div{min-height:19px;padding:2px 0;width:100%}.xnr_op .p>div *{vertical-align:middle}.xnr_op .group{margin-left:5px;margin-top:3px;table-layout:fixed}.xnr_op .group td{padding:2px 0}.xnr_op input[type="checkbox"]{margin-right:4px;cursor:pointer}.xnr_op button{background-color:#EFEFEF;background:-moz-linear-gradient(top,#FDFCFB,#E7E2DB);background:-o-linear-gradient(top,#FDFCFB,#E7E2DB);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#E7E2DB));color:black;border-color:#877C6C #A99D8C #A99D8C;border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;font-size:12px;padding:'+(XNR.acore==GECKO?1:3)+'px}.xnr_op button:hover:not([disabled]){background-color:#CCC4B9;background:-moz-linear-gradient(top,#FDFCFB,#CCC4B9);background:-o-linear-gradient(top,#FDFCFB,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#CCC4B9))}.xnr_op button[disabled]{color:grey}.xnr_op button:active:not([disabled]){background:#C1BDB6;background:-moz-linear-gradient(top,#C1BDB6,#CCC4B9);background:-o-linear-gradient(top,#C1BDB6,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#C1BDB6),to(#CCC4B9))}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op .p span{cursor:default}.xnr_op span[tooltip]{margin:0 2px;height:16px;width:16px;display:inline-block;cursor:help}.xnr_op span.info{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAuUlEQVQ4y2NgoDbQ9upiiK5eznD17sv/yDi2ajlYDi9wSZ+NoREdu2bNxa7ZJnkWXHPepH1YMUzeNnU6prPRNaMDdEOU3boRBoSWLWXApxmbIRHlyxAG4LIdFx+mHqcByBifNwgagE0zWQbgig24AWFogUgIgxNW7QpEIIKiBJsr8DlfxXMSalpwTpuJPyFN2ItIjXlzsKdGx9h2gknZLqYFf37gktJmCM2dhGFQaE4/A6eYKtUzLwMAfM0C2p5qSS4AAAAASUVORK5CYII%3D")}.xnr_op span.warn{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA1ElEQVQ4y2NgoCVYz8BgsJyBwYQszUCNsv8ZGP6D8FIGBlWSDYBphmGSNC9jYNAGabqUkvL/cmYm2IAlDAympNsOA6S4YjUDgxVI8dX8fLj+6+XlYAPWsbB4kGQ7hMtAvCvWsrN7gxRdq6jAMOBWSwvYgE1sbJFE+x3FBUiuaGBgYMKp+Xpz839c4P7UqWA1QJfmomgGmYgR8thcgOSKmQwMrBi23+js/E8IPJ47FyNAudBTHbEY7gJjBgbdDgaG7k4GhqmEcDcDw2Qg7ogA5hWq5FgAlMwfVWL5pDoAAAAASUVORK5CYII%3D")}.xnr_op input:not([type]),.xnr_op textarea{border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;padding:1px;border-color:#877C6C #A99D8C #A99D8C}.xnr_op input:not([type]):focus,.xnr_op textarea:focus{border-color:#3A6389;-moz-box-shadow:inset 0 0 1px #005EAC;-webkit-box-shadow:inset 0 0 1px #005EAC;box-shadow:inset 0 0 1px #005EAC}.xnr_op textarea{resize:none;-moz-resize:none}.xnr_op .fp{text-align:center;vertical-align:middle;width:400px;height:300px;display:table-cell}.xnr_op .fp>*{padding:5px}.xnr_op .icons>a{margin:8px}.xnr_op .icons img{width:29px}.xnr_op .icons img:hover{-webkit-transform:scale(1.1);-moz-transform:scale(1.1);-o-transform:scale(1.1)}</style>';
+		var menuHTML='<style type="text/css">.xnr_op{width:500px;z-index:200000}.xnr_op .options{height:300px;background:#FFFFFA;clear:both}.xnr_op .category{width:119px;border-right:1px solid lightgray;overflow-x:hidden;overflow-y:auto;height:300px;float:left}.xnr_op li{list-style-type:none}.xnr_op .category li{cursor:pointer;height:30px;overflow:hidden}.xnr_op .category li:hover{background:#ffffcc;color:black}.xnr_op li:nth-child(2n){background:#EEEEEE}.xnr_op li.selected{background:#748AC4;color:white}.xnr_op .category span{left:10px;position:relative;font-size:14px;line-height:30px}.xnr_op .pages{width:380px;margin-left:120px}.xnr_op .p{overflow:auto;height:280px;padding:10px}.xnr_op .p>div{min-height:19px;padding:2px 0;width:100%}.xnr_op .p>div *{vertical-align:middle}.xnr_op .group{margin-left:5px;margin-top:3px;table-layout:fixed}.xnr_op .group td{padding:2px 0}.xnr_op input[type="checkbox"],.xnr_op input[type="radio"]{margin-right:4px;cursor:pointer}.xnr_op button{background-color:#EFEFEF;background:-moz-linear-gradient(top,#FDFCFB,#E7E2DB);background:-o-linear-gradient(top,#FDFCFB,#E7E2DB);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#E7E2DB));color:black;border-color:#877C6C #A99D8C #A99D8C;border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;font-size:12px;padding:'+(XNR.acore==GECKO?1:3)+'px}.xnr_op button:hover:not([disabled]){background-color:#CCC4B9;background:-moz-linear-gradient(top,#FDFCFB,#CCC4B9);background:-o-linear-gradient(top,#FDFCFB,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#FDFCFB),to(#CCC4B9))}.xnr_op button[disabled]{color:grey}.xnr_op button:active:not([disabled]){background:#C1BDB6;background:-moz-linear-gradient(top,#C1BDB6,#CCC4B9);background:-o-linear-gradient(top,#C1BDB6,#CCC4B9);background:-webkit-gradient(linear,0 0,0 100%,from(#C1BDB6),to(#CCC4B9))}.xnr_op label{color:black;font-weight:normal;cursor:pointer}.xnr_op label[for=""]{cursor:default}.xnr_op .p span{cursor:default}.xnr_op span[tooltip]{margin:0 2px;height:16px;width:16px;display:inline-block;cursor:help}.xnr_op span.info{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAuUlEQVQ4y2NgoDbQ9upiiK5eznD17sv/yDi2ajlYDi9wSZ+NoREdu2bNxa7ZJnkWXHPepH1YMUzeNnU6prPRNaMDdEOU3boRBoSWLWXApxmbIRHlyxAG4LIdFx+mHqcByBifNwgagE0zWQbgig24AWFogUgIgxNW7QpEIIKiBJsr8DlfxXMSalpwTpuJPyFN2ItIjXlzsKdGx9h2gknZLqYFf37gktJmCM2dhGFQaE4/A6eYKtUzLwMAfM0C2p5qSS4AAAAASUVORK5CYII%3D")}.xnr_op span.warn{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA1ElEQVQ4y2NgoCVYz8BgsJyBwYQszUCNsv8ZGP6D8FIGBlWSDYBphmGSNC9jYNAGabqUkvL/cmYm2IAlDAympNsOA6S4YjUDgxVI8dX8fLj+6+XlYAPWsbB4kGQ7hMtAvCvWsrN7gxRdq6jAMOBWSwvYgE1sbJFE+x3FBUiuaGBgYMKp+Xpz839c4P7UqWA1QJfmomgGmYgR8thcgOSKmQwMrBi23+js/E8IPJ47FyNAudBTHbEY7gJjBgbdDgaG7k4GhqmEcDcDw2Qg7ogA5hWq5FgAlMwfVWL5pDoAAAAASUVORK5CYII%3D")}.xnr_op input:not([type]),.xnr_op textarea{border-width:1px;border-style:solid;-moz-border-radius:3px;border-radius:3px;padding:1px;border-color:#877C6C #A99D8C #A99D8C}.xnr_op input:not([type]):focus,.xnr_op textarea:focus{border-color:#3A6389;-moz-box-shadow:inset 0 0 1px #005EAC;-webkit-box-shadow:inset 0 0 1px #005EAC;box-shadow:inset 0 0 1px #005EAC}.xnr_op textarea{resize:none;-moz-resize:none}.xnr_op .fp{text-align:center;vertical-align:middle;width:400px;height:300px;display:table-cell}.xnr_op .fp>*{padding:5px}.xnr_op .icons>a{margin:8px}.xnr_op .icons img{width:29px}.xnr_op .icons img:hover{-webkit-transform:scale(1.1);-moz-transform:scale(1.1);-o-transform:scale(1.1)}</style>';
 		menuHTML+='<div class="title">改造选项</div><div class="options"><div class="category"><ul>'+categoryHTML+'</ul></div><div class="pages"><div class="fp"><h1><span>人人网改造器</span> <span>'+XNR.version+'</span></h1><p><b>Copyright © 2008-2013</b></p><p><a href="mailto:xnreformer@gmail.com">xnreformer@gmail.com</a></p><p><a href="http://xiaonei-reformer.googlecode.com/" target="_blank">项目主页</a></p><p class="icons"><a href="http://userscripts.org/scripts/show/45836" title="GreaseMonkey脚本" target="_blank"><img src="'+icons_gm+'"/></a><a href="https://chrome.google.com/extensions/detail/bafellppfmjodafekndapfceggodmkfc" title="Chrome/Chromium扩展" target="_blank"><img src="'+icons_chrome+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Firefox扩展" target="_blank"><img src="'+icons_fx+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Safari扩展" target="_blank"><img src="'+icons_safari+'"/></a><a href="http://code.google.com/p/xiaonei-reformer/downloads/list" title="Opera扩展" target="_blank"><img src="'+icons_opera+'"/></a></p></div></div></div><div class="btns"><input type="button" value="确定" class="ok"/><input type="button" value="取消" class="cancel"/></div>';
 	
 		$("@style").attr("type","text/css").text(basicCSS).addTo(document);
@@ -9257,6 +9378,7 @@ PageKit.prototype={
 					case "INPUT":
 						switch((PageKit(this).attr("type") || "").toLowerCase()) {
 							case "checkbox":
+							case "radio":
 								this.checked=v;
 								break;
 							default:
@@ -9283,6 +9405,7 @@ PageKit.prototype={
 				case "INPUT":
 					switch((PageKit(elem).attr("type") || "").toLowerCase()) {
 						case "checkbox":
+						case "radio":
 							return elem.checked;
 						default:
 							return elem.value;
