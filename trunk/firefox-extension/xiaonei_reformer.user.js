@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.4.514
-// @miniver        514
+// @version        3.4.4.515
+// @miniver        515
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -58,8 +58,8 @@ if (window.top == null) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.4.4.514";
-XNR.miniver=514;
+XNR.version="3.4.4.515";
+XNR.miniver=515;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
