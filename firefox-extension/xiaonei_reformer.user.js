@@ -174,8 +174,9 @@ var $=PageKit;
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, div.advert-con, .kfc-side, .imAdv, .kfc-banner, .ad_sprite, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #christmas-box, #pro-clent-ad, .pro-clent-ad, .buddy-clent-ad, .wp-rrzm-popup, .panelbarbutton[style*='width'][style*='97px'], .box-body #flashcontent, div[id^='ad100'], .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], div[id*='AdBox'], .mentos-lbox, .sec.promotion, iframe[src*='adsupport.renren.com']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, div.advert-con, .kfc-side, .imAdv, .kfc-banner, .ad_sprite, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #christmas-box, #pro-clent-ad, div[id^='ad100']:not(#ad1000000064), #ad1000000064>*, .pro-clent-ad, .buddy-clent-ad, .wp-rrzm-popup, .panelbarbutton[style*='width'][style*='97px'], .box-body #flashcontent, .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], div[id*='AdBox'], .mentos-lbox, .sec.promotion, iframe[src*='adsupport.renren.com']";
 	if (!/im\.renren\.com/.test(XNR.url)) {
+		// 搜索页面需要#ad1000000064
 		$ban(ads);
 		// 时间轴主页会需要ad_box存在，不能简单清除
 		$patchCSS("#ad_box{display:none !important}");
@@ -430,7 +431,7 @@ function removeProfileGadgets(gadgetOpt) {
 		"invitation":".guide-find-friend,p.inviteguys",
 		"introduceFriends":"#commend-friends",
 		"musicPlayer":"#zidou_music,#ZDMusicPlayer",
-		"activity": "#gift-act.mod,.doomsday-old-con"
+		"activity": "#gift-act.mod,*[class$='-con'],*[class*='-con ']"
 	};
 	var patch="";
 	for(var g in gadgetOpt) {
@@ -1944,9 +1945,9 @@ function recoverOriginalTheme(evt,ignoreTheme) {
 // 去除页面字体限制
 function removeFontRestriction(keepEnFonts) {
 	if (keepEnFonts) {
-		$patchCSS("*{font-family:Tahoma,Verdana !important}");
+		$patchCSS("*{font-family:Tahoma,Verdana,sans-serif !important}");
 	} else {
-		$patchCSS("*{font-family:none !important}");
+		$patchCSS("*{font-family:inherit !important}");
 	}
 };
 
@@ -7980,17 +7981,20 @@ function $page(category,url) {
 		share:"/share\\.renren\\.com/|#//share/|#!//share/",	// 分享
 		act:"/act\\.renren\\.com/",	// 活动
 		request:"/req\\.renren\\.com/",	// 请求
-		searchEx:"/browse\\.renren\\.com/searchEx\\.do",	// 搜索结果
+		searchEx:"/browse\\.renren\\.com/searchEx\\.do|/browse\\.renren\\.com/s/",	// 搜索结果
 		musicbox:"/music\\.renren\\.com/musicbox",	// 人人爱听播放器
 		fm:"/music\\.renren\\.com/fm",	// 人人电台
 		xiaozu:"/xiaozu\\.renren\\.com/",	// 小组
 		gossip:"/gossip\\.renren\\.com/",	// 留言板
 		zhan:"/zhan\\.renren\\.com/",	// 小站
 	};
+	const npages={
+		home: "/browse.renren.com/"
+	};
 	if(!url) {
 		url=XNR.url;
 	}
-	return pages[category]!=null && url.match(pages[category])!=null;
+	return pages[category]!=null && url.match(pages[category])!=null && (npages[category]==null || url.match(npages[category])==null);
 };
 
 /*
@@ -8359,14 +8363,20 @@ function $get(url,func,userData,method) {
 			XNR_get(window,url,func,userData,method);
 			break;
 		case USERSCRIPT:
-			if(func!=null) {
-				GM_xmlhttpRequest({method:method,url:url,onload:function(o) {
-					func.call(window,(o.status==200?o.responseText:null),url,userData);
-				},onerror:function(o) {
+			try {
+				if(func!=null) {
+					GM_xmlhttpRequest({method:method,url:url,onload:function(o) {
+						func.call(window,(o.status==200?o.responseText:null),url,userData);
+					},onerror:function(o) {
+						func.call(window,null,url,userData);
+					}});
+				} else {
+					GM_xmlhttpRequest({method:method,url:url});
+				}
+			} catch(ex) {
+				if (func!=null) {
 					func.call(window,null,url,userData);
-				}});
-			} else {
-				GM_xmlhttpRequest({method:method,url:url});
+				}
 			}
 			break;
 		case CHROME:
