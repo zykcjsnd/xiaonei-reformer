@@ -1,4 +1,4 @@
-sogouExplorer.extension.onRequest.addListener(
+sogouExplorer.extension.onMessage.addListener(
 function(request, sender, sendResponse) {
 	switch(request.action) {
 		case "save":
@@ -27,14 +27,14 @@ function(request, sender, sendResponse) {
 			var httpReq= new XMLHttpRequest();
 			httpReq.onload=function() {
 				if (httpReq.readyState == 4) {
+					sendResponse({data:(httpReq.status==200?httpReq.responseText:null)});
 					// BUG: http://ie.sogou.com/bbs/viewthread.php?tid=513537
-					//sendResponse({data:(httpReq.status==200?httpReq.responseText:null)});
-					sogouExplorer.tabs.sendRequest(sender.tab.id, {id:request.id, data:(httpReq.status==200?httpReq.responseText:null)});
+					//sogouExplorer.tabs.sendRequest(sender.tab.id, {id:request.id, data:(httpReq.status==200?httpReq.responseText:null)});
 				}
 			};
 			httpReq.onerror=function(e) {
-				// sendResponse({data:null});
-				sogouExplorer.tabs.sendRequest(sender.tab.id, {id:request.id, data:null});
+				sendResponse({data:null});
+				//sogouExplorer.tabs.sendRequest(sender.tab.id, {id:request.id, data:null});
 			};
 			httpReq.open(request.method,request.url,true);
 			//httpReq.setRequestHeader("Cache-Control","no-cache");

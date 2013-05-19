@@ -29,7 +29,8 @@ end
 def getEmo()
 	url = 'http://shell.renren.com/ubb/doingubb?t=' + Random.rand().to_s()
 	cookie = IO.read(File.dirname(__FILE__)+"/cookies")
-	res = gfetch(url, cookie)
+	#res = gfetch(url, cookie)
+	res = gfetch(url, nil)
 	if (res.code == '302')
         raise 'Redirect to ' + res["location"]
     end

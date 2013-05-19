@@ -7,7 +7,7 @@ function(request, sender, sendResponse) {
 		case "load":
 			var options=localStorage.getItem("xnr_options");
 			if (options==null) {
-				chrome.storage.sync.get(function(data) {
+				chrome.storage.sync.get(null, function(data) {
 					sendResponse({options:data||{}});
 				});
 				return true;

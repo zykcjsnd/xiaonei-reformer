@@ -782,5 +782,17 @@
   "(rainy)": {
     "t": "雨",
     "s": "/imgpro/icons/statusface/rainy.gif"
+  },
+  "(cap)": {
+    "t": "毕业了",
+    "s": "/imgpro/icons/statusface/mortarboard.gif"
+  },
+  "(basketball)": {
+    "t": "篮球",
+    "s": "/imgpro/icons/statusface/option2.gif"
+  },
+  "(ys)": {
+    "t": "改写常规",
+    "s": "/imgpro/icons/statusface/ys2.gif"
   }
 }
