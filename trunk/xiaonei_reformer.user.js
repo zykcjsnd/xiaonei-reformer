@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.4.516
-// @miniver        516
+// @version        3.4.5.517
+// @miniver        517
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -38,7 +38,8 @@
 
 // document-start在GM1.0以下的版本中，执行时documentElement尚未建立
 if (document.documentElement == null) {
-	setTimeout(arguments.callee, 10);
+	// 不加window的话scriptish可能会出错，见Issue 188
+	window.setTimeout(arguments.callee, 10);
 	return;
 }
 
@@ -58,8 +59,8 @@ if (window.top == null) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.4.4.516";
-XNR.miniver=516;
+XNR.version="3.4.5.517";
+XNR.miniver=517;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -148,25 +149,6 @@ if(XNR.agent==MAXTHON) {
 	XNR.rt=window.external.mxGetRuntime();
 }
 
-// 针对搜狗的特殊处理
-if(XNR.agent==SOGOU) {
-	XNR.msgHandlers={};
-	XNR.sgSendRequest=function(msg,handler) {
-		do {
-			var reqId=parseInt(Math.random()*100000);
-		} while(XNR.msgHandlers[reqId]!=null);
-		XNR.msgHandlers[reqId]=handler;
-		msg.id=reqId;
-		sogouExplorer.extension.sendRequest(msg);
-	};
-	sogouExplorer.extension.onRequest.addListener(function(request, sender, sendResponse) {
-		if(XNR.msgHandlers[request.id]) {
-			XNR.msgHandlers[request.id].call(window, request.data);
-			delete XNR.msgHandlers[request.id];
-		}
-	});
-}
-
 // 页面工具的简写
 var $=PageKit;
 
@@ -182,14 +164,14 @@ function removeAds() {
 		$patchCSS("#ad_box{display:none !important}");
 	}
 	$script("const jebe_json=null",true);
-	$script("Object.defineProperty(window,'load_jebe_ads',{value:function(){}})",true);
+	$script("if(Object.defineProperty){Object.defineProperty(window,'load_jebe_ads',{value:function(){}})}else if(window.__defineGetter__){window.__defineGetter__('load_jebe_ads',function(){return function(){}})}",true);
 	$wait(1,function() {
 		$("#ad_box").html("");
 		// .blank-holder在游戏大厅game.renren.com不能删
 		$(".blank-holder").remove(true);
 		// 其他的横幅广告。如2010-06的 kfc-banner
 		$("div[class$='-banner']").filter("a[target='_blank']>img").filter({childElementCount:1}).remove();
-		$script("window.load_jebe_ads=function(){}");	// safari 5.0和opera 11.5x都不支持上面的Object.defineProperty
+		$script("window.load_jebe_ads=function(){}");	// 防止低版本的浏览器不支持Object.defineProperty和__defineGetter__
 		// 个人主页上的边栏广告
 		var t=$(".col-right>.extra-side>div").eq(0);
 		t.find("a").each(function(){
@@ -364,7 +346,7 @@ function removeHomeGadgets(gadgetOpt) {
 	const gadgets={
 		"topNotice":".notice-holder, #notice_system",		// 顶部通知
 		"footprint":"#footPrint",	// 最近来访
-		"myApp": "#site-menu-apps-mine, #sidebar:not(.useNewLeftBar) #site-menu-nav",	// 我的应用
+		"myApp": "#site-menu-apps-mine, #site-menu-nav",	// 我的应用
 		"webFunction": "#site-menu-apps-func",	// 站内功能
 		"appState": "#appDynamic",	// 应用动态
 		"recommendApp": ".app-center-popup,#apps-count",	// 应用推荐
@@ -401,7 +383,7 @@ function removeHomeGadgets(gadgetOpt) {
 	}
 
 	if(gadgetOpt["appList"]) {
-		$patchCSS("#site-menu-apps-nav,.site-menu-nav-box{display:none}"); // 应用列表
+		$patchCSS("#site-menu-apps-nav{display:none}"); // 应用列表
 	}
 
 	$wait(1,function() {
@@ -1134,7 +1116,7 @@ function autoCheckFeeds(feedFilter,badTitles,badSources,badLinks,badIds,goodIds,
 			}
 		},fTime);
 		// 定时检查
-		setTimeout(arguments.callee,parseInt(interval)*1000);
+		window.setTimeout(arguments.callee,parseInt(interval)*1000);
 	})(true);
 };
 
@@ -1143,6 +1125,11 @@ function autoReloadFeeds(interval) {
 	const code='setInterval(window.newsfeed.reload,'+parseInt(interval)*1000+')';
 	$script(code);
 };
+
+// 禁止给状态中的特定词添加链接
+function disableWikiLinks() {
+	$script("if(Object.defineProperty){Object.defineProperty(window,'wikiHighlight',{value:null})}else if(window.__defineGetter__){window.__defineGetter__('wikiHighlight',function(){return null})}else{const wikiHighlight=null}", true);
+}
 
 // 去除导航栏项目
 function removeNavItems(navLinks) {
@@ -2094,10 +2081,11 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(tucao)":	{t:"吐槽",			s:"/imgpro/icons/statusface/tuc.gif"},
 		"(s)":		{t:"大兵",			s:"/imgpro/icons/statusface/soldier.gif"},
 		"(NBA)":	{t:"篮球",			s:"/imgpro/icons/statusface/basketball4.gif"},
+		"(basketball)":	{t:"篮球",		s:"/imgpro/icons/statusface/option2.gif"},
 		"(蜜蜂)":	{t:"小蜜蜂",		s:"/imgpro/icons/statusface/bee.gif"},
 	//	"(bee)":	{t:"小蜜蜂",		s:"/imgpro/icons/statusface/bee.gif"},
 		"(fl)":		{t:"花仙子",		s:"/imgpro/icons/statusface/hanago.gif"},
-		"(cap)":	{t:"学位帽",		s:"/imgpro/icons/statusface/mortarboard.gif"},
+		"(cap)":	{t:"毕业了",		s:"/imgpro/icons/statusface/mortarboard.gif"},
 		"(ice)":	{t:"冰棍儿",		s:"/imgpro/icons/statusface/ice-cream.gif"},
 		"(冰棒)":	{t:"冰棒",			s:"/imgpro/icons/statusface/dbb.gif"},
 		"(gs)":		{t:"园丁",			s:"/imgpro/icons/statusface/growing-sapling.gif"},
@@ -2322,6 +2310,7 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 	//	"(wd1)":	{t:"豌豆",			s:"/imgpro/icons/statusface/wandou1.gif"},	和(dou)图片相同
 	//	"(js)":		{t:"僵尸",			s:"/imgpro/icons/statusface/jiangshi1.gif"},	和(jsh)图片相同
 		"(69)":		{t:"翻转",			s:"/imgpro/icons/statusface/fanzhuan.gif"},
+		"(ys)":		{t:"改写常规",		s:"/imgpro/icons/statusface/ys2.gif"},
 	};
 	// 下面是内容过时的表情
 	var odEmList={
@@ -2800,7 +2789,7 @@ function addBlogHTMLEditor() {
 	
 	var last=$("#editor_toolbar1 td.mceToolbarEndButton");
 	if(last.empty()) {
-		setTimeout(arguments.callee, 500);
+		window.setTimeout(arguments.callee, 500);
 		return;
 	}
 	
@@ -2879,7 +2868,7 @@ function preventTracking0() {
 // 阻止统计信息
 function preventTracking2() {
 	// 阻止XN.net.sendStats(url)
-	var code="Object.defineProperty(XN.net, 'sendStats', {value:function(){}})";
+	var code="if(Object.defineProperty){Object.defineProperty(XN.net, 'sendStats', {value:function(){}})}else if(window.__defineGetter__){XN.net.__defineGetter__('sendStats',function(){return function(){}})}";
 	$script(code);
 
 	// 阻止点击鼠标时发送信息
@@ -2919,7 +2908,14 @@ function preventTracking2() {
 	"}";
 	// safari的getter中arguments.callee.caller为null
 	if (XNR.agent != SAFARI) {
-		code = "if (XN.env.__defineGetter__) {" +
+		code = "if (Object.defineProperty) {" + 
+			"Object.defineProperty(XN.env, 'domain', {" + 
+				"get: function() {" +
+					checkCode +
+					"return 'renren.com'" +
+				"}"+
+			"});" +
+		"} else if (XN.env.__defineGetter__) {" +
 			"XN.env.__defineGetter__('domain', function() {" +
 				checkCode +
 				"return 'renren.com'" +
@@ -3909,7 +3905,7 @@ function showFullSizeImage(evt,autoShrink,indirect) {
 			$alloc("image_viewer").image.attr("lid",imgId);
 		}
 		// 延时一点点，防止鼠标在页面上快速划过时也显示图片，对浏览造成困扰
-		setTimeout(function() {
+		window.setTimeout(function() {
 			var viewer=$alloc("image_viewer").viewer;
 			var image=$alloc("image_viewer").image;
 			if(!src) {
@@ -4795,7 +4791,7 @@ function showMusicFileLink() {
 	var paramStr=$("#player param[name='flashvars']").attr("value");
 	if(!paramStr) {
 		$error("showMusicFileLink","无法获取播放内容，重试中...");
-		setTimeout(arguments.callee,100);
+		window.setTimeout(arguments.callee,100);
 		return;
 	}
 	var paramList=paramStr.split("&");
@@ -5066,7 +5062,7 @@ function notifyFriendship() {
 						'document.documentElement.dispatchEvent(evt)'+
 					'}'
 				);
-				timer = setTimeout(compare, 8000);
+				timer = window.setTimeout(compare, 8000);
 			}
 
 
@@ -5296,6 +5292,7 @@ function sendReq() {
 
 // 主执行函数。
 function main(savedOptions) {
+
 	// 检查选项中是否设置了禁用页面隐藏项
 	if(savedOptions.blacklist) {
 		if(document.location.hostname!="renren.com") {
@@ -6283,6 +6280,17 @@ function main(savedOptions) {
 				],
 				master:0,
 				login:true,
+			},{
+				text: "##禁止对状态中的词汇添加wiki链接",
+				ctrl:[{
+					id: "disableWikiLinks",
+					value: false,
+					fn:[{
+						name:disableWikiLinks,
+						stage:0,
+						fire:true
+					}]
+				}]
 			}
 		],
 		"改造导航栏":[
@@ -7565,7 +7573,7 @@ function main(savedOptions) {
 								var node=$(t);
 								// 对象尚未存在
 								if(node.empty()) {
-									setTimeout(arguments.callee,500);
+									window.setTimeout(arguments.callee,500);
 									return;
 								}
 								node.bind(func.trigger[t],function(evt) {	
@@ -7836,7 +7844,7 @@ function main(savedOptions) {
 									var node=$(t);
 									// 对象尚未存在
 									if(node.empty()) {
-										setTimeout(arguments.callee,500);
+										window.setTimeout(arguments.callee,500);
 										return;
 									}
 									node.bind(func.trigger[t],function(evt) {	
@@ -8071,23 +8079,23 @@ function $popup(title,content,geometry,stayTime,popSpeed) {
 	var maxHeight=parseInt(node.prop("clientHeight"));
 	node.css("height","0px");
 	// 展开
-	setTimeout(function () {
+	window.setTimeout(function () {
 		try {
 			var h=parseInt(node.css("height"));
 			if(h<maxHeight) {
 				var diff=maxHeight-h;
 				node.css("height",(h+(diff>popSpeed?popSpeed:diff))+"px");
-				setTimeout(arguments.callee,timeout);
+				window.setTimeout(arguments.callee,timeout);
 			} else {
 				// 收起
-				setTimeout(function () {
+				window.setTimeout(function () {
 					try {
 						var h=parseInt(node.css("height"));
 						if(h<=0) {
 							node.remove();
 						} else {
 							node.css("height",(h>popSpeed?h-popSpeed:0)+"px");
-							setTimeout(arguments.callee,timeout);
+							window.setTimeout(arguments.callee,timeout);
 						}
 					} catch(ex) {
 					}
@@ -8240,7 +8248,7 @@ function $save(name,value) {
 			chrome.extension.sendMessage({action:"save",data:opts});
 			break;
 		case SOGOU:
-			sogouExplorer.extension.sendRequest({action:"save",data:opts});
+			sogouExplorer.extension.sendMessage({action:"save",data:opts});
 			break;
 		case SAFARI:
 			safari.self.tab.dispatchMessage("xnr_save",opts);
@@ -8273,7 +8281,7 @@ function $storage(name, data) {
 				});
 				break;
 			case SOGOU:
-				sogouExplorer.extension.sendRequest({action:"storage", pref:name}, function(response) {
+				sogouExplorer.extension.sendMessage({action:"storage", pref:name}, function(response) {
 					data(response.data);
 				});
 				break;
@@ -8314,7 +8322,7 @@ function $storage(name, data) {
 				chrome.extension.sendMessage({action:"storage", pref:name, data:data});
 				break;
 			case SOGOU:
-				sogouExplorer.extension.sendRequest({action:"storage", pref:name, data:data});
+				sogouExplorer.extension.sendMessage({action:"storage", pref:name, data:data});
 				break;
 			case SAFARI:
 				safari.self.tab.dispatchMessage("xnr_storage", {pref:name, data:data});
@@ -8390,9 +8398,9 @@ function $get(url,func,userData,method) {
 			}
 			break;
 		case SOGOU:
-			XNR.sgSendRequest({action:"get",url:url,method:method}, function(data) {
+			sogouExplorer.extension.sendMessage({action:"get",url:url,method:method}, function(response) {
 				if(func!=null) {
-					func.call(window,data,url,userData);
+					func.call(window,response.data,url,userData);
 				}
 			});
 			break;
@@ -9482,7 +9490,7 @@ switch(XNR.agent) {
 		});
 		break;
 	case SOGOU:
-		sogouExplorer.extension.sendRequest({action:"load"}, function(response) {
+		sogouExplorer.extension.sendMessage({action:"load"}, function(response) {
 			main(response.options);
 		});
 		break;
