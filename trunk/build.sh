@@ -12,7 +12,7 @@ sed -i "32,100s/^XNR.version=\".*\";$/XNR.version=\"$VER1\";/" $INPUT
 sed -i "32,100s/^XNR.miniver=.*;$/XNR.miniver=$VER2;/" $INPUT
 
 sed '/^\/\/\/$/q' "$INPUT" > "$OUTPUT"
-uglifyjs "$INPUT" >> "$OUTPUT"
+uglifyjs -nc "$INPUT" >> "$OUTPUT"
 
 #######################################
 
