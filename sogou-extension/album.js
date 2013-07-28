@@ -73,7 +73,7 @@ function switchLink() {
 	}
 };
 function switchIndex(add) {
-	var max=album.data.length;
+	var max=album.data.length+album.unknown.length;
 	var links=document.querySelectorAll("*[index]");
 	for(var i=0;i<links.length;i++) {
 		if(add) {
@@ -86,7 +86,7 @@ function switchIndex(add) {
 
 function idx(n,max) {
 	var i=0;
-	for(;max>0;max=parseInt(max/10)) {
+	for(;max>0;max=Math.floor(max/10)) {
 		i++;
 	}
 	n="00000"+n;
