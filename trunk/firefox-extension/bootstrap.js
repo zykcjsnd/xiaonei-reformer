@@ -9,11 +9,30 @@ Cu.import("resource://gre/modules/Services.jsm");
 const XNRCore = {
 	optsPath: "extensions.xiaonei_reformer.xnr_options",
 	extPath: null,
+
+	setPref: function (branch, path, data) {
+		if (arguments.length === 2) {
+			data = path;
+			path = branch;
+			branch = Services.prefs;
+		}
+		switch (typeof data) {
+			case "string":
+				var str = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
+				str.data = String(data);
+				branch.setComplexValue(path, Ci.nsISupportsString, str);
+				break;
+			case "boolean":
+				branch.prefs.setBoolPref(path, data);
+				break;
+			case "number":
+				branch.prefs.setIntPref(path, data);
+				break;
+		}
+	},
 	
 	save: function (data) {
-		var str = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
-		str.data = data;
-		Services.prefs.setComplexValue(XNRCore.optsPath, Ci.nsISupportsString, str);
+		XNRCore.setPref(XNRCore.optsPath, data);
 	},
 
 	load: function () {
@@ -58,9 +77,7 @@ const XNRCore = {
 	storage: function(name, data) {
 		var path = "extensions.xiaonei_reformer." + name;
 		if (arguments.length === 2) {
-			var str = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
-			str.data = data;
-			Services.prefs.setComplexValue(path, Ci.nsISupportsString, str);
+			XNRCore.setPref(path, data);
 		} else {
 			try {
 				return Services.prefs.getComplexValue(path, Ci.nsISupportsString).data || "";
@@ -144,7 +161,8 @@ function shutdown(data, reason) {
 }
 
 function install(data, reason) {
-	// do nothing
+	var syncPath = "services.sync.prefs.sync." + XNRCore.optsPath;
+	XNRCore.setPref(Services.prefs.getDefaultBranch(), syncPath, true);
 }
 
 function uninstall(data, reason) {

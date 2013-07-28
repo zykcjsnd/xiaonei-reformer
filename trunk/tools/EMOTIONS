@@ -794,5 +794,9 @@
   "(ys)": {
     "t": "改写常规",
     "s": "/imgpro/icons/statusface/ys2.gif"
+  },
+  "(bbt)": {
+    "t": "棒棒糖",
+    "s": "/imgpro/icons/statusface/bbt.gif"
   }
 }

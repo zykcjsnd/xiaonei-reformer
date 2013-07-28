@@ -41,7 +41,19 @@ function(request, sender, sendResponse) {
 			httpReq.send();
 			return true;
 		case "album":
+			if (chrome.downloads) {
+				request.data.dlapi = true;
+			}
 			chrome.tabs.create({url:chrome.extension.getURL("album.html")+"#"+encodeURIComponent(JSON.stringify(request.data))});
 			return;
 	}
 });
+
+if (chrome.downloads) {
+	chrome.downloads.onDeterminingFilename.addListener(function(item, suggest) {
+		suggest({
+			filename: item.filename,
+			conflict_action: 'overwrite'
+		});
+	});
+}

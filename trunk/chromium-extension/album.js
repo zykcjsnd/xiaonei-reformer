@@ -55,6 +55,9 @@ function showPhotos() {
 		if(album.title) {
 			document.title=album.title;
 		}
+		if(album.dlapi) {
+			$("#apititle").style.display="block";
+		}
 		$('#loading').style.display="none";
 		$('#loaded').style.display="block";
 	} catch(err) {
@@ -73,7 +76,7 @@ function switchLink() {
 	}
 };
 function switchIndex(add) {
-	var max=album.data.length;
+	var max=album.data.length+album.unknown.length;
 	var links=document.querySelectorAll("*[index]");
 	for(var i=0;i<links.length;i++) {
 		if(add) {
@@ -86,17 +89,45 @@ function switchIndex(add) {
 
 function idx(n,max) {
 	var i=0;
-	for(;max>0;max=parseInt(max/10)) {
+	for(;max>0;max=Math.floor(max/10)) {
 		i++;
 	}
 	n="00000"+n;
 	return n.substring(n.length-i,n.length);
 };
 
+function download() {
+	alert("本功能仍然处于实验阶段，所以有如下缺陷\n  * 图片只能下载到默认的下载文件夹中");
+	var max = album.data.length + album.unknown.length;
+	var images = document.querySelectorAll("a[index],img[index]");
+	for(var i = 0; i < images.length; i++) {
+		var image = images[i];
+		var url = image.src || image.href;
+		var ext = (url.match(/\.[^\/]+$/) || [".jpg"])[0];
+		var filename = (image.title || idx(image.getAttribute("index"), max)) + ext;
+		filename = filename.replace(/\//g, "／");
+		filename = filename.replace(/\\/g, "＼");
+		filename = filename.replace(/:/g, "：");
+		filename = filename.replace(/\*/g, "＊");
+		filename = filename.replace(/\?/g, "？");
+		filename = filename.replace(/"/g, "“");
+		filename = filename.replace(/</g, "〈");
+		filename = filename.replace(/>/g, "〉");
+		filename = filename.replace(/\|/g, "｜");
+		chrome.downloads.download({
+			"url": url,
+			"filename": filename
+		});
+	}
+}
+
 document.addEventListener("DOMContentLoaded", function() {
 	$("#switchLink").addEventListener("click", switchLink);
 	$("#switchIndex").addEventListener("click", function(event) {
 		switchIndex(event.target.checked)
+	});
+	$("#download").addEventListener("click", function(event) {
+		download();
 	});
 	showPhotos();
 });

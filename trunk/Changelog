@@ -1,3 +1,12 @@
+518:
+fix:修正发送请求失败问题
+fix:下载相册图片链接同时显示在图片的上方和下方
+fix:实验性支持chrome的下载api
+fix:修正所有误用的parseInt
+fix:完善广告屏蔽列表
+fix:自动同步firefox扩展选项
+misc:改用uglifyjs进行压缩
+
 517:
 add:增加“禁止对状态中的词汇添加wiki链接”功能
 fix:修正对基于chromium20浏览器的支持（如淘宝浏览器）
