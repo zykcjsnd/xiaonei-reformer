@@ -798,5 +798,9 @@
   "(bbt)": {
     "t": "棒棒糖",
     "s": "/imgpro/icons/statusface/bbt.gif"
+  },
+  "(s)": {
+    "t": "大兵",
+    "s": "/imgpro/icons/statusface/soldier.gif"
   }
 }

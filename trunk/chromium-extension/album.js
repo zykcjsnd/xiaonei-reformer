@@ -116,7 +116,8 @@ function download() {
 		filename = filename.replace(/\|/g, "｜");
 		chrome.downloads.download({
 			"url": url,
-			"filename": filename
+			"filename": filename,
+			"saveAs": false
 		});
 	}
 }
