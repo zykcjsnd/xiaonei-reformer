@@ -41,7 +41,20 @@ function(request, sender, sendResponse) {
 			httpReq.send();
 			return true;
 		case "album":
+			if (sogouExplorer.downloads) {
+				request.data.dlapi = true;
+			}
 			sogouExplorer.tabs.create({url:sogouExplorer.extension.getURL("album.html")+"#"+encodeURIComponent(JSON.stringify(request.data))});
 			return;
 	}
 });
+
+
+if (sogouExplorer.downloads && sogouExplorer.downloads.onDeterminingFilename) {
+	sogouExplorer.downloads.onDeterminingFilename.addListener(function(item, suggest) {
+		suggest({
+			filename: item.filename,
+			conflict_action: 'overwrite'
+		});
+	});
+}

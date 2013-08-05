@@ -166,7 +166,7 @@ function getTokens() {
 	var n = 0;
 	$("script").each(function() {
 		var code = this.textContent;
-		if (/get_check\s*:\s*["']?(\w+)['"]?/.test(code)) {
+		if (/get_check\s*:\s*["']?(-?\w+)['"]?/.test(code)) {
 			XNR.tokens.reqToken = RegExp.$1;
 			n++;
 		}
@@ -183,6 +183,7 @@ function getTokens() {
 		var code = 'var a=document.createElement("div");'+
 					'a.id="'+ r +'";'+
 					'a.textContent=JSON.stringify({t1:XN.get_check,t2:XN.get_check_x});'+
+					'a.style.display="none";'+
 					'document.body.appendChild(a);'+
 					'var evt=document.createEvent("HTMLEvents");'+
 					'evt.initEvent("'+r+'",true,true);'+
@@ -193,6 +194,7 @@ function getTokens() {
 			XNR.tokens.reqToken = t.t1;
 			XNR.tokens.rtk = t.t2;
 			$(document).unbind(r, arguments.callee);
+			$("#"+r).remove();
 		});
 		$script(code);
 	}
@@ -3186,8 +3188,10 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 		}
 		downLink2=downLink.clone();
 		downLink2.move("after", $("#content > .pager-top"));
-	} else if($("div.photo-list ul.private-album").exist()) {
-		// 新版公共主页相册。http://page.renren.com/601545346/channel-albumshow-838844601
+	} else if($("div.photo-list ul.private-album, div.photo-list ul.public-album").exist()) {
+		// 新版公共主页相册。
+		// 私有：http://page.renren.com/601545346/channel-albumshow-838844601
+		// 公共：http://page.renren.com/600002650/channel-albumshow-874319951
 		$(".album-opera").add(downLink, 0);
 		downLink2=downLink.clone();
 		downLink2.move("after", $(".breadcrumb"));
@@ -3219,8 +3223,9 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 		}
 		$alloc("download_album",[]);
 
-		function ajaxInfo(ownerId, albumId, curPage, pageNum) {
-			$get("http://photo.renren.com/photo/"+ownerId+"/album-"+albumId+"/bypage/ajax?curPage="+curPage+"&pagenum="+pageNum, function(html) {
+
+		function ajaxInfo(url) {
+			$get(url, function(html) {
 				if (!html) {
 					finish();
 					return;
@@ -3233,7 +3238,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 					var list = JSON.parse(html).photoList;
 				} catch(ex) {
 					finish();
-					$error("addDownloadAlbumLink::$get", "相册内容解析失败");
+					$error("addDownloadAlbumLink::ajaxInfo", "相册内容解析失败");
 					return;
 				}
 				var pool=$alloc("download_album");
@@ -3241,28 +3246,17 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 				var cur=0;
 				for (var i = 0; i < amount; i++) {
 					var photo = list[i];
-					var largeImg = photo.largeUrl;
-					if (/xlarge_|original_|\/p_/.test(largeImg)) {
-						// 文件名以p_开头的，是通过普通上传方式上传，没有特大图（？）
-						pool.push({i:i,src:largeImg,title:photo.title});
+					var largeImg = photo.xLarge || photo.largeUrl;
+					if (largeImg) {
+						pool.push({
+							i: photo.position || i,
+							src: largeImg,
+							title:photo.title
+						});
 						cur++;
-						downLink.text("分析中...("+cur+"/"+amount+")");
-						downLink2.text("分析中...("+cur+"/"+amount+")");
-					} else if (photo.photoId) {
-						// largeUrl中记录的不是特大图，是否存在特大图需要进一步检查
-						photo.idx = i;
-						$get("http://photo.renren.com/photo/"+ownerId+"/photo-"+photo.photoId+"/large?xtype=album", function(html,url,photo) {
-							if (/src="([^"]+?(xlarge|original)_[^"]+)"/.test(html)) {
-								photo.largeUrl = RegExp.$1;
-							}
-							pool.push({i:photo.idx,src:photo.largeUrl,title:photo.title});
-							cur++;
-							downLink.text("分析中...("+cur+"/"+amount+")");
-							downLink2.text("分析中...("+cur+"/"+amount+")");
-							if (amount == cur) {
-								finish();
-							}
-						},photo);
+						var progress = "分析中...("+cur+"/"+amount+")";
+						downLink.text(progress);
+						downLink2.text(progress);
 					} else {
 						// 格式变了，等用户来报告吧
 						cur--;
@@ -3274,33 +3268,31 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 			});
 		}
 
-		if ($(".review-mode").exist()) {
-			// 有评论模式，是一般相册
+		if ($(".share-photo-main .first-page").exist()) {
+			// 分享相册的分页模式
 			// 目前是异步加载新的页数，所以当成是所有图片已经在一页中显示了
-			if (/photo\/(\d+)\/album-(\d+)/.test(XNR.url)) {
+			if (/share\/(\d+)\/(\d+)/.test(XNR.url)) {
 				downLink.text("分析中...");
 				downLink2.text("分析中...");
 				var ownerId = RegExp.$1;
 				var albumId = RegExp.$2;
 				// FIXME 随便指定个1000应该没问题吧
-				ajaxInfo(ownerId, albumId, 0, 1000);
+				ajaxInfo("http://share.renren.com/share/"+ownerId+"/"+albumId+"/bypage?curPage=0&pageNum=1000");
 				return;
 			}
 		}
 
-		// 新版公共主页
-		if (XNR.url.indexOf("channel-albumshow-")>0) {
-			if (/\/(\d+)\/.*?(\d+)/.test(XNR.url)) {
+		if ($(".album-main .review-mode").exist()) {
+			// 普通相册，有缩略图模式和评论模式
+			// 目前是异步加载新的页数，所以当成是所有图片已经在一页中显示了
+			if (/\/photo\/(\d+)\/album-(\d+)/.test(XNR.url)) {
 				downLink.text("分析中...");
 				downLink2.text("分析中...");
 				var ownerId = RegExp.$1;
 				var albumId = RegExp.$2;
-				var pager = $(".p-page-list");
-				if (!pager.exist() || pager.rect().height == 0) {
-					// 如果使用了在一页中显示功能，则用这招
-					ajaxInfo(ownerId, albumId, 0, 1000);
-					return;
-				}
+				// FIXME 随便指定个1000应该没问题吧
+				ajaxInfo("http://photo.renren.com/photo/"+ownerId+"/album-"+albumId+"/bypage/ajax?curPage=0&pagenum=1000");
+				return;
 			}
 		}
 
@@ -3322,17 +3314,15 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 		var a=hrefs.shift();
 		$get(a.l,function(html,url,target) {
 			try {
+				target.img=null;
 				if(html==null) {
-					target.img=null;
 					return;
 				}
 				if(!downLink.text().match("分析中")) {
-					target.img=null;
 					return;
 				}
 
 				if(html.indexOf("<body id=\"errorPage\">") > 0) {
-					target.img=null;
 					return;
 				}
 				var src=/var photo *= *({.*});?/.exec(html);
@@ -3342,6 +3332,19 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						target.img=src.photo.large;
 						target.title=src.photo.title;
 						return;
+					}
+				}
+				// 新版公共主页相册里看到的
+				var src=/shareData\s*:\s*({[^{]+?})/i.exec(html);
+				if(src) {
+					try {
+						src=JSON.parse(src[1]);
+						if (src && src.largeurl) {
+							target.img=src.largeurl;
+							target.title=src.title;
+							return;
+						}
+					} catch(ex) {
 					}
 				}
 				// 公共主页相册
@@ -3372,7 +3375,9 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 					title: (target.title || $(target.t).find("img").attr("alt") || "")
 				};
 				$alloc("download_album").push(photo);
-				$(target.t).attr({down:null});
+				if (target.img != null) {
+					$(target.t).attr({down:null});
+				}
 
 				var deepSearch = false;
 				if(!(target.hasOwnProperty("img")) || !/xlarge_|original_|\/p_/.test(target.img)) {
@@ -3383,6 +3388,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						$get("http://photo.renren.com/photo/"+ownerId+"/photo-"+photoId+"/large?xtype=album", function(html,url,photo) {
 							if (/src="([^"]+?(xlarge|original)_[^"]+)"/.test(html) || (!target.img && /src="([^"]+?large_[^"]+)"/.test(html))) {
 								photo.src = RegExp.$1;
+								$(target.t).attr({down:null});
 							}
 							cur++;
 							if (totalImage == cur) {
@@ -3390,8 +3396,10 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 									finish();
 								}
 							} else {
-								downLink.text("分析中...("+cur+"/"+totalImage+")");
-								downLink2.text("分析中...("+cur+"/"+totalImage+")");
+								if(downLink.text().match("分析中")) {
+									downLink.text("分析中...("+cur+"/"+totalImage+")");
+									downLink2.text("分析中...("+cur+"/"+totalImage+")");
+								}
 							}
 						}, photo);
 					}
@@ -3422,7 +3430,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 				if($alloc("download_album").length==0) {
 					alert("无法获取任何图片的地址");
 				} else {
-					var failedImages=$(".photo-list span.img a[down],table.photoList td.photoPan>a[down],.photo-list>ul>li>a.cover[down]");
+					var failedImages=$(".photo-list span.img a[down],table.photoList td.photoPan>a[down],.photo-list>ul>li>a.cover[down],ul.album-list>li>a.photo-box[down],.photo-list ul>li>a.picture[down], li.photo-item>a[down]");
 					var failedImagesList=[];
 					if(failedImages.exist()) {
 						failedImages.each(function() {
@@ -3467,7 +3475,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						unknown:failedImagesList,		// 失败/未知的数据
 						type:linkOnly					// 只显示链接
 					};
-					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS || XNR.agent==OPERA_EXT || XNR.agent==SOGOU) {
+					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS || XNR.agent==OPERA_EXT) {
 						var html="<head><meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+album.title.replace("\\","\\\\").replace("'","\\'")+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style><script>function switchLink(){var links=document.querySelectorAll(\"a[title]:not([title=\\'\\'])\");for(var i=0;i<links.length;i++){if(links[i].textContent!=links[i].title){links[i].textContent=links[i].title}else{links[i].textContent=links[i].href}}};function switchIndex(add,max){var links=document.querySelectorAll(\"*[index]\");for(var i=0;i<links.length;i++){if(add){links[i].title=idx(parseInt(links[i].getAttribute(\"index\")),max)+\" \"+links[i].title}else{links[i].title=links[i].title.replace(/^[0-9]+ /,\"\")}}};function idx(n,max){var i=0;for(;max>0;max=Math.floor(max/10)){i++}n=\"00000\"+n;return n.substring(n.length-i,n.length)}</script></head><body>";
 						html+="<p><a target=\"_blank\" href=\"http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum\">下载指南</a>";
 						html+="</p><p>来源："+album.ref+"</p>";
@@ -3534,6 +3542,8 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						safari.self.tab.dispatchMessage("xnr_album",album);
 					} else if(XNR.agent==MAXTHON) {
 						XNR.rt.create("mx.browser").tabs.newTab({url:XNR.rt.getPrivateUrl()+"album.html#"+encodeURIComponent(JSON.stringify(album)),position:"afterCurrrent"});
+					} else if(XNR.agent==SOGOU) {
+						sogouExplorer.extension.sendMessage({action:"album",data:album});
 					}
 				}
 				$dealloc("download_album");
@@ -3544,6 +3554,33 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 		};
 	};
 };
+
+// 显示语音文件下载地址
+function showVocalFileLink(evt) {
+	if (evt) {
+		if (evt.target.nodeType != 1) {
+			return;
+		}
+		var a = $(evt.target).find("a.vocal-player[data-vocal]");
+	} else {
+		var a = $("a.vocal-player[data-vocal]");
+	}
+	if (a.empty()) {
+		return;
+	}
+	// 在新鲜事中可能有多个
+	a.each(function() {
+		var t = $(this);
+		if (t.find("#fileLink").exist()) {
+			return;
+		}
+		var data = t.attr("data-vocal");
+		if (/'?url'?\s*:\s*['"]([^'"]+)['"]/.test(data)) {
+			var url = RegExp.$1;
+			$("@a").attr("id", "fileLink").attr("href",url).attr("style","position:absolute;right:10px;line-height:28px").text("下载").addTo(t);
+		}
+	});
+}
 
 // 当鼠标在照片上时隐藏圈人框
 function hideImageTagOnMouseOver() {
@@ -4872,57 +4909,74 @@ function showPhotoAuthorComment() {
 
 // 显示歌曲文件地址
 function showMusicFileLink() {
-	var paramStr=$("#player param[name='flashvars']").attr("value");
-	if(!paramStr) {
-		$error("showMusicFileLink","无法获取播放内容，重试中...");
-		window.setTimeout(arguments.callee,100);
-		return;
-	}
-	var paramList=paramStr.split("&");
-	var src,name;
-	for(var i=0;i<paramList.length;i++) {
-		var param=paramList[i];
-		if(param.match("^name=")) {
-			name=param.substring(5);
-		} else if(param.match("^src=")) {
-			src=param.substring(4);
+	var a = $("@a").text("下载").attr("id","dlLink");
+	var objPath;
+	if ($page("musicbox")) {
+		a.css("line-height","26px").addTo($(".cur_list_action"));
+		hijack("window.musicBox");
+	} else if ($page("fm")) {
+		a.css("line-height","42px").addTo($(".operation"), 0);
+		hijack("XN.app.WebRadio");
+	} else {
+		if (!$("#home-radio-bar").exist()) {
+			if (!$allocated("@showMusicFileLink")) {
+				$alloc("@showMusicFileLink", {n:0});
+			}
+			var counter = $alloc("@showMusicFileLink");
+			if (counter.n < 20) {
+				counter.n++;
+				setTimeout(arguments.callee, 1000);
+			}
+			return;
 		}
-		if(name && src) {
-			break;
-		}
-	}
-	if(!src) {
-		$error("showMusicFileLink","无法分析播放参数");
-		return;
-	}
-	if(name.length>10) {
-		name=name.substring(0,10)+"...";
-	}
-	if($("a#tabDownload").empty()) {
-		$("#tab ul.clearfix").add($("@li").add($("@a").attr({"id":"tabDownload","target":"_black"}).text("下载 "+name)));
-	}
-	$("a#tabDownload").attr("href",src);
-
-	var code="var m=window.musicComment;"+
-		"if(m.oa){"+
-			"return;"+
-		"};"+
-		"m.oa=m.buildCommentListAsync;"+
-		"m.buildCommentListAsync=function(mid){"+
-			"new XN.net.xmlhttp({url:'http://music.renren.com/musicbox/song/'+mid,method:'get',onSuccess:function(r){"+
-				"if(r.responseText){"+
-					"var rp=XN.json.parse(r.responseText);"+
-					"var t=document.getElementById('tabDownload');"+
-					"t.setAttribute('href',rp.src);"+
-					"if(rp.name.length>10){"+
-						"rp.name=rp.name.substring(0,10)+'...'"+
+		$script("XN.radio.home.seedLoad()");
+		var extraCode = "var $=function(a,b){return (b?b:document).querySelector(a)};"+
+			"var t=$('#webpager-miniradio');"+
+			"if (t) {"+
+				"if (!$('#dlLink',t)) {"+
+					"var a=document.createElement('a');"+
+					"a.id='dlLink';"+
+					"a.style.lineHeight='26px';"+
+					"a.textContent='当前歌曲文件下载地址';"+
+					"var div=document.createElement('div');"+
+					"div.style.textAlign='center';"+
+					"div.appendChild(a);"+
+					"$('.d-person',t).appendChild(div);"+
+					// 删除广告位腾出空间
+					"var ad=$('.ad-clause',t);"+
+					"if (ad) {"+
+						"ad.parentNode.removeChild(ad);"+
 					"}"+
-					"t.textContent='下载 '+rp.name;"+
 				"}"+
-			"}});"+
-			"this.oa(mid);"+
-		"};";
-	$script(code);
+			"}";
+		hijack("XN.radio", extraCode);
+	}
+
+	function hijack(objPath, extraCode) {
+		var code="var count=0;"+
+		"(function(){"+
+			"var m="+objPath+";"+
+			"if(!m || !m.player){"+
+				"count++;"+
+				"if(count<20){"+
+					"setTimeout(arguments.callee,100)"+
+				"}"+
+			"}"+
+			"if(m.player.oplay){"+
+				"return;"+
+			"}"+
+			"m.player.oplay=m.player.play;"+
+			"m.player.play=function(url){"+
+				(extraCode || "") +
+				"var t=document.getElementById('dlLink');"+
+				"if(t) {"+
+					"t.href=url;"+
+				"}"+
+				"return "+objPath+".player.oplay.apply(this,arguments);"+
+			"};"+
+		"})()";
+		$script(code);
+	}
 };
 
 // 清空分享、留言板、状态
@@ -6799,6 +6853,21 @@ function main(savedOptions) {
 				master:0,
 				page:"album,share,xiaozu"
 			},{
+				text:"##在语音相册中显示语音文件下载地址",
+				ctrl:[
+					{
+						id:"showVocalFileLink",
+						value:false,
+						fn:[{
+							name:showVocalFileLink,
+							stage:1,
+							trigger:{"div.feed-list":"DOMNodeInserted"},
+							fire:true
+						}]
+					}
+				],
+				page:"photo,share,feed"
+			},{
 				text:"##当鼠标在照片上时隐藏圈人框##",
 				ctrl:[
 					{
@@ -7061,7 +7130,7 @@ function main(savedOptions) {
 				],
 				page:"photo"
 			},{
-				text:"##在人人爱听播放器中显示音乐下载地址",
+				text:"##在人人爱听/电台中显示音乐下载地址",
 				ctrl:[{
 					id:"showMusicFileLink",
 					value:false,
@@ -7071,7 +7140,6 @@ function main(savedOptions) {
 						fire:true
 					}]
 				}],
-				page:"musicbox"
 			},{
 				text:"##增加批量清理分享/留言板/状态功能",
 				ctrl:[{
@@ -8079,13 +8147,13 @@ function $page(category,url) {
 		status:"/status\\.renren\\.com/|#//status/|#!//status/",	// 状态
 		photo:"/photo\\.renren\\.com/getphoto\\.do|/photo\\.renren\\.com/gettagphoto\\.do|/photo\\.renren\\.com/photo/sp/|/photo\\.renren\\.com/photo/[0-9]+/photo-|/photo\\.renren\\.com/photo/[0-9]+/[^/]+/photo-|/page\\.renren\\.com/[^/]+/photo/|page\\.renren\\.com/[^/]+/channel-photoshow-|event\\.renren\\.com/event/[0-9]+/[0-9]+/photo/[0-9]+|lover\\.renren\\.com/photo/",	// 照片
 		album:"photo\\.renren\\.com/getalbum|photo\\.renren\\.com/.*/album-[0-9]+|photo\\.renren\\.com/photo/.*/album-profile||page\\.renren\\.com/.*/album|page\\.renren\\.com/.*/channel-albumshow-|/photo/album\\?|photo\\.renren\\.com/photo/ap/|event\\.renren\\.com/event/[0-9]+/photos|event\\.renren\\.com/event/[0-9]+/stars|lover\\.renren\\.com/album/",	// 相册
-		friend:"/friend\\.renren\\.com/",	// 好友
+		friend:"/friend\\.renren\\.com/|#!//friend/",	// 好友
 		share:"/share\\.renren\\.com/|#//share/|#!//share/",	// 分享
 		act:"/act\\.renren\\.com/",	// 活动
 		request:"/req\\.renren\\.com/",	// 请求
 		searchEx:"/browse\\.renren\\.com/searchEx\\.do|/browse\\.renren\\.com/s/",	// 搜索结果
-		musicbox:"/music\\.renren\\.com/musicbox",	// 人人爱听播放器
-		fm:"/music\\.renren\\.com/fm",	// 人人电台
+		musicbox:"/music\\.renren\\.com/box",	// 人人爱听播放器
+		fm:"/fm\\.renren\.com/",	// 人人电台
 		xiaozu:"/xiaozu\\.renren\\.com/",	// 小组
 		gossip:"/gossip\\.renren\\.com/",	// 留言板
 		zhan:"/zhan\\.renren\\.com/",	// 小站
