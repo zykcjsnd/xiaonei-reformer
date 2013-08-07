@@ -99,12 +99,9 @@ document.addEventListener("DOMContentLoaded", function() {
 	});
 });
 
-(function() {
-	var rt = window.external.mxGetRuntime();
-	var tab = rt.create("mx.browser.tabs").getCurrentTab();
-	rt.listen("album_for_tab_" + tab.id, function(data) {
-		album = data;
+safari.self.addEventListener("message", function(msg) {
+	if (msg.name == "albumInfo") {
+		album = msg.message;
 		showPhotos();
-	});
-})();
-
+	}
+}, false);

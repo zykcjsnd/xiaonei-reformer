@@ -1,14 +1,14 @@
 chrome.extension.onMessage.addListener(
-function(request, sender, sendResponse) {
-	switch(request.action) {
+function (request, sender, sendResponse) {
+	switch (request.action) {
 		case "save":
 			localStorage.setItem("xnr_options", request.data);
 			return;
 		case "load":
-			var options=localStorage.getItem("xnr_options");
-			if (options==null) {
+			var options = localStorage.getItem("xnr_options");
+			if (options == null) {
 				chrome.storage.sync.get(null, function(data) {
-					sendResponse({options:data||{}});
+					sendResponse({options:data || {}});
 				});
 				return true;
 			} else {
@@ -27,13 +27,13 @@ function(request, sender, sendResponse) {
 			}
 			return;
 		case "get":
-			var httpReq= new XMLHttpRequest();
-			httpReq.onload=function() {
+			var httpReq = new XMLHttpRequest();
+			httpReq.onload = function() {
 				if (httpReq.readyState == 4) {
 					sendResponse({data:(httpReq.status==200?httpReq.responseText:null)});
 				}
 			};
-			httpReq.onerror=function(e) {
+			httpReq.onerror = function(e) {
 				sendResponse({data:null});
 			};
 			httpReq.open(request.method,request.url,true);
@@ -44,10 +44,19 @@ function(request, sender, sendResponse) {
 			if (chrome.downloads) {
 				request.data.dlapi = true;
 			}
-			chrome.tabs.create({url:chrome.extension.getURL("album.html")+"#"+encodeURIComponent(JSON.stringify(request.data))});
+			chrome.tabs.create({url:chrome.extension.getURL("album.html")}, function(tab) {
+				var tabId = tab.id;
+				chrome.tabs.onUpdated.addListener(function (tid, changeInfo, tab) {
+					if (tid == tabId && changeInfo.status == "complete") {
+						chrome.tabs.onUpdated.removeListener(arguments.callee);
+						chrome.tabs.sendMessage(tid, request.data);
+					}
+				});
+			});
 			return;
 	}
 });
+
 
 if (chrome.downloads) {
 	chrome.downloads.onDeterminingFilename.addListener(function(item, suggest) {

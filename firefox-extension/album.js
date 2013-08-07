@@ -99,12 +99,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	});
 });
 
-(function() {
-	var rt = window.external.mxGetRuntime();
-	var tab = rt.create("mx.browser.tabs").getCurrentTab();
-	rt.listen("album_for_tab_" + tab.id, function(data) {
-		album = data;
-		showPhotos();
-	});
-})();
-
+window.addEventListener("message", function(message) {
+	album = message.data;
+	showPhotos();
+}, false);

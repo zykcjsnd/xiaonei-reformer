@@ -3,43 +3,58 @@
   <head>
     <title>xnr background</title>
 	<script type="text/javascript">
-		opera.extension.onmessage=function(event) {
-			var request=JSON.parse(event.data);
-			switch(request.action) {
+		var albums = {};
+		opera.extension.onmessage = function(event) {
+			var request = event.data;
+			switch (request.action) {
 				case "save":
 					localStorage.setItem("xnr_options",request.data);
 					break;
 				case "load":
 					var options=localStorage.getItem("xnr_options");
-					if(!options) {
-						options={};
+					if (!options) {
+						options = {};
 					}
-					event.source.postMessage(JSON.stringify({reqId:request.reqId,data:options})); 
+					event.source.postMessage({reqId:request.reqId, data:options}); 
 					break;
 				case "storage":
 					if (request.data) {
 						localStorage.setItem(request.pref, request.data);
 					} else {
 						var data = localStorage.getItem(request.pref);
-						event.source.postMessage(JSON.stringify({reqId:request.reqId,data:data})); 
+						event.source.postMessage({reqId:request.reqId, data:data}); 
 					}
 					break;
 				case "get":
-					var httpReq= new XMLHttpRequest();
-					httpReq.onload=function() {
+					var httpReq = new XMLHttpRequest();
+					httpReq.onload = function() {
 						if (httpReq.readyState == 4) {
-							event.source.postMessage(JSON.stringify({reqId:request.reqId,data:(httpReq.status==200?httpReq.responseText:null)}));
+							event.source.postMessage({reqId:request.reqId,data:(httpReq.status==200?httpReq.responseText:null)});
 						}
 					};
-					httpReq.onerror=function(e) {
-						event.source.postMessage(JSON.stringify({reqId:request.reqId,data:null}));
+					httpReq.onerror = function(e) {
+						event.source.postMessage({reqId:request.reqId,data:null});
 					};
 					httpReq.open(request.method,request.url,true);
 					httpReq.send();
 					break;
 				case "album":
 					// FIXME:无法下载图片
-					opera.extension.tabs.create({focused:true, url:"javascript:'"+request.data+"'"});
+					do {
+						var t = Math.floor(Math.random() * 1000000);
+					} while(t in albums);
+					albums[t] = request.data;
+					opera.extension.tabs.create({focused:true, url:"includes/album.html#"+t});
+					break;
+				case "albumInfo":
+					var t = request.reqId;
+					if (t && (t in albums)) {
+						var data = albums[t];
+						delete albums[t];
+						event.source.postMessage({data:data, reqId:t});
+					} else {
+						event.source.postMessage({data:null, reqId:t});
+					}
 					break;
 			}
 		};
