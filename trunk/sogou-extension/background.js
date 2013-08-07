@@ -1,12 +1,14 @@
+var albums = {};
+
 sogouExplorer.extension.onMessage.addListener(
-function(request, sender, sendResponse) {
-	switch(request.action) {
+function (request, sender, sendResponse) {
+	switch (request.action) {
 		case "save":
-			localStorage.setItem("xnr_options",request.data);
+			localStorage.setItem("xnr_options", request.data);
 			return;
 		case "load":
-			var options=localStorage.getItem("xnr_options");
-			if(options==null) {
+			var options = localStorage.getItem("xnr_options");
+			if (options == null) {
 				sendResponse({options:{}});
 			} else {
 				try {
@@ -24,15 +26,15 @@ function(request, sender, sendResponse) {
 			}
 			return;
 		case "get":
-			var httpReq= new XMLHttpRequest();
-			httpReq.onload=function() {
+			var httpReq = new XMLHttpRequest();
+			httpReq.onload = function() {
 				if (httpReq.readyState == 4) {
-					sendResponse({data:(httpReq.status==200?httpReq.responseText:null)});
+					sendResponse({data:(httpReq.status == 200 ? httpReq.responseText : null)});
 					// BUG: http://ie.sogou.com/bbs/viewthread.php?tid=513537
 					//sogouExplorer.tabs.sendRequest(sender.tab.id, {id:request.id, data:(httpReq.status==200?httpReq.responseText:null)});
 				}
 			};
-			httpReq.onerror=function(e) {
+			httpReq.onerror = function(e) {
 				sendResponse({data:null});
 				//sogouExplorer.tabs.sendRequest(sender.tab.id, {id:request.id, data:null});
 			};
@@ -44,8 +46,21 @@ function(request, sender, sendResponse) {
 			if (sogouExplorer.downloads) {
 				request.data.dlapi = true;
 			}
-			sogouExplorer.tabs.create({url:sogouExplorer.extension.getURL("album.html")+"#"+encodeURIComponent(JSON.stringify(request.data))});
+			do {
+				var t = Math.floor(Math.random() * 1000000);
+			} while(t in albums);
+			albums[t] = request.data;
+			sogouExplorer.tabs.create({url:sogouExplorer.extension.getURL("album.html") + "#" + t, selected:true});
 			return;
+		case "albumInfo":
+			var t = request.t;
+			if (t && (t in albums)) {
+				var data = albums[t]
+				delete albums[t];
+				sendResponse(data);
+			} else {
+				sendResponse(null);
+			}
 	}
 });
 

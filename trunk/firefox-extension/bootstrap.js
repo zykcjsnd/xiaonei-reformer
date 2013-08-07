@@ -66,7 +66,11 @@ const XNRCore = {
 		var file = XNRCore.extPath.clone();
 		file.append("album.html");
 		var albumURL = Services.io.newFileURI(file).spec;
-		var newTab = mainWindow.gBrowser.addTab(albumURL + "#" + encodeURIComponent(JSON.stringify(data)));
+		var newTab = mainWindow.gBrowser.addTab(albumURL);
+		var newTabBrowser = mainWindow.gBrowser.getBrowserForTab(newTab);
+		newTabBrowser.addEventListener("DOMContentLoaded", function () {
+			newTabBrowser.contentWindow.postMessage(data, "*");
+		}, true);
 		mainWindow.gBrowser.selectedTab = newTab;
 	},
 

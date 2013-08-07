@@ -44,7 +44,11 @@ safari.application.addEventListener("message",function(msg) {
 			break;
 		case "xnr_album":
 			var tab=safari.application.activeBrowserWindow.openTab();
-			tab.url=safari.extension.baseURI+"album.html#"+encodeURIComponent(JSON.stringify(msg.message));
+			tab.url=safari.extension.baseURI+"album.html";
+			// FIXME: 硬编码等待一秒真的不好，有无方法可以得知页面加载完毕？
+			setTimeout(function () {
+				tab.page.dispatchMessage("albumInfo", msg.message);
+			}, 1000);
 			break;
 	}
 },false);

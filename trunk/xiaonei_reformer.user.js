@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.5.519
-// @miniver        519
+// @version        3.4.5.521
+// @miniver        521
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -136,10 +136,10 @@ if(XNR.acore==PRESTO) {
 			} while(XNR.msgHandlers[reqId]!=null);
 			XNR.msgHandlers[reqId]=handler;
 			msg.reqId=reqId;
-			opera.extension.postMessage(JSON.stringify(msg));
+			opera.extension.postMessage(msg);
 		};
 		opera.extension.onmessage=function(event) {
-			var response=JSON.parse(event.data);
+			var response=event.data;
 			if(XNR.msgHandlers[response.reqId]) {
 				XNR.msgHandlers[response.reqId].call(window,response.data);
 				delete XNR.msgHandlers[response.reqId];
@@ -153,7 +153,7 @@ if(XNR.acore==PRESTO) {
 
 // 针对Maxthon的特殊处理
 if(XNR.agent==MAXTHON) {
-	XNR.rt=window.external.mxGetRuntime();
+	XNR.mxRt=window.external.mxGetRuntime();
 }
 
 // 页面工具的简写
@@ -202,7 +202,7 @@ function getTokens() {
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, div.advert-con, .kfc-side, .imAdv, .kfc-banner, .ad_sprite, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #christmas-box, #pro-clent-ad, div[id^='ad100']:not(#ad1000000064), #ad1000000064>*, div[class^='ad_']:not(#ad_box), .pro-clent-ad, .buddy-clent-ad, .wp-rrzm-popup, .panelbarbutton[style*='width'][style*='97px'], .box-body #flashcontent, .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], div[id*='AdBox'], .mentos-lbox, .sec.promotion, iframe[src*='adsupport.renren.com']";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, div.advert-con, .kfc-side, .imAdv, .kfc-banner, .ad_sprite, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #christmas-box, #pro-clent-ad, div[id^='ad100']:not(#ad1000000064), #ad1000000064>*, div[class^='ad_']:not(#ad_box), .pro-clent-ad, .buddy-clent-ad, .wp-rrzm-popup, .panelbarbutton[style*='width'][style*='97px'], .box-body #flashcontent, .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], div[id*='AdBox'], .mentos-lbox, .sec.promotion, iframe[src*='adsupport.renren.com'], .xb-iphone-footer, #right_side_div";
 	if (!/im\.renren\.com/.test(XNR.url)) {
 		// 搜索页面需要#ad1000000064
 		$ban(ads);
@@ -3475,64 +3475,18 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						unknown:failedImagesList,		// 失败/未知的数据
 						type:linkOnly					// 只显示链接
 					};
-					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS || XNR.agent==OPERA_EXT) {
-						var html="<head><meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"><title>"+album.title.replace("\\","\\\\").replace("'","\\'")+"</title><style>img{height:128px;width:128px;border:1px solid #000000;margin:1px}</style><script>function switchLink(){var links=document.querySelectorAll(\"a[title]:not([title=\\'\\'])\");for(var i=0;i<links.length;i++){if(links[i].textContent!=links[i].title){links[i].textContent=links[i].title}else{links[i].textContent=links[i].href}}};function switchIndex(add,max){var links=document.querySelectorAll(\"*[index]\");for(var i=0;i<links.length;i++){if(add){links[i].title=idx(parseInt(links[i].getAttribute(\"index\")),max)+\" \"+links[i].title}else{links[i].title=links[i].title.replace(/^[0-9]+ /,\"\")}}};function idx(n,max){var i=0;for(;max>0;max=Math.floor(max/10)){i++}n=\"00000\"+n;return n.substring(n.length-i,n.length)}</script></head><body>";
-						html+="<p><a target=\"_blank\" href=\"http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum\">下载指南</a>";
-						html+="</p><p>来源："+album.ref+"</p>";
-						if(album.unknown.length>0) {
-							html+="<p>未能取得以下地址的图片：</p>";
-							if(album.type) {
-								for(var i=0;i<album.unknown.length;i++) {
-									html+="<span>"+album.unknown[i]+"</span><br/>";
-								}
-							} else {
-								for(var i=0;i<album.unknown.length;i++) {
-									html+="<a href=\""+album.unknown[i]+"\">"+album.unknown[i]+"</a><br/>";
-								}
-							}
-							html+="<p/>";
-						}
-						if(album.type) {
-							if(album.data.length>0) {
-								html+="<p>图片数量："+album.data.length+"</p>";
-								html+="<p>使用下载工具软件下载本页面全部链接即可得到下列图片</p>";
-								html+="<p><input type=\"button\" onclick=\"switchLink()\" value=\"切换链接描述\"/></p>";
-								html+="<p><input type=\"checkbox\" onclick=\"switchIndex(this.checked,"+(album.data.length+album.unknown.length)+")\">在描述前添加图片序号</input></p>";
-							}
-							for(var i=0;i<album.data.length;i++) {
-								var img=album.data[i];
-								html+="<a href=\""+img.src+"\" index=\""+img.i+"\" title=\""+img.title.replace(/'/g,"\\'")+"\">"+img.src+"</a><br/>"
-							}
-						} else {
-							if(album.data.length>0) {
-								html+="<p>图片数量："+album.data.length+"</p>";
-								if (XNR.agent==OPERA_EXT || XNR.agent==OPERA_UJS) {
-									if (repMode) {
-										html+="<p>尊敬的Opera用户，请在下列图片上逐个点鼠标右键手动保存。如果是在使用11.00之前的Opera，可尝试完整保存本页面，在与页面同名文件夹下得到下列图片</p>";
-									} else {
-										html+="<p>尊敬的Opera用户，请在下列图片上逐个点鼠标右键手动保存。这是Opera本身的限制，如果您有什么好的方法可以实现一次性保存全部图片，欢迎来信赐教</p>";
-									}
-								} else {
-									html+="<p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列图片</p>";
-								}
-								html+="<p><input type=\"checkbox\" onclick=\"switchIndex(this.checked,"+album.data.length+")\">在描述前添加图片序号</input></p>";
-							}
-							for(var i=0;i<album.data.length;i++) {
-								var img=album.data[i];
-								html+="<img height=\"128\" width=\"128\" src=\""+img.src+"\" index=\""+img.i+"\" title=\""+img.title.replace(/'/g,"\\'")+"\"/>"
-							}
-						}
-						html+="</body>";
+					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS) {
+						var html='<html><head><meta content="text/html; charset=UTF-8" http-equiv="Content-Type"><title>下载相册</title><style>img {height:128px;width:128px;border:1px solid #000000;margin:1px;}</style><script>var album = null;function $(id) {if (id[0] == "#") {return document.getElementById(id.substring(1));} else {return document.createElement(id);}}function showPhotos() {if (album == null) {$("#loading").textContent = "数据传输出错！";return;}$("#source").textContent = album.ref;if (album.unknown.length > 0) {$("#unknown").style.display = "block";var ulist = $("#ulist");for (var i = 0; i < album.unknown.length; i++) {if (album.type) {var o = $("span");o.textContent = album.unknown[i];} else {var o = $("a");o.href = o.textContent = album.unknown[i];}ulist.appendChild(o);ulist.appendChild($("br"));}}$(album.type ? "#gallerytitle" : "#linktitle").style.display = "none";if (album.data.length > 0) {var list = $("#list");$("#count").textContent = album.data.length;for (var i = 0; i < album.data.length; i++) {var img = album.data[i];if (album.type) {var o = $("a");o.href = img.src;o.setAttribute("index", img.i);o.title = img.title;o.textContent = img.src;list.appendChild(o);list.appendChild($("br"));} else {var o = $("img");o.setAttribute("height", "128");o.setAttribute("width", "128");o.setAttribute("index", img.i);o.src = img.src;o.title = img.title;list.appendChild(o);}}}if (album.title) {document.title = album.title;}$("#loading").style.display = "none";$("#loaded").style.display = "block";};function switchLink() {var links = document.querySelectorAll("a[title]:not([title = \\"\\"])");for (var i = 0; i < links.length; i++) {if (links[i].textContent != links[i].title) {links[i].textContent = links[i].title;} else {links[i].textContent = links[i].href;}}};function switchIndex(add) {var max = album.data.length+album.unknown.length;var links = document.querySelectorAll("*[index]");for (var i = 0; i < links.length; i++) {if (add) {links[i].title = idx(parseInt(links[i].getAttribute("index")), max) + " " + links[i].title;} else {links[i].title = links[i].title.replace(/^[0-9]+ /,"");}}};function idx(n,max) {var i = 0;for (; max > 0; max = Math.floor(max / 10)) {i++;}n = "00000" + n;return n.substring(n.length - i, n.length);};document.addEventListener("DOMContentLoaded", function() {$("#switchLink").addEventListener("click", switchLink);$("#switchIndex").addEventListener("click", function(event) {switchIndex(event.target.checked);});});window.addEventListener("message", function(message) {album = message.data;showPhotos();}, false);</script></head><body><div id="loading"><p>获取数据中，请稍候……</p></div><div id="loaded" style="display:none"><p><a target="_blank" href="http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum">下载指南</a></p><p>来源：<span id="source"></span></p><div id="unknown" style="display:none"><p>未能取得以下地址的图片：</p><div id="ulist"></div></div><p>图片数量：<span id="count"></span></p><div id="linktitle"><p>使用下载工具软件下载本页面全部链接即可得到下列图片</p><p><input type="button" id="switchLink" value="切换链接描述"/></p></div><div id="gallerytitle"><p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列图片</p></div><p><input type="checkbox" id="switchIndex">在描述前添加图片序号</input></p><div id="list"></div></div></body></html>';
 						if(repMode) {
 							// script通过innerHtml不会被执行
 							document.documentElement.innerHTML=html.replace(/<script>[\s\S]*<\/script>/,"");
 							$("@script").text(/<script>([\s\S]*)<\/script>/.exec(html)[1]).addTo(document);
+							window.postMessage(album, "*");
 						} else {
-							if(XNR.agent==OPERA_EXT) {
-								XNR.oexSendRequest({action:"album",data:html});
-							} else {
-								window.open("javascript:'"+html+"'");
-							}
+							var win = window.open("javascript:'"+html+"'");
+							win.addEventListener("DOMContentLoaded", function() {
+								win.postMessage(album, "*");
+							}, false);
 						}
 					} else if(XNR.agent==FIREFOX) {
 						XNR_album(album);
@@ -3540,8 +3494,19 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						chrome.extension.sendMessage({action:"album",data:album});
 					} else if(XNR.agent==SAFARI) {
 						safari.self.tab.dispatchMessage("xnr_album",album);
+					} else if(XNR.agent==OPERA_EXT) {
+						XNR.oexSendRequest({action:"album", data:album});
 					} else if(XNR.agent==MAXTHON) {
-						XNR.rt.create("mx.browser").tabs.newTab({url:XNR.rt.getPrivateUrl()+"album.html#"+encodeURIComponent(JSON.stringify(album)),position:"afterCurrrent"});
+						XNR.mxRt.create("mx.browser").tabs.newTab({
+							url: XNR.mxRt.getPrivateUrl() + "album.html",
+							position: "afterCurrrent"
+						}, function(tab) {
+							// 等一秒页面应该加载完毕了
+							// 试了tab加载完毕后发消息过来，再从这边发消息过去，没有成功
+							setTimeout(function() {
+								XNR.mxRt.post("album_for_tab_" + tab.id, album);
+							}, 1000);
+						});
 					} else if(XNR.agent==SOGOU) {
 						sogouExplorer.extension.sendMessage({action:"album",data:album});
 					}
@@ -8422,7 +8387,7 @@ function $save(name,value) {
 			XNR.oexSendRequest({action:"save",data:opts});
 			break;
 		case MAXTHON:
-			XNR.rt.storage.setConfig("options", opts);
+			XNR.mxRt.storage.setConfig("options", opts);
 			break;
 	}
 };
@@ -8469,7 +8434,7 @@ function $storage(name, data) {
 				});
 				break;
 			case MAXTHON:
-				data(XNR.rt.storage.getConfig(name));
+				data(XNR.mxRt.storage.getConfig(name));
 				break;
 		}
 	} else {
@@ -8496,7 +8461,7 @@ function $storage(name, data) {
 				XNR.oexSendRequest({action:"storage", pref:name, data:data});
 				break;
 			case MAXTHON:
-				XNR.rt.storage.setConfig(name, data);
+				XNR.mxRt.storage.setConfig(name, data);
 				break;
 		}
 	}
@@ -9696,7 +9661,7 @@ switch(XNR.agent) {
 		});
 		break;
 	case MAXTHON:
-		var opts=XNR.rt.storage.getConfig("options");
+		var opts=XNR.mxRt.storage.getConfig("options");
 		try {
 			opts=JSON.parse(opts);
 		} catch(ex) {
