@@ -15,9 +15,9 @@
 = 历史上要求过的所有权限 =
 
 人人网改造器的chrome扩展版本从最初到现在要求过的所有权限如下：
-  * [http://code.google.com/p/xiaonei-reformer/wiki/ChromeExtPrivileges#tabs tabs]
-  * [http://code.google.com/p/xiaonei-reformer/wiki/ChromeExtPrivileges#storage storage]
-  * [http://code.google.com/p/xiaonei-reformer/wiki/ChromeExtPrivileges#downloads downloads]
+  * [ChromeExtPrivileges#tabs tabs]
+  * [ChromeExtPrivileges#storage storage]
+  * [ChromeExtPrivileges#downloads downloads]
   * [http://*.renren.com/]
   * ~~[http://renren.com/]~~
   * ~~[https://*.renren.com/]~~
