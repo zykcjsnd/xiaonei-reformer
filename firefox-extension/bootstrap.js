@@ -5,10 +5,18 @@ const Ci = Components.interfaces;
 const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/Services.jsm");
+Cu.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
 
 const XNRCore = {
 	optsPath: "extensions.xiaonei_reformer.xnr_options",
 	extPath: null,
+
+	constructors: {
+		SupportsString: Components.Constructor("@mozilla.org/supports-string;1", "nsISupportsString"),
+		XMLHttpRequest: Components.Constructor("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest"),
+		FilePicker: Components.Constructor("@mozilla.org/filepicker;1", "nsIFilePicker"),
+		WebBrowserPersist: Components.Constructor("@mozilla.org/embedding/browser/nsWebBrowserPersist;1", "nsIWebBrowserPersist"),
+	},
 
 	setPref: function (branch, path, data) {
 		if (arguments.length === 2) {
@@ -18,7 +26,7 @@ const XNRCore = {
 		}
 		switch (typeof data) {
 			case "string":
-				var str = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
+				var str = XNRCore.constructors.SupportsString();
 				str.data = String(data);
 				branch.setComplexValue(path, Ci.nsISupportsString, str);
 				break;
@@ -46,7 +54,7 @@ const XNRCore = {
 	},
 
 	request: function (scope, url, func, data, method) {
-		var httpReq = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
+		var httpReq = XNRCore.constructors.XMLHttpRequest();
 		if (func != null) {
 			httpReq.onload = function() {
 				if (httpReq.readyState == 4) {
@@ -69,9 +77,79 @@ const XNRCore = {
 		var newTab = mainWindow.gBrowser.addTab(albumURL);
 		var newTabBrowser = mainWindow.gBrowser.getBrowserForTab(newTab);
 		newTabBrowser.addEventListener("DOMContentLoaded", function () {
-			newTabBrowser.contentWindow.postMessage(data, "*");
+			var cWindow = newTabBrowser.contentWindow;
+			cWindow.postMessage({ "type":"init", "album":data }, "*");
+			cWindow.addEventListener("message", function(msg) {
+				var request = msg.data;
+				if (!request || request.type !== "download" || !request.album) {
+					return;
+				}
+				var album = request.album;
+				if (!album || !Array.isArray(album.data) || album.data.length == 0) {
+					return;
+				}
+
+				var dir = XNRCore.getDirectory(cWindow);
+				var images = album.data;
+				for (var i = 0; i < images.length; i++) {
+					var image = images[i];
+					var file = dir.clone();
+					file.append(image.filename);
+					// 现在还是同步的
+					XNRCore.download(cWindow, image.src, file, image.filename);
+				}
+			}, false);
 		}, true);
 		mainWindow.gBrowser.selectedTab = newTab;
+	},
+
+	getDirectory: function(parentWindow) {
+		var fp = XNRCore.constructors.FilePicker();
+		var nsIFilePicker = Ci.nsIFilePicker;
+		fp.init(parentWindow, "选择下载到的位置", nsIFilePicker.modeGetFolder);
+		var res = fp.show();
+		if (res != nsIFilePicker.returnCancel) {
+			return fp.file;
+		} else {
+			return null;
+		}
+	},
+
+	download: function(sourceWindow, url, target, filename) {
+		var inPrivateBrowsing = XNRCore.isInPrivateBrowsing(sourceWindow);
+		var persist = XNRCore.constructors.WebBrowserPersist();
+		var aURI = Services.io.newURI(url, null, null);
+		persist.progressListener = {
+			onProgressChange: function(aWebProgress, aRequest, aCurSelfProgress, aMaxSelfProgress, aCurTotalProgress, aMaxTotalProgress) {
+				sourceWindow.postMessage({ type:"progress", value:aCurTotalProgress, max:aMaxTotalProgress }, "*");
+			},
+			onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
+				if ((aStateFlags & 0x00000001) != 0) {
+					//STATE_START
+					sourceWindow.postMessage({ type:"start", filename:filename }, "*");
+				} else if ((aStateFlags & 0x00000010) != 0) {
+					// STATE_STOP
+					sourceWindow.postMessage({ type:"end", filename:filename }, "*");
+				}
+			}
+		}
+		persist.savePrivacyAwareURI(aURI, null, null, null, "", target, inPrivateBrowsing);
+	},
+
+	isInPrivateBrowsing: function(aWindow) {
+		try {
+			// Firefox 20+
+			Cu.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
+			return PrivateBrowsingUtils.isWindowPrivate(aWindow);
+        } catch(e) {
+			// older Firefox
+			try {
+            	return Cc["@mozilla.org/privatebrowsing;1"].getService(Ci.nsIPrivateBrowsingService).privateBrowsingEnabled;
+			} catch(e) {
+				Cu.reportError(e);
+				return false;
+			}
+		}
 	},
 
 	log: function (msg) {
