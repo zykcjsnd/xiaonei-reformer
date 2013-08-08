@@ -1,7 +1,5 @@
 var album = null;
 
-var downCount;
-
 function $(id) {
 	if (id[0] == "#") {
 		return document.getElementById(id.substring(1));
@@ -63,6 +61,7 @@ function showPhotos() {
 	$("#loaded").style.display = "block";
 };
 
+
 function switchLink() {
 	var links = document.querySelectorAll("a[title]");
 	for (var i = 0; i < links.length; i++) {
@@ -99,71 +98,19 @@ function idx(n, max) {
 	return n.substring(n.length - i, n.length);
 };
 
-function fixFilename(filename) {
-	return filename.replace(/\//g, "／").replace(/\\/g, "＼").replace(/:/g, "：")
-			.replace(/\*/g, "＊").replace(/\?/g, "？").replace(/"/g, "“")
-			.replace(/</g, "〈").replace(/>/g, "〉").replace(/\|/g, "｜");
-}
-
-function download() {
-	var max = album.data.length + album.unknown.length;
-	var images = album.data;
-	for (var i = 0; i < images.length; i++) {
-		var image = images[i];
-		var url = image.src;
-		var ext = (url.match(/\.[^\/]+$/) || [".jpg"])[0];
-		var filename = idx(image.i, max) + (image.title ? " " + image.title : "" ) + ext;
-		image.filename = fixFilename(filename);
-	}
-	album.dirname = fixFilename(album.title);
-	downCount = 0;
-	var p = $("#allPercent");
-	p.setAttribute("max", album.data.length);
-	p.setAttribute("value", 0);
-	p.textContent = "0 %";
-	$("#progress").style.display = "";
-	$("#downloading").textContent = "准备下载……";
-	window.postMessage({ type:"download", "album":album }, "*");
-}
-
 document.addEventListener("DOMContentLoaded", function() {
 	$("#switchLink").addEventListener("click", switchLink);
 	$("#switchIndex").addEventListener("click", function(event) {
 		switchIndex(event.target.checked);
 	});
-	$("#download").addEventListener("click", download);
-});
 
-window.addEventListener("message", function(message) {
-	var data = message.data;
-	if (!data) {
-		return;
-	}
-	switch(data.type) {
-		case "init":
-			album = data.album;
+	var reqId = location.hash.substring(1);
+	opera.extension.onmessage=function(event) {
+		var response = event.data;
+		if (response.reqId == reqId) {
+			album = response.data;
 			showPhotos();
-			break;
-		case "download":
-			// do nothing
-			break;
-		case "start":
-			$("#downloading").textContent = "正在下载：" + data.filename;
-			break;
-		case "progress":
-			var p = $("#curPercent");
-			p.setAttribute("value", data.value);
-			p.setAttribute("max", data.max);
-			p.textContent = Math.floor(data.value / data.max * 100) + ' %';
-			break;
-		case "end":
-			var p = $("#allPercent");
-			p.setAttribute("value", ++downCount);
-			var max = album.data.length;
-			p.textContent = Math.floor(downCount / max * 100) + ' %';
-			if (downCount >= max) {
-				$("#progress").style.display = "none";
-			}
-			break;
-	}
-}, false);
+		}
+	};
+	opera.extension.postMessage(JSON.stringify({action:"albumInfo", reqId:reqId}));
+});

@@ -1,7 +1,7 @@
 var album = null;
 
 function $(id) {
-	if (id[0] == '#') {
+	if (id[0] == "#") {
 		return document.getElementById(id.substring(1));
 	} else {
 		return document.createElement(id);
@@ -10,7 +10,7 @@ function $(id) {
 
 function showPhotos() {
 	if (album == null) {
-		$('#loading').textContent = "数据传输出错！";
+		$("#loading").textContent = "数据传输出错！";
 		return;
 	}
 	$("#source").textContent = album.ref;
@@ -60,20 +60,25 @@ function showPhotos() {
 	if (album.dlapi) {
 		$("#apititle").style.display = "block";
 	}
-	$('#loading').style.display = "none";
-	$('#loaded').style.display = "block";
+	$("#loading").style.display = "none";
+	$("#loaded").style.display = "block";
 };
 
 function switchLink() {
-	var links = document.querySelectorAll("a[title]:not([title = ''])");
+	var links = document.querySelectorAll("a[title]");
 	for (var i = 0; i < links.length; i++) {
-		if (links[i].textContent != links[i].title) {
-			links[i].textContent = links[i].title;
+		var l = links[i];
+		if (!l.title) {
+			continue;
+		}
+		if (l.textContent != l.title) {
+			l.textContent = l.title;
 		} else {
-			links[i].textContent = links[i].href;
+			l.textContent = l.href;
 		}
 	}
 };
+
 function switchIndex(add) {
 	var max = album.data.length+album.unknown.length;
 	var links = document.querySelectorAll("*[index]");
@@ -81,12 +86,12 @@ function switchIndex(add) {
 		if (add) {
 			links[i].title = idx(parseInt(links[i].getAttribute("index")), max) + " " + links[i].title;
 		} else {
-			links[i].title = links[i].title.replace(/^[0-9]+ /,"");
+			links[i].title = links[i].title.replace(/^[0-9]+ /, "");
 		}
 	}
 };
 
-function idx(n,max) {
+function idx(n, max) {
 	var i = 0;
 	for (; max > 0; max = Math.floor(max / 10)) {
 		i++;
@@ -94,6 +99,12 @@ function idx(n,max) {
 	n = "00000" + n;
 	return n.substring(n.length - i, n.length);
 };
+
+function fixFilename(filename) {
+	return filename.replace(/\//g, "／").replace(/\\/g, "＼").replace(/:/g, "：")
+			.replace(/\*/g, "＊").replace(/\?/g, "？").replace(/"/g, "“")
+			.replace(/</g, "〈").replace(/>/g, "〉").replace(/\|/g, "｜");
+}
 
 function download() {
 	alert("本功能仍然处于实验阶段，所以有如下缺陷\n  * 图片只能下载到默认的下载文件夹中");
@@ -104,18 +115,9 @@ function download() {
 		var url = image.src || image.href;
 		var ext = (url.match(/\.[^\/]+$/) || [".jpg"])[0];
 		var filename = (image.title || idx(image.getAttribute("index"), max)) + ext;
-		filename = filename.replace(/\//g, "／");
-		filename = filename.replace(/\\/g, "＼");
-		filename = filename.replace(/:/g, "：");
-		filename = filename.replace(/\*/g, "＊");
-		filename = filename.replace(/\?/g, "？");
-		filename = filename.replace(/"/g, "“");
-		filename = filename.replace(/</g, "〈");
-		filename = filename.replace(/>/g, "〉");
-		filename = filename.replace(/\|/g, "｜");
 		chrome.downloads.download({
 			"url": url,
-			"filename": filename,
+			"filename": fixFilename(filename),
 			"saveAs": false
 		});
 	}

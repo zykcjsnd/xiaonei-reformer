@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.5.521
-// @miniver        521
+// @version        3.4.5.522
+// @miniver        522
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -2229,6 +2229,8 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(twg)":	{t:"style",			s:"/imgpro/icons/statusface/style.gif"},
 		"(走你)":	{t:"走你",			s:"/imgpro/icons/statusface/zn.gif"},
 		"(小黄鸡)":	{t:"小黄鸡",		s:"/imgpro/icons/statusface/xhj.gif"},
+		"(不约而同)": {t:"不约而同",	s:"/imgpro/icons/statusface/byet.gif"},
+		"(十动然拒)": {t:"十动然拒",	s:"/imgpro/icons/statusface/sdrj.gif"},
 	};
 	var eEmList={
 		"(guoqing)":		{t:"国庆",		s:"/imgpro/icons/statusface/guoqing.gif"},
@@ -3251,7 +3253,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						pool.push({
 							i: photo.position || i,
 							src: largeImg,
-							title:photo.title
+							title: (photo.title || "").replace(/ 浏览\(\d+\) 评论\(\d+\)$/, "")
 						});
 						cur++;
 						var progress = "分析中...("+cur+"/"+amount+")";
@@ -3372,7 +3374,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 				var photo = {
 					i: target.i,
 					src: target.img,
-					title: (target.title || $(target.t).find("img").attr("alt") || "")
+					title: (target.title || $(target.t).find("img").attr("alt") || "").replace(/ 浏览\(\d+\) 评论\(\d+\)$/, "")
 				};
 				$alloc("download_album").push(photo);
 				if (target.img != null) {
@@ -3476,7 +3478,7 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						type:linkOnly					// 只显示链接
 					};
 					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS) {
-						var html='<html><head><meta content="text/html; charset=UTF-8" http-equiv="Content-Type"><title>下载相册</title><style>img {height:128px;width:128px;border:1px solid #000000;margin:1px;}</style><script>var album = null;function $(id) {if (id[0] == "#") {return document.getElementById(id.substring(1));} else {return document.createElement(id);}}function showPhotos() {if (album == null) {$("#loading").textContent = "数据传输出错！";return;}$("#source").textContent = album.ref;if (album.unknown.length > 0) {$("#unknown").style.display = "block";var ulist = $("#ulist");for (var i = 0; i < album.unknown.length; i++) {if (album.type) {var o = $("span");o.textContent = album.unknown[i];} else {var o = $("a");o.href = o.textContent = album.unknown[i];}ulist.appendChild(o);ulist.appendChild($("br"));}}$(album.type ? "#gallerytitle" : "#linktitle").style.display = "none";if (album.data.length > 0) {var list = $("#list");$("#count").textContent = album.data.length;for (var i = 0; i < album.data.length; i++) {var img = album.data[i];if (album.type) {var o = $("a");o.href = img.src;o.setAttribute("index", img.i);o.title = img.title;o.textContent = img.src;list.appendChild(o);list.appendChild($("br"));} else {var o = $("img");o.setAttribute("height", "128");o.setAttribute("width", "128");o.setAttribute("index", img.i);o.src = img.src;o.title = img.title;list.appendChild(o);}}}if (album.title) {document.title = album.title;}$("#loading").style.display = "none";$("#loaded").style.display = "block";};function switchLink() {var links = document.querySelectorAll("a[title]:not([title = \\"\\"])");for (var i = 0; i < links.length; i++) {if (links[i].textContent != links[i].title) {links[i].textContent = links[i].title;} else {links[i].textContent = links[i].href;}}};function switchIndex(add) {var max = album.data.length+album.unknown.length;var links = document.querySelectorAll("*[index]");for (var i = 0; i < links.length; i++) {if (add) {links[i].title = idx(parseInt(links[i].getAttribute("index")), max) + " " + links[i].title;} else {links[i].title = links[i].title.replace(/^[0-9]+ /,"");}}};function idx(n,max) {var i = 0;for (; max > 0; max = Math.floor(max / 10)) {i++;}n = "00000" + n;return n.substring(n.length - i, n.length);};document.addEventListener("DOMContentLoaded", function() {$("#switchLink").addEventListener("click", switchLink);$("#switchIndex").addEventListener("click", function(event) {switchIndex(event.target.checked);});});window.addEventListener("message", function(message) {album = message.data;showPhotos();}, false);</script></head><body><div id="loading"><p>获取数据中，请稍候……</p></div><div id="loaded" style="display:none"><p><a target="_blank" href="http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum">下载指南</a></p><p>来源：<span id="source"></span></p><div id="unknown" style="display:none"><p>未能取得以下地址的图片：</p><div id="ulist"></div></div><p>图片数量：<span id="count"></span></p><div id="linktitle"><p>使用下载工具软件下载本页面全部链接即可得到下列图片</p><p><input type="button" id="switchLink" value="切换链接描述"/></p></div><div id="gallerytitle"><p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列图片</p></div><p><input type="checkbox" id="switchIndex">在描述前添加图片序号</input></p><div id="list"></div></div></body></html>';
+						var html='<html><head><meta content="text/html; charset=UTF-8" http-equiv="Content-Type"><title>下载相册</title><style>img {height:128px;width:128px;border:1px solid #000000;margin:1px;}</style><script>var album = null;function $(id) {if (id[0] == "#") {return document.getElementById(id.substring(1));} else {return document.createElement(id);}}function showPhotos() {if (album == null) {$("#loading").textContent = "数据传输出错！";return;}$("#source").textContent = album.ref;if (album.unknown.length > 0) {$("#unknown").style.display = "block";var ulist = $("#ulist");for (var i = 0; i < album.unknown.length; i++) {if (album.type) {var o = $("span");o.textContent = album.unknown[i];} else {var o = $("a");o.href = o.textContent = album.unknown[i];}ulist.appendChild(o);ulist.appendChild($("br"));}}$(album.type ? "#gallerytitle" : "#linktitle").style.display = "none";if (album.data.length > 0) {var list = $("#list");$("#count").textContent = album.data.length;for (var i = 0; i < album.data.length; i++) {var img = album.data[i];if (album.type) {var o = $("a");o.href = img.src;o.setAttribute("index", img.i);o.title = img.title;o.textContent = img.src;list.appendChild(o);list.appendChild($("br"));} else {var o = $("img");o.setAttribute("height", "128");o.setAttribute("width", "128");o.setAttribute("index", img.i);o.src = img.src;o.title = img.title;list.appendChild(o);}}}if (album.title) {document.title = album.title;}$("#loading").style.display = "none";$("#loaded").style.display = "block";};function switchLink() {var links = document.querySelectorAll("a[title]");for (var i = 0; i < links.length; i++) {var l = links[i];if (!l.title) {continue;}if (l.textContent != l.title) {l.textContent = l.title;} else {l.textContent = l.href;}}};function switchIndex(add) {var max = album.data.length+album.unknown.length;var links = document.querySelectorAll("*[index]");for (var i = 0; i < links.length; i++) {if (add) {links[i].title = idx(parseInt(links[i].getAttribute("index")), max) + " " + links[i].title;} else {links[i].title = links[i].title.replace(/^[0-9]+ /, "");}}};function idx(n, max) {var i = 0;for (; max > 0; max = Math.floor(max / 10)) {i++;}n = "00000" + n;return n.substring(n.length - i, n.length);};document.addEventListener("DOMContentLoaded", function() {$("#switchLink").addEventListener("click", switchLink);$("#switchIndex").addEventListener("click", function(event) {switchIndex(event.target.checked);});});window.addEventListener("message", function(message) {album = message.data;showPhotos();}, false);</script></head><body><div id="loading"><p>获取数据中，请稍候……</p></div><div id="loaded" style="display:none"><p><a target="_blank" href="http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum">下载指南</a></p><p>来源：<span id="source"></span></p><div id="unknown" style="display:none"><p>未能取得以下地址的图片：</p><div id="ulist"></div></div><p>图片数量：<span id="count"></span></p><div id="linktitle"><p>使用下载工具软件下载本页面全部链接即可得到下列图片</p><p><input type="button" id="switchLink" value="切换链接描述"/></p></div><div id="gallerytitle"><p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列图片</p></div><p><input type="checkbox" id="switchIndex">在描述前添加图片序号</input></p><div id="list"></div></div></body></html>';
 						if(repMode) {
 							// script通过innerHtml不会被执行
 							document.documentElement.innerHTML=html.replace(/<script>[\s\S]*<\/script>/,"");
