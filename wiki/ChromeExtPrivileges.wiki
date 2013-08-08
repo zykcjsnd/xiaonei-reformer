@@ -1,4 +1,4 @@
-#summary 稍微解释一下Chrome扩展对各项权限的要求
+#summary 解释一下Chrome扩展对各项权限的要求
 
 = 浏览器的权限警告 =
 
@@ -68,7 +68,7 @@
   * 废弃版本：1.9.99.200
   * 废弃原因：估计人人网没心思再弄https页面，留着白占地方
 
-== http://*/* ==
+== http://*/ ==
   * 加入版本：[http://code.google.com/p/xiaonei-reformer/source/diff?path=/trunk/chromium-extension/manifest.json&format=side&r=57&old_path=/trunk/chromium-extension/manifest.json&old=51 1.9.99.200]
   * 公开发布：1.9.99.202 (20100124)
   * 加入原因：为了发ajax请求方便（？）
@@ -81,4 +81,4 @@
 == http://*.xnpic.com/ ==
   * 加入版本：[http://code.google.com/p/xiaonei-reformer/source/diff?path=/trunk/chromium-extension/manifest.json&format=side&r=695&old_path=/trunk/chromium-extension/manifest.json&old=694 3.4.5.518]
   * 公开发布：3.4.5.519 (20130728)
-  * 加入原因：这些都是人人网用来存图片的域名，下载API[http://developer.chrome.com/extensions/downloads.html#manifest 需要明确声明目标域名]
+  * 加入原因：这些都是人人网用来存图片的域名，下载API[http://developer.chrome.com/extensions/downloads.html#manifest 需要明确声明欲下载文件的域名]
