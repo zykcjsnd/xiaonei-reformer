@@ -4,7 +4,7 @@
 
 [http://developer.chrome.com/extensions/permission_warnings.html 这里]是chrome浏览器官方的扩展开发文档，里面的表格中详细记叙了浏览器提出的权限警告与扩展实际要求的权限间的对应关系。
 
-<p><p><p>
+
 
 = 当前版本的权限要求 =
 
@@ -27,6 +27,8 @@
   * [http://*.xnimg.cn/]
   * [http://*.rrfmn.com/]
   * [http://*.xnpic.com/]
+
+
 
 = 各项权限的详细说明 =
 == tabs ==
