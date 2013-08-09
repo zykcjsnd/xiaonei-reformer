@@ -100,11 +100,43 @@ function idx(n, max) {
 	return n.substring(n.length - i, n.length);
 };
 
-function fixFilename(filename) {
-	return filename.replace(/\//g, "／").replace(/\\/g, "＼").replace(/:/g, "：")
+
+function fixFilename(filename, ext) {
+	var newName = filename.replace(/&amp;/g, "&").replace(/&lt;/g, "<")
+			.replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&apos;/g, "'")
+			.replace(/\//g, "／").replace(/\\/g, "＼").replace(/:/g, "：")
 			.replace(/\*/g, "＊").replace(/\?/g, "？").replace(/"/g, "“")
-			.replace(/</g, "〈").replace(/>/g, "〉").replace(/\|/g, "｜");
-}
+			.replace(/</g, "〈").replace(/>/g, "〉").replace(/\|/g, "｜")
+			.replace(/[\t\n\r]/g, " ");
+	// 下面是最麻烦的文件名长度限制
+	// 不同FileSystem对文件名长度的限制不同，一般来讲不应高于255
+	var maxLength = 255;
+	var restBytes = maxLength - ext.length;
+	for (var i = 0; i < newName.length; i++) {
+		// 不同系统对文件名的字符编码导致每个字符的字节长度不同
+		// 常见FS里，HFS+和NTFS都用的是UTF16编码，其他的都没有限制编码
+		// 应该没有人用UTF32的，就全按照UTF8处理 http://en.wikipedia.org/wiki/UTF-8
+		// 一般相册/图片说明应该以中文为主，故即使是在UTF16的系统上，采用UTF8的算法也应该不会出大问题
+		var charCode = newName.charCodeAt(i);
+		var charBytes;
+		if (charCode < 128) {
+			charBytes = 1;
+		} else if (charCode < 2048) {
+			charBytes = 2;
+		} else if (charCode < 65536) {
+			charBytes = 3;
+		} else {
+			// 虽然理论上存在5～6字节的...
+			charBytes = 4;
+		}
+		if (restBytes >= charBytes) {
+			restBytes -= charBytes;
+		} else {
+			return newName.substring(0, i - 1) + ext;
+		}
+	}
+	return newName + ext;
+};
 
 function download() {
 	alert("本功能仍然处于实验阶段，所以有如下缺陷\n  * 图片只能下载到默认的下载文件夹中");
@@ -114,14 +146,14 @@ function download() {
 		var image = images[i];
 		var url = image.src || image.href;
 		var ext = (url.match(/\.[^\/]+$/) || [".jpg"])[0];
-		var filename = (image.title || idx(image.getAttribute("index"), max)) + ext;
+		var filename = (image.title || idx(image.getAttribute("index"), max));
 		chrome.downloads.download({
 			"url": url,
-			"filename": fixFilename(filename),
+			"filename": fixFilename(filename, ext),
 			"saveAs": false
 		});
 	}
-}
+};
 
 document.addEventListener("DOMContentLoaded", function() {
 	$("#switchLink").addEventListener("click", switchLink);

@@ -5,7 +5,6 @@ const Ci = Components.interfaces;
 const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/Services.jsm");
-Cu.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
 
 const XNRCore = {
 	optsPath: "extensions.xiaonei_reformer.xnr_options",
@@ -86,17 +85,38 @@ const XNRCore = {
 				}
 				var album = request.album;
 				if (!album || !Array.isArray(album.data) || album.data.length == 0) {
+					// 参数错误
+					cWindow.postMessage({ type:"cancel", error:"\u53C2\u6570\u9519\u8BEF" }, "*");
 					return;
 				}
 
 				var dir = XNRCore.getDirectory(cWindow);
+				if (dir == null) {
+					cWindow.postMessage({ type:"cancel" }, "*");
+					return;
+				}
+				var suffix = 1;
+				var dir2 = dir.clone();
+				dir2.append(album.dirname);
+				while (dir2.exists()) {
+					dir2 = dir.clone();
+					dir2.append(album.dirname + "_" + suffix);
+					suffix++;
+				}
+				dir = dir2;
+				// DIRECTORY_TYPE = 1, 0o700 = 448
+				try {
+					dir.create(1, 448);
+				} catch(ex) {
+					// 无法在指定位置创建目录
+					cWindow.postMessage({ type:"cancel", error:"\u65E0\u6CD5\u5728\u6307\u5B9A\u4F4D\u7F6E\u521B\u5EFA\u76EE\u5F55" }, "*");
+				}
 				var images = album.data;
 				for (var i = 0; i < images.length; i++) {
 					var image = images[i];
 					var file = dir.clone();
 					file.append(image.filename);
-					// 现在还是同步的
-					XNRCore.download(cWindow, image.src, file, image.filename);
+					XNRCore.download(cWindow, i, image.src, file);
 				}
 			}, false);
 		}, true);
@@ -115,24 +135,30 @@ const XNRCore = {
 		}
 	},
 
-	download: function(sourceWindow, url, target, filename) {
+	download: function(sourceWindow, idx, url, target) {
 		var inPrivateBrowsing = XNRCore.isInPrivateBrowsing(sourceWindow);
 		var persist = XNRCore.constructors.WebBrowserPersist();
 		var aURI = Services.io.newURI(url, null, null);
 		persist.progressListener = {
 			onProgressChange: function(aWebProgress, aRequest, aCurSelfProgress, aMaxSelfProgress, aCurTotalProgress, aMaxTotalProgress) {
-				sourceWindow.postMessage({ type:"progress", value:aCurTotalProgress, max:aMaxTotalProgress }, "*");
+				sourceWindow.postMessage({ type:"progress", index:idx, current:aCurTotalProgress, max:aMaxTotalProgress }, "*");
 			},
 			onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
 				if ((aStateFlags & 0x00000001) != 0) {
 					//STATE_START
-					sourceWindow.postMessage({ type:"start", filename:filename }, "*");
+					sourceWindow.postMessage({ type:"start", index:idx }, "*");
 				} else if ((aStateFlags & 0x00000010) != 0) {
 					// STATE_STOP
-					sourceWindow.postMessage({ type:"end", filename:filename }, "*");
+					sourceWindow.postMessage({ type:"end", index:idx, result:aStatus, uri:Services.io.newFileURI(target).path }, "*");
 				}
-			}
+			},
+			// 没有这些后台可能会抛异常
+			onStatusChange: function(aWebProgress, aRequest, aStatus, aMessage) {},
+			onSecurityChange: function(aWebProgress, aRequest, aState) {},
+			onLocationChange: function(aWebProgress, aRequest, aLocation, aFlags) {},
 		}
+		// PERSIST_FLAGS_CLEANUP_ON_FAILURE
+		persist.persistFlags |= 8192;
 		persist.savePrivacyAwareURI(aURI, null, null, null, "", target, inPrivateBrowsing);
 	},
 
