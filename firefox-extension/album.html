@@ -4,67 +4,41 @@
 	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
 	<title>下载相册</title>
 	<style>
-		img {
-			height: 128px;
-			width: 128px;
-			border: 1px solid #000000;
-			margin: 1px;
-		}
-		#progress {
-			height: 100%;
-			width: 100%;
-			background-color: rgba(0, 0, 0, 0.5);
-			top: 0;
-			left: 0;
-			position: fixed;
-			display: table;
-		}
-		#wrapper {
-			display: table-cell;
-			text-align: center;
-			vertical-align: middle;
-		}
-		#downloading {
-			color: white;
-			text-shadow: 1px 1px black;
-		}
-		progress {
-			width: 20em;
-			height: 1.5em;
-		}
+		#udetail { margin-left: 1em; }
+		#downInfo { width: 95%; margin: 0 auto; border: 3px double gray; border-collapse: collapse; }
+		#downInfo th, #downInfo td { border: 1px solid gray; text-align: center; }
+		#downInfo td:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 1em; text-align: left; }
+		#downInfo .index { width: 5em; }
+		#downInfo .progress { width: 15em; }
+		#downInfo .status { width: 8em; }
+		progress { width: 99%; height: 1.5em; display: block; }
 	</style>
 	<script src="album.js"></script>
 </head>
 <body>
 <div id="loading">
 	<p>获取数据中，请稍候……</p>
-	<p>如果您安装了noscript扩展，请允许file://执行脚本</p>
+	<p>如果您安装了noscript扩展，请允许file://执行脚本，然后重新下载</p>
 </div>
 <div id="loaded" style="display:none">
 	<p><a target="_blank" href="http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum">下载指南</a></p>
-	<p>来源：<span id="source"></span></p>
+	<p>来源：<a id="source"></a></p>
 	<div id="unknown" style="display:none">
-		<p>未能取得以下地址的图片：</p>
-		<div id="ulist"></div>
+		<p>有<span id="ucount"></span>张图片未能解析出地址<a href="#" id="udetail">详情</a></p>
+		<div id="ulist" style="display:none"><p>以下页面的图片无法解析：</p></div>
 	</div>
-	<p>图片数量：<span id="count"></span></p>
-	<div id="linktitle">
-		<p>使用下载工具软件下载本页面全部链接即可得到下列图片</p>
-		<p><input type="button" id="switchLink" value="切换链接描述"/></p>
-	</div>
-	<div id="gallerytitle">
-		<p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列图片</p>
-	</div>
-	<p><button id="download">快速下载</button></p>
-	<p><input type="checkbox" id="switchIndex">在描述前添加图片序号</input></p>
-	<div id="list">
-	</div>
-	<div id="progress" style="display:none">
-		<div id="wrapper">
-			<p id="downloading"></p>
-			<p><progress id="curPercent"/></p>
-			<p><progress id="allPercent"/></p>
-		</div>
+	<p><button id="download">开始下载</button></p>
+	<div id="wrapper">
+		<table id="downInfo">
+			<thead>
+				<th class="index">序号</th>
+				<th class="title">标题</th>
+				<th class="progress">进度</th>
+				<th class="status">状态</th>
+			</thead>
+			<tbody id="tbody">
+			</tbody>
+		</table>
 	</div>
 </div>
 </body>
