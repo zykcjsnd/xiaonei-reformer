@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.5.522
-// @miniver        522
+// @version        3.4.5.524
+// @miniver        524
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -3155,7 +3155,7 @@ function showImagesInOnePage() {
 
 // 在相册中添加生成下载页链接
 // 压力测试：http://photo.renren.com/photo/242786354/album-236660334
-function addDownloadAlbumLink(linkOnly,repMode) {
+function addDownloadAlbumLink(linkOnly,mode) {
 	if($(document.body).attr("downloadable") == "yes") {
 		// FIXME: 防止在既是album又是share的页面重复执行
 		return;
@@ -3376,8 +3376,8 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 					src: target.img,
 					title: (target.title || $(target.t).find("img").attr("alt") || "").replace(/ 浏览\(\d+\) 评论\(\d+\)$/, "")
 				};
-				$alloc("download_album").push(photo);
 				if (target.img != null) {
+					$alloc("download_album").push(photo);
 					$(target.t).attr({down:null});
 				}
 
@@ -3390,7 +3390,10 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						$get("http://photo.renren.com/photo/"+ownerId+"/photo-"+photoId+"/large?xtype=album", function(html,url,photo) {
 							if (/src="([^"]+?(xlarge|original)_[^"]+)"/.test(html) || (!target.img && /src="([^"]+?large_[^"]+)"/.test(html))) {
 								photo.src = RegExp.$1;
-								$(target.t).attr({down:null});
+								if (target.img == null) {
+									$alloc("download_album").push(photo);
+									$(target.t).attr({down:null});
+								}
 							}
 							cur++;
 							if (totalImage == cur) {
@@ -3477,17 +3480,22 @@ function addDownloadAlbumLink(linkOnly,repMode) {
 						unknown:failedImagesList,		// 失败/未知的数据
 						type:linkOnly					// 只显示链接
 					};
-					if(repMode || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS) {
-						var html='<html><head><meta content="text/html; charset=UTF-8" http-equiv="Content-Type"><title>下载相册</title><style>img {height:128px;width:128px;border:1px solid #000000;margin:1px;}</style><script>var album = null;function $(id) {if (id[0] == "#") {return document.getElementById(id.substring(1));} else {return document.createElement(id);}}function showPhotos() {if (album == null) {$("#loading").textContent = "数据传输出错！";return;}$("#source").textContent = album.ref;if (album.unknown.length > 0) {$("#unknown").style.display = "block";var ulist = $("#ulist");for (var i = 0; i < album.unknown.length; i++) {if (album.type) {var o = $("span");o.textContent = album.unknown[i];} else {var o = $("a");o.href = o.textContent = album.unknown[i];}ulist.appendChild(o);ulist.appendChild($("br"));}}$(album.type ? "#gallerytitle" : "#linktitle").style.display = "none";if (album.data.length > 0) {var list = $("#list");$("#count").textContent = album.data.length;for (var i = 0; i < album.data.length; i++) {var img = album.data[i];if (album.type) {var o = $("a");o.href = img.src;o.setAttribute("index", img.i);o.title = img.title;o.textContent = img.src;list.appendChild(o);list.appendChild($("br"));} else {var o = $("img");o.setAttribute("height", "128");o.setAttribute("width", "128");o.setAttribute("index", img.i);o.src = img.src;o.title = img.title;list.appendChild(o);}}}if (album.title) {document.title = album.title;}$("#loading").style.display = "none";$("#loaded").style.display = "block";};function switchLink() {var links = document.querySelectorAll("a[title]");for (var i = 0; i < links.length; i++) {var l = links[i];if (!l.title) {continue;}if (l.textContent != l.title) {l.textContent = l.title;} else {l.textContent = l.href;}}};function switchIndex(add) {var max = album.data.length+album.unknown.length;var links = document.querySelectorAll("*[index]");for (var i = 0; i < links.length; i++) {if (add) {links[i].title = idx(parseInt(links[i].getAttribute("index")), max) + " " + links[i].title;} else {links[i].title = links[i].title.replace(/^[0-9]+ /, "");}}};function idx(n, max) {var i = 0;for (; max > 0; max = Math.floor(max / 10)) {i++;}n = "00000" + n;return n.substring(n.length - i, n.length);};document.addEventListener("DOMContentLoaded", function() {$("#switchLink").addEventListener("click", switchLink);$("#switchIndex").addEventListener("click", function(event) {switchIndex(event.target.checked);});});window.addEventListener("message", function(message) {album = message.data;showPhotos();}, false);</script></head><body><div id="loading"><p>获取数据中，请稍候……</p></div><div id="loaded" style="display:none"><p><a target="_blank" href="http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum">下载指南</a></p><p>来源：<span id="source"></span></p><div id="unknown" style="display:none"><p>未能取得以下地址的图片：</p><div id="ulist"></div></div><p>图片数量：<span id="count"></span></p><div id="linktitle"><p>使用下载工具软件下载本页面全部链接即可得到下列图片</p><p><input type="button" id="switchLink" value="切换链接描述"/></p></div><div id="gallerytitle"><p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列图片</p></div><p><input type="checkbox" id="switchIndex">在描述前添加图片序号</input></p><div id="list"></div></div></body></html>';
-						if(repMode) {
+					if(mode != "普通模式" || XNR.agent==USERSCRIPT || XNR.agent==OPERA_UJS) {
+						var html='<html><head><meta content="text/html; charset=UTF-8" http-equiv="Content-Type"><title>下载相册</title><style>#udetail { margin-left: 1em; }img { height: 128px; width: 128px; border: 1px solid #000000; margin: 1px; }</style><script>var album = null;function $(id) {if (id[0] == "#") {return document.getElementById(id.substring(1));} else {return document.createElement(id);}};function showPhotos() {if (album == null) {$("#loading").textContent = "数据传输出错！";return;}$("#source").textContent = album.title || album.ref;$("#source").href = album.ref;if (album.unknown.length > 0) {$("#unknown").style.display = "block";$("#ucount").textContent = album.unknown.length;var ulist = $("#ulist");for (var i = 0; i < album.unknown.length; i++) {if (album.type) {var o = $("span");o.textContent = album.unknown[i];} else {var o = $("a");o.href = o.textContent = album.unknown[i];}ulist.appendChild(o);ulist.appendChild($("br"));}}$(album.type ? "#gallerytitle" : "#linktitle").style.display = "none";if (album.data.length > 0) {var list = $("#list");$("#count").textContent = album.data.length;for (var i = 0; i < album.data.length; i++) {var img = album.data[i];if (album.type) {var o = $("a");o.href = img.src;o.setAttribute("index", img.i);o.title = img.title;o.textContent = img.src;list.appendChild(o);list.appendChild($("br"));} else {var o = $("img");o.setAttribute("height", "128");o.setAttribute("width", "128");o.setAttribute("index", img.i);o.src = img.src;o.title = img.title;list.appendChild(o);}}}if (album.title) {document.title = album.title;}$("#loading").style.display = "none";$("#loaded").style.display = "block";};function switchLink() {var links = document.querySelectorAll("a[title]");for (var i = 0; i < links.length; i++) {var l = links[i];if (!l.title) {continue;}if (l.textContent != l.title) {l.textContent = l.title;} else {l.textContent = l.href;}}};function switchIndex(add) {var max = album.data.length+album.unknown.length;var links = document.querySelectorAll("*[index]");for (var i = 0; i < links.length; i++) {if (add) {links[i].title = seq(parseInt(links[i].getAttribute("index")), max) + " " + links[i].title;} else {links[i].title = links[i].title.replace(/^[0-9]+ /, "");}}};function seq(n, max) {var i = 0;for (; max > 0; max = Math.floor(max / 10)) {i++;}n = "00000" + n;return n.substring(n.length - i, n.length);};document.addEventListener("DOMContentLoaded", function() {$("#switchLink").addEventListener("click", switchLink);$("#switchIndex").addEventListener("click", function(event) {switchIndex(event.target.checked);});$("#udetail").addEventListener("click", function() {var ulist = $("#ulist");if (ulist.style.display == "none") {ulist.style.display = "";$("#udetail").textContent = "收起";} else {ulist.style.display = "none";$("#udetail").textContent = "详情";}});});window.addEventListener("message", function(msg) {if (album == null) {album = msg.data;showPhotos();}}, false);</script></head><body><div id="loading"><p>获取数据中，请稍候……</p></div><div id="loaded" style="display:none"><p><a target="_blank" href="http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum">下载指南</a></p><p>来源：<a id="source" target="_blank"></a></p><div id="unknown" style="display:none"><p>有<span id="ucount"></span>张图片未能解析出地址<a href="javascript:;" id="udetail">详情</a></p><div id="ulist" style="display:none"><p>以下页面的图片无法解析：</p></div></div><p>图片数量：<span id="count"></span></p><div id="linktitle"><p>使用下载工具软件下载本页面全部链接即可得到下列图片</p><p><input type="button" id="switchLink" value="切换链接描述"/></p></div><div id="gallerytitle"><p>完整保存本页面（建议在图片全部显示完毕后再保存）即可在与页面同名文件夹下得到下列图片</p></div><p><input type="checkbox" id="switchIndex">在描述前添加图片序号</input></p><div id="list"></div></div></body></html>';
+						if(mode == "替换模式") {
 							// script通过innerHtml不会被执行
 							document.documentElement.innerHTML=html.replace(/<script>[\s\S]*<\/script>/,"");
 							$("@script").text(/<script>([\s\S]*)<\/script>/.exec(html)[1]).addTo(document);
 							window.postMessage(album, "*");
 						} else {
 							var win = window.open("javascript:'"+html+"'");
-							win.addEventListener("DOMContentLoaded", function() {
+							// 部分情况下收不到load事件
+							var timer = setTimeout(function() {
 								win.postMessage(album, "*");
+							}, 1000);
+							win.addEventListener("load", function() {
+								win.postMessage(album, "*");
+								clearTimeout(timer);
 							}, false);
 						}
 					} else if(XNR.agent==FIREFOX) {
@@ -6790,7 +6798,7 @@ function main(savedOptions) {
 				}],
 				page:"album,share,xiaozu"
 			},{
-				text:"##允许下载相册图片####仅生成图片链接##替换模式##",
+				text:"##允许下载相册图片########仅生成图片链接##",
 				ctrl:[
 					{
 						id:"addDownloadAlbumLink",
@@ -6799,25 +6807,79 @@ function main(savedOptions) {
 							name:addDownloadAlbumLink,
 							stage:2,
 							fire:true,
-							args:["@showImageLinkOnly","@repMode"]
+							args:["@showImageLinkOnly","@dlMode"]
 						}]
 					},{
 						type:"info",
-						value:"在相册图片列表下方会生成一个”下载当前页图片“链接。如果点击链接后进度长期卡住，再点击一次链接选择中止，可以下载其他已分析完毕的图片。"+(XNR.agent==USERSCRIPT?"分析完毕后会弹出一个窗口，其可能会被浏览器拦截，在浏览器状态栏或地址栏右侧的弹出窗口拦截图标上点左键让其显示即可。":"")+"如果想下载整个相册的内容，请配合“相册所有图片在一页中显示”功能使用。",
+						value:"在相册图片列表下方会生成一个”下载当前页图片“链接。如果点击链接后进度长期卡住，再点击一次链接选择中止，可以下载其他已分析完毕的图片。如果想下载整个相册的内容，请配合“相册所有图片在一页中显示”功能使用。",
+					},{
+						type:"select",
+						options:["普通模式", "替换模式", "弹出窗口模式"],
+						id:"dlMode",
+						value:"普通模式",
+					},{
+						type:"warn",
+						value:"弹出窗口模式可能会被浏览器拦截，请自行将页面加入许可名单",
 					},{
 						type:"subcheck",
 						id:"showImageLinkOnly",
 						value:false,
-					},{
-						type:"subcheck",
-						id:"repMode",
-						value:false,
-					},{
-						type:"info",
-						value:"直接替换当前页面内容，不打开新标签页",
 					}
 				],
 				master:0,
+				agent: CHROME | SAFARI | OPERA_EXT | SOGOU | MAXTHON,
+				page:"album,share,xiaozu"
+			},{
+				text:"##允许下载相册图片########仅生成图片链接##",
+				ctrl:[
+					{
+						id:"addDownloadAlbumLink",
+						value:true,
+						fn:[{
+							name:addDownloadAlbumLink,
+							stage:2,
+							fire:true,
+							args:["@showImageLinkOnly","@dlMode"]
+						}]
+					},{
+						type:"info",
+						value:"在相册图片列表下方会生成一个”下载当前页图片“链接。如果点击链接后进度长期卡住，再点击一次链接选择中止，可以下载其他已分析完毕的图片。如果想下载整个相册的内容，请配合“相册所有图片在一页中显示”功能使用。",
+					},{
+						type:"select",
+						options:["替换模式", "弹出窗口模式"],
+						id:"dlMode",
+						value:"弹出窗口模式",
+					},{
+						type:"warn",
+						value:"弹出窗口模式可能会被浏览器拦截",
+					},{
+						type:"subcheck",
+						id:"showImageLinkOnly",
+						value:false,
+					}
+				],
+				master:0,
+				agent: USERSCRIPT | OPERA_UJS,
+				page:"album,share,xiaozu"
+			},{
+				text:"##允许下载相册图片##",
+				ctrl:[
+					{
+						id:"addDownloadAlbumLink",
+						value:true,
+						fn:[{
+							name:addDownloadAlbumLink,
+							stage:2,
+							fire:true,
+							args:[null,"普通模式"]
+						}]
+					},{
+						type:"info",
+						value:"在相册图片列表下方会生成一个”下载当前页图片“链接。如果点击链接后进度长期卡住，再点击一次链接选择中止，可以下载其他已分析完毕的图片。如果想下载整个相册的内容，请配合“相册所有图片在一页中显示”功能使用。",
+					}
+				],
+				master:0,
+				agent: FIREFOX,
 				page:"album,share,xiaozu"
 			},{
 				text:"##在语音相册中显示语音文件下载地址",
@@ -7498,6 +7560,12 @@ function main(savedOptions) {
 							break;
 						case "link":
 							node=$("@a");
+							break;
+						case "select":
+							node=$("@select");
+							for (var iOpt=0; iOpt<control.options.length; iOpt++) {
+								$("@option").text(control.options[iOpt]).attr("value", control.options[iOpt]).addTo(node);
+							}
 							break;
 					}
 					if(node) {
@@ -9535,6 +9603,7 @@ PageKit.prototype={
 						}
 						break;
 					case "TEXTAREA":
+					case "SELECT":
 						this.value=v;
 						break;
 					default:
@@ -9559,6 +9628,7 @@ PageKit.prototype={
 							return elem.value;
 					}
 				case "TEXTAREA":
+				case "SELECT":
 					return elem.value;
 				default:
 					return PageKit(elem).text();

@@ -4,13 +4,13 @@
 	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
 	<title>下载相册</title>
 	<style>
-		#udetail { margin-left: 1em; }
-		#downInfo { width: 95%; margin: 0 auto; border: 3px double gray; border-collapse: collapse; }
-		#downInfo th, #downInfo td { border: 1px solid gray; text-align: center; }
-		#downInfo td:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 1em; text-align: left; }
-		#downInfo .index { width: 5em; }
-		#downInfo .progress { width: 15em; }
-		#downInfo .status { width: 8em; }
+		#udetail, #adv, #encoding { margin-left: 1em; }
+		#downList { width: 95%; margin: 0 auto; border: 3px double gray; border-collapse: collapse; }
+		#downList th, #downList td { border: 1px solid gray; text-align: center; }
+		#downList td:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 1em; text-align: left; }
+		#downList .index { width: 5em; }
+		#downList .progress { width: 15em; }
+		#downList .status { width: 8em; }
 		progress { width: 99%; height: 1.5em; display: block; }
 	</style>
 	<script src="album.js"></script>
@@ -22,14 +22,25 @@
 </div>
 <div id="loaded" style="display:none">
 	<p><a target="_blank" href="http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum">下载指南</a></p>
-	<p>来源：<a id="source"></a></p>
+	<p>来源：<a id="source" target="_blank"></a></p>
 	<div id="unknown" style="display:none">
 		<p>有<span id="ucount"></span>张图片未能解析出地址<a href="#" id="udetail">详情</a></p>
 		<div id="ulist" style="display:none"><p>以下页面的图片无法解析：</p></div>
 	</div>
-	<p><button id="download">开始下载</button></p>
+	<p>
+		<button id="download">开始下载</button>
+		<a id="adv" href="#">高级选项</a>
+		<span id="encoding" style="display:none">文件名字符编码
+			<select id="enclist">
+				<option value="auto">自动判断</option>
+				<option value="utf16">UTF-16/GB系列</option>
+				<option value="utf8">UTF-8</option>
+				<option value="utf32">UTF-32</option>
+			</select>
+		</span>
+	</p>
 	<div id="wrapper">
-		<table id="downInfo">
+		<table id="downList">
 			<thead>
 				<th class="index">序号</th>
 				<th class="title">标题</th>

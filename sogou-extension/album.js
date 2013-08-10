@@ -1,4 +1,5 @@
 var album = null;
+var os = null;
 
 function $(id) {
 	if (id[0] == "#") {
@@ -6,16 +7,18 @@ function $(id) {
 	} else {
 		return document.createElement(id);
 	}
-}
+};
 
 function showPhotos() {
 	if (album == null) {
 		$("#loading").textContent = "数据传输出错！";
 		return;
 	}
-	$("#source").textContent = album.ref;
+	$("#source").textContent = album.title || album.ref;
+	$("#source").href = album.ref;
 	if (album.unknown.length > 0) {
 		$("#unknown").style.display = "block";
+		$("#ucount").textContent = album.unknown.length;
 		var ulist = $("#ulist");
 		for (var i = 0; i < album.unknown.length; i++) {
 			if (album.type) {
@@ -85,14 +88,14 @@ function switchIndex(add) {
 	var links = document.querySelectorAll("*[index]");
 	for (var i = 0; i < links.length; i++) {
 		if (add) {
-			links[i].title = idx(parseInt(links[i].getAttribute("index")), max) + " " + links[i].title;
+			links[i].title = seq(parseInt(links[i].getAttribute("index")), max) + " " + links[i].title;
 		} else {
 			links[i].title = links[i].title.replace(/^[0-9]+ /, "");
 		}
 	}
 };
 
-function idx(n, max) {
+function seq(n, max) {
 	var i = 0;
 	for (; max > 0; max = Math.floor(max / 10)) {
 		i++;
@@ -111,22 +114,46 @@ function fixFilename(filename, ext) {
 	// 下面是最麻烦的文件名长度限制
 	// 不同FileSystem对文件名长度的限制不同，一般来讲不应高于255
 	var maxLength = 255;
-	var restBytes = maxLength - ext.length;
-	for (var i = 0; i < newName.length; i++) {
-		// 不同系统对文件名的字符编码导致每个字符的字节长度不同
+	var restBytes = maxLength;
+	var enc = $("#enclist").value;
+	if (enc == "auto") {
 		// 常见FS里，HFS+和NTFS都用的是UTF16编码，其他的都没有限制编码
-		// 应该没有人用UTF32的，就全按照UTF8处理 http://en.wikipedia.org/wiki/UTF-8
-		// 一般相册/图片说明应该以中文为主，故即使是在UTF16的系统上，采用UTF8的算法也应该不会出大问题
-		var charCode = newName.charCodeAt(i);
-		var charBytes;
-		if (charCode < 128) {
-			charBytes = 1;
-		} else if (charCode < 2048) {
-			charBytes = 2;
-		} else if (charCode < 65536) {
-			charBytes = 3;
+		if (os == "win" || os == "mac") {
+			enc = "utf16"
 		} else {
-			// 虽然理论上存在5～6字节的...
+			// 一般没人用utf32的，而一般相册/图片说明应该以中文为主，
+			// 故即使是在UTF16的系统上，采用UTF8的算法也应该不会出大问题
+			enc = "utf8"
+		}
+	}
+	if (enc == "utf16") {
+		restBytes -= ext.length * 2;
+	} else if (enc == "utf8") {
+		restBytes -= ext.length;
+	} else {
+		restBytes -= ext.length * 4;
+	}
+	for (var i = 0; i < newName.length; i++) {
+		var charBytes;
+		var charCode = newName.charCodeAt(i);
+		if (enc == "utf16") {
+			if (charCode < 65536) {
+				charBytes = 2;
+			} else {
+				charBytes = 4;
+			}
+		} else if (enc == "utf8") {
+			if (charCode < 128) {
+				charBytes = 1;
+			} else if (charCode < 2048) {
+				charBytes = 2;
+			} else if (charCode < 65536) {
+				charBytes = 3;
+			} else {
+				// 虽然理论上存在5～6字节的...
+				charBytes = 4;
+			}
+		} else {
 			charBytes = 4;
 		}
 		if (restBytes >= charBytes) {
@@ -141,12 +168,12 @@ function fixFilename(filename, ext) {
 function download() {
 	alert("本功能仍然处于实验阶段，所以有如下缺陷\n  * 图片只能下载到默认的下载文件夹中");
 	var max = album.data.length + album.unknown.length;
-	var images = document.querySelectorAll("a[index],img[index]");
+	var images = album.data;
 	for (var i = 0; i < images.length; i++) {
 		var image = images[i];
-		var url = image.src || image.href;
+		var url = image.src;
 		var ext = (url.match(/\.[^\/]+$/) || [".jpg"])[0];
-		var filename = (image.title || idx(image.getAttribute("index"), max));
+		var filename = seq(image.i, max) + (image.title ? "_" + image.title : "" );
 		sogouExplorer.downloads.download({
 			"url": url,
 			"filename": fixFilename(filename, ext),
@@ -160,12 +187,22 @@ document.addEventListener("DOMContentLoaded", function() {
 	$("#switchIndex").addEventListener("click", function(event) {
 		switchIndex(event.target.checked);
 	});
+	$("#udetail").addEventListener("click", function() {
+		var ulist = $("#ulist");
+		if (ulist.style.display == "none") {
+			ulist.style.display = "";
+			$("#udetail").textContent = "收起";
+		} else {
+			ulist.style.display = "none";
+			$("#udetail").textContent = "详情";
+		}
+	});
 	$("#download").addEventListener("click", download);
 
 	var t = location.hash.substring(1);
-	sogouExplorer.extension.sendMessage({action:"albumInfo", t:t}, function(response) {
-		album = response;
+	sogouExplorer.extension.sendMessage({action:"albumInit", t:t}, function(response) {
+		album = response.album;
+		os = response.os;
 		showPhotos();
 	});
 });
-

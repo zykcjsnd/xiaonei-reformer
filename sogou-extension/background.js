@@ -43,21 +43,32 @@ function (request, sender, sendResponse) {
 			httpReq.send();
 			return true;
 		case "album":
-			if (sogouExplorer.downloads) {
+			// 搜狗的下载API是坏掉的
+			if (false && sogouExplorer.downloads) {
 				request.data.dlapi = true;
 			}
 			do {
 				var t = Math.floor(Math.random() * 1000000);
 			} while(t in albums);
 			albums[t] = request.data;
+			// 是滴，像chrome那样搞是没用的，这样是必须的
 			sogouExplorer.tabs.create({url:sogouExplorer.extension.getURL("album.html") + "#" + t, selected:true});
 			return;
-		case "albumInfo":
+		case "albumInit":
 			var t = request.t;
 			if (t && (t in albums)) {
 				var data = albums[t]
 				delete albums[t];
-				sendResponse(data);
+				var p = navigator.platform;
+				var os;
+				if (/Win/i.test(p)) {
+					os = "win";
+				} else if (/Mac/i.test(p)) {
+					os = "mac";
+				} else {
+					os = p.split(" ")[0].toLowerCase();
+				}
+				sendResponse({album:data, os:os});
 			} else {
 				sendResponse(null);
 			}

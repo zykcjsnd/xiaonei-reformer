@@ -51,6 +51,7 @@
 					if (t && (t in albums)) {
 						var data = albums[t];
 						delete albums[t];
+						console.log(123);
 						event.source.postMessage({data:data, reqId:t});
 					} else {
 						event.source.postMessage({data:null, reqId:t});

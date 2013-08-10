@@ -6,16 +6,18 @@ function $(id) {
 	} else {
 		return document.createElement(id);
 	}
-}
+};
 
 function showPhotos() {
 	if (album == null) {
 		$("#loading").textContent = "数据传输出错！";
 		return;
 	}
-	$("#source").textContent = album.ref;
+	$("#source").textContent = album.title || album.ref;
+	$("#source").href = album.ref;
 	if (album.unknown.length > 0) {
 		$("#unknown").style.display = "block";
+		$("#ucount").textContent = album.unknown.length;
 		var ulist = $("#ulist");
 		for (var i = 0; i < album.unknown.length; i++) {
 			if (album.type) {
@@ -82,14 +84,14 @@ function switchIndex(add) {
 	var links = document.querySelectorAll("*[index]");
 	for (var i = 0; i < links.length; i++) {
 		if (add) {
-			links[i].title = idx(parseInt(links[i].getAttribute("index")), max) + " " + links[i].title;
+			links[i].title = seq(parseInt(links[i].getAttribute("index")), max) + " " + links[i].title;
 		} else {
 			links[i].title = links[i].title.replace(/^[0-9]+ /, "");
 		}
 	}
 };
 
-function idx(n, max) {
+function seq(n, max) {
 	var i = 0;
 	for (; max > 0; max = Math.floor(max / 10)) {
 		i++;
@@ -103,6 +105,16 @@ document.addEventListener("DOMContentLoaded", function() {
 	$("#switchIndex").addEventListener("click", function(event) {
 		switchIndex(event.target.checked);
 	});
+	$("#udetail").addEventListener("click", function() {
+		var ulist = $("#ulist");
+		if (ulist.style.display == "none") {
+			ulist.style.display = "";
+			$("#udetail").textContent = "收起";
+		} else {
+			ulist.style.display = "none";
+			$("#udetail").textContent = "详情";
+		}
+	});
 
 	var reqId = location.hash.substring(1);
 	opera.extension.onmessage=function(event) {
@@ -112,5 +124,5 @@ document.addEventListener("DOMContentLoaded", function() {
 			showPhotos();
 		}
 	};
-	opera.extension.postMessage(JSON.stringify({action:"albumInfo", reqId:reqId}));
+	opera.extension.postMessage({action:"albumInfo", reqId:reqId});
 });

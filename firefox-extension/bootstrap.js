@@ -77,7 +77,15 @@ const XNRCore = {
 		var newTabBrowser = mainWindow.gBrowser.getBrowserForTab(newTab);
 		newTabBrowser.addEventListener("DOMContentLoaded", function () {
 			var cWindow = newTabBrowser.contentWindow;
-			cWindow.postMessage({ "type":"init", "album":data }, "*");
+			var system = Services.appinfo.OS;
+			if (system == "WINNT") {
+				system = "win";
+			} else if (system == "Darwin") {
+				system = "mac";
+			} else {
+				system = system.toLowerCase();
+			}
+			cWindow.postMessage({ "type":"init", "album":data, "os":system }, "*");
 			cWindow.addEventListener("message", function(msg) {
 				var request = msg.data;
 				if (!request || request.type !== "download" || !request.album) {
@@ -126,7 +134,8 @@ const XNRCore = {
 	getDirectory: function(parentWindow) {
 		var fp = XNRCore.constructors.FilePicker();
 		var nsIFilePicker = Ci.nsIFilePicker;
-		fp.init(parentWindow, "选择下载到的位置", nsIFilePicker.modeGetFolder);
+		// 选择下载到的位置
+		fp.init(parentWindow, "\u9009\u62E9\u4E0B\u8F7D\u5230\u7684\u4F4D\u7F6E", nsIFilePicker.modeGetFolder);
 		var res = fp.show();
 		if (res != nsIFilePicker.returnCancel) {
 			return fp.file;
