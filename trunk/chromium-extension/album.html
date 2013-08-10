@@ -4,12 +4,15 @@
 	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
 	<title>下载相册</title>
 	<style>
-		img {
-			height: 128px;
-			width: 128px;
-			border: 1px solid #000000;
-			margin: 1px;
-		}
+		#udetail, #adv, #encoding { margin-left: 1em; }
+		#downList { width: 95%; margin: 0 auto; border: 3px double gray; border-collapse: collapse; }
+		#downList th, #downList td { border: 1px solid gray; text-align: center; }
+		#downList td:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 1em; text-align: left; }
+		#downList .index { width: 5em; }
+		#downList .progress { width: 15em; }
+		#downList .status { width: 8em; }
+		progress { width: 99%; height: 1.5em; display: block; }
+		img { height: 128px; width: 128px; border: 1px solid #000000; margin: 1px; }
 	</style>
 	<script src="album.js"></script>
 </head>
@@ -19,10 +22,10 @@
 </div>
 <div id="loaded" style="display:none">
 	<p><a target="_blank" href="http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum">下载指南</a></p>
-	<p>来源：<span id="source"></span></p>
+	<p>来源：<a id="source" target="_blank"></a></p>
 	<div id="unknown" style="display:none">
-		<p>未能取得以下地址的图片：</p>
-		<div id="ulist"></div>
+		<p>有<span id="ucount"></span>张图片未能解析出地址<a href="#" id="udetail">详情</a></p>
+		<div id="ulist" style="display:none"><p>以下页面的图片无法解析：</p></div>
 	</div>
 	<p>图片数量：<span id="count"></span></p>
 	<div id="linktitle">
@@ -34,7 +37,31 @@
 	</div>
 	<p><input type="checkbox" id="switchIndex">在描述前添加图片序号</input></p>
 	<div id="apititle" style="display:none">
-		<p>实验功能：<button id="download">直接下载</button></p>
+		<p><button id="exp">启用实验功能：直接下载</button>
+		<div id="expWrapper" style="display:none">
+			<button id="download">开始下载</button>
+			<a id="adv" href="#">高级选项</a>
+			<span id="encoding" style="display:none">文件名字符编码
+				<select id="enclist">
+					<option value="auto">自动判断</option>
+					<option value="utf16">UTF-16/GB系列</option>
+					<option value="utf8">UTF-8</option>
+					<option value="utf32">UTF-32</option>
+				</select>
+			</span>
+			<div id="wrapper" style="display:none">
+				<table id="downList">
+					<thead>
+						<th class="index">序号</th>
+						<th class="title">标题</th>
+						<th class="progress">进度</th>
+						<th class="status">状态</th>
+					</thead>
+					<tbody id="tbody">
+					</tbody>
+				</table>
+			</div>
+		</div>
 	</div>
 	<div id="list">
 	</div>

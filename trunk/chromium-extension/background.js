@@ -1,3 +1,11 @@
+var extId = null;
+
+if (chrome.runtime) {
+	extId = chrome.runtime.id;
+} else {
+	extId = /([^\/]+)\/a$/.exec(chrome.extension.getURL("a"))[1];
+}
+
 chrome.extension.onMessage.addListener(
 function (request, sender, sendResponse) {
 	switch (request.action) {
@@ -47,9 +55,26 @@ function (request, sender, sendResponse) {
 			chrome.tabs.create({url:chrome.extension.getURL("album.html")}, function(tab) {
 				var tabId = tab.id;
 				chrome.tabs.onUpdated.addListener(function (tid, changeInfo, tab) {
-					if (tid == tabId && changeInfo.status == "complete") {
-						chrome.tabs.onUpdated.removeListener(arguments.callee);
-						chrome.tabs.sendMessage(tid, request.data);
+					if (tid != tabId || changeInfo.status != "complete") {
+						return;
+					}
+					chrome.tabs.onUpdated.removeListener(arguments.callee);
+					if (chrome.runtime && chrome.runtime.getPlatformInfo) {
+						// Chrome 28/29+
+						chrome.runtime.getPlatformInfo(function(sysinfo) {
+							chrome.tabs.sendMessage(tid, { type:"initAlbum", "album":request.data, "os":sysinfo.os });
+						});
+					} else {
+						var p = navigator.platform;
+						var os;
+						if (/Win/i.test(p)) {
+							os = "win";
+						} else if (/Mac/i.test(p)) {
+							os = "mac";
+						} else {
+							os = p.split(" ")[0].toLowerCase();
+						}
+						chrome.tabs.sendMessage(tid, { type:"initAlbum", "album":request.data, "os":os });
 					}
 				});
 			});
@@ -59,10 +84,12 @@ function (request, sender, sendResponse) {
 
 
 if (chrome.downloads) {
-	chrome.downloads.onDeterminingFilename.addListener(function(item, suggest) {
-		suggest({
-			filename: item.filename,
-			conflict_action: 'overwrite'
-		});
+	chrome.downloads.onDeterminingFilename.addListener(function(downloadItem, suggest) {
+		if (downloadItem.byExtensionId == extId) {
+			suggest({
+				filename: downloadItem.filename,
+				conflict_action: 'overwrite'
+			});
+		}
 	});
 }

@@ -4,12 +4,8 @@
 	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
 	<title>下载相册</title>
 	<style>
-		img {
-			height: 128px;
-			width: 128px;
-			border: 1px solid #000000;
-			margin: 1px;
-		}
+		#udetail { margin-left: 1em; }
+		img { height: 128px; width: 128px; border: 1px solid #000000; margin: 1px; }
 	</style>
 	<script src="album.js"></script>
 </head>
@@ -19,10 +15,10 @@
 </div>
 <div id="loaded" style="display:none">
 	<p><a target="_blank" href="http://code.google.com/p/xiaonei-reformer/wiki/DownloadAlbum">下载指南</a></p>
-	<p>来源：<span id="source"></span></p>
+	<p>来源：<a id="source" target="_blank"></a></p>
 	<div id="unknown" style="display:none">
-		<p>未能取得以下地址的图片：</p>
-		<div id="ulist"></div>
+		<p>有<span id="ucount"></span>张图片未能解析出地址<a href="#" id="udetail">详情</a></p>
+		<div id="ulist" style="display:none"><p>以下页面的图片无法解析：</p></div>
 	</div>
 	<p>图片数量：<span id="count"></span></p>
 	<div id="linktitle">
