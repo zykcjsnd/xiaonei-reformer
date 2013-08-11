@@ -1,6 +1,6 @@
 {
 	"name": "人人网改造器",
-	"version": "3.4.6.525",
+	"version": "3.4.6.527",
 	"minimum_chrome_version": "20",
 	"manifest_version": 2,
 	"description": "让人人网（renren.com）用起来舒服一点",
@@ -9,11 +9,14 @@
 		"persistent": false,
 		"page": "background.html"
 	},
+	"options_page": "permissions.html",
 	"permissions": [
-		"tabs",
 		"storage",
+		"http://*.renren.com/"
+	],
+	"optional_permissions": [
+		"tabs",
 		"downloads",
-		"http://*.renren.com/",
 		"http://*.rrimg.com/",
 		"http://*.xnimg.cn/",
 		"http://*.rrfmn.com/",

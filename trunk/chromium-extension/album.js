@@ -240,10 +240,10 @@ document.addEventListener("DOMContentLoaded", function() {
 			ulist.style.display = "none";
 			$("#udetail").textContent = "详情";
 		}
-	});
+	}, false);
 	$("#download").addEventListener("click", download);
 	$("#exp").addEventListener("click", exp);
-});
+}, false);
 
 function msgListener(message, sender, sendResponse) {
 	if (message.type != "initAlbum") {

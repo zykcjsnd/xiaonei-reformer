@@ -52,30 +52,38 @@ function (request, sender, sendResponse) {
 			if (chrome.downloads) {
 				request.data.dlapi = true;
 			}
-			chrome.tabs.create({url:chrome.extension.getURL("album.html")}, function(tab) {
-				var tabId = tab.id;
-				chrome.tabs.onUpdated.addListener(function (tid, changeInfo, tab) {
-					if (tid != tabId || changeInfo.status != "complete") {
+			chrome.permissions.contains({ permissions: ['tabs'] }, function(result) {
+				if (!result) {
+					if (confirm("缺少权限，*可能*无法正常打开新标签页，现在要给改造器授权吗？")) {
+						chrome.tabs.create({url:chrome.extension.getURL("permissions.html")});
 						return;
 					}
-					chrome.tabs.onUpdated.removeListener(arguments.callee);
-					if (chrome.runtime && chrome.runtime.getPlatformInfo) {
-						// Chrome 28/29+
-						chrome.runtime.getPlatformInfo(function(sysinfo) {
-							chrome.tabs.sendMessage(tid, { type:"initAlbum", "album":request.data, "os":sysinfo.os });
-						});
-					} else {
-						var p = navigator.platform;
-						var os;
-						if (/Win/i.test(p)) {
-							os = "win";
-						} else if (/Mac/i.test(p)) {
-							os = "mac";
-						} else {
-							os = p.split(" ")[0].toLowerCase();
+				}
+				chrome.tabs.create({url:chrome.extension.getURL("album.html")}, function(tab) {
+					var tabId = tab.id;
+					chrome.tabs.onUpdated.addListener(function (tid, changeInfo, tab) {
+						if (tid != tabId || changeInfo.status != "complete") {
+							return;
 						}
-						chrome.tabs.sendMessage(tid, { type:"initAlbum", "album":request.data, "os":os });
-					}
+						chrome.tabs.onUpdated.removeListener(arguments.callee);
+						if (chrome.runtime && chrome.runtime.getPlatformInfo) {
+							// Chrome 28/29+
+							chrome.runtime.getPlatformInfo(function(sysinfo) {
+								chrome.tabs.sendMessage(tid, { type:"initAlbum", "album":request.data, "os":sysinfo.os });
+							});
+						} else {
+							var p = navigator.platform;
+							var os;
+							if (/Win/i.test(p)) {
+								os = "win";
+							} else if (/Mac/i.test(p)) {
+								os = "mac";
+							} else {
+								os = p.split(" ")[0].toLowerCase();
+							}
+							chrome.tabs.sendMessage(tid, { type:"initAlbum", "album":request.data, "os":os });
+						}
+					});
 				});
 			});
 			return;
