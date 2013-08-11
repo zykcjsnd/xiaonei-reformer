@@ -1,3 +1,8 @@
+526:
+remove:移除opera扩展/用户脚本代码
+fix:不再支持10.0之前的Firefox
+fix:Firefox扩展内容不再解包出来
+
 525:
 fix:改进Firefox扩展下载文件名最大长度的判定
 fix:在Chrome扩展里不处理文件名长度，由Chrome自动完成
