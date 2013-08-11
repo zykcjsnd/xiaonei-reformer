@@ -50,6 +50,7 @@ function buildTable(data) {
 		var td = $("td");
 		var a = $("a");
 		a.textContent = a.title = img.title || img.src;
+		a.target = "_blank";
 		a.href = img.src;
 		td.appendChild(a);
 		tr.appendChild(td);
@@ -79,34 +80,54 @@ function seq(n, max) {
 	return n.substring(n.length - i, n.length);
 };
 
-function fixFilename(filename, ext) {
+function fixFilename(filename, ext, enc, pathLength) {
 	var newName = filename.replace(/&amp;/g, "&").replace(/&lt;/g, "<")
 			.replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&apos;/g, "'")
-			.replace(/\//g, "／").replace(/\\/g, "＼").replace(/:/g, "：")
-			.replace(/\*/g, "＊").replace(/\?/g, "？").replace(/"/g, "“")
-			.replace(/</g, "〈").replace(/>/g, "〉").replace(/\|/g, "｜")
 			.replace(/[\t\n\r]/g, " ");
+	// 替换不合法的字符
+	if (os == "win") {
+		newName = newName.replace(/\//g, "／").replace(/\\/g, "＼").replace(/:/g, "：")
+			.replace(/\*/g, "＊").replace(/\?/g, "？").replace(/"/g, "“")
+			.replace(/</g, "〈").replace(/>/g, "〉").replace(/\|/g, "｜");
+	} else if (os == "mac") {
+		newName = newName.replace(/\//g, "／").replace(/:/g, "：");
+	} else {
+		newName = newName.replace(/\//g, "／").replace(/ /g, "");
+	}
 	// 下面是最麻烦的文件名长度限制
-	// 不同FileSystem对文件名长度的限制不同，一般来讲不应高于255
-	var maxLength = 255;
-	var restBytes = maxLength;
-	var enc = $("#enclist").value;
+	// 不同FileSystem对文件名长度的限制不同，一般来讲不应高于255个单位，windows略高一点
+	var maxUnits = 255;
+	var unitBytes = 1;
+	if (os == "win") {
+		maxUnits = 259;		// PATH_MAX = 260，去掉最后的'\0'
+		unitBytes = 2;
+	} else if (os == "mac") {
+		unitBytes = 2;
+	}
 	if (enc == "auto") {
-		// 常见FS里，HFS+和NTFS都用的是UTF16编码，其他的都没有限制编码
+		// 常见FS里，HFS+、NTFS、VFAT都用的是UTF16/USC-2编码，其他的都没有限制编码
 		if (os == "win" || os == "mac") {
-			enc = "utf16"
+			enc = "utf16";
 		} else {
-			// 一般没人用utf32的，而一般相册/图片说明应该以中文为主，
+			// 一般没人用UTF32的，而一般相册/图片说明应该以中文为主，
 			// 故即使是在UTF16的系统上，采用UTF8的算法也应该不会出大问题
-			enc = "utf8"
+			enc = "utf8";
 		}
 	}
+	var restBytes = maxUnits * unitBytes;
 	if (enc == "utf16") {
 		restBytes -= ext.length * 2;
 	} else if (enc == "utf8") {
 		restBytes -= ext.length;
 	} else {
 		restBytes -= ext.length * 4;
+	}
+	if (pathLength && os == "win") {
+		// windows会算整个路径长度，而不是每一部分的长度
+		restBytes -= pathLength * 2;
+		if (restBytes <= 0) {
+			return null;
+		}
 	}
 	for (var i = 0; i < newName.length; i++) {
 		var charBytes;
@@ -140,10 +161,15 @@ function fixFilename(filename, ext) {
 	return newName + ext;
 };
 
-function download() {
+function download(path) {
 	if (album.data.length == 0) {
 		return;
 	}
+	var enc = $("#enclist").value;
+	album.dirname = fixFilename(album.title, "", enc);
+	album.path = path;
+	var pathLength = album.dirname.length + album.path.length + 1;
+
 	var max = album.data.length + album.unknown.length;
 	var images = album.data;
 	for (var i = 0; i < images.length; i++) {
@@ -151,9 +177,12 @@ function download() {
 		var url = image.src;
 		var ext = (url.match(/\.[^\/]+$/) || [".jpg"])[0];
 		var filename = seq(image.i, max) + (image.title ? "_" + image.title : "" );
-		image.filename = fixFilename(filename, ext);
+		image.filename = fixFilename(filename, ext, enc, pathLength);
+		if (image.filename == null) {
+			alert("路径过长，无法保存。请重新选择一个目录试试");
+			return;
+		}
 	}
-	album.dirname = fixFilename(album.title, "");
 	window.postMessage({ type:"download", "album":album }, "*");
 };
 
@@ -201,12 +230,14 @@ document.addEventListener("DOMContentLoaded", function() {
 			ulist.style.display = "none";
 			$("#udetail").textContent = "详情";
 		}
-	});
+	}, false);
 	$("#adv").addEventListener("click", function() {
 		$("#encoding").style.display = "";
 		$("#adv").style.display = "none";
-	});
-	$("#download").addEventListener("click", download);
+	}, false);
+	$("#download").addEventListener("click", function() {
+		window.postMessage({ type:"getDir" }, "*");
+	}, false);
 });
 
 window.addEventListener("message", function(message) {
@@ -219,9 +250,6 @@ window.addEventListener("message", function(message) {
 			album = data.album;
 			os = data.os;
 			showPhotos();
-			break;
-		case "download":
-			// do nothing
 			break;
 		case "start":
 			setStatus(data.index, "正在下载");
@@ -240,6 +268,17 @@ window.addEventListener("message", function(message) {
 			if (data.error) {
 				alert(data.error);
 			}
+			break;
+		case "dir":
+			if (data.dir == null) {
+				// 用户放弃了
+				return;
+			}
+			download(data.dir);
+			break;
+		case "download":
+		case "getDir":
+			// do nothing
 			break;
 	}
 }, false);

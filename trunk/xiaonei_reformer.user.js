@@ -59,8 +59,8 @@ if (window.top == null) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.4.5.519";
-XNR.miniver=519;
+XNR.version="3.4.5.524";
+XNR.miniver=524;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -7214,6 +7214,24 @@ function main(savedOptions) {
 		],
 		"自动更新":[
 			{
+				text:"####谢谢您使用人人网改造器##",
+				ctrl:[
+					{
+						type:"text",
+						data:"停止开发公告",
+						style:"text-align:center"
+					},{
+						type:"text",
+						data:"Opera已经不再开发其基于Presto引擎的桌面版浏览器，现有的问题已经无法再有更正的机会。这对人人网改造器Opera版扩展/用户脚本新功能的开发和旧功能的完善都造成了相当不利的影响。因此人人网改造器将停止开发Opera版的扩展和用户脚本。我对这一决定对您造成的不便深表歉意。如果您决定转而使用基于Blink引擎的新版浏览器，可以直接换用Chrome版的扩展。",
+						style:"margin:0.5em 0;line-height:1.2em;"
+					},{
+						type:"text",
+						data:"2013年08月11日",
+						style:"text-align:right;margin-top:1em"
+					}
+				],
+				agent:OPERA_UJS | OPERA_EXT
+			},{
 				text:"##自动检查程序更新##",
 				ctrl:[
 					{
@@ -7230,7 +7248,7 @@ function main(savedOptions) {
 						value:"24小时内最多检查一次"
 					}
 				],
-				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT | SOGOU
+				agent:USERSCRIPT | FIREFOX | SOGOU
 			},{
 				text:"最后一次检查更新时间：##",
 				ctrl:[{
@@ -7239,7 +7257,7 @@ function main(savedOptions) {
 					value:0,
 					format:"date"
 				}],
-				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT | SOGOU
+				agent:USERSCRIPT | FIREFOX | SOGOU
 			},{
 				text:"##",
 				ctrl:[{
@@ -7251,7 +7269,7 @@ function main(savedOptions) {
 						args:[null,"@checkLink","@updateLink","@lastUpdate"]
 					}],
 				}],
-				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT | SOGOU
+				agent:USERSCRIPT | FIREFOX | SOGOU
 			},{
 				text:"检查更新地址：##",
 				ctrl:[{
@@ -7261,7 +7279,7 @@ function main(savedOptions) {
 					style:"width:330px",
 					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的检查更新地址"}
 				}],
-				agent:USERSCRIPT | OPERA_UJS
+				agent:USERSCRIPT 
 			},{
 				text:"脚本下载地址：##",
 				ctrl:[{
@@ -7281,7 +7299,7 @@ function main(savedOptions) {
 					style:"width:330px",
 					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的检查更新地址"}
 				}],
-				agent:FIREFOX | OPERA_EXT | SOGOU
+				agent:FIREFOX | SOGOU
 			},{
 				text:"扩展下载地址：##",
 				ctrl:[{
@@ -7292,26 +7310,6 @@ function main(savedOptions) {
 					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的扩展下载地址"},
 				}],
 				agent:FIREFOX 
-			},{
-				text:"脚本下载地址：##",
-				ctrl:[{
-					id:"updateLink",
-					type:"input",
-					value:"http://xiaonei-reformer.googlecode.com/files/xiaonei_reformer.min.js",
-					style:"width:330px;",
-					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的脚本下载地址"},
-				}],
-				agent:OPERA_UJS
-			},{
-				text:"扩展下载地址：##",
-				ctrl:[{
-					id:"updateLink",
-					type:"input",
-					value:"http://xiaonei-reformer.googlecode.com/files/xiaonei_reformer-opera.oex",
-					style:"width:330px;",
-					verify:{"[A-Za-z]+://[^/]+\.[^/]+/.*":"请输入正确的扩展下载地址"},
-				}],
-				agent:OPERA_EXT
 			},{
 				text:"扩展下载地址：##",
 				ctrl:[{
@@ -7324,7 +7322,7 @@ function main(savedOptions) {
 				agent:SOGOU
 			},{
 				text:"* 以上地址保存后生效",
-				agent:USERSCRIPT | FIREFOX | OPERA_UJS | OPERA_EXT | SOGOU
+				agent:USERSCRIPT | FIREFOX | SOGOU
 			},{
 				text:"##升级后显示通知",
 				ctrl:[{
@@ -7335,7 +7333,8 @@ function main(savedOptions) {
 						stage:3,
 						args:["@updatedNotify","@lastVersion"]
 					}]
-				}]
+				}],
+				agent:USERSCRIPT | FIREFOX | CHROME | SAFARI | SOGOU | MAXTHON
 			},{
 				text:"##",
 				ctrl:[{
@@ -7566,6 +7565,10 @@ function main(savedOptions) {
 							for (var iOpt=0; iOpt<control.options.length; iOpt++) {
 								$("@option").text(control.options[iOpt]).attr("value", control.options[iOpt]).addTo(node);
 							}
+							break;
+						case "text":
+							node=$("@div");
+							node.text(control.data);
 							break;
 					}
 					if(node) {

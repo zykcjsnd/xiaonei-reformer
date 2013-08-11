@@ -82,6 +82,7 @@ function buildTable(data) {
 		var td = $("td");
 		var a = $("a");
 		a.textContent = a.title = img.title || img.src;
+		a.target = "_blank";
 		a.href = img.src;
 		td.appendChild(a);
 		tr.appendChild(td);
@@ -141,61 +142,13 @@ function seq(n, max) {
 function fixFilename(filename, ext) {
 	var newName = filename.replace(/&amp;/g, "&").replace(/&lt;/g, "<")
 			.replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&apos;/g, "'")
-			.replace(/\//g, "／").replace(/\\/g, "＼").replace(/:/g, "：")
-			.replace(/\*/g, "＊").replace(/\?/g, "？").replace(/"/g, "“")
-			.replace(/</g, "〈").replace(/>/g, "〉").replace(/\|/g, "｜")
 			.replace(/[\t\n\r]/g, " ");
-	// 下面是最麻烦的文件名长度限制
-	// 不同FileSystem对文件名长度的限制不同，一般来讲不应高于255
-	var maxLength = 255;
-	var restBytes = maxLength;
-	var enc = $("#enclist").value;
-	if (enc == "auto") {
-		// 常见FS里，HFS+和NTFS都用的是UTF16编码，其他的都没有限制编码
-		if (os == "win" || os == "mac") {
-			enc = "utf16"
-		} else {
-			// 一般没人用utf32的，而一般相册/图片说明应该以中文为主，
-			// 故即使是在UTF16的系统上，采用UTF8的算法也应该不会出大问题
-			enc = "utf8"
-		}
-	}
-	if (enc == "utf16") {
-		restBytes -= ext.length * 2;
-	} else if (enc == "utf8") {
-		restBytes -= ext.length;
-	} else {
-		restBytes -= ext.length * 4;
-	}
-	for (var i = 0; i < newName.length; i++) {
-		var charBytes;
-		var charCode = newName.charCodeAt(i);
-		if (enc == "utf16") {
-			if (charCode < 65536) {
-				charBytes = 2;
-			} else {
-				charBytes = 4;
-			}
-		} else if (enc == "utf8") {
-			if (charCode < 128) {
-				charBytes = 1;
-			} else if (charCode < 2048) {
-				charBytes = 2;
-			} else if (charCode < 65536) {
-				charBytes = 3;
-			} else {
-				// 虽然理论上存在5～6字节的...
-				charBytes = 4;
-			}
-		} else {
-			charBytes = 4;
-		}
-		if (restBytes >= charBytes) {
-			restBytes -= charBytes;
-		} else {
-			return newName.substring(0, i - 1) + ext;
-		}
-	}
+	// 替换不合法的字符
+	// chrome对下载文件名的限制都是和windows一样的。在Mac上验证过
+	newName = newName.replace(/\//g, "／").replace(/\\/g, "＼").replace(/:/g, "：")
+		.replace(/\*/g, "＊").replace(/\?/g, "？").replace(/"/g, "“")
+		.replace(/</g, "〈").replace(/>/g, "〉").replace(/\|/g, "｜");
+	// chrome能够自动截短过长的文件名
 	return newName + ext;
 };
 
@@ -203,7 +156,6 @@ function download() {
 	if (album.data.length == 0) {
 		return;
 	}
-	alert("本功能仍然处于实验阶段，所以有如下缺陷\n  * 图片只能下载到默认的下载文件夹中");
 	downloadPool = {};
 	var max = album.data.length + album.unknown.length;
 	var images = album.data;
@@ -288,10 +240,6 @@ document.addEventListener("DOMContentLoaded", function() {
 			ulist.style.display = "none";
 			$("#udetail").textContent = "详情";
 		}
-	});
-	$("#adv").addEventListener("click", function() {
-		$("#encoding").style.display = "";
-		$("#adv").style.display = "none";
 	});
 	$("#download").addEventListener("click", download);
 	$("#exp").addEventListener("click", exp);

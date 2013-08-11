@@ -14,6 +14,7 @@ const XNRCore = {
 		SupportsString: Components.Constructor("@mozilla.org/supports-string;1", "nsISupportsString"),
 		XMLHttpRequest: Components.Constructor("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest"),
 		FilePicker: Components.Constructor("@mozilla.org/filepicker;1", "nsIFilePicker"),
+		LocalFile: Components.Constructor("@mozilla.org/file/local;1", "nsILocalFile"),	// Fx14将其合并至nsIFile
 		WebBrowserPersist: Components.Constructor("@mozilla.org/embedding/browser/nsWebBrowserPersist;1", "nsIWebBrowserPersist"),
 	},
 
@@ -88,43 +89,65 @@ const XNRCore = {
 			cWindow.postMessage({ "type":"init", "album":data, "os":system }, "*");
 			cWindow.addEventListener("message", function(msg) {
 				var request = msg.data;
-				if (!request || request.type !== "download" || !request.album) {
+				if (!request) {
 					return;
 				}
-				var album = request.album;
-				if (!album || !Array.isArray(album.data) || album.data.length == 0) {
-					// 参数错误
-					cWindow.postMessage({ type:"cancel", error:"\u53C2\u6570\u9519\u8BEF" }, "*");
-					return;
-				}
-
-				var dir = XNRCore.getDirectory(cWindow);
-				if (dir == null) {
-					cWindow.postMessage({ type:"cancel" }, "*");
-					return;
-				}
-				var suffix = 1;
-				var dir2 = dir.clone();
-				dir2.append(album.dirname);
-				while (dir2.exists()) {
-					dir2 = dir.clone();
-					dir2.append(album.dirname + "_" + suffix);
-					suffix++;
-				}
-				dir = dir2;
-				// DIRECTORY_TYPE = 1, 0o700 = 448
-				try {
-					dir.create(1, 448);
-				} catch(ex) {
-					// 无法在指定位置创建目录
-					cWindow.postMessage({ type:"cancel", error:"\u65E0\u6CD5\u5728\u6307\u5B9A\u4F4D\u7F6E\u521B\u5EFA\u76EE\u5F55" }, "*");
-				}
-				var images = album.data;
-				for (var i = 0; i < images.length; i++) {
-					var image = images[i];
-					var file = dir.clone();
-					file.append(image.filename);
-					XNRCore.download(cWindow, i, image.src, file);
+				switch(request.type) {
+					case "download":
+						var album = request.album;
+						if (!album || !Array.isArray(album.data) || album.data.length == 0) {
+							// 参数错误
+							cWindow.postMessage({ type:"cancel", error:"\u53C2\u6570\u9519\u8BEF" }, "*");
+							return;
+						}
+						if (!album.path || !album.dirname) {
+							// 参数错误
+							cWindow.postMessage({ type:"cancel", error:"\u53C2\u6570\u9519\u8BEF" }, "*");
+							return;
+						}
+						var dir = XNRCore.constructors.LocalFile();
+						try {
+							dir.initWithPath(album.path);
+						} catch(ex) {
+							// 参数错误
+							cWindow.postMessage({ type:"cancel", error:"\u53C2\u6570\u9519\u8BEF" }, "*");
+							return;
+						}
+						var suffix = 1;
+						var dir2 = dir.clone();
+						try {
+							dir2.append(album.dirname);
+						} catch(ex) {
+							// 参数错误
+							cWindow.postMessage({ type:"cancel", error:"\u53C2\u6570\u9519\u8BEF" }, "*");
+							return;
+						}
+						while (dir2.exists()) {
+							dir2 = dir.clone();
+							dir2.append(album.dirname + "_" + suffix);
+							suffix++;
+						}
+						dir = dir2;
+						// DIRECTORY_TYPE = 1, 0o700 = 448
+						try {
+							dir.create(1, 448);
+						} catch(ex) {
+							// 无法在指定位置创建目录
+							cWindow.postMessage({ type:"cancel", error:"\u65E0\u6CD5\u5728\u6307\u5B9A\u4F4D\u7F6E\u521B\u5EFA\u76EE\u5F55" }, "*");
+							return;
+						}
+						var images = album.data;
+						for (var i = 0; i < images.length; i++) {
+							var image = images[i];
+							var file = dir.clone();
+							file.append(image.filename);
+							XNRCore.download(cWindow, i, image.src, file);
+						}
+						return;
+					case "getDir":
+						var d = XNRCore.getDirectory(cWindow);
+						cWindow.postMessage({ type:"dir", dir: d.path }, "*");
+						return;
 				}
 			}, false);
 		}, true);
