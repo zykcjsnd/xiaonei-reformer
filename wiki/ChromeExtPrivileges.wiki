@@ -8,7 +8,7 @@
 
 = 当前版本的权限要求 =
 
-[http://code.google.com/p/xiaonei-reformer/source/browse/trunk/chromium-extension/manifest.json 这里]是最新版本的manifest文件，里面的permissions中的内容就是人人网改造器需要的全部权限
+[http://code.google.com/p/xiaonei-reformer/source/browse/trunk/chromium-extension/manifest.json 这里]是最新版本的manifest文件，里面的permissions和optional_permissions中的内容就是人人网改造器需要的全部权限。其中optional_permissions中的是运行时可动态授予或撤销的权限。
 
 
 
