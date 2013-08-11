@@ -1,3 +1,6 @@
+527:
+fix:Chrome扩展按需要求权限
+
 526:
 remove:移除opera扩展/用户脚本代码
 fix:不再支持10.0之前的Firefox

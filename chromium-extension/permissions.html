@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>人人网改造器授权页面</title>
+	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+	<script src="permissions.js"></script>
+	<style>
+		table { border: 3px double gray; border-collapse: collapse; }
+		th, td { border: 1px solid gray; text-align: center; padding: 0.3em 0.6em; }
+	</style>
+</head>
+<body>
+	<p>如果您在找人人网改造器的功能设置，请打开人人网，点击页面上方导航栏上的“改造”</p>
+	<p>人人网改造器中的相册下载功能需要特定的权限，您可以在这里进行授权与撤销授权</p>
+	<table>
+		<thead>
+			<tr>
+				<th>权限内容</th>
+				<th>需求原因</th>
+				<th>操作</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>与标签页通讯权限</td>
+				<td>据<a href="http://developer.chrome.com/extensions/tabs.html#manifest" target="_blank">开发文档所说</a>，应该需要此权限，但实际操作上不给似乎也行。如果出问题了你就授权呗</td>
+				<td><button id="grantTabs">授权</button><button id="revokeTabs">撤销</button></td>
+			</tr>
+			<tr>
+				<td>下载文件权限</td>
+				<td>如果要用新的下载功能就需要此权限。如果您的浏览器不支持<a href="http://developer.chrome.com/extensions/downloads.html" target="_blank">新的下载API</a>，授权给我也没用</td>
+				<td><button id="grantDownloads">授权</button><button id="revokeDownloads">撤销</button></td>
+			</tr>
+		</tbody>
+	</table>
+</body>
+</html>
