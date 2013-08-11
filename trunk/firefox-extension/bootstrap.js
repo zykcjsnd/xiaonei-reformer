@@ -8,7 +8,6 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 const XNRCore = {
 	optsPath: "extensions.xiaonei_reformer.xnr_options",
-	extPath: null,
 
 	constructors: {
 		SupportsString: Components.Constructor("@mozilla.org/supports-string;1", "nsISupportsString"),
@@ -71,9 +70,7 @@ const XNRCore = {
 
 	album: function (data) {
 		var mainWindow = Services.wm.getMostRecentWindow("navigator:browser");
-		var file = XNRCore.extPath.clone();
-		file.append("album.html");
-		var albumURL = Services.io.newFileURI(file).spec;
+		var albumURL = "chrome://xiaonei-reformer/content/album.html";
 		var newTab = mainWindow.gBrowser.addTab(albumURL);
 		var newTabBrowser = mainWindow.gBrowser.getBrowserForTab(newTab);
 		newTabBrowser.addEventListener("DOMContentLoaded", function () {
@@ -181,7 +178,8 @@ const XNRCore = {
 					sourceWindow.postMessage({ type:"start", index:idx }, "*");
 				} else if ((aStateFlags & 0x00000010) != 0) {
 					// STATE_STOP
-					sourceWindow.postMessage({ type:"end", index:idx, result:aStatus, uri:Services.io.newFileURI(target).path }, "*");
+					var fileURI = Services.io.newFileURI(target);
+					sourceWindow.postMessage({ type:"end", index:idx, result:aStatus, uri:fileURI.prePath + fileURI.path }, "*");
 				}
 			},
 			// 没有这些后台可能会抛异常
@@ -255,10 +253,8 @@ const XNRCore = {
 		sandbox.importFunction(XNRCore.storage, "XNR_storage");
 
 		// load my script
-		var file = XNRCore.extPath.clone();
-		file.append("xiaonei_reformer.user.js");
-		var scriptURL = Services.io.newFileURI(file).spec;
-		Services.scriptloader.loadSubScript(scriptURL, sandbox, "utf8");
+		var scriptURL = "chrome://xiaonei-reformer/content/xiaonei_reformer.user.js";
+		Services.scriptloader.loadSubScript(scriptURL, sandbox, "UTF-8");
 	}
 
 };
@@ -287,7 +283,6 @@ XNR_observer.prototype = {
 var XNRObserver = null;
 
 function startup(data, reason) {
-	XNRCore.extPath = data.installPath;
 	if (XNRObserver == null) {
 		XNRObserver = new XNR_observer(XNRCore.injectScript);
 	}

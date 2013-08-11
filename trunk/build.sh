@@ -24,7 +24,7 @@ cd ..
 
 #######################################
 
-cp "$INPUT" firefox-extension/"$INPUT"
+cp "$INPUT" firefox-extension/content/"$INPUT"
 cd firefox-extension
 sed -i '7s/version>[^<]*</version>'$VER1'</' install.rdf
 ./pack.sh
@@ -47,18 +47,6 @@ sed -i '18s/<string>[^<]*</<string>'$VER2'</' Info.plist
 cd ..
 sed -i '15s/<string>[^<]*</<string>'$VER1'</' update.plist
 sed -i '13s/<string>[^<]*</<string>'$VER2'</' update.plist
-
-#######################################
-
-cp "$OUTPUT" `echo "$OUTPUT" | sed 's/.user.js/.js/'`
-
-#######################################
-
-cp "$OUTPUT" opera-extension/includes/"$INPUT"
-cd opera-extension
-sed -i '2s/version="[^"]*"/version="'$VER1'"/' config.xml
-./pack.sh
-cd ..
 
 #######################################
 
