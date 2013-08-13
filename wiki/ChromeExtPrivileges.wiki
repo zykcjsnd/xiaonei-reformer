@@ -15,7 +15,7 @@
 = 历史上要求过的所有权限 =
 
 人人网改造器的chrome扩展版本从最初到现在要求过的所有权限如下：
-  * [ChromeExtPrivileges#tabs tabs]
+  * ~~[ChromeExtPrivileges#tabs tabs]~~
   * [ChromeExtPrivileges#storage storage]
   * [ChromeExtPrivileges#downloads downloads]
   * [http://*.renren.com/]
@@ -35,7 +35,7 @@
   * 加入版本：[http://code.google.com/p/xiaonei-reformer/source/diff?spec=svn125&r=125&format=side&path=/trunk/chromium-extension/manifest.json 2.3.5.256]
   * 首次发布：2.3.5.256 (20100426)
   * 加入原因：下载相册图片功能需要打开新标签页，并与打开的标签页进行一些交互操作
-  * 其他说明：虽然去除tabs权限貌似也能正常打开（在29.0.1547.41上验证），但[http://developer.chrome.com/extensions/tabs.html#manifest 官方文档]中并没有把所用到的API声明为不需要tabs权限。因此还是保留
+  * 其他说明：经[http://code.google.com/p/chromium/issues/detail?id=137404 确认]，在较新内核（24+？）的浏览器上述操作不再需要tabs权限，但目前仍然对旧内核版本提供支持。因此还是保留
 
 == storage ==
   * 加入版本：[http://code.google.com/p/xiaonei-reformer/source/diff?spec=svn675&r=675&format=side&path=/trunk/chromium-extension/manifest.json 3.4.4.509]
