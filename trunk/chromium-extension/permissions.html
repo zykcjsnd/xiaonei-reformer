@@ -21,6 +21,11 @@
 			</tr>
 		</thead>
 		<tbody>
+ 		 	<tr>
+				<td>与标签页通讯权限</td>
+	 		 	<td>内核版本小于23的，需要此权限才能正常下载。23及之后的应该不需要了</td>
+ 			 	<td><button id="grantTabs">授权</button><button id="revokeTabs">撤销</button></td>
+ 		 	</tr>
 			<tr>
 				<td>下载文件权限</td>
 				<td>如果要用新的下载功能就需要此权限。如果您的浏览器不支持<a href="http://developer.chrome.com/extensions/downloads.html" target="_blank">新的下载API</a>，点授权也没用</td>

@@ -1,5 +1,4 @@
 var album = null;
-var os = null;
 
 var downloadPool;
 
@@ -243,6 +242,15 @@ document.addEventListener("DOMContentLoaded", function() {
 	}, false);
 	$("#download").addEventListener("click", download);
 	$("#exp").addEventListener("click", exp);
+
+	var v = 0;
+	try {
+		v = parseInt(/Chrome\/(\d+)/.exec(navigator.appVersion)[1], 10);
+	} catch(ex) {
+	}
+	if (v < 23) {
+		$("#needTabs").style.display = "";
+	}
 }, false);
 
 function msgListener(message, sender, sendResponse) {
@@ -250,7 +258,6 @@ function msgListener(message, sender, sendResponse) {
 		return;
 	}
 	album = message.album;
-	os = message.os;
 	showPhotos();
 	if (chrome.runtime && chrome.runtime.onMessage) {
 		chrome.runtime.onMessage.removeListener(msgListener);

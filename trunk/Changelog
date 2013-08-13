@@ -1,3 +1,7 @@
+529:
+fix:Chrome23之前的仍然需要tabs权限。撤销528中的修改，默认不弹提示，而在新标签页上展示
+fix:删除不必要的OS检测
+
 528:
 fix:Chrome扩展不再需要tabs权限。
 fix:Chrome扩展downloads权限不再放在新标签页中检查

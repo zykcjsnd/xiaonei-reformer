@@ -49,33 +49,16 @@ function (request, sender, sendResponse) {
 			httpReq.send();
 			return true;
 		case "album":
-			// 据 http://code.google.com/p/chromium/issues/detail?id=137404，
-			// onUpdated和sendMessage都不需要tabs权限。截至2013-08-13，文档仍未更新
 			chrome.tabs.create({url:chrome.extension.getURL("album.html")}, function(tab) {
 				var tabId = tab.id;
+				// 据 http://code.google.com/p/chromium/issues/detail?id=137404以及实际实验结果，
+				// v23+都不需要tabs权限即可操作。v21确认不行。v22未测试，但从发布时间上看应该也不行
 				chrome.tabs.onUpdated.addListener(function (tid, changeInfo, tab) {
 					if (tid != tabId || changeInfo.status != "complete") {
 						return;
 					}
 					chrome.tabs.onUpdated.removeListener(arguments.callee);
-
-					if (chrome.runtime && chrome.runtime.getPlatformInfo) {
-						// Chrome 28/29+
-						chrome.runtime.getPlatformInfo(function(sysinfo) {
-							chrome.tabs.sendMessage(tid, { type:"initAlbum", "album":request.data, "os":sysinfo.os });
-						});
-					} else {
-						var p = navigator.platform;
-						var os;
-						if (/Win/i.test(p)) {
-							os = "win";
-						} else if (/Mac/i.test(p)) {
-							os = "mac";
-						} else {
-							os = p.split(" ")[0].toLowerCase();
-						}
-						chrome.tabs.sendMessage(tid, { type:"initAlbum", "album":request.data, "os":os });
-					}
+					chrome.tabs.sendMessage(tid, { type:"initAlbum", "album":request.data });
 				});
 			});
 			return;
@@ -85,6 +68,7 @@ function (request, sender, sendResponse) {
 
 if (chrome.downloads && chrome.downloads.onDeterminingFilename) {
 	chrome.downloads.onDeterminingFilename.addListener(function(downloadItem, suggest) {
+		// FIXME: 29还没把新标签页下载的当成是来自扩展？
 		if (downloadItem.byExtensionId == extId) {
 			suggest({
 				filename: downloadItem.filename,
