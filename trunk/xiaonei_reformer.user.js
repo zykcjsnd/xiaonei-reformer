@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.6.527
-// @miniver        527
+// @version        3.4.6.528
+// @miniver        528
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -2184,8 +2184,8 @@ function addExtraEmotions(emjEmo,nEmo,bEmo,eEmo,fEmo,sfEmo,aEmo,odEmo) {
 		"(twg)":	{t:"style",			s:"/imgpro/icons/statusface/style.gif"},
 		"(走你)":	{t:"走你",			s:"/imgpro/icons/statusface/zn.gif"},
 		"(小黄鸡)":	{t:"小黄鸡",		s:"/imgpro/icons/statusface/xhj.gif"},
-		"(不约而同)": {t:"不约而同",	s:"/imgpro/icons/statusface/byet.gif"},
-		"(十动然拒)": {t:"十动然拒",	s:"/imgpro/icons/statusface/sdrj.gif"},
+		"(不约而同)": {t:"不约而同",	s:"/imgpro/icons/statusface/byet1.gif"},
+		"(十动然拒)": {t:"十动然拒",	s:"/imgpro/icons/statusface/sdrjn.gif"},
 	};
 	var eEmList={
 		"(guoqing)":		{t:"国庆",		s:"/imgpro/icons/statusface/guoqing.gif"},

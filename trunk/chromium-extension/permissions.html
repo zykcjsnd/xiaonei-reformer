@@ -22,17 +22,11 @@
 		</thead>
 		<tbody>
 			<tr>
-				<td>与标签页通讯权限</td>
-				<td>据<a href="http://developer.chrome.com/extensions/tabs.html#manifest" target="_blank">开发文档所说</a>，应该需要此权限，但实际操作上不给似乎也行。如果出问题了你就授权呗</td>
-				<td><button id="grantTabs">授权</button><button id="revokeTabs">撤销</button></td>
-			</tr>
-			<tr>
-				<td>下载文件权限 *</td>
-				<td>如果要用新的下载功能就需要此权限。如果您的浏览器不支持<a href="http://developer.chrome.com/extensions/downloads.html" target="_blank">新的下载API</a>，授权给我也没用</td>
+				<td>下载文件权限</td>
+				<td>如果要用新的下载功能就需要此权限。如果您的浏览器不支持<a href="http://developer.chrome.com/extensions/downloads.html" target="_blank">新的下载API</a>，点授权也没用</td>
 				<td><button id="grantDownloads">授权</button><button id="revokeDownloads">撤销</button></td>
 			</tr>
 		</tbody>
 	</table>
-	<p>带 * 号的需要重启浏览器，或者至少要重启扩展才会完全生效</p>
 </body>
 </html>
