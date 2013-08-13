@@ -1,4 +1,7 @@
 var permissions = {
+	"Tabs": {
+		permissions: ['tabs']
+	},
 	"Downloads": {
 		permissions: ['downloads'],
 		origins: [ "http://*.rrimg.com/", "http://*.xnimg.cn/", "http://*.rrfmn.com/", "http://*.xnpic.com/" ]
@@ -32,5 +35,6 @@ function initPermission(t) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
+	initPermission("Tabs");
 	initPermission("Downloads");
 });
