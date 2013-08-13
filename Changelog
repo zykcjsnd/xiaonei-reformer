@@ -1,3 +1,8 @@
+528:
+fix:Chrome扩展不再需要tabs权限。
+fix:Chrome扩展downloads权限不再放在新标签页中检查
+fix:更新表情列表
+
 527:
 fix:Chrome扩展按需要求权限
 

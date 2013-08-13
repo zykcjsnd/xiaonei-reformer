@@ -62,7 +62,7 @@ function showPhotos() {
 	if (album.title) {
 		document.title = "下载" + album.title;
 	}
-	if (album.dlapi) {
+	if (chrome.downloads) {
 		$("#apititle").style.display = "block";
 	}
 	$("#loading").style.display = "none";

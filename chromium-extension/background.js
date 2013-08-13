@@ -49,41 +49,33 @@ function (request, sender, sendResponse) {
 			httpReq.send();
 			return true;
 		case "album":
-			if (chrome.downloads) {
-				request.data.dlapi = true;
-			}
-			chrome.permissions.contains({ permissions: ['tabs'] }, function(result) {
-				if (!result) {
-					if (confirm("缺少权限，*可能*无法正常打开新标签页，现在要给改造器授权吗？")) {
-						chrome.tabs.create({url:chrome.extension.getURL("permissions.html")});
+			// 据 http://code.google.com/p/chromium/issues/detail?id=137404，
+			// onUpdated和sendMessage都不需要tabs权限。截至2013-08-13，文档仍未更新
+			chrome.tabs.create({url:chrome.extension.getURL("album.html")}, function(tab) {
+				var tabId = tab.id;
+				chrome.tabs.onUpdated.addListener(function (tid, changeInfo, tab) {
+					if (tid != tabId || changeInfo.status != "complete") {
 						return;
 					}
-				}
-				chrome.tabs.create({url:chrome.extension.getURL("album.html")}, function(tab) {
-					var tabId = tab.id;
-					chrome.tabs.onUpdated.addListener(function (tid, changeInfo, tab) {
-						if (tid != tabId || changeInfo.status != "complete") {
-							return;
-						}
-						chrome.tabs.onUpdated.removeListener(arguments.callee);
-						if (chrome.runtime && chrome.runtime.getPlatformInfo) {
-							// Chrome 28/29+
-							chrome.runtime.getPlatformInfo(function(sysinfo) {
-								chrome.tabs.sendMessage(tid, { type:"initAlbum", "album":request.data, "os":sysinfo.os });
-							});
+					chrome.tabs.onUpdated.removeListener(arguments.callee);
+
+					if (chrome.runtime && chrome.runtime.getPlatformInfo) {
+						// Chrome 28/29+
+						chrome.runtime.getPlatformInfo(function(sysinfo) {
+							chrome.tabs.sendMessage(tid, { type:"initAlbum", "album":request.data, "os":sysinfo.os });
+						});
+					} else {
+						var p = navigator.platform;
+						var os;
+						if (/Win/i.test(p)) {
+							os = "win";
+						} else if (/Mac/i.test(p)) {
+							os = "mac";
 						} else {
-							var p = navigator.platform;
-							var os;
-							if (/Win/i.test(p)) {
-								os = "win";
-							} else if (/Mac/i.test(p)) {
-								os = "mac";
-							} else {
-								os = p.split(" ")[0].toLowerCase();
-							}
-							chrome.tabs.sendMessage(tid, { type:"initAlbum", "album":request.data, "os":os });
+							os = p.split(" ")[0].toLowerCase();
 						}
-					});
+						chrome.tabs.sendMessage(tid, { type:"initAlbum", "album":request.data, "os":os });
+					}
 				});
 			});
 			return;
@@ -91,7 +83,7 @@ function (request, sender, sendResponse) {
 });
 
 
-if (chrome.downloads) {
+if (chrome.downloads && chrome.downloads.onDeterminingFilename) {
 	chrome.downloads.onDeterminingFilename.addListener(function(downloadItem, suggest) {
 		if (downloadItem.byExtensionId == extId) {
 			suggest({
