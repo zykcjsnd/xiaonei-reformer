@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			$("#udetail").textContent = "详情";
 		}
 	}, false);
-});
+}, false);
 
 safari.self.addEventListener("message", function(msg) {
 	if (msg.name == "albumInfo") {

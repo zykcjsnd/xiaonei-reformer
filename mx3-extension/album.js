@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			$("#udetail").textContent = "详情";
 		}
 	}, false);
-});
+}, false);
 
 (function() {
 	var rt = window.external.mxGetRuntime();
