@@ -83,9 +83,9 @@ function switchIndex(add) {
 	var links = document.querySelectorAll("*[index]");
 	for (var i = 0; i < links.length; i++) {
 		if (add) {
-			links[i].title = seq(parseInt(links[i].getAttribute("index")), max) + " " + links[i].title;
+			links[i].title = seq(parseInt(links[i].getAttribute("index")), max) + (links[i].title ? " " + links[i].title : "");
 		} else {
-			links[i].title = links[i].title.replace(/^[0-9]+ /, "");
+			links[i].title = links[i].title.replace(/^[0-9]+( |$)/, "");
 		}
 	}
 };
@@ -100,10 +100,10 @@ function seq(n, max) {
 };
 
 document.addEventListener("DOMContentLoaded", function() {
-	$("#switchLink").addEventListener("click", switchLink);
+	$("#switchLink").addEventListener("click", switchLink, false);
 	$("#switchIndex").addEventListener("click", function(event) {
 		switchIndex(event.target.checked);
-	});
+	}, false);
 	$("#udetail").addEventListener("click", function() {
 		var ulist = $("#ulist");
 		if (ulist.style.display == "none") {
@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			ulist.style.display = "none";
 			$("#udetail").textContent = "详情";
 		}
-	});
+	}, false);
 });
 
 (function() {
