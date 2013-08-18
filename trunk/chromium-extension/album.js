@@ -122,9 +122,9 @@ function switchIndex(add) {
 	var links = document.querySelectorAll("*[index]");
 	for (var i = 0; i < links.length; i++) {
 		if (add) {
-			links[i].title = seq(parseInt(links[i].getAttribute("index")), max) + " " + links[i].title;
+			links[i].title = seq(parseInt(links[i].getAttribute("index")), max) + (links[i].title ? " " + links[i].title : "");
 		} else {
-			links[i].title = links[i].title.replace(/^[0-9]+ /, "");
+			links[i].title = links[i].title.replace(/^[0-9]+( |$)/, "");
 		}
 	}
 };
@@ -226,10 +226,10 @@ function exp() {
 };
 
 document.addEventListener("DOMContentLoaded", function() {
-	$("#switchLink").addEventListener("click", switchLink);
+	$("#switchLink").addEventListener("click", switchLink, false);
 	$("#switchIndex").addEventListener("click", function(event) {
 		switchIndex(event.target.checked);
-	});
+	}, false);
 	$("#udetail").addEventListener("click", function() {
 		var ulist = $("#ulist");
 		if (ulist.style.display == "none") {
@@ -240,8 +240,12 @@ document.addEventListener("DOMContentLoaded", function() {
 			$("#udetail").textContent = "详情";
 		}
 	}, false);
-	$("#download").addEventListener("click", download);
-	$("#exp").addEventListener("click", exp);
+	$("#download").addEventListener("click", download, false);
+	$("#exp").addEventListener("click", exp, false);
+
+	if (/LBBROWSER/.test(navigator.appVersion)) {
+		$("#lbwarning").style.display = "";
+	}
 
 	var v = 0;
 	try {
