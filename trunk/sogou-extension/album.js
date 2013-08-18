@@ -164,4 +164,4 @@ document.addEventListener("DOMContentLoaded", function() {
 		os = response.os;
 		showPhotos();
 	});
-});
+}, false);
