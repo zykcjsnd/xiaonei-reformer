@@ -80,7 +80,7 @@ function seq(n, max) {
 	return n.substring(n.length - i, n.length);
 };
 
-function fixFilename(filename, ext, enc, pathLength) {
+function fixFilename(filename, ext, enc, pathBytes) {
 	var newName = filename.replace(/&amp;/g, "&").replace(/&lt;/g, "<")
 			.replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&apos;/g, "'")
 			.replace(/[\t\n\r]/g, " ");
@@ -122,36 +122,15 @@ function fixFilename(filename, ext, enc, pathLength) {
 	} else {
 		restBytes -= ext.length * 4;
 	}
-	if (pathLength && os == "win") {
+	if (pathBytes && os == "win") {
 		// windows会算整个路径长度，而不是每一部分的长度
-		restBytes -= pathLength * 2;
+		restBytes -= pathBytes;
 		if (restBytes <= 0) {
 			return null;
 		}
 	}
 	for (var i = 0; i < newName.length; i++) {
-		var charBytes;
-		var charCode = newName.charCodeAt(i);
-		if (enc == "utf16") {
-			if (charCode < 65536) {
-				charBytes = 2;
-			} else {
-				charBytes = 4;
-			}
-		} else if (enc == "utf8") {
-			if (charCode < 128) {
-				charBytes = 1;
-			} else if (charCode < 2048) {
-				charBytes = 2;
-			} else if (charCode < 65536) {
-				charBytes = 3;
-			} else {
-				// 虽然理论上存在5～6字节的...
-				charBytes = 4;
-			}
-		} else {
-			charBytes = 4;
-		}
+		var charBytes = calcStringBytes(newName.charAt(i), enc);
 		if (restBytes >= charBytes) {
 			restBytes -= charBytes;
 		} else {
@@ -161,6 +140,35 @@ function fixFilename(filename, ext, enc, pathLength) {
 	return newName + ext;
 };
 
+function calcStringBytes(str, enc) {
+	var bytes = 0;
+	for (var i = 0; i < str.length; i++) {
+		var charBytes;
+		var charCode = str.charCodeAt(i);
+		if (enc == "utf16") {
+			if (charCode < 65536) {
+				bytes += 2;
+			} else {
+				bytes += 4;
+			}
+		} else if (enc == "utf8") {
+			if (charCode < 128) {
+				bytes += 1;
+			} else if (charCode < 2048) {
+				bytes += 2;
+			} else if (charCode < 65536) {
+				bytes += 3;
+			} else {
+				// 虽然理论上存在5～6字节的...
+				bytes += 4;
+			}
+		} else {
+			bytes += 4;
+		}
+	}
+	return bytes;
+};
+
 function download(path) {
 	if (album.data.length == 0) {
 		return;
@@ -168,7 +176,7 @@ function download(path) {
 	var enc = $("#enclist").value;
 	album.dirname = fixFilename(album.title, "", enc);
 	album.path = path;
-	var pathLength = album.dirname.length + album.path.length + 1;
+	var pathBytes = calcStringBytes(album.dirname + album.path + "/", enc);
 
 	var max = album.data.length + album.unknown.length;
 	var images = album.data;
@@ -177,7 +185,7 @@ function download(path) {
 		var url = image.src;
 		var ext = (url.match(/\.[^\/]+$/) || [".jpg"])[0];
 		var filename = seq(image.i, max) + (image.title ? "_" + image.title : "" );
-		image.filename = fixFilename(filename, ext, enc, pathLength);
+		image.filename = fixFilename(filename, ext, enc, pathBytes);
 		if (image.filename == null) {
 			alert("路径过长，无法保存。请重新选择一个目录试试");
 			return;
