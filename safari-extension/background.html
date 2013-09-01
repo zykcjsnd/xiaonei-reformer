@@ -3,6 +3,9 @@
 <head>
 <title>XNR Background</title>
 <script>
+
+var albumInfos = {};
+
 safari.application.addEventListener("message",function(msg) {
 	switch(msg.name) {
 		case "xnr_save":
@@ -43,12 +46,17 @@ safari.application.addEventListener("message",function(msg) {
 			httpReq.send();
 			break;
 		case "xnr_album":
+			do {
+				var token = Math.floor(Math.random() * 100000);
+			} while(token in albumInfos);
+			albumInfos[token] = msg.message;
 			var tab=safari.application.activeBrowserWindow.openTab();
-			tab.url=safari.extension.baseURI+"album.html";
-			// FIXME: 硬编码等待一秒真的不好，有无方法可以得知页面加载完毕？
-			setTimeout(function () {
-				tab.page.dispatchMessage("albumInfo", msg.message);
-			}, 1000);
+			tab.url=safari.extension.baseURI+"album.html#" + token;
+			break;
+		case "xnr_getAlbumInfo":
+			token = parseInt(msg.message);
+			msg.target.page.dispatchMessage("albumInfo", albumInfos[token]);
+			delete albumInfos[token];
 			break;
 	}
 },false);

@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.6.531
-// @miniver        531
+// @version        3.4.6.532
+// @miniver        532
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -3189,6 +3189,7 @@ function addDownloadAlbumLink(linkOnly,mode) {
 					return;
 				}
 				if(!downLink.text().match("分析中")) {
+					finish();
 					return;
 				}
 
@@ -3505,9 +3506,9 @@ function showVocalFileLink(evt) {
 		if (evt.target.nodeType != 1) {
 			return;
 		}
-		var a = $(evt.target).find("a.vocal-player[data-vocal]");
+		var a = $(evt.target).find(".vocal-player[data-vocal]");
 	} else {
-		var a = $("a.vocal-player[data-vocal]");
+		var a = $(".vocal-player[data-vocal]");
 	}
 	if (a.empty()) {
 		return;
@@ -3521,7 +3522,10 @@ function showVocalFileLink(evt) {
 		var data = t.attr("data-vocal");
 		if (/'?url'?\s*:\s*['"]([^'"]+)['"]/.test(data)) {
 			var url = RegExp.$1;
-			$("@a").attr("id", "fileLink").attr("href",url).attr("style","position:absolute;right:10px;line-height:28px").text("下载").addTo(t);
+			var d = $("@a").attr({"id":"fileLink", "href":url, "target":"_blank"}).attr("style","position:absolute;right:10px;width:auto").text("下载").addTo(t).bind("click", function(event){ event.stopPropagation(); }, true);
+			if (/vocal-player-large/.test(this.className)) {
+				d.css("line-height", "28px");
+			}
 		}
 	});
 }
@@ -6859,12 +6863,12 @@ function main(savedOptions) {
 						fn:[{
 							name:showVocalFileLink,
 							stage:1,
-							trigger:{"div.feed-list":"DOMNodeInserted"},
+							trigger:{"div.feed-list":"DOMNodeInserted", "#timeline":"DOMNodeInserted"},
 							fire:true
 						}]
 					}
 				],
-				page:"photo,share,feed"
+				page:"photo,share,feed,profile"
 			},{
 				text:"##当鼠标在照片上时隐藏圈人框##",
 				ctrl:[
