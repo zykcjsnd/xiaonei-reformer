@@ -193,7 +193,9 @@ function download(path) {
 			return;
 		}
 	}
-	for (var i = 0; i < album.data.length; i++) {
+
+	var i = 0;
+	(function() {
 		var image = images[i];
 		setStatus(i, "正在下载");
 		if (downloader.download(image.src, path, album.dirname, image.filename)) {
@@ -202,7 +204,11 @@ function download(path) {
 		} else {
 			setStatus(i, "下载出错");
 		}
-	}
+		i++;
+		if (i < images.length) {
+			setTimeout(arguments.callee, 100);
+		}
+	})();
 };
 
 function setStatus(index, text, url) {

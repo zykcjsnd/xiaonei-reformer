@@ -6,8 +6,8 @@
 // @exclude        http://*.renren.com/ajaxproxy*
 // @exclude        http://wpi.renren.com/*
 // @description    让人人网（renren.com）用起来舒服一点
-// @version        3.4.6.532
-// @miniver        532
+// @version        3.4.6.533
+// @miniver        533
 // @author         xz
 // @homepage       http://xiaonei-reformer.googlecode.com
 // @run-at         document-start
@@ -59,8 +59,8 @@ if (window.top == null) {
 var XNR={};
 
 // 版本，对应@version和@miniver，用于升级相关功能
-XNR.version="3.4.6.530";
-XNR.miniver=530;
+XNR.version="3.4.6.533";
+XNR.miniver=533;
 
 // 存储空间，用于保存全局性变量
 XNR.storage={};
@@ -157,7 +157,7 @@ function getTokens() {
 
 // 清除广告
 function removeAds() {
-	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, div.advert-con, .kfc-side, .imAdv, .kfc-banner, .ad_sprite, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #christmas-box, #pro-clent-ad, div[id^='ad100']:not(#ad1000000064), #ad1000000064>*, div[class^='ad_']:not(#ad_box), .pro-clent-ad, .buddy-clent-ad, .wp-rrzm-popup, .panelbarbutton[style*='width'][style*='97px'], .box-body #flashcontent, .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], div[id*='AdBox'], .mentos-lbox, .sec.promotion, iframe[src*='adsupport.renren.com'], .xb-iphone-footer, #right_side_div, #rightapp_side_div";
+	var ads=".ad-bar, .banner, .wide-banner, .adimgr, .blank-bar, .renrenAdPanel, .side-item.template, .rrdesk, .login-page .with-video .video, .login-page .side-column .video, .ad-box-border, .ad-box, .ad, .share-ads, div.advert-con, .kfc-side, .imAdv, .kfc-banner, .ad_sprite, #sd_ad, #showAD, #huge-ad, #rrtvcSearchTip, #top-ads, #bottom-ads, #main-ads, #n-cAD, #webpager-ad-panel, #ad, #jebe_con_load, #partyLink, #hd_kama, #christmas-box, #pro-clent-ad, div[id^='ad100']:not(#ad1000000064), #ad1000000064>*, div[class^='ad_']:not(#ad_box), .pro-clent-ad, .buddy-clent-ad, .wp-rrzm-popup, .panelbarbutton[style*='width'][style*='97px'], .box-body #flashcontent, .share-success-more>p>a>img[width='280'], img[src*='/adimgs/'], img[src*='adclick'], div[id*='AdBox'], .mentos-lbox, .sec.promotion, iframe[src*='adsupport.renren.com'], .xb-iphone-footer, #right_side_div, #rightapp_side_div, #cleanFlashContent, #xb-cronerspread";
 	if (!/im\.renren\.com/.test(XNR.url)) {
 		// 搜索页面需要#ad1000000064
 		$ban(ads);
