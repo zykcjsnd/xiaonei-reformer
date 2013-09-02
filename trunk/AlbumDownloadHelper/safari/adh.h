@@ -36,17 +36,17 @@ bool getProperty(NPObject *obj, NPIdentifier propertyName, NPVariant *result);
 // End
 
 static struct NPClass scriptablePluginClass = {
-    NP_CLASS_STRUCT_VERSION,
-    NULL,
-    NULL,
-    NULL,
-    plugin_has_method,
-    plugin_invoke,
-    NULL,
-    hasProperty,
-    getProperty,
-    NULL,
-    NULL,
+	NP_CLASS_STRUCT_VERSION,
+	NULL,
+	NULL,
+	NULL,
+	plugin_has_method,
+	plugin_invoke,
+	NULL,
+	hasProperty,
+	getProperty,
+	NULL,
+	NULL,
 };
 
 #ifndef HIBYTE
@@ -54,18 +54,18 @@ static struct NPClass scriptablePluginClass = {
 #endif
 
 // STRINGZ_TO_NPVARIANT and STRINGN_TO_NPVARIANT in npruntime.h are buggy
-#define STRINGZ_TO_NPVARIANT2(_val, _v)                                   \
-NP_BEGIN_MACRO                                                            \
-(_v).type = NPVariantType_String;                                         \
-NPString str = { _val, (uint32_t)(strlen(_val)) };                        \
-(_v).value.stringValue = str;                                             \
+#define STRINGZ_TO_NPVARIANT2(_val, _v)										\
+NP_BEGIN_MACRO																\
+(_v).type = NPVariantType_String;											\
+NPString str = { _val, (uint32_t)(strlen(_val)) };							\
+(_v).value.stringValue = str;												\
 NP_END_MACRO
 
-#define STRINGN_TO_NPVARIANT2(_val, _len, _v)                             \
-NP_BEGIN_MACRO                                                            \
-(_v).type = NPVariantType_String;                                         \
-NPString str = { _val, (uint32_t)(_len) };                                \
-(_v).value.stringValue = str;                                             \
+#define STRINGN_TO_NPVARIANT2(_val, _len, _v)								\
+NP_BEGIN_MACRO																\
+(_v).type = NPVariantType_String;											\
+NPString str = { _val, (uint32_t)(_len) };									\
+(_v).value.stringValue = str;												\
 NP_END_MACRO
 
 char *normalizeNPString(const NPString *str);
