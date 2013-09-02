@@ -3,12 +3,12 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 
-
+static const char *plugin_method_getVersion = "getVer";
 static const char *plugin_method_getDirectory = "getDir";
 static const char *plugin_method_download = "download";
 
 NPError NP_Initialize(NPNetscapeFuncs* browserFuncs) {
-    if (!browserFuncs) {
+    if (browserFuncs == NULL) {
         return NPERR_INVALID_FUNCTABLE_ERROR;
     }
     if (HIBYTE(browserFuncs->version) > NP_VERSION_MAJOR) {
@@ -19,6 +19,9 @@ NPError NP_Initialize(NPNetscapeFuncs* browserFuncs) {
 }
 
 NPError NP_GetEntryPoints(NPPluginFuncs* pluginFuncs) {
+	if (pluginFuncs == NULL) {
+		return NPERR_INVALID_FUNCTABLE_ERROR;
+	}
 #ifdef XP_MACOSX
     if (pluginFuncs->size == 0) {
         pluginFuncs->size = sizeof(pluginFuncs);
@@ -54,7 +57,8 @@ NPError NP_Shutdown(void) {
 
 bool plugin_has_method(NPObject *obj, NPIdentifier methodName) {
     NPUTF8 *name = browser->utf8fromidentifier(methodName);
-    bool result = (strcmp(name, plugin_method_getDirectory) == 0 ||
+    bool result = (strcmp(name, plugin_method_getVersion) == 0 ||
+				   strcmp(name, plugin_method_getDirectory) == 0 ||
                    strcmp(name, plugin_method_download) == 0);
     browser->memfree(name);
     return result;
@@ -69,7 +73,7 @@ bool plugin_invoke(NPObject *obj, NPIdentifier methodName, const NPVariant *args
         [panel setCanChooseFiles:NO];
         [panel setCanChooseDirectories:YES];
         [panel setAllowsMultipleSelection:NO];
-        // Bad idea.
+        // FIXME: do not block the main thread
         if ([panel runModal] == NSFileHandlingPanelCancelButton) {
             NULL_TO_NPVARIANT(*result);
             return true;
@@ -83,7 +87,7 @@ bool plugin_invoke(NPObject *obj, NPIdentifier methodName, const NPVariant *args
     } else if (strcmp(name, plugin_method_download) == 0) {
         browser->memfree(name);
         BOOLEAN_TO_NPVARIANT(false, *result);
-        // Meke sure the arugment has at least 4 String parameters.
+
         if (argCount < 4 || !NPVARIANT_IS_STRING(args[0]) || !NPVARIANT_IS_STRING(args[1]) || !NPVARIANT_IS_STRING(args[2]) || !NPVARIANT_IS_STRING(args[3])) {
             return true;
         }
@@ -102,6 +106,7 @@ bool plugin_invoke(NPObject *obj, NPIdentifier methodName, const NPVariant *args
         NSFileManager *fm = [NSFileManager defaultManager];
         if ([fm createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil] == YES) {
 			path = [NSString stringWithFormat:@"%@/%@", path, filename];
+			// FIXME: do not block the main thread
 			BOOL res = [urlData writeToFile:path atomically:YES];
 			BOOLEAN_TO_NPVARIANT(res, *result);
 		}
@@ -110,7 +115,11 @@ bool plugin_invoke(NPObject *obj, NPIdentifier methodName, const NPVariant *args
 		free(arg2);
 		free(arg3);
         return true;
-    }
+    } else if (strcmp(name, plugin_method_getVersion) == 0) {
+		browser->memfree(name);
+		INT32_TO_NPVARIANT(1, *result);
+		return true;
+	}
     browser->memfree(name);
     return false;
 }
@@ -154,6 +163,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
     }
     char *protocal = normalizeNPString(&(variantProtocal.value.stringValue));
     if (strcmp(protocal, "safari-extension:") != 0) {
+		free(protocal);
 		browser->releasevariantvalue(&variantProtocal);
         browser->releasevariantvalue(&variantLocation);
         return NPERR_INVALID_URL;
@@ -169,6 +179,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
     }
     char *host = normalizeNPString(&(variantHost.value.stringValue));
     if (strcmp(host, "com.googlecode.xiaonei-reformer-H98TGNL6U3") != 0) {
+		free(host);
         browser->releasevariantvalue(&variantHost);
         browser->releasevariantvalue(&variantLocation);
         return NPERR_INVALID_URL;
@@ -194,20 +205,18 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
     }
     if (!supportsFeature) {
         return NPERR_INCOMPATIBLE_VERSION_ERROR;
-    }
+    } else {
+		browser->setvalue(instance, NPPVpluginDrawingModel, (void *)NPDrawingModelCoreGraphics);
+	}
     
     if (browser->getvalue(instance, NPNVsupportsCocoaBool, &supportsFeature) != NPERR_NO_ERROR) {
         supportsFeature = FALSE;
     }
     if (!supportsFeature) {
         return NPERR_INCOMPATIBLE_VERSION_ERROR;
-    }
-    
-    // If the browser supports the CoreGraphics drawing model, enable it.
-    browser->setvalue(instance, NPPVpluginDrawingModel, (void *)NPDrawingModelCoreGraphics);
-    
-    // google chrome refused to load without this line
-    browser->setvalue(instance, NPPVpluginEventModel, (void *)NPEventModelCocoa);
+    } else {
+        browser->setvalue(instance, NPPVpluginEventModel, (void *)NPEventModelCocoa);
+	}
     
     return NPERR_NO_ERROR;
 }
